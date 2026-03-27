@@ -23,7 +23,7 @@
 </div>
 <div id="ls"><div class="lg"></div><div class="lglow"></div><div class="lcard"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p>Amrit Laxmi Textile · Surat</p></div><div id="lf"><div class="lf"><label>Username</label><input type="text" id="lu" placeholder="Enter username" autocomplete="username"/></div><div class="lf"><label>Password</label><input type="password" id="lp" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div><button class="lbtn" onclick="doLogin()">Sign In →</button><div class="lerr" id="le"></div><div style="display:flex;justify-content:space-between;margin-top:14px"><button onclick="showForgotUsername()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Username?</button><button onclick="showForgotPassword()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Password?</button></div><div style="margin-top:14px;background:rgba(255,165,0,0.15);border-radius:10px;padding:12px;border:1.5px solid rgba(255,165,0,0.4)"><div style="font-size:11px;color:rgba(255,255,255,0.9);margin-bottom:8px;text-align:center;font-weight:700">&#x1F4F1; First time on this phone / New device?</div><button onclick="loginScreenSyncFirebase()" style="width:100%;background:linear-gradient(135deg,#D97706,#F59E0B);color:white;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 15px rgba(217,119,6,.4)">&#x1F525; Load Data from Firebase</button><div id="ls-sync-status" style="font-size:12px;color:rgba(255,255,255,0.9);margin-top:8px;text-align:center;min-height:18px;font-weight:600"></div><div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:6px;text-align:center">Tap this button to load all your data before logging in</div></div><div style="text-align:center;margin-top:10px"><button onclick="showEmergencyRecovery()" style="background:none;border:none;color:rgba(255,80,80,0.7);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline">&#x1F6A8; Admin locked out?</button></div></div><div id="of" class="hid"><p style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:20px;line-height:1.6">📱 New device detected!<br>OTP sent to admin WhatsApp.<br>Ask admin to share the code.</p><div class="lf"><label>One-Time Password</label><input type="number" class="otp-inp" id="oi" placeholder="000000" maxlength="6"/></div><button class="lbtn" onclick="doOTP()">Verify OTP →</button><div class="lerr" id="oe"></div><button style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit" onclick="showEl('lf');hideEl('of')">← Back</button></div></div>
 </div>
-<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:10px;color:var(--t3);margin-top:2px" id="d-user-chip"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bgh bsm" onclick="toggleLang()">&#x1F310; <span id="ll">हिंदी</span></button><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('out',this)">Outstanding</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div id="billst"></div></div><div class="tp" id="tp-out"><div style="padding:8px 16px"><button class="wa" style="padding:6px 14px;font-size:12px" onclick="waOutstanding()">&#x1F4F2; Share Outstanding</button></div><div id="outlst"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg"><label>Customer</label><select class="sel" id="inv-cust-sel" onchange="onInvCustSelect()" style="font-size:14px;padding:10px 12px"><option value="">Select customer...</option></select></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange · Transfer</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="showInward('exch')"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" onclick="showInward('xfer')"><span class="qaico">↩️</span><div><div class="qalbl">Transfer In</div><div class="qasub">Transfer from location</div></div></div></div></div><div class="stl" data-i18n="recent">Recent Inward</div><div id="inrec"></div></div></div><div id="s-jw" class="scr"><div class="shdr"><div class="hr"><div><h2>⚙️ Job Work</h2><p class="sub">Challans & Processing</p></div><div style="display:flex;gap:6px"><button class="btn bgh bsm" onclick="showJWForm('m2j')">Mill → Job Work</button><button class="btn bp bsm" onclick="showJWForm('s2j')">Shop → Job Work</button></div></div><div class="tb mt8"><button class="tbb on" onclick="jwTab('pnd',this)">Pending</button><button class="tbb" onclick="jwTab('rec',this)">Received</button><button class="tbb" onclick="jwTab('all',this)">All</button></div></div><div class="tp on" id="tp-pnd"><div id="jwpnd"></div></div><div class="tp" id="tp-rec"><div id="jwrec"></div></div><div class="tp" id="tp-all"><div id="jwall"></div></div></div><div id="s-masters" class="scr"><div class="shdr"><h2>🗂️ Masters</h2><div class="tb mt8"><button class="tbb on" onclick="mTab('itm',this)">Items</button><button class="tbb" onclick="mTab('cst',this)">Customers</button><button class="tbb" onclick="mTab('brk',this)">Brokers</button><button class="tbb" onclick="mTab('sup',this)">Suppliers</button><button class="tbb" onclick="mTab('prd',this)">Products</button></div></div><div class="tp on" id="tp-itm"><div class="srch"><span>🔍</span><input type="text" placeholder="Search items..." oninput="renderItems(this.value)"/></div><div id="itmlst"></div><button class="fab" onclick="openItem()">+</button></div><div class="tp" id="tp-cst"><div class="srch"><span>🔍</span><input type="text" placeholder="Search customers..." oninput="renderCusts(this.value)"/></div><div id="cstlst"></div><button class="fab" onclick="openCust()">+</button></div><div class="tp" id="tp-brk"><div id="brklst"></div><button class="fab" onclick="showMod('m-brk')">+</button></div><div class="tp" id="tp-sup"><div id="suplst"></div><button class="fab" onclick="showMod('m-sup')">+</button></div><div class="tp" id="tp-prd"><div id="prdlst"></div><button class="fab" onclick="showMod('m-prd')">+</button></div></div><div id="s-admin" class="scr"><div class="shdr"><h2>👑 Admin</h2><div class="tb mt8"><button class="tbb on" onclick="aTab('set',this)">Settings</button><button class="tbb" onclick="aTab('usr',this)">Users</button><button class="tbb" onclick="aTab('dev',this)">Devices</button><button class="tbb" onclick="aTab('led',this)">Ledger</button><button class="tbb" onclick="aTab('db',this)">Database</button><button class="tbb" onclick="aTab('fy',this)">Fin Year</button><button class="tbb" data-tab="flags" onclick="aTab('flags',this)" id="admin-flag-tab">Flags <span id="flag-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:3px">!</span></button></div></div><div class="tp on" id="tp-set" style="background:var(--bg)"><div id="setbod" class="p16" style="background:var(--bg)"></div></div><div class="tp" id="tp-usr" style="background:var(--bg)"><div id="usrlst"></div><button class="fab" onclick="openUserModal()">+</button></div><div class="tp" id="tp-dev" style="background:var(--bg)"><div id="devlst"></div></div><div class="tp" id="tp-led" style="background:var(--bg)"><div class="srch"><span>🔍</span><input type="text" placeholder="Filter ledger..." oninput="renderLedger(this.value)"/></div><div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap" id="ldflt"></div><div id="ledbod" class="p16"></div></div><div class="tp" id="tp-db" style="background:var(--bg)"><div id="dbbod" class="p16"></div></div><div class="tp" id="tp-fy" style="background:var(--bg)"><div id="fybody" class="p16"></div></div><div class="tp" id="tp-flags" style="background:var(--bg);overflow-y:auto;padding-bottom:80px"><div id="flagged-body" class="p16"></div></div></div><div id="s-reports" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CA; Reports</h2><p class="sub">Stock, Sales, SKU Analysis</p></div></div><div class="tb mt8"><button class="tbb on" onclick="repTab('stock',this)">Stock</button><button class="tbb" onclick="repTab('vsorder',this)">vs Orders</button><button class="tbb" onclick="repTab('daily',this)">Daily Sales</button><button class="tbb" onclick="repTab('topsku',this)">Top SKUs</button></div></div><div class="tp on" id="tp-rstock" style="overflow-y:auto;padding-bottom:80px"><div id="rep-stock-body" class="p16"></div></div><div class="tp" id="tp-rvsorder" style="overflow-y:auto;padding-bottom:80px"><div id="rep-vsorder-body" class="p16"></div></div><div class="tp" id="tp-rdaily" style="overflow-y:auto;padding-bottom:80px"><div style="padding:12px 16px;display:flex;gap:8px;align-items:center"><input type="date" id="rep-daily-date" class="inp" style="flex:1" value=""/><button class="btn bp bsm" onclick="renderDailyReport()">Go</button></div><div id="rep-daily-body" class="p16"></div></div><div class="tp" id="tp-rtopsku" style="overflow-y:auto;padding-bottom:80px"><div id="rep-topsku-body" class="p16"></div></div></div><div id="s-leads" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F3AF; Leads</h2><p class="sub">Lead Management</p></div><button class="btn bp bsm" onclick="openNewLead()">+ Lead</button></div><div class="tb mt8"><button class="tbb on" onclick="leadTab('all',this)">All</button><button class="tbb" onclick="leadTab('mine',this)">Mine</button><button class="tbb" onclick="leadTab('today',this)">Follow Up</button><button class="tbb" onclick="leadTab('won',this)">Won/Lost</button><button class="tbb" onclick="leadTab('recurring',this)" id="lead-rec-tab">Recurring <span id="lead-rec-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:2px">!</span></button></div></div><div class="tp on" id="tp-lall"><div id="lead-lst-all"></div></div><div class="tp" id="tp-lmine"><div id="lead-lst-mine"></div></div><div class="tp" id="tp-ltoday"><div id="lead-lst-today"></div></div><div class="tp" id="tp-lwon"><div id="lead-lst-won"></div></div><div class="tp" id="tp-lrecurring"><div id="lead-rec-list" class="p16"></div></div></div></div><div id="s-tasks" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CB; Tasks</h2><p class="sub" id="task-sub">Your task list</p></div><button class="btn bp bsm" onclick="openNewTaskTemplate()" id="task-add-btn" style="display:none">+ Template</button></div><div class="tb mt8"><button class="tbb on" onclick="taskTab('my',this)" id="ttab-my">My Tasks</button><button class="tbb" onclick="taskTab('all',this)" id="ttab-all" style="display:none">All Tasks</button><button class="tbb" onclick="taskTab('templates',this)" id="ttab-tpl" style="display:none">Templates</button><button class="tbb" onclick="taskTab('leave',this)" id="ttab-lv" style="display:none">Leave</button></div></div><div class="tp on" id="tp-tmy"><div id="task-lst-my" class="p16"></div></div><div class="tp" id="tp-tall"><div id="task-lst-all" class="p16"></div></div><div class="tp" id="tp-ttemplates"><div id="task-lst-tpl" class="p16"></div></div><div class="tp" id="tp-tleave"><div id="task-lst-lv" class="p16"></div></div></div><nav id="bn"><button class="nb on" onclick="setNav('dash')" id="nb-dash"><span class="ni">📊</span>Dash</button><button class="nb" onclick="setNav('sales')" id="nb-sales"><span class="ni">🧾</span>Sales</button><button class="nb" onclick="setNav('inward')" id="nb-inward"><span class="ni">📥</span>Inward</button><button class="nb" onclick="setNav('jw')" id="nb-jw"><span class="ni">⚙️</span>Job Work</button><button class="nb" onclick="setNav('masters')" id="nb-masters"><span class="ni">🗂️</span>Masters</button><button class="nb" onclick="setNav('reports')" id="nb-reports"><span class="ni">&#x1F4CA;</span>Reports</button><button class="nb" onclick="setNav('leads')" id="nb-leads"><span class="ni">&#x1F3AF;</span>Leads</button><button class="nb" onclick="setNav('tasks')" id="nb-tasks"><span class="ni">&#x1F4CB;</span>Tasks<span class="ndot hid" id="tdot"></span></button><button class="nb" onclick="setNav('admin')" id="nb-admin"><span class="ni">👑</span>Admin<span class="ndot hid" id="adot"></span></button></nav>
+<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:10px;color:var(--t3);margin-top:2px" id="d-user-chip"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bgh bsm" onclick="toggleLang()">&#x1F310; <span id="ll">हिंदी</span></button><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('out',this)">Outstanding</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div id="billst"></div></div><div class="tp" id="tp-out"><div style="padding:8px 16px"><button class="wa" style="padding:6px 14px;font-size:12px" onclick="waOutstanding()">&#x1F4F2; Share Outstanding</button></div><div id="outlst"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg"><label>Customer</label><select class="sel" id="inv-cust-sel" onchange="onInvCustSelect()" style="font-size:14px;padding:10px 12px"><option value="">Select customer...</option></select></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange · Transfer</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="showInward('exch')"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" onclick="showInward('xfer')"><span class="qaico">↩️</span><div><div class="qalbl">Transfer In</div><div class="qasub">Transfer from location</div></div></div></div></div><div class="stl" data-i18n="recent">Recent Inward</div><div id="inrec"></div></div></div><div id="s-jw" class="scr"><div class="shdr"><div class="hr"><div><h2>⚙️ Job Work</h2><p class="sub">Challans & Processing</p></div><div style="display:flex;gap:6px"><button class="btn bgh bsm" onclick="showJWForm('m2j')">Mill → Job Work</button><button class="btn bp bsm" onclick="showJWForm('s2j')">Shop → Job Work</button></div></div><div class="tb mt8"><button class="tbb on" onclick="jwTab('pnd',this)">Pending</button><button class="tbb" onclick="jwTab('rec',this)">Received</button><button class="tbb" onclick="jwTab('all',this)">All</button></div></div><div class="tp on" id="tp-pnd"><div id="jwpnd"></div></div><div class="tp" id="tp-rec"><div id="jwrec"></div></div><div class="tp" id="tp-all"><div id="jwall"></div></div></div><div id="s-masters" class="scr"><div class="shdr"><h2>🗂️ Masters</h2><div class="tb mt8"><button class="tbb on" onclick="mTab('itm',this)">Items</button><button class="tbb" onclick="mTab('cst',this)">Customers</button><button class="tbb" onclick="mTab('brk',this)">Brokers</button><button class="tbb" onclick="mTab('sup',this)">Suppliers</button><button class="tbb" onclick="mTab('prd',this)">Products</button></div></div><div class="tp on" id="tp-itm"><div class="srch"><span>🔍</span><input type="text" placeholder="Search items..." oninput="renderItems(this.value)"/></div><div id="itmlst"></div><button class="fab" onclick="openItem()">+</button></div><div class="tp" id="tp-cst"><div class="srch"><span>🔍</span><input type="text" placeholder="Search customers..." oninput="renderCusts(this.value)"/></div><div id="cstlst"></div><button class="fab" onclick="openCust()">+</button></div><div class="tp" id="tp-brk"><div id="brklst"></div><button class="fab" onclick="showMod('m-brk')">+</button></div><div class="tp" id="tp-sup"><div id="suplst"></div><button class="fab" onclick="showMod('m-sup')">+</button></div><div class="tp" id="tp-prd"><div id="prdlst"></div><button class="fab" onclick="showMod('m-prd')">+</button></div></div><div id="s-admin" class="scr"><div class="shdr"><h2>👑 Admin</h2><div class="tb mt8"><button class="tbb on" onclick="aTab('set',this)">Settings</button><button class="tbb" onclick="aTab('usr',this)">Users</button><button class="tbb" onclick="aTab('dev',this)">Devices</button><button class="tbb" onclick="aTab('led',this)">Ledger</button><button class="tbb" onclick="aTab('db',this)">Database</button><button class="tbb" onclick="aTab('fy',this)">Fin Year</button><button class="tbb" data-tab="flags" onclick="aTab('flags',this)" id="admin-flag-tab">Flags <span id="flag-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:3px">!</span></button></div></div><div class="tp on" id="tp-set" style="background:var(--bg)"><div id="setbod" class="p16" style="background:var(--bg)"></div></div><div class="tp" id="tp-usr" style="background:var(--bg)"><div id="usrlst"></div><button class="fab" onclick="openUserModal()">+</button></div><div class="tp" id="tp-dev" style="background:var(--bg)"><div id="devlst"></div></div><div class="tp" id="tp-led" style="background:var(--bg)"><div class="srch"><span>🔍</span><input type="text" placeholder="Filter ledger..." oninput="renderLedger(this.value)"/></div><div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap" id="ldflt"></div><div id="ledbod" class="p16"></div></div><div class="tp" id="tp-db" style="background:var(--bg)"><div id="dbbod" class="p16"></div></div><div class="tp" id="tp-fy" style="background:var(--bg)"><div id="fybody" class="p16"></div></div><div class="tp" id="tp-flags" style="background:var(--bg);overflow-y:auto;padding-bottom:80px"><div id="flagged-body" class="p16"></div></div></div><div id="s-reports" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CA; Reports</h2><p class="sub">Stock, Sales, SKU Analysis</p></div></div><div class="tb mt8"><button class="tbb on" onclick="repTab('stock',this)">Stock</button><button class="tbb" onclick="repTab('vsorder',this)">vs Orders</button><button class="tbb" onclick="repTab('daily',this)">Daily Sales</button><button class="tbb" onclick="repTab('topsku',this)">Top SKUs</button></div></div><div class="tp on" id="tp-rstock" style="overflow-y:auto;padding-bottom:80px"><div id="rep-stock-body" class="p16"></div></div><div class="tp" id="tp-rvsorder" style="overflow-y:auto;padding-bottom:80px"><div id="rep-vsorder-body" class="p16"></div></div><div class="tp" id="tp-rdaily" style="overflow-y:auto;padding-bottom:80px"><div style="padding:12px 16px;display:flex;gap:8px;align-items:center"><input type="date" id="rep-daily-date" class="inp" style="flex:1" value=""/><button class="btn bp bsm" onclick="renderDailyReport()">Go</button></div><div id="rep-daily-body" class="p16"></div></div><div class="tp" id="tp-rtopsku" style="overflow-y:auto;padding-bottom:80px"><div id="rep-topsku-body" class="p16"></div></div></div><div id="s-leads" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F3AF; Leads</h2><p class="sub">Lead Management</p></div><button class="btn bp bsm" onclick="openNewLead()">+ Lead</button></div><div class="tb mt8"><button class="tbb on" onclick="leadTab('all',this)">All</button><button class="tbb" onclick="leadTab('mine',this)">Mine</button><button class="tbb" onclick="leadTab('today',this)">Follow Up</button><button class="tbb" onclick="leadTab('won',this)">Won/Lost</button><button class="tbb" onclick="leadTab('recurring',this)" id="lead-rec-tab">Recurring <span id="lead-rec-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:2px">!</span></button></div></div><div class="tp on" id="tp-lall"><div id="lead-lst-all"></div></div><div class="tp" id="tp-lmine"><div id="lead-lst-mine"></div></div><div class="tp" id="tp-ltoday"><div id="lead-lst-today"></div></div><div class="tp" id="tp-lwon"><div id="lead-lst-won"></div></div><div class="tp" id="tp-lrecurring"><div id="lead-rec-list" class="p16"></div></div></div></div><div id="s-tasks" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CB; Tasks</h2><p class="sub" id="task-sub">Your task list</p></div><button class="btn bp bsm" onclick="openNewTaskTemplate()" id="task-add-btn" style="display:none">+ Template</button></div><div class="tb mt8"><button class="tbb on" onclick="taskTab('my',this)" id="ttab-my">My Tasks</button><button class="tbb" onclick="taskTab('all',this)" id="ttab-all" style="display:none">All Tasks</button><button class="tbb" onclick="taskTab('templates',this)" id="ttab-tpl" style="display:none">Templates</button><button class="tbb" onclick="taskTab('leave',this)" id="ttab-lv" style="display:none">Leave</button></div></div><div class="tp on" id="tp-tmy"><div id="task-lst-my" class="p16"></div></div><div class="tp" id="tp-tall"><div id="task-lst-all" class="p16"></div></div><div class="tp" id="tp-ttemplates"><div id="task-lst-tpl" class="p16"></div></div><div class="tp" id="tp-tleave"><div id="task-lst-lv" class="p16"></div></div></div><nav id="bn"><button class="nb on" onclick="setNav('dash')" id="nb-dash"><span class="ni">📊</span>Dash</button><button class="nb" onclick="setNav('sales')" id="nb-sales"><span class="ni">🧾</span>Sales</button><button class="nb" onclick="setNav('inward')" id="nb-inward"><span class="ni">📥</span>Inward</button><button class="nb" onclick="setNav('jw')" id="nb-jw"><span class="ni">⚙️</span>Job Work</button><button class="nb" onclick="setNav('masters')" id="nb-masters"><span class="ni">🗂️</span>Masters</button><button class="nb" onclick="setNav('reports')" id="nb-reports"><span class="ni">&#x1F4CA;</span>Reports</button><button class="nb" onclick="setNav('leads')" id="nb-leads"><span class="ni">&#x1F3AF;</span>Leads</button><button class="nb" onclick="setNav('tasks')" id="nb-tasks"><span class="ni">&#x1F4CB;</span>Tasks<span class="ndot hid" id="tdot"></span></button><button class="nb" onclick="setNav('admin')" id="nb-admin"><span class="ni">👑</span>Admin<span class="ndot hid" id="adot"></span></button></nav>
 </div>
 
 <div class="ov" id="m-item" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="itmtit">New Item</h3><p class="sub">Fabric type</p></div><button class="btn bgh bsm" onclick="hideMod('m-item')">✕</button></div></div><div class="shb"><input type="hidden" id="itm-id"/><div class="fg"><label>Item Name *</label><input class="inp" id="itm-name" placeholder="e.g. FRENDY CHIFFON"/></div><div class="fg"><label>HSN Code</label><input class="inp" id="itm-hsn" placeholder="e.g. 5407"/></div><div class="dvd"></div><div class="hr" style="margin-bottom:10px"><label style="margin-bottom:0">Ranges &amp; Colours</label><button class="ai" onclick="openAddRange()">+ Add Range</button></div><div id="itmrng"></div></div><div class="shf" style="flex-wrap:wrap;gap:8px"><button class="btn bd bfl" id="itm-del-btn" style="display:none" onclick="deleteItem()">Delete Item</button><div style="display:flex;gap:8px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-item')">Cancel</button><button class="btn bp bfl" onclick="saveItem()">Save Item</button></div></div>
@@ -36,7 +36,7 @@
 </div></div>
 <div class="ov" id="m-brk" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Broker</h3><button class="btn bgh bsm" onclick="hideMod('m-brk')">✕</button></div></div><div class="shb"><input type="hidden" id="brk-id"/><div class="fg"><label>Name *</label><input class="inp" id="brk-name"/></div><div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="brk-ph" type="tel"/></div><div class="fg"><label>Commission %</label><input class="inp" id="brk-cm" type="number" step="0.1" placeholder="2.5"/></div></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-brk')">Cancel</button><button class="btn bp bfl" onclick="saveBrk()">Save</button></div>
 </div></div>
-<div class="ov" id="m-sup" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Supplier / Mill</h3><button class="btn bgh bsm" onclick="hideMod('m-sup')">✕</button></div></div><div class="shb"><input type="hidden" id="sup-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="sup-name"/></div><div class="fg"><label>Group *</label><select class="sel" id="sup-grp"><option>Mill</option><option>Border Cutting</option><option>Value Addition</option><option>Foiling</option><option>Dyeing</option><option>Printing</option><option>Job Work</option><option>Other</option></select></div></div><div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="sup-ph" type="tel"/></div><div class="fg"><label>Contact Person</label><input class="inp" id="sup-ct"/></div></div><div class="fg"><label>Address</label><textarea class="ta" id="sup-addr" rows="2"></textarea></div><div class="fg"><label>Notes</label><input class="inp" id="sup-nt" placeholder="Optional"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-sup')">Cancel</button><button class="btn bp bfl" onclick="saveSup()">Save</button></div>
+<div class="ov" id="m-sup" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Supplier / Mill</h3><button class="btn bgh bsm" onclick="hideMod('m-sup')">✕</button></div></div><div class="shb"><input type="hidden" id="sup-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="sup-name"/></div><div class="fg"><label>Group *</label><select class="sel" id="sup-grp"><option>Mill</option><option>Border Cutting</option><option>Value Addition</option><option>Foiling</option><option>Dyeing</option><option>Printing</option><option>Job Work</option><option>Other</option></select></div></div><div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="sup-ph" type="tel"/></div><div class="fg"><label>GSTIN</label><input class="inp mono" id="sup-gst" maxlength="15" placeholder="24AAXXX1234B1ZX" oninput="this.value=this.value.toUpperCase()"/></div><div class="fg"><label>Contact Person</label><input class="inp" id="sup-ct"/></div></div><div class="fg"><label>Address</label><textarea class="ta" id="sup-addr" rows="2"></textarea></div><div class="fg"><label>Notes</label><input class="inp" id="sup-nt" placeholder="Optional"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-sup')">Cancel</button><button class="btn bp bfl" onclick="saveSup()">Save</button></div>
 </div></div>
 <div class="ov" id="m-prd" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Product</h3><button class="btn bgh bsm" onclick="hideMod('m-prd')">✕</button></div></div><div class="shb"><input type="hidden" id="prd-id"/><div class="fg"><label>Name *</label><input class="inp" id="prd-name"/></div><div class="fg"><label>Description</label><textarea class="ta" id="prd-desc" rows="2"></textarea></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-prd')">Cancel</button><button class="btn bp bfl" onclick="savePrd()">Save</button></div>
 </div></div>
@@ -411,6 +411,7 @@ el('dstats').innerHTML=
 '<div class="sc ca"><div class="slbl">Meters</div><div class="sval">'+fmtN(totT*STATE.settings.avgMtrPerTaka)+'</div><div class="ssub">approx</div></div>'+
 '<div class="sc cg"><div class="slbl">Pending</div><div class="sval">'+STATE.orders.filter(o=>o.status==='pending').length+'</div><div class="ssub">'+STATE.bills.filter(b=>b.payStatus!=='paid').length+' unpaid bills</div></div>';
 renderDashAlerts();
+try{renderFollowupAlert();}catch(e){}
 renderDashTaskWidget();
 renderStock();
 renderRecentAct();
@@ -902,13 +903,15 @@ el('sup-ph').value=s.phone||''; el('sup-ct').value=s.contact||'';
 el('sup-addr').value=s.address||''; el('sup-nt').value=s.notes||''; showMod('m-sup');
 }
 function saveSup(){
-const name=(el('sup-name').value||'').trim(); if(!name){toast('Enter supplier name','er');return;}
-const id=el('sup-id').value;
-const obj={name,group:el('sup-grp').value,phone:el('sup-ph').value.trim(),contact:el('sup-ct').value.trim(),address:el('sup-addr').value.trim(),notes:el('sup-nt').value.trim()};
-if(id){const i=STATE.suppliers.findIndex(s=>s.id===id);if(i>=0) STATE.suppliers[i]={...STATE.suppliers[i],...obj};}
-else STATE.suppliers.push({id:uid(),...obj});
-lsSave('vs_suppliers',STATE.suppliers); hideMod('m-sup'); renderSups(); toast('Supplier saved','ok');
-api('saveSupplier',{suppliers:STATE.suppliers});
+  const name=(el('sup-name').value||'').trim();if(!name){toast('Enter supplier name','er');return;}
+  const gstin=(el('sup-gst')?.value||'').trim().toUpperCase();
+  const id=el('sup-id').value;
+  if(gstin){const dup=STATE.suppliers.find(s=>s.gstin===gstin&&s.id!==id);if(dup){toast('GSTIN exists: '+dup.name,'er');return;}}
+  const obj={name,group:el('sup-grp').value,gstin,phone:el('sup-ph').value.trim(),
+    contact:el('sup-ct').value.trim(),address:el('sup-addr').value.trim(),notes:el('sup-nt').value.trim()};
+  if(id){const i=STATE.suppliers.findIndex(s=>s.id===id);if(i>=0)STATE.suppliers[i]={...STATE.suppliers[i],...obj};}
+  else STATE.suppliers.push({id:uid(),...obj});
+  lsSave('vs_suppliers',STATE.suppliers);hideMod('m-sup');renderSups();toast('Supplier saved','ok');autoSyncFirebase();
 }
 function renderPrds(){
 const c=el('prdlst'); if(!c) return;
@@ -4008,25 +4011,15 @@ toast('Data sent to Google Sheets','ok');
 }
 async function syncFromCloud(){
   const url=STATE.settings.gasUrl||GAS_URL;
-  const ok=await appConfirm('Pull from Google Sheets?','Overwrites local data with cloud data.','?','Pull','ok');
-  if(!ok)return;
+  const ok=await appConfirm('Pull from Google Sheets?','Overwrites local data.','?','Pull','ok');if(!ok)return;
   const s=el('gas-status');if(s)s.innerHTML='<span style="color:var(--Ad)">Downloading...</span>';
   try{
     const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'})});
-    const text=await r.text();
-    let d;try{d=JSON.parse(text);}catch(e){if(s)s.innerHTML='<span style="color:var(--Rd)">❌ Bad response. Redeploy GAS.</span>';toast('Invalid GAS response','er');return;}
-    if(d&&d.items){
-      applyCloudData(d);
-      if(s)s.innerHTML='<span style="color:var(--Gd)">✅ Pulled at '+new Date().toLocaleString()+'</span>';
-      toast('✅ All data pulled from Google Sheets','ok');
-    }else{
-      if(s)s.innerHTML='<span style="color:var(--Rd)">❌ No data. Push to cloud first.</span>';
-      toast('No data in Google Sheet','er');
-    }
-  }catch(e){
-    if(s)s.innerHTML='<span style="color:var(--Rd)">❌ '+e.message+'</span>';
-    toast('Pull failed','er');
-  }
+    const text=await r.text();let d;
+    try{d=JSON.parse(text);}catch(e){if(s)s.innerHTML='<span style="color:var(--Rd)">Bad response. Push All Data first.</span>';return;}
+    if(d&&d.items){applyCloudData(d);if(s)s.innerHTML='<span style="color:var(--Gd)">Pulled at '+new Date().toLocaleString()+'</span>';toast('Pulled from Google Sheets','ok');}
+    else{if(s)s.innerHTML='<span style="color:var(--Rd)">No data found. Go Admin > Database > Push All Data first.</span>';toast('No data','er');}
+  }catch(e){if(s)s.innerHTML='<span style="color:var(--Rd)">'+e.message+'</span>';toast('Pull failed','er');}
 }
 function saveJsonBinCreds(){
 STATE.settings.jsonbinId=(el('jb-bin')?.value||'').trim();
@@ -4059,97 +4052,25 @@ function loadFirebaseData(d){applyCloudData(d);}
 function startFirebaseRealtime(){
   const url=(STATE.settings.firebaseUrl||'').trim().replace(/\/+$/,'');
   const secret=(STATE.settings.firebaseSecret||'').trim();
-  if(!url||!secret){ setLiveStatus('off'); return; }
-  if(window._fbES){ window._fbES.close(); window._fbES=null; }
+  if(!url||!secret){setLiveStatus('off');return;}
+  if(window._fbES){try{window._fbES.close();}catch(e){}window._fbES=null;}
   setLiveStatus('connecting');
   try{
     window._fbES=new EventSource(url+'/altstock/data.json?auth='+secret);
-    window._fbES.onopen=()=>{ setLiveStatus('live'); };
-    window._fbES.addEventListener('put',e=>{
+    window._fbES.onopen=()=>setLiveStatus('live');
+    const onData=e=>{
       try{
-        const payload=JSON.parse(e.data);
-        const d=payload.data;
-        if(!d||!d.items) return;
-        // Skip if this is our own save (within last 3 seconds)
-        if(window._lastSaveAt&&(Date.now()-window._lastSaveAt)<3000) return;
-        loadFirebaseData(d);
-        setLiveStatus('live');
-        // Show subtle notification only if data changed
-        const indicator=document.getElementById('live-dot');
-        if(indicator){ indicator.style.background='#4ADE80'; setTimeout(()=>{ indicator.style.background=''; },1000); }
-      }catch(x){ console.warn('SSE parse error',x); }
-    });
-    window._fbES.addEventListener('patch',e=>{
-      try{
-        const payload=JSON.parse(e.data);
-        const d=payload.data;
-        if(!d||!d.items) return;
-        if(window._lastSaveAt&&(Date.now()-window._lastSaveAt)<3000) return;
-        loadFirebaseData(d);
-        setLiveStatus('live');
+        const raw=JSON.parse(e.data);const d=raw.data||raw;
+        if(!d||!d.items)return;
+        if(window._lastSaveAt&&Date.now()-window._lastSaveAt<3000)return;
+        const cT=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
+        const lT=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
+        if(cT>lT){applyCloudData(d);setLiveStatus('live');}
       }catch(x){}
-    });
-    window._fbES.onerror=()=>{
-      setLiveStatus('off');
-      window._fbES.close();
-      window._fbES=null;
-      // Auto-reconnect after 5 seconds
-      clearTimeout(window._fbReconnect);
-      window._fbReconnect=setTimeout(startFirebaseRealtime,5000);
     };
-  }catch(e){
-    setLiveStatus('off');
-    console.warn('Firebase SSE not available:',e.message);
-  }
-}
-
-function setLiveStatus(status){
-  const dot=document.getElementById('live-dot');
-  const txt=document.getElementById('live-txt');
-  if(!dot||!txt) return;
-  const map={
-    live:  { color:'#4ADE80', text:'● Live',     title:'Live — changes sync instantly' },
-    connecting: { color:'#FBBF24', text:'◌ Connecting', title:'Connecting to Firebase...' },
-    off:   { color:'#EF4444', text:'○ Offline',  title:'Not connected — data may be stale. Tap 🔄 to refresh.' }
-  };
-  const s=map[status]||map.off;
-  dot.style.background=s.color;
-  txt.textContent=s.text;
-  txt.style.color=s.color;
-  txt.title=s.title;
-}
-
-async function syncToJsonBin(){
-const binId=STATE.settings.jsonbinId, key=STATE.settings.jsonbinKey;
-if(!binId||!key){toast('Set JSONBin Bin ID and API Key first','er');return;}
-const s=el('jb-status'); if(s) s.innerHTML='<span style="color:var(--Ad)">Pushing to JSONBin...</span>';
-const payload={
-items:STATE.items,entries:STATE.entries,customers:STATE.customers,
-brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
-orders:STATE.orders,bills:STATE.bills,jobWork:STATE.jobWork,
-leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],
-settings:STATE.settings,savedAt:new Date().toISOString()
-};
-try{
-const r=await fetch('https://api.jsonbin.io/v3/b/'+binId,{
-method:'PUT',
-headers:{'Content-Type':'application/json','X-Master-Key':key,'X-Bin-Versioning':'false'},
-body:JSON.stringify(payload)
-});
-const d=await r.json();
-if(r.ok){
-STATE.settings.lastSync=new Date().toLocaleString();
-lsSave('vs_settings',STATE.settings);
-if(s) s.innerHTML='<span style="color:var(--Gd)">&#x2705; Synced at '+STATE.settings.lastSync+'</span>';
-toast('All data synced to JSONBin','ok');
-}else{
-if(s) s.innerHTML='<span style="color:var(--Rd)">&#x274C; '+(d.message||'Failed')+'</span>';
-toast('Sync failed','er');
-}
-}catch(e){
-if(s) s.innerHTML='<span style="color:var(--Rd)">&#x274C; '+e.message+'</span>';
-toast('Sync error','er');
-}
+    window._fbES.addEventListener('put',onData);window._fbES.addEventListener('patch',onData);
+    window._fbES.onerror=()=>{setLiveStatus('off');try{window._fbES.close();}catch(e){}window._fbES=null;clearTimeout(window._fbRecon);window._fbRecon=setTimeout(startFirebaseRealtime,8000);};
+  }catch(e){setLiveStatus('off');}
 }
 async function syncFromJsonBin(){
 const binId=STATE.settings.jsonbinId, key=STATE.settings.jsonbinKey;
@@ -4311,20 +4232,13 @@ toast('Sync error: '+e.message,'er');
 }
 }
 async function syncFromFirebase(){
-  const u=fbUrl('data');if(!u){toast('Configure Firebase in Admin → Database','er');return;}
-  const ok=await appConfirm('Pull from Firebase?','Overwrites all local data.','⚠️','Pull','ok');if(!ok)return;
+  const u=fbUrl('data');if(!u){toast('Configure Firebase','er');return;}
+  const ok=await appConfirm('Pull from Firebase?','Overwrites all local data.','?','Pull','ok');if(!ok)return;
   const s=el('fb-status');if(s)s.innerHTML='Downloading...';
-  try{
-    const r=await fetch(u);const d=await r.json();
-    if(d&&d.items){
-      applyCloudData(d);
-      if(s)s.innerHTML='<span style="color:var(--Gd)">✅ Pulled at '+new Date().toLocaleString()+'</span>';
-      toast('✅ All data pulled from Firebase','ok');
-    }else{
-      if(s)s.innerHTML='<span style="color:var(--Rd)">❌ Firebase empty. Push first.</span>';
-      toast('Firebase empty','er');
-    }
-  }catch(e){if(s)s.innerHTML='<span style="color:var(--Rd)">❌ '+e.message+'</span>';toast('Pull failed','er');}
+  try{const r=await fetch(u);const d=await r.json();
+    if(d&&d.items){applyCloudData(d);if(s)s.innerHTML='<span style="color:var(--Gd)">Pulled at '+new Date().toLocaleString()+'</span>';toast('Pulled from Firebase','ok');}
+    else{if(s)s.innerHTML='<span style="color:var(--Rd)">Firebase empty.</span>';toast('Firebase empty','er');}
+  }catch(e){if(s)s.innerHTML='<span style="color:var(--Rd)">'+e.message+'</span>';toast('Pull failed','er');}
 }
 async function silentPullFirebase(){
 const url=(STATE.settings.firebaseUrl||'').trim().replace(/\/+$/,'');
@@ -5284,6 +5198,7 @@ function isTaskScheduledOn(tmpl,dateStr){
 const d=new Date(dateStr+'T00:00:00');
 const dow=d.getDay(); const dom=d.getDate(); const month=d.getMonth()+1;
 if(tmpl.startDate&&dateStr<tmpl.startDate) return false;
+if(tmpl.freq==='once')return dateStr===(tmpl.startDate||'');
 if(tmpl.freq==='daily') return true;
 if(tmpl.freq==='weekly') return (tmpl.days||[]).includes(dow);
 if(tmpl.freq==='monthly') return (tmpl.dates||[]).includes(dom);
@@ -5572,10 +5487,13 @@ sel.innerHTML=def+users.map(u=>'<option value="'+u.id+'"'+(u.id===selVal?' selec
 });
 }
 function onTplFreqChange(){
-const freq=el('tpl-freq')?.value;
-el('tpl-days-wrap')?.classList[freq==='weekly'?'remove':'add']('hid');
-el('tpl-dates-wrap')?.classList[freq==='monthly'||freq==='yearly'?'remove':'add']('hid');
-el('tpl-month-wrap')?.classList[freq==='yearly'?'remove':'add']('hid');
+  const freq=el('tpl-freq')?.value;
+  el('tpl-days-wrap')?.classList[freq==='weekly'?'remove':'add']('hid');
+  el('tpl-dates-wrap')?.classList[freq==='monthly'||freq==='yearly'?'remove':'add']('hid');
+  el('tpl-month-wrap')?.classList[freq==='yearly'?'remove':'add']('hid');
+  const sdW=el('tpl-startdate-wrap'),sdL=document.getElementById('tpl-startdate-lbl');
+  if(sdW)sdW.style.background=freq==='once'?'var(--Al)':'';
+  if(sdL)sdL.textContent=freq==='once'?'Task Date (required)':'Start Date (blank = today)';
 }
 function saveTaskTemplate(){
 const name=(el('tpl-name')?.value||'').trim(); if(!name){toast('Enter task name','er');return;}
@@ -5593,7 +5511,7 @@ assignedUserId:userId||'',assignedUserName:user?.name||'Unassigned',
 substituteUserId:subId||'',substituteName:sub?.name||'',
 freq,days,dates,deadlineTime:el('tpl-time')?.value||'18:00',
 yearMonth:parseInt(el('tpl-month')?.value)||3,
-active:el('tpl-active')?.value==='1',startDate:el('tpl-startdate')?.value||today()};
+active:el('tpl-active')?.value==='1',startDate:el('tpl-startdate')?.value||today(),createdBy:STATE.user?.id,createdByRole:STATE.user?.role||'staff'};
 if(!STATE.taskTemplates) STATE.taskTemplates=[];
 const idx=STATE.taskTemplates.findIndex(x=>x.id===id);
 if(idx>=0) STATE.taskTemplates[idx]=obj; else STATE.taskTemplates.push(obj);
@@ -5733,35 +5651,18 @@ function fbUrl(path){
 }
 async function hybridSaveAll(silent){
   window._lastSaveAt=Date.now();
-  const pl={
-    items:STATE.items,entries:STATE.entries,customers:STATE.customers,
+  const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
     brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
     orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],
-    jobWork:STATE.jobWork,leads:STATE.leads||[],
-    flaggedEntries:STATE.flaggedEntries||[],
-    taskTemplates:STATE.taskTemplates||[],
-    taskInstances:STATE.taskInstances||[],
-    staffLeave:STATE.staffLeave||[],
-    recurringLeads:STATE.recurringLeads||[],
-    settings:STATE.settings,syncedAt:new Date().toISOString()
-  };
+    jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],
+    taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],
+    staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
+    settings:STATE.settings,syncedAt:new Date().toISOString()};
   let fb=false,gs=false;
-  try{
-    const fu=fbUrl('data');
-    if(fu){const r=await fetch(fu,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl)});fb=r.ok;}
-  }catch(e){console.warn('FB save:',e.message);}
-  try{
-    const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl})});
-    const j=await r.json();gs=j&&!j.error;
-  }catch(e){console.warn('GAS save:',e.message);}
-  STATE.settings.lastSync=new Date().toLocaleString();
-  lsSave('vs_settings',STATE.settings);
-  if(!silent){
-    if(fb&&gs)toast('✅ Saved to Firebase + Google Sheet','ok');
-    else if(fb)toast('✅ Saved to Firebase','ok');
-    else if(gs)toast('✅ Saved to Google Sheet','ok');
-    else toast('⚠️ Both saves failed — data saved locally','er');
-  }
+  try{const fu=fbUrl('data');if(fu){const r=await fetch(fu,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl)});fb=r.ok;}}catch(e){}
+  try{const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl})});const j=await r.json();gs=j&&!j.error;}catch(e){}
+  STATE.settings.lastSync=new Date().toLocaleString();lsSave('vs_settings',STATE.settings);
+  if(!silent){if(fb&&gs)toast('Saved FB+GS','ok');else if(fb)toast('Saved Firebase','ok');else if(gs)toast('Saved GS','ok');else toast('Both failed - local only','er');}
   return{fb,gs};
 }
 async function hybridGetAll(){
@@ -5971,17 +5872,33 @@ function sendDailyTaskReminders(){
   if(!pend.length){toast('No pending tasks today','ok');return;}
   const smMap={};
   pend.forEach(t=>{if(!smMap[t.assignedUserId])smMap[t.assignedUserId]=[];smMap[t.assignedUserId].push(t);});
-  const sent=[];
+  const sent=[],noPhone=[];
   Object.entries(smMap).forEach(([uid2,tasks])=>{
-    const u=STATE.users.find(x=>x.id===uid2);if(!u||(!u.phone&&!u.whatsapp))return;
+    const u=STATE.users.find(x=>x.id===uid2);
+    const phone=u?.whatsapp||u?.phone||'';
+    if(!u||!phone){if(u)noPhone.push(u.name);return;}
     const co=STATE.settings.companyName||'ALT Stock';
-    const ov=tasks.filter(t=>new Date()>new Date(t.deadline)).length;
-    const lines=tasks.map((t,i)=>(i+1)+'.'+(new Date()>new Date(t.deadline)?' ⚠️ OVERDUE: ':' ')+t.taskName+' — by '+new Date(t.deadline).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})).join('\n');
-    const msg='⏰ *'+co+' — Task Reminder*\n━━━━━━━━━━━━━━━\nDear *'+u.name+'*,\n\nYou have *'+tasks.length+' task(s)*'+(ov?' (⚠️ '+ov+' overdue)':'')+' pending today:\n\n'+lines+'\n\nPlease complete on time.\n— '+co;
-    openWA(u.whatsapp||u.phone,msg);sent.push(u.name);
+    const ovCount=tasks.filter(t=>new Date()>new Date(t.deadline)).length;
+    const taskLines=tasks.map((t,i)=>{
+      const ov=new Date()>new Date(t.deadline);
+      const time=new Date(t.deadline).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      const pri=t.priority==='High'?' \uD83D\uDD34':t.priority==='Medium'?' \uD83D\uDFE1':' \uD83D\uDFE2';
+      return (i+1)+'.'+(ov?' \u26A0\uFE0F OVERDUE':'')+pri+' '+t.taskName+' \u2014 by '+time;
+    }).join('\n');
+    const msg='\u23F0 *'+co+' \u2014 Task Reminder*\n'
+      +'\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n'
+      +'Dear *'+u.name+'*,\n\n'
+      +'You have *'+tasks.length+' pending task'+(tasks.length>1?'s':'')+'*'+(ovCount?' (\u26A0\uFE0F '+ovCount+' overdue)':'')+' today:\n\n'
+      +taskLines+'\n\n'
+      +'\uD83D\uDCCB Priority: \uD83D\uDD34 High  \uD83D\uDFE1 Medium  \uD83D\uDFE2 Low\n'
+      +'Please complete before deadline.\n'
+      +'\u2014 '+co;
+    openWA(phone,msg);
+    sent.push(u.name);
   });
-  if(sent.length)toast('WA sent to: '+sent.join(', '),'ok');
-  else toast('No staff have phone numbers saved','er');
+  if(sent.length)toast('\uD83D\uDCF2 WA sent to: '+sent.join(', '),'ok');
+  if(noPhone.length)toast('\u26A0\uFE0F No phone: '+noPhone.join(', '),'er');
+  if(!sent.length&&!noPhone.length)toast('No staff assigned to pending tasks','er');
 }
 function scheduleWAReminder(){
   const t=(STATE.settings.waReminderTime||'09:00').split(':').map(Number);
@@ -6083,6 +6000,54 @@ function renderTaskReport(){
   c.innerHTML=h;
 }
 
+function applyCloudData(d){
+  if(!d)return;
+  const keep={firebaseUrl:STATE.settings.firebaseUrl,firebaseSecret:STATE.settings.firebaseSecret};
+  ['items','entries','customers','brokers','suppliers','users','orders','bills',
+   'payments','jobWork','leads','flaggedEntries',
+   'taskTemplates','taskInstances','staffLeave','recurringLeads'].forEach(k=>{
+    if(d[k]!==undefined)STATE[k]=d[k];
+  });
+  if(d.settings)STATE.settings={...STATE.settings,...d.settings,...keep};
+  STATE.settings.lastSync=new Date().toLocaleString();
+  persist();renderDash();
+  try{renderOrders();}catch(e){}try{renderBills();}catch(e){}
+}
+function getLeadsNeedingFollowup(){
+  var td=today();
+  return(STATE.leads||[]).filter(function(l){
+    return l.status!=='Won'&&l.status!=='Lost'&&l.status!=='Closed'&&l.followupDate&&l.followupDate<=td;
+  });
+}
+function renderFollowupAlert(){
+  var c2=document.getElementById('dash-followup-alert');if(!c2)return;
+  var ov=getLeadsNeedingFollowup();
+  if(!ov.length){c2.innerHTML='';return;}
+  var names=ov.slice(0,3).map(function(l){return l.name;}).join(', ')+(ov.length>3?' +more':'');
+  var div=document.createElement('div');
+  div.style.cssText='background:linear-gradient(135deg,#DC2626,#EF4444);border-radius:14px;padding:13px 16px;margin:0 16px 10px;cursor:pointer;display:flex;align-items:center;gap:12px';
+  div.onclick=function(){setNav('leads');};
+  div.innerHTML='<span style="font-size:22px">&#x1F4DE;</span>'
+    +'<div style="flex:1"><div style="font-size:15px;font-weight:900;color:white">'+ov.length+' Follow-up'+(ov.length>1?'s':'')+' Due Today!</div>'
+    +'<div style="font-size:12px;color:rgba(255,255,255,.85)">'+names+'</div></div>'
+    +'<div style="color:white;font-size:18px">&#x276F;</div>';
+  c2.innerHTML='';c2.appendChild(div);
+}
+function setFollowupDate(id,days){
+  var lead=(STATE.leads||[]).find(function(l){return l.id===id;});if(!lead)return;
+  var d=new Date();d.setDate(d.getDate()+days);
+  lead.followupDate=d.toISOString().split('T')[0];
+  lsSave('vs_leads',STATE.leads);autoSyncFirebase();
+  toast('Follow-up: '+fmtDate(lead.followupDate),'ok');showLeadDetail(id);
+}
+function setFollowupCustom(id){
+  var lead=(STATE.leads||[]).find(function(l){return l.id===id;});if(!lead)return;
+  var date=window.prompt('Enter date (YYYY-MM-DD):',lead.followupDate||today());
+  if(!date)return;
+  lead.followupDate=date;lsSave('vs_leads',STATE.leads);autoSyncFirebase();
+  toast('Follow-up: '+fmtDate(date),'ok');showLeadDetail(id);
+}
+
 (function boot(){
 loadData();
 if(STATE.taskTemplates===null||STATE.taskTemplates===undefined){
@@ -6147,7 +6112,7 @@ if(!checkSess()){ el('ls').style.display='flex'; }
 </div></div>
 <div class="ov" id="m-rec-lead" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="rec-lead-title">New Recurring Lead</h3><p class="sub">Auto-generates follow-up tasks</p></div><button class="btn bgh bsm" onclick="hideMod('m-rec-lead')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="rec-lead-id"/><div class="fg"><label>Party Name *</label><input class="inp" id="rec-name" placeholder="e.g. Sakshi Fashion"/></div><div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="rec-phone" type="tel"/></div><div class="fg"><label>WhatsApp</label><input class="inp" id="rec-wa" type="tel" placeholder="91XXXXXXXXXX"/></div></div><div class="ir2"><div class="fg"><label>Market / Area</label><input class="inp" id="rec-market"/></div><div class="fg"><label>Address / Shop</label><input class="inp" id="rec-address"/></div></div><div class="ir2"><div class="fg"><label>Assign to Salesman *</label><select class="sel" id="rec-sm"><option value="">Select salesman</option></select></div><div class="fg"><label>Broker</label><select class="sel" id="rec-broker"><option value="">No Broker</option></select></div></div><div class="fg"><label>Interest / Notes</label><textarea class="ta" id="rec-interest" rows="2" placeholder="What they usually buy..."></textarea></div><div class="fg"><label>Rate Given (&#x20B9;/mtr)</label><input class="inp mono" id="rec-rate" type="number" step="0.01"/></div><div style="background:var(--Pl);border-radius:10px;padding:12px;margin-top:10px"><div style="font-size:11px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Recurring Schedule</div><div class="fg"><label>Frequency</label><select class="sel" id="rec-freq" onchange="onRecFreqChange()"><option value="weekly">Weekly (specific days)</option><option value="fortnightly">Fortnightly (every 2 weeks)</option><option value="monthly">Monthly (specific dates)</option><option value="daily">Every Day</option></select></div><div id="rec-days-wrap" class="fg"><label>Days of Week</label><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px"><label style="text-align:center;cursor:pointer"><input type="checkbox" id="rec-d0"/><div style="font-size:10px;font-weight:700;margin-top:2px">Sun</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="rec-d1"/><div style="font-size:10px;font-weight:700;margin-top:2px">Mon</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="rec-d2"/><div style="font-size:10px;font-weight:700;margin-top:2px">Tue</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="rec-d3"/><div style="font-size:10px;font-weight:700;margin-top:2px">Wed</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="rec-d4"/><div style="font-size:10px;font-weight:700;margin-top:2px">Thu</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="rec-d5"/><div style="font-size:10px;font-weight:700;margin-top:2px">Fri</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="rec-d6"/><div style="font-size:10px;font-weight:700;margin-top:2px">Sat</div></label></div></div><div id="rec-dates-wrap" class="fg hid"><label>Dates of Month (comma separated)</label><input class="inp mono" id="rec-dates" placeholder="e.g. 1,15"/></div><div class="fg"><label>Status</label><select class="sel" id="rec-active"><option value="1">Active - Auto-generate tasks</option><option value="0">Paused</option></select></div></div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-rec-lead')">Cancel</button><button class="wa" style="flex:1;padding:10px;font-size:13px;font-weight:800;border-radius:10px" onclick="saveRecLeadAndWA()">&#x1F4F2; Save &amp; WA Salesman</button><button class="btn bp bfl" onclick="saveRecurringLead()">Save</button></div>
 </div></div><div id="s-tasks" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CB; Tasks</h2><p class="sub" id="task-sub">Your task list</p></div><button class="btn bp bsm" onclick="openNewTaskInstance()" id="task-add-btn" style="display:none">+ Task</button></div><div class="tb mt8"><button class="tbb on" onclick="taskTab('my',this)" id="ttab-my">My Tasks</button><button class="tbb" onclick="taskTab('all',this)" id="ttab-all" style="display:none">All Tasks</button><button class="tbb" onclick="taskTab('templates',this)" id="ttab-tpl" style="display:none">Templates</button><button class="tbb" onclick="taskTab('leave',this)" id="ttab-lv" style="display:none">Leave</button></div></div><div class="tp on" id="tp-tmy"><div id="task-lst-my" class="p16"></div></div><div class="tp" id="tp-tall"><div id="task-lst-all" class="p16"></div></div><div class="tp" id="tp-ttemplates"><div id="task-lst-tpl" class="p16"></div></div><div class="tp" id="tp-tleave"><div id="task-lst-lv" class="p16"></div></div></div>
-<div class="ov" id="m-task-tpl" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="tpl-title">New Task Template</h3><p class="sub">Recurring task blueprint</p></div><button class="btn bgh bsm" onclick="hideMod('m-task-tpl')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="tpl-id"/><div class="fg"><label>Task Name *</label><input class="inp" id="tpl-name" placeholder="e.g. GST Filing Monthly"/></div><div class="fg"><label>Description</label><textarea class="ta" id="tpl-desc" rows="2" placeholder="What needs to be done..."></textarea></div><div class="ir2"><div class="fg"><label>Category</label><select class="sel" id="tpl-cat"><option>Accounting</option><option>Dispatch</option><option>Mill/Stock</option><option>Sales</option><option>Admin</option><option>Compliance</option><option>Other</option></select></div><div class="fg"><label>Priority</label><select class="sel" id="tpl-pri"><option value="High">&#x1F534; High</option><option value="Medium" selected>&#x1F7E1; Medium</option><option value="Low">&#x1F7E2; Low</option></select></div></div><div class="fg"><label>Assign To (Staff)</label><select class="sel" id="tpl-user"><option value="">Unassigned</option></select></div><div class="fg"><label>Substitute (if assignee on leave)</label><select class="sel" id="tpl-sub"><option value="">No substitute</option></select></div><div style="background:var(--Pl);border-radius:10px;padding:12px;margin-top:6px"><div style="font-size:11px;font-weight:800;color:var(--Pd);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">Schedule</div><div class="ir2"><div class="fg"><label>Frequency</label><select class="sel" id="tpl-freq" onchange="onTplFreqChange()"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div><div class="fg"><label>Deadline Time</label><input class="inp mono" id="tpl-time" type="time" value="18:00"/></div></div><div id="tpl-days-wrap" class="fg hid"><label>Days of Week</label><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px"><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d0"/><div style="font-size:10px;font-weight:700;margin-top:2px">Sun</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d1"/><div style="font-size:10px;font-weight:700;margin-top:2px">Mon</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d2"/><div style="font-size:10px;font-weight:700;margin-top:2px">Tue</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d3"/><div style="font-size:10px;font-weight:700;margin-top:2px">Wed</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d4"/><div style="font-size:10px;font-weight:700;margin-top:2px">Thu</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d5"/><div style="font-size:10px;font-weight:700;margin-top:2px">Fri</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d6"/><div style="font-size:10px;font-weight:700;margin-top:2px">Sat</div></label></div></div><div id="tpl-dates-wrap" class="fg hid"><label>Dates of Month (comma separated)</label><input class="inp mono" id="tpl-dates" placeholder="e.g. 1,15,20"/></div><div id="tpl-month-wrap" class="fg hid"><label>Month (for yearly tasks)</label><select class="sel" id="tpl-month"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div></div><div class="fg mt8"><label>Status</label><select class="sel" id="tpl-active"><option value="1">Active</option><option value="0">Paused</option></select></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-task-tpl')">Cancel</button><button class="btn bp bfl" onclick="saveTaskTemplate()">Save Template</button></div>
+<div class="ov" id="m-task-tpl" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="tpl-title">New Task Template</h3><p class="sub">Recurring task blueprint</p></div><button class="btn bgh bsm" onclick="hideMod('m-task-tpl')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="tpl-id"/><div class="fg"><label>Task Name *</label><input class="inp" id="tpl-name" placeholder="e.g. GST Filing Monthly"/></div><div class="fg"><label>Description</label><textarea class="ta" id="tpl-desc" rows="2" placeholder="What needs to be done..."></textarea></div><div class="ir2"><div class="fg"><label>Category</label><select class="sel" id="tpl-cat"><option>Accounting</option><option>Dispatch</option><option>Mill/Stock</option><option>Sales</option><option>Admin</option><option>Compliance</option><option>Other</option></select></div><div class="fg"><label>Priority</label><select class="sel" id="tpl-pri"><option value="High">&#x1F534; High</option><option value="Medium" selected>&#x1F7E1; Medium</option><option value="Low">&#x1F7E2; Low</option></select></div></div><div class="fg"><label>Assign To (Staff)</label><select class="sel" id="tpl-user"><option value="">Unassigned</option></select></div><div class="fg"><label>Substitute (if assignee on leave)</label><select class="sel" id="tpl-sub"><option value="">No substitute</option></select></div><div style="background:var(--Pl);border-radius:10px;padding:12px;margin-top:6px"><div style="font-size:11px;font-weight:800;color:var(--Pd);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">Schedule</div><div class="ir2"><div class="fg"><label>Frequency</label><select class="sel" id="tpl-freq" onchange="onTplFreqChange()"><option value="once">One-Time</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div><div class="fg"><label>Deadline Time</label><input class="inp mono" id="tpl-time" type="time" value="18:00"/></div></div><div id="tpl-days-wrap" class="fg hid"><label>Days of Week</label><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px"><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d0"/><div style="font-size:10px;font-weight:700;margin-top:2px">Sun</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d1"/><div style="font-size:10px;font-weight:700;margin-top:2px">Mon</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d2"/><div style="font-size:10px;font-weight:700;margin-top:2px">Tue</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d3"/><div style="font-size:10px;font-weight:700;margin-top:2px">Wed</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d4"/><div style="font-size:10px;font-weight:700;margin-top:2px">Thu</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d5"/><div style="font-size:10px;font-weight:700;margin-top:2px">Fri</div></label><label style="text-align:center;cursor:pointer"><input type="checkbox" id="tpl-d6"/><div style="font-size:10px;font-weight:700;margin-top:2px">Sat</div></label></div></div><div id="tpl-dates-wrap" class="fg hid"><label>Dates of Month (comma separated)</label><input class="inp mono" id="tpl-dates" placeholder="e.g. 1,15,20"/></div><div id="tpl-month-wrap" class="fg hid"><label>Month (for yearly tasks)</label><select class="sel" id="tpl-month"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div></div><div class="fg mt8"><label>Status</label><select class="sel" id="tpl-active"><option value="1">Active</option><option value="0">Paused</option></select></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-task-tpl')">Cancel</button><button class="btn bp bfl" onclick="saveTaskTemplate()">Save Template</button></div>
 </div></div>
 <div class="ov" id="m-task-inst" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="tinst-title">Task</h3><p class="sub" id="tinst-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-task-inst')">&#x2715;</button></div></div><div class="shb" id="tinst-body"></div><div class="shf" style="gap:6px" id="tinst-foot"></div>
 </div></div>
