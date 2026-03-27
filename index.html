@@ -151,6 +151,31 @@ if(STATE.taskInstances) lsSave('vs_task_instances',STATE.taskInstances);
 if(STATE.staffLeave) lsSave('vs_staff_leave',STATE.staffLeave);
 setTimeout(autoSyncFirebase, 1500);
 }
+function autoSyncFirebase(){
+  clearTimeout(window._autoSyncTimer);
+  window._autoSyncTimer=setTimeout(async()=>{
+    try{
+      const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
+        brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
+        orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],
+        jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],
+        taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],
+        staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
+        settings:{...STATE.settings,lastSync:new Date().toISOString()},
+        syncedAt:new Date().toISOString()};
+      // Push to Firebase
+      const fu=fbUrl('data');
+      if(fu){
+        const r=await fetch(fu,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl)});
+        if(r.ok){STATE.settings.lastSync=new Date().toLocaleString();lsSave('vs_settings',STATE.settings);setLiveStatus('live');}
+      }
+      // Push to Google Sheets
+      if(GAS_URL){
+        fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl})}).catch(()=>{});
+      }
+    }catch(e){console.warn('autoSync error:',e);}
+  },2000);
+}
 let _tt;
 function toast(msg,type=''){
 const t=el('tst'); t.textContent=msg;
@@ -5750,22 +5775,29 @@ async function hybridGetAll(){
 }
 function manualRefresh(){
   const btn=document.getElementById('refresh-btn');
+  const gbtn=document.getElementById('global-refresh-btn');
   if(btn){btn.innerHTML='⏳';btn.disabled=true;}
+  if(gbtn){gbtn.innerHTML='⏳';gbtn.disabled=true;}
   setLiveStatus('connecting');
-  const done=(ok,msg)=>{if(btn){btn.innerHTML='🔄';btn.disabled=false;}setLiveStatus(ok?'live':'off');toast(msg,ok?'ok':'er');};
+  const done=(ok,msg)=>{
+    if(btn){btn.innerHTML='🔄';btn.disabled=false;}
+    if(gbtn){gbtn.innerHTML='🔄';gbtn.disabled=false;}
+    setLiveStatus(ok?'live':'off');toast(msg,ok?'ok':'er');
+  };
+  function hasData(d){return d&&typeof d==='object'&&(d.items||d.users||d.customers||d.orders);}
   // Try Firebase first
   const fu=fbUrl('data');
   if(fu){
     fetch(fu).then(r=>r.ok?r.json():Promise.reject('Firebase error '+r.status)).then(d=>{
-      if(d&&d.items){applyCloudData(d);done(true,'✅ Refreshed from Firebase');}
+      if(hasData(d)){applyCloudData(d);done(true,'✅ Refreshed from Firebase');}
       else tryGAS();
     }).catch(e=>{ console.warn(e); tryGAS(); });
   } else tryGAS();
   function tryGAS(){
     fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'})})
     .then(r=>r.json()).then(d=>{
-      if(d&&d.items){applyCloudData(d);done(true,'✅ Refreshed from Google Sheet');}
-      else done(false,'⚠️ Server returned no data. Push data to cloud first.');
+      if(hasData(d)){applyCloudData(d);done(true,'✅ Refreshed from Google Sheet');}
+      else{done(false,'⚠️ No data on server yet. Pushing your data now...');hybridSaveAll(false);}
     }).catch(e=>done(false,'⚠️ Cannot reach server. Check internet connection.'));
   }
 }
