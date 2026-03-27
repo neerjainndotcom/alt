@@ -105,7 +105,7 @@ admin:          {dash:1,sales_view:1,sales_order:1,sales_bill:1,sales_wa:1,inwar
 }
 }
 };
-async function api(action,data={}){const url=GAS_URL;try{const r=await fetch(url,{method:'POST',body:JSON.stringify({action,...data})});const j=await r.json();if(j.error)throw new Error(j.error);return j;}catch(e){console.warn('GAS:',e.message);return null;}}
+async function api(action,data={}){const url=GAS_URL;try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...data})});const j=await r.json();if(j.error)throw new Error(j.error);return j;}catch(e){console.warn('GAS:',e.message);return null;}}
 function loadData(){
 STATE.items=lsGet('vs_items')||[];
 STATE.entries=lsGet('vs_entries')||[];
@@ -236,11 +236,24 @@ setTimeout(()=>syncAPI(),1500);
 
   clearInterval(window._syncPoll);
   window._syncPoll=setInterval(async()=>{
-    try{const d=await hybridGetAll();if(!d)return;
-    ['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork'].forEach(k=>{if(d[k])STATE[k]=d[k];});
-    if(d.settings)STATE.settings={...STATE.settings,...d.settings};
-    if(d.leads)STATE.leads=d.leads;persist();renderDash();}catch(e){}
-  },30000);
+    // Pull from Firebase directly (fast + no CORS issues)
+    try{
+      const fu=fbUrl('data');if(!fu)return;
+      const r=await fetch(fu);if(!r.ok)return;
+      const d=await r.json();if(!d||!d.items)return;
+      // Only update if cloud data is newer
+      const cloudSync=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
+      const localSync=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
+      if(cloudSync>localSync){
+        ['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork'].forEach(k=>{if(d[k])STATE[k]=d[k];});
+        if(d.settings)STATE.settings={...STATE.settings,...d.settings,firebaseUrl:STATE.settings.firebaseUrl,firebaseSecret:STATE.settings.firebaseSecret};
+        if(d.leads)STATE.leads=d.leads;
+        persist();renderDash();
+        setLiveStatus('live');
+        console.log('Auto-synced from Firebase');
+      }
+    }catch(e){}
+  },10000);
   scheduleWAReminder();
   startFirebaseRealtime();
 }
@@ -4839,40 +4852,34 @@ el('lp').value=pwd;
 toast('Emergency admin created! Username: '+uname,'ok');
 }
 async function loginScreenSyncFirebase(){
-const url=(STATE.settings.firebaseUrl||'').trim().replace(/\/+$/,'');
-const secret=(STATE.settings.firebaseSecret||'').trim();
-const s=el('ls-sync-status');
-if(!url||!secret){
-if(s) s.innerHTML='&#x26A0; Firebase not configured. Ask admin for the Firebase URL and Secret, then enter in Admin \u2192 Database after your first login.';
-return;
-}
-if(s) s.innerHTML='Connecting to Firebase...';
-try{
-const r=await fetch(url+'/altstock/data.json?auth='+secret);
-if(!r.ok){
-if(r.status===401||r.status===403){
-if(s) s.innerHTML='&#x274C; Permission denied. Check Firebase secret key.';
-}else{
-if(s) s.innerHTML='&#x274C; Error '+r.status+'. Check Firebase URL.';
-}
-return;
-}
-const d=await r.json();
-if(!d||d===null){
-if(s) s.innerHTML='&#x26A0; Firebase is empty. Admin must push data from their device first.';
-return;
-}
-if(!d.users||!d.users.length){
-if(s) s.innerHTML='&#x26A0; No user accounts found in Firebase. Admin must push data first.';
-return;
-}
-loadFirebaseData(d);
-if(s) s.innerHTML='&#x2705; Data loaded! '+d.users.length+' users found. You can now log in.';
-const uField=el('lu');
-if(uField){ uField.focus(); uField.style.boxShadow='0 0 0 3px rgba(16,185,129,0.5)'; setTimeout(()=>uField.style.boxShadow='',2000); }
-}catch(e){
-if(s) s.innerHTML='&#x274C; '+e.message+'. Check internet connection.';
-}
+  const s=el('ls-sync-status');
+  const url=(STATE.settings.firebaseUrl||'').trim().replace(/\/+$/,'');
+  const sec=(STATE.settings.firebaseSecret||'').trim();
+  if(!url||!sec){
+    if(s)s.innerHTML='<span style="color:#FCD34D">⚠️ Firebase not set up. Login with admin / admin123 first, then configure in Admin → Database.</span>';
+    return;
+  }
+  if(s)s.innerHTML='<span style="color:#FCD34D">⏳ Loading from Firebase...</span>';
+  try{
+    const r=await fetch(url+'/altstock/data.json?auth='+sec);
+    if(!r.ok){
+      if(s)s.innerHTML='<span style="color:#F87171">❌ Firebase error '+r.status+'. Check URL and Secret key.</span>';
+      return;
+    }
+    const d=await r.json();
+    if(d&&d.items){
+      ['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork','leads','flaggedEntries'].forEach(k=>{if(d[k])STATE[k]=d[k];});
+      if(d.settings)STATE.settings={...STATE.settings,...d.settings,firebaseUrl:url,firebaseSecret:sec};
+      persist();
+      if(s)s.innerHTML='<span style="color:#4ADE80">✅ Data loaded! You can now log in.</span>';
+    }else if(d===null){
+      if(s)s.innerHTML='<span style="color:#FBBF24">⚠️ Firebase is empty. Log in with admin / admin123 to set up.</span>';
+    }else{
+      if(s)s.innerHTML='<span style="color:#FBBF24">⚠️ Unexpected data. Try logging in with admin / admin123.</span>';
+    }
+  }catch(e){
+    if(s)s.innerHTML='<span style="color:#F87171">❌ '+e.message+'</span>';
+  }
 }
 function refreshLeadBrokerDropdown(selId){
 const sel=el('lead-broker'); if(!sel) return;
@@ -5788,59 +5795,112 @@ function fbUrl(path){
   if(!u||!s)return null;
   return u+'/altstock/'+path+'.json?auth='+s;
 }
-async function hybridSaveAll(silent){  window._lastSaveAt=Date.now();
-
+async function hybridSaveAll(silent){
+  window._lastSaveAt=Date.now();
   const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
     brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
     orders:STATE.orders,bills:STATE.bills,payments:STATE.payments,
-    jobWork:STATE.jobWork,leads:STATE.leads||[],settings:STATE.settings};
-  let gs=false,fb=false;
-  try{const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'saveAll',...pl})});
-    const j=await r.json();gs=j&&!j.error;}catch(e){}
-  try{const fu=fbUrl('data');if(fu){
-    const r=await fetch(fu,{method:'PUT',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({...pl,syncedAt:new Date().toISOString()})});fb=r.ok;}}catch(e){}
-  STATE.settings.lastSync=new Date().toLocaleString();lsSave('vs_settings',STATE.settings);
+    jobWork:STATE.jobWork,leads:STATE.leads||[],settings:STATE.settings,
+    syncedAt:new Date().toISOString()};
+  let fb=false,gs=false;
+  // 1. Firebase FIRST (fast, reliable, real-time)
+  try{
+    const fu=fbUrl('data');
+    if(fu){
+      const r=await fetch(fu,{
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(pl)
+      });
+      fb=r.ok;
+      if(fb) console.log('Saved to Firebase ✅');
+    }
+  }catch(e){ console.warn('Firebase save fail:',e.message); }
+  // 2. Google Sheet backup (text/plain for CORS)
+  try{
+    const r=await fetch(GAS_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'saveAll',...pl})
+    });
+    const j=await r.json();
+    gs=j&&!j.error;
+    if(gs) console.log('Saved to Google Sheet ✅');
+  }catch(e){ console.warn('GAS save fail:',e.message); }
+  STATE.settings.lastSync=new Date().toLocaleString();
+  lsSave('vs_settings',STATE.settings);
   if(!silent){
-    if(gs)toast('Synced to Google Sheet'+(fb?' + Firebase':''),'ok');
-    else if(fb)toast('GS failed — saved to Firebase','ok');
-    else toast('Both failed — data saved locally','er');
+    if(fb&&gs)toast('✅ Saved to Firebase + Google Sheet','ok');
+    else if(fb)toast('✅ Saved to Firebase (GS backup failed)','ok');
+    else if(gs)toast('✅ Saved to Google Sheet (Firebase failed)','ok');
+    else toast('⚠️ Both saves failed — data saved locally only','er');
   }
-  return{gs,fb};
+  return{fb,gs};
 }
 async function hybridGetAll(){
-  // Try Google Sheet first (with timeout)
+  // Try Firebase FIRST (reliable CORS, fast)
+  try{
+    const fu=fbUrl('data');
+    if(fu){
+      const r=await fetch(fu);
+      if(r.ok){
+        const d=await r.json();
+        if(d&&d.items){ console.log('Got data from Firebase'); return d; }
+      }
+    }
+  }catch(e){ console.warn('Firebase getAll fail:',e.message); }
+  // Fallback: Google Sheet (needs text/plain for CORS)
   try{
     const ctrl=new AbortController();
     const tid=setTimeout(()=>ctrl.abort(),8000);
-    const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'getAll'}),signal:ctrl.signal});
+    const r=await fetch(GAS_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'getAll'}),
+      signal:ctrl.signal
+    });
     clearTimeout(tid);
     const d=await r.json();
-    if(d&&d.items){ setLiveStatus('live'); return d; }
+    if(d&&d.items){ console.log('Got data from GAS'); return d; }
   }catch(e){ console.warn('GAS getAll fail:',e.message); }
-  // Fallback: Firebase REST
-  try{
-    const fu=fbUrl('data');if(!fu)return null;
-    const r=await fetch(fu);const d=await r.json();
-    if(d&&d.items){ return d; }
-  }catch(e){ console.warn('Firebase getAll fail:',e.message); }
   setLiveStatus('off');
   return null;
 }
 function manualRefresh(){
   const btn=document.getElementById('refresh-btn');
-  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+  if(btn){btn.textContent='⏳';btn.disabled=true;}
   setLiveStatus('connecting');
-  hybridGetAll().then(d=>{
-    if(btn){ btn.textContent='🔄'; btn.disabled=false; }
-    if(!d){ setLiveStatus('off'); toast('Cannot reach server. Using local data.','er'); return; }
-    ['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork'].forEach(k=>{if(d[k])STATE[k]=d[k];});
-    if(d.settings)STATE.settings={...STATE.settings,...d.settings};
-    if(d.leads)STATE.leads=d.leads;
-    persist();renderDash();
-    setLiveStatus('live');
-    toast('✅ Data refreshed from server','ok');
-  }).catch(e=>{ if(btn){ btn.textContent='🔄'; btn.disabled=false; } setLiveStatus('off'); toast('Refresh failed: '+e.message,'er'); });
+  // Try Firebase directly first
+  const fu=fbUrl('data');
+  if(fu){
+    fetch(fu).then(r=>r.json()).then(d=>{
+      if(btn){btn.textContent='🔄';btn.disabled=false;}
+      if(!d||!d.items){
+        // Try GAS as fallback
+        hybridGetAll().then(d2=>{
+          if(!d2){setLiveStatus('off');toast('Cannot reach server. Check your internet connection.','er');return;}
+          applyCloudData(d2);setLiveStatus('live');toast('✅ Data refreshed','ok');
+        });
+        return;
+      }
+      applyCloudData(d);setLiveStatus('live');toast('✅ Data refreshed from Firebase','ok');
+    }).catch(e=>{
+      if(btn){btn.textContent='🔄';btn.disabled=false;}
+      setLiveStatus('off');
+      toast('Firebase unreachable: '+e.message,'er');
+    });
+  }else{
+    if(btn){btn.textContent='🔄';btn.disabled=false;}
+    toast('Firebase not configured. Go to Admin → Database to set it up.','er');
+    setLiveStatus('off');
+  }
+}
+
+function applyCloudData(d){
+  ['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork'].forEach(k=>{if(d[k])STATE[k]=d[k];});
+  if(d.settings)STATE.settings={...STATE.settings,...d.settings,firebaseUrl:STATE.settings.firebaseUrl,firebaseSecret:STATE.settings.firebaseSecret};
+  if(d.leads)STATE.leads=d.leads;
+  persist();renderDash();
 }
 function doFP(){
   const u=(el('fpu')?.value||'').trim();
