@@ -72,11 +72,47 @@ const lsGet = k => { try{ return JSON.parse(localStorage.getItem(k)) }catch(e){ 
 const lsSave = (k,v) => { try{ localStorage.setItem(k,JSON.stringify(v)) }catch(e){} };
 const uid = () => Date.now().toString(36)+Math.random().toString(36).substr(2,6);
 // ═══ GLOBAL DUPLICATE CHECK ═════════════════════════════════════════
+// ═══ SYNC UTILITIES ══════════════════════════════════════════════
+// Stamp every record with current time when created/modified
+function stamp(obj){obj._ts=Date.now();return obj;}
+// Soft-delete: mark as deleted instead of removing (so other devices learn about it)
+function softDelete(arr,id){
+  const item=arr.find(x=>x.id===id);
+  if(item){item._deleted=true;item._ts=Date.now();}
+}
+// Filter out soft-deleted items for display (but keep them in data for sync)
+function active(arr){return(arr||[]).filter(x=>!x._deleted);}
+// Clean up items soft-deleted more than 7 days ago
+function cleanupDeleted(arr){
+  const cutoff=Date.now()-7*86400000;
+  return(arr||[]).filter(x=>!x._deleted||x._ts>cutoff);
+}
+// Smart merge: compare each record by _ts timestamp, newer wins
+function smartMerge(local,remote,uniqueKey){
+  if(!remote||!remote.length)return local||[];
+  if(!local||!local.length)return remote;
+  const map=new Map();
+  const getKey=(item)=>{
+    if(uniqueKey&&item[uniqueKey])return item[uniqueKey].toString().toLowerCase();
+    return item.id||item.billNo||item.challanNo||JSON.stringify(item);
+  };
+  local.forEach(item=>map.set(getKey(item),item));
+  remote.forEach(item=>{
+    const id=getKey(item);
+    const existing=map.get(id);
+    if(!existing){map.set(id,item);return;}
+    // Compare _ts timestamps — higher (newer) wins
+    const remoteTs=item._ts||0;
+    const localTs=existing._ts||0;
+    if(remoteTs>localTs)map.set(id,item);
+  });
+  return Array.from(map.values());
+}
 // Returns true if duplicate found (and shows toast). Use before every save.
 function isDuplicate(collection, matchField, value, editId){
   if(!value||!collection)return false;
   const val=value.toString().trim().toLowerCase();
-  return collection.some(item=>{
+  return active(collection).some(item=>{
     if(editId&&item.id===editId)return false;
     const itemVal=(item[matchField]||'').toString().trim().toLowerCase();
     return itemVal===val;
@@ -152,6 +188,10 @@ _lsCache[key]=str;
 try{ localStorage.setItem(key,str); }catch(e){}
 }
 function persist(){
+// Auto-stamp any records that don't have _ts yet
+['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork','leads','taskTemplates','taskInstances','staffLeave','recurringLeads','flaggedEntries'].forEach(k=>{
+  (STATE[k]||[]).forEach(item=>{if(!item._ts)item._ts=Date.now();});
+});
 lsSave('vs_items',STATE.items); lsSave('vs_entries',STATE.entries);
 lsSave('vs_customers',STATE.customers); lsSave('vs_brokers',STATE.brokers);
 lsSave('vs_products',STATE.products); lsSave('vs_suppliers',STATE.suppliers);
@@ -169,19 +209,32 @@ setTimeout(autoSyncFirebase, 1500);
 function autoSyncFirebase(){
   clearTimeout(window._autoSyncTimer);
   window._autoSyncTimer=setTimeout(async()=>{
+    if(window._syncRunning)return;
+    window._syncRunning=true;
     try{
-      // SAFETY 1: Wait for initial pull to finish before pushing
-      if(!window._initialPullDone&&!window._dataPulledFromServer){
-        console.warn('autoSync skipped: waiting for initial pull from server');
-        return;
-      }
-      // SAFETY 2: Don't push if local data looks empty (fresh install / code update)
-      const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.orders||[]).length+(STATE.users||[]).length;
-      if(localCount<=1){
-        console.warn('autoSync skipped: local data appears empty ('+localCount+' records)');
-        return;
-      }
+      if(!window._initialPullDone&&!window._dataPulledFromServer){window._syncRunning=false;return;}
+      const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;
+      if(localCount<=1){window._syncRunning=false;return;}
       const fu=fbUrl('data');
+      // STEP 1: Pull from Google Sheets FIRST, fallback to Firebase
+      let pulled=false;
+      if(GAS_URL){
+        try{
+          const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'})});
+          const d=await r.json();
+          if(d&&typeof d==='object'&&(d.items||d.users)){applyCloudData(d);pulled=true;}
+        }catch(e){}
+      }
+      if(!pulled&&fu){
+        try{
+          const r=await fetch(fu);
+          if(r.ok){
+            const d=await r.json();
+            if(d&&typeof d==='object'&&(d.items||d.users)){applyCloudData(d);pulled=true;}
+          }
+        }catch(e){}
+      }
+      // STEP 2: Push merged data to Google Sheets FIRST, then Firebase
       const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
         brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
         orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],
@@ -190,17 +243,19 @@ function autoSyncFirebase(){
         staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
         settings:{...STATE.settings,lastSync:new Date().toISOString()},
         syncedAt:new Date().toISOString()};
-      // Push to Google Sheets FIRST (primary)
       if(GAS_URL){
         try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl})});}catch(e){}
       }
-      // Push to Firebase SECOND (backup)
       if(fu){
-        const r=await fetch(fu,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl)});
-        if(r.ok){STATE.settings.lastSync=new Date().toLocaleString();lsSave('vs_settings',STATE.settings);setLiveStatus('live');}
+        try{
+          const r=await fetch(fu,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl)});
+          if(r.ok)setLiveStatus('live');
+        }catch(e){}
       }
+      STATE.settings.lastSync=new Date().toISOString();lsSave('vs_settings',STATE.settings);
     }catch(e){console.warn('autoSync error:',e);}
-  },2000);
+    window._syncRunning=false;
+  },1500);
 }
 let _tt;
 function toast(msg,type=''){
@@ -284,21 +339,29 @@ const vEl=el('d-version');if(vEl)vEl.textContent='v'+APP_VERSION+' ('+APP_BUILD_
 setNav('dash');
 renderSettingsForm();
 renderDBSetup();
-// ALWAYS pull from Firebase first on login to prevent overwriting server data
+// ALWAYS pull from server on login — Google Sheets FIRST, Firebase fallback
 (async function(){
+  let pulled=false;
   try{
-    const fu=fbUrl('data');
-    if(fu){
-      const r=await fetch(fu);
-      if(r.ok){
+    // Try Google Sheets first
+    if(GAS_URL){
+      try{
+        const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'})});
         const d=await r.json();
         if(d&&typeof d==='object'&&(d.items||d.users||d.customers)){
-          const serverCount=(d.items||[]).length+(d.customers||[]).length+(d.users||[]).length;
-          const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;
-          if(localCount<=1){
-            applyCloudData(d,'replace');setLiveStatus('live');
-          }else{
-            applyCloudData(d);setLiveStatus('live');
+          applyCloudData(d);setLiveStatus('live');pulled=true;
+        }
+      }catch(e){}
+    }
+    // Fallback to Firebase
+    if(!pulled){
+      const fu=fbUrl('data');
+      if(fu){
+        const r=await fetch(fu);
+        if(r.ok){
+          const d=await r.json();
+          if(d&&typeof d==='object'&&(d.items||d.users||d.customers)){
+            applyCloudData(d);setLiveStatus('live');pulled=true;
           }
         }
       }
@@ -311,17 +374,29 @@ setTimeout(()=>syncAPI(),3000);
   clearInterval(window._syncPoll);
   window._syncPoll=setInterval(async()=>{
     try{
-      const fu=fbUrl('data');if(!fu)return;
-      const r=await fetch(fu);if(!r.ok)return;
-      const d=await r.json();if(!d||typeof d!=='object'||(!d.items&&!d.users))return;
+      let d=null;
+      // Google Sheets FIRST
+      if(GAS_URL){
+        try{
+          const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'})});
+          const j=await r.json();
+          if(j&&typeof j==='object'&&(j.items||j.users))d=j;
+        }catch(e){}
+      }
+      // Firebase fallback
+      if(!d){
+        const fu=fbUrl('data');
+        if(fu){try{const r=await fetch(fu);if(r.ok){const j=await r.json();if(j&&typeof j==='object'&&(j.items||j.users))d=j;}}catch(e){}}
+      }
+      if(!d)return;
       const cloudSync=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
       const localSync=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
       if(cloudSync>localSync){
-        applyCloudData(d,'replace');
+        applyCloudData(d);
         setLiveStatus('live');
       }
     }catch(e){}
-  },10000);
+  },5000);
   scheduleWAReminder();
   startFirebaseRealtime();
   try{autoDeleteOldCompletedTasks();}catch(e){}
@@ -919,7 +994,7 @@ discount:cDisc!==''?parseFloat(cDisc):undefined,
 discountDays:cDd!==''?parseInt(cDd):undefined,
 nettDays:cNd!==''?parseInt(cNd):undefined};
 if(id){const i=STATE.customers.findIndex(c=>c.id===id);if(i>=0) STATE.customers[i]={...STATE.customers[i],...obj};}
-else STATE.customers.push({id:uid(),...obj});
+else STATE.customers.push(stamp({id:uid(),...obj}));
 lsSave('vs_customers',STATE.customers);
 toast('Customer saved','ok');
 api('saveCustomer',{customers:STATE.customers});
@@ -1620,8 +1695,8 @@ const ordNo=nextOrdNo(pfx);
 const ordObj={id:_ordId||uid(),orderNo:ordNo,salesmanId:smId,salesmanName:smUser?.name||'',date:el('od-d')?.value,custId:cId,custName:cust?.name||'',brkId:bId,brkName:brk?.name||'',items,total:items.reduce((s,i)=>s+i.amount,0),notes:el('od-nt')?.value,status:'pending',by:STATE.user?.name||'',fy:STATE.settings.currentFY||getCurrentFY()};
 if(_ordId){
 const idx=STATE.orders.findIndex(o=>o.id===_ordId);
-if(idx>=0) STATE.orders[idx]=ordObj; else STATE.orders.push(ordObj);
-}else{ STATE.orders.push(ordObj); }
+if(idx>=0) STATE.orders[idx]=stamp(ordObj); else STATE.orders.push(stamp(ordObj));
+}else{ STATE.orders.push(stamp(ordObj)); }
 lsSave('vs_orders',STATE.orders); hideMod('m-ord'); renderOrders();
 toast('Order '+ordNo+' saved','ok'); api('saveOrder',{orders:STATE.orders});
 }
@@ -2020,12 +2095,12 @@ fc.appendChild(b);
 }
 function renderUsers(){
 const c=el('usrlst'); if(!c) return;
-if(!STATE.users.length){
+if(!active(STATE.users).length){
 c.innerHTML='<div class="emp"><div class="emj">&#x1F464;</div><h3>No Users</h3><p>Add team members</p></div>';
 return;
 }
 c.innerHTML='';
-STATE.users.forEach(u=>{
+active(STATE.users).forEach(u=>{
 const perms=u.permissions||getPermPreset(u.staffTypeId||u.role||'');
 const permLabels=PERM_DEFS.filter(p=>perms[p.id]).map(p=>p.lbl);
 const row=document.createElement('div');
@@ -2085,18 +2160,18 @@ permissions:{...window._usrPerms}
 };
 if(pw) obj.password=pw;
 if(id){const i=STATE.users.findIndex(u=>u.id===id);if(i>=0) STATE.users[i]={...STATE.users[i],...obj};}
-else{if(!pw){toast('Enter password for new user','er');return;}STATE.users.push({id:uid(),...obj});}
+else{if(!pw){toast('Enter password for new user','er');return;}STATE.users.push(stamp({id:uid(),...obj}));}
 lsSave('vs_users',STATE.users); hideMod('m-usr'); renderUsers(); toast('User saved','ok');
 api('saveUser',{users:STATE.users});
 }
 async function deleteUser(id){
   const u=STATE.users.find(x=>x.id===id);if(!u)return;
   if(u.id===STATE.user?.id){toast('You cannot delete yourself','er');return;}
-  const admins=STATE.users.filter(x=>x.role==='admin'&&x.active!==false);
+  const admins=active(STATE.users).filter(x=>x.role==='admin'&&x.active!==false);
   if(u.role==='admin'&&admins.length<=1){toast('Cannot delete the last admin account','er');return;}
   const ok=await appConfirm('Delete User?','User "'+u.name+'" (@'+u.username+') will be permanently removed.\n\nTheir tasks and orders will remain but won\'t be assigned to anyone.','\u26A0\uFE0F','Delete','dr');
   if(!ok)return;
-  STATE.users=STATE.users.filter(x=>x.id!==id);
+  softDelete(STATE.users,id);
   lsSave('vs_users',STATE.users);renderUsers();
   toast(u.name+' deleted','ok');autoSyncFirebase();
 }
@@ -6286,42 +6361,27 @@ async function manualRefresh(){
     if(gbtn){gbtn.innerHTML='🔄';gbtn.disabled=false;}
     setLiveStatus(ok?'live':'off');toast(msg,ok?'ok':'er');
   };
-  const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length+(STATE.orders||[]).length;
-  const hasLocalData=localCount>1;
   try{
-    // STEP 1: Push local data to Google Sheets first (so nothing is lost)
-    if(hasLocalData){
-      try{await hybridSaveAll(true);}catch(e){console.warn('Push failed:',e);}
-    }
-    // STEP 2: Pull from Google Sheets FIRST (primary source of truth)
+    // STEP 1: Pull server data (try GS first, then Firebase)
     let serverData=null;
     if(GAS_URL){
       try{
         const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'})});
         const d=await r.json();
         if(d&&typeof d==='object'&&(d.items||d.users||d.customers))serverData=d;
-      }catch(e){console.warn('GAS pull:',e);}
+      }catch(e){}
     }
-    // STEP 3: If no GS data, try Firebase
     if(!serverData){
       const fu=fbUrl('data');
       if(fu){
-        try{
-          const r=await fetch(fu);
-          if(r.ok){const d=await r.json();if(d&&typeof d==='object'&&(d.items||d.users||d.customers))serverData=d;}
-        }catch(e){console.warn('Firebase pull:',e);}
+        try{const r=await fetch(fu);if(r.ok){const d=await r.json();if(d&&typeof d==='object'&&(d.items||d.users))serverData=d;}}catch(e){}
       }
     }
-    // STEP 4: Apply server data
-    if(serverData){
-      // REPLACE local with server data — this picks up deletions made in Google Sheets
-      applyCloudData(serverData,'replace');
-      done(true,'✅ Synced with server');
-    }else if(hasLocalData){
-      done(true,'✅ Local data pushed to server');
-    }else{
-      done(false,'⚠️ No data found');
-    }
+    // STEP 2: Smart merge — keeps all changes from both local and server, newer wins per record
+    if(serverData){applyCloudData(serverData);}
+    // STEP 3: Push merged data back to both servers
+    await hybridSaveAll(true);
+    done(true,'✅ Synced — all devices up to date');
   }catch(e){
     done(false,'⚠️ Sync failed: '+e.message);
   }
@@ -6592,40 +6652,25 @@ function renderTaskReport(){
   c.innerHTML=h;
 }
 
-function mergeArrayById(local,remote,uniqueKey){
-  if(!remote||!remote.length)return local||[];
-  if(!local||!local.length)return remote;
-  const map=new Map();
-  const getKey=(item)=>{
-    if(uniqueKey&&item[uniqueKey])return item[uniqueKey].toString().toLowerCase();
-    return item.id||item.billNo||item.challanNo||JSON.stringify(item);
-  };
-  local.forEach(item=>{map.set(getKey(item),item);});
-  remote.forEach(item=>{
-    const id=getKey(item);
-    const existing=map.get(id);
-    if(!existing){map.set(id,item);return;}
-    const remoteTime=new Date(item.updatedAt||item.completedAt||item.createdAt||0).getTime();
-    const localTime=new Date(existing.updatedAt||existing.completedAt||existing.createdAt||0).getTime();
-    if(remoteTime>localTime)map.set(id,item);
-  });
-  return Array.from(map.values());
-}
-function applyCloudData(d,mode){
+function applyCloudData(d){
   if(!d)return;
   const keep={firebaseUrl:STATE.settings.firebaseUrl,firebaseSecret:STATE.settings.firebaseSecret};
   const keys=['items','entries','customers','brokers','suppliers','users','orders','bills',
    'payments','jobWork','leads','flaggedEntries',
    'taskTemplates','taskInstances','staffLeave','recurringLeads'];
-  // Keys that should merge by a unique field (not just id) to prevent duplicates
   const uniqueKeys={users:'username',customers:'name',brokers:'name',suppliers:'name'};
-  if(mode==='replace'){
+  const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;
+  if(localCount<=1){
+    // Fresh device — just take server data as-is
     keys.forEach(k=>{if(d[k]!==undefined)STATE[k]=d[k];});
   }else{
-    keys.forEach(k=>{if(d[k]!==undefined)STATE[k]=mergeArrayById(STATE[k],d[k],uniqueKeys[k]);});
+    // Has local data — smart merge each collection (newer _ts wins per record)
+    keys.forEach(k=>{if(d[k]!==undefined)STATE[k]=smartMerge(STATE[k],d[k],uniqueKeys[k]);});
   }
+  // Clean up old soft-deleted records
+  keys.forEach(k=>{STATE[k]=cleanupDeleted(STATE[k]);});
   if(d.settings)STATE.settings={...STATE.settings,...d.settings,...keep};
-  STATE.settings.lastSync=new Date().toLocaleString();
+  STATE.settings.lastSync=new Date().toISOString();
   persist();renderDash();
   try{renderOrders();}catch(e){}try{renderBills();}catch(e){}
 }
