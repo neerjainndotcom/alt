@@ -654,19 +654,37 @@ card.appendChild(hdr);
 const colsToShow=q
 ? item.colours.filter(col=>col.name.toLowerCase().includes(q)||col.sku.toLowerCase().includes(q)||(col.code||'').toLowerCase().includes(q)||col.range.toLowerCase().includes(q)||item.name.toLowerCase().includes(q))
 : item.colours;
+const rangeMap={};
 colsToShow.forEach(col=>{
+const r=col.range||'Default';
+if(!rangeMap[r]) rangeMap[r]=[];
+rangeMap[r].push(col);
+});
+Object.keys(rangeMap).sort().forEach(rangeName=>{
+const rangeCols=rangeMap[rangeName];
+const rangeT=rangeCols.reduce((s,c)=>s+(c.stock_taka||0),0);
+const rDiv=document.createElement('div');
+rDiv.style.cssText='border-bottom:1px solid var(--br)';
+const rHdr=document.createElement('div');
+rHdr.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:6px 14px;background:#F8F7FF;cursor:pointer;-webkit-tap-highlight-color:transparent';
+rHdr.innerHTML='<div style="font-size:11px;font-weight:800;color:var(--Pd);letter-spacing:.3px">Range '+rangeName+' <span style="font-weight:500;color:var(--t3)">('+rangeCols.length+')</span></div>'+
+'<div style="font-size:11px;font-weight:700;color:var(--P)">'+rangeT+'T</div>';
+const rBody=document.createElement('div');
+rHdr.onclick=()=>{rBody.style.display=rBody.style.display==='none'?'':'none';};
+rDiv.appendChild(rHdr);
+rangeCols.forEach(col=>{
 const cIdx=item.colours.indexOf(col);
 const stk=col.stock_taka||0;
 const cls=stk===0?'no':stk<5?'lo':'ok';
 const row=document.createElement('div');
 row.className='scr2';
-row.style.cssText='cursor:pointer;transition:.15s';
+row.style.cssText='cursor:pointer;transition:.15s;padding-left:20px';
 row.onmouseenter=()=>row.style.background='var(--Pl)';
 row.onmouseleave=()=>row.style.background='';
 row.innerHTML=
 '<span class="cdot" style="background:'+(col.hex||'#ccc')+'"></span>'+
 '<div style="flex:1;min-width:0">'+
-'<div style="font-size:12px;font-weight:600">'+col.name+' <span class="ct3 xs">['+col.range+']</span></div>'+
+'<div style="font-size:12px;font-weight:600">'+col.name+'</div>'+
 '<div class="sku mt4" style="max-width:200px;overflow:hidden;text-overflow:ellipsis">'+col.sku+'</div>'+
 '</div>'+
 '<div style="text-align:right">'+
@@ -675,7 +693,10 @@ row.innerHTML=
 '</div>'+
 '<span style="color:var(--t3);font-size:16px;margin-left:4px;flex-shrink:0">&#x276F;</span>';
 row.onclick=()=>showSKUDetail(item.id, cIdx);
-body.appendChild(row);
+rBody.appendChild(row);
+});
+rDiv.appendChild(rBody);
+body.appendChild(rDiv);
 });
 card.appendChild(body);
 container.appendChild(card);
