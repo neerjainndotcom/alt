@@ -666,9 +666,9 @@ const rangeT=rangeCols.reduce((s,c)=>s+(c.stock_taka||0),0);
 const rDiv=document.createElement('div');
 rDiv.style.cssText='border-bottom:1px solid var(--br)';
 const rHdr=document.createElement('div');
-rHdr.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:6px 14px;background:#F8F7FF;cursor:pointer;-webkit-tap-highlight-color:transparent';
-rHdr.innerHTML='<div style="font-size:11px;font-weight:800;color:var(--Pd);letter-spacing:.3px">Range '+rangeName+' <span style="font-weight:500;color:var(--t3)">('+rangeCols.length+')</span></div>'+
-'<div style="font-size:11px;font-weight:700;color:var(--P)">'+rangeT+'T</div>';
+rHdr.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border-left:3px solid var(--P);cursor:pointer;-webkit-tap-highlight-color:transparent';
+rHdr.innerHTML='<div style="font-size:13px;font-weight:900;color:var(--Pd)">'+rangeName+' <span style="font-size:11px;font-weight:500;color:var(--t3)">('+rangeCols.length+')</span></div>'+
+'<div style="font-size:12px;font-weight:700;color:var(--P)">'+rangeT+'T</div>';
 const rBody=document.createElement('div');
 rHdr.onclick=()=>{rBody.style.display=rBody.style.display==='none'?'':'none';};
 rDiv.appendChild(rHdr);
