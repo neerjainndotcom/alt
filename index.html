@@ -3738,7 +3738,8 @@ row.innerHTML=
 (lead.followupDate?'<span style="font-size:10px;background:'+(overdue?'#FEE2E2':'#F0FDF4')+';color:'+(overdue?'#DC2626':'#16A34A')+';padding:2px 7px;border-radius:5px;font-weight:700">'+(overdue?'OVERDUE: ':'Follow-up: ')+fmtDate(lead.followupDate)+'</span>':'')+
 (lead.interest?'<span style="font-size:10px;color:#9897B0">'+lead.interest+'</span>':'')+
 '</div>'+
-(lead.lastNote?'<div style="font-size:11px;color:#6B7280;margin-top:6px;padding:6px 8px;background:#F9FAFB;border-radius:6px;line-height:1.4">'+lead.lastNote+'</div>':'')+
+(lead.progress?'<div style="font-size:11px;margin-top:6px;padding:6px 8px;background:#FEF3C7;border-left:3px solid #D97706;border-radius:0 6px 6px 0;line-height:1.4"><span style="font-weight:800;color:#92400E;font-size:10px">Progress:</span> <span style="color:#78350F">'+lead.progress+'</span></div>':'')+
+(lead.lastNote&&lead.lastNote!==lead.progress?'<div style="font-size:11px;color:#6B7280;margin-top:4px;padding:5px 8px;background:#F9FAFB;border-radius:6px;line-height:1.4">'+lead.lastNote+'</div>':'')+
 '</div>'+
 '<div style="display:flex;border-top:1px solid #F3F4F6">'+
 (function(){
@@ -3750,7 +3751,8 @@ const lbtn='style="flex:1;padding:8px 4px;border:none;background:transparent;bor
 let b='';
 if(canUpdate) b+='<button onclick="event.stopPropagation();updateLeadStatus(\''+lead.id+'\')" '+lbtn+' style="flex:1;padding:8px 4px;border:none;background:transparent;font-size:11px;font-weight:700;color:#0891B2;cursor:pointer">Status</button>';
 if(canEdit) b+='<button onclick="event.stopPropagation();editLead(\''+lead.id+'\')" '+lbtn+' style="flex:1;padding:8px 4px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#6366F1;cursor:pointer">Edit</button>';
-b+='<button onclick="event.stopPropagation();waLead(\''+lead.id+'\')" '+lbtn+' style="flex:1;padding:8px 4px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#25D366;cursor:pointer">WA</button>';
+if(lead.assignedId) b+='<button onclick="event.stopPropagation();waLeadToSalesman(\''+lead.id+'\')" '+lbtn+' style="flex:1;padding:8px 4px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#4F46E5;cursor:pointer">WA SM</button>';
+if(lead.brokerId) b+='<button onclick="event.stopPropagation();waLeadToBroker(\''+lead.id+'\')" '+lbtn+' style="flex:1;padding:8px 4px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#D97706;cursor:pointer">WA Broker</button>';
 if(isAdmin&&lead.status!=='Won'&&lead.status!=='Closed') b+='<button onclick="event.stopPropagation();convertLead(\''+lead.id+'\')" '+lbtn+' style="flex:1;padding:8px 4px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#10B981;cursor:pointer">Convert</button>';
 return b;
 })()+
@@ -3890,7 +3892,8 @@ div.innerHTML='<div style="background:white;border-radius:16px 16px 0 0;width:mi
 +'<h3 style="margin:0 0 4px;font-size:16px;font-weight:800">Update Status</h3>'
 +'<div style="font-size:12px;color:var(--t3);margin-bottom:4px">'+lead.name+'</div>'
 +'<div style="font-size:11px;color:var(--t3);margin-bottom:10px">Current: <b>'+lead.status+'</b></div>'
-+'<textarea id="qstat-note" rows="2" placeholder="Add a note (optional)..." style="width:100%;padding:8px;border:1.5px solid #E5E4F0;border-radius:8px;font-size:12px;margin-bottom:10px;resize:none;font-family:inherit"></textarea>'
++'<div style="font-size:11px;font-weight:700;color:#92400E;margin-bottom:4px">Progress Update</div>'
++'<textarea id="qstat-note" rows="2" placeholder="What happened? Any update, next step, problem..." style="width:100%;padding:8px;border:1.5px solid #D97706;border-radius:8px;font-size:12px;margin-bottom:10px;resize:none;font-family:inherit;background:#FFFBEB"></textarea>'
 +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+btns+'</div>'
 +'<button class="btn bgh bfl" style="margin-top:12px" onclick="rmEl(\'m-qstat\')">Cancel</button></div>';
 document.body.appendChild(div);
@@ -3901,6 +3904,7 @@ const noteEl=document.getElementById('qstat-note');
 const note=(noteEl?.value||'').trim();
 lead.status=status;lead.updatedAt=today();lead._ts=Date.now();
 if(note){
+lead.progress=note;
 lead.lastNote=note;
 lead.notes=(lead.notes||[]).concat([{note,date:today(),by:STATE.user?.name||'',status}]);
 }
@@ -3959,7 +3963,6 @@ const isMyLead=lead.assignedId===STATE.user?.id;
 const canEdit=isAdmin||hasPerm('leads_edit')||isMyLead;
 const canUpdate=isAdmin||hasPerm('leads_edit')||hasPerm('leads_view')||isMyLead;
 if(canUpdate) foot.appendChild(mk('bp bfl','Update Status',()=>{hideMod('m-lead-det');updateLeadStatus(id);}));
-foot.appendChild(mk('wa','WA Party',()=>waLead(id)));
 if(lead.assignedId) foot.appendChild(mk('bs','WA Salesman',()=>waLeadToSalesman(id)));
 if(lead.brokerId) foot.appendChild(mk('bs','WA Broker',()=>waLeadToBroker(id)));
 if(canEdit) foot.appendChild(mk('bs bfl','Edit',()=>{hideMod('m-lead-det');editLead(id);}));
