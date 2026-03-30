@@ -1116,6 +1116,11 @@ const nc=STATE.customers[STATE.customers.length-1];
 sel.innerHTML='<option value="">Select customer...</option>'+STATE.customers.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
 sel.value=nc.id; onOrderCustChange();
 }
+}else if(window._returnToExchange){
+window._returnToExchange=false;
+hideMod('m-cst');
+const nc=STATE.customers[STATE.customers.length-1];
+setTimeout(()=>{openExchangeForm();setTimeout(()=>{const s=el('ex-cust');if(s){s.innerHTML='<option value="">Select customer...</option>'+STATE.customers.filter(c=>!c._deleted).map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');s.value=nc.id;}},50);},100);
 }else{ hideMod('m-cst'); renderCusts(); }
 }
 function renderBrks(){
@@ -1243,102 +1248,174 @@ const t=parseInt(el('ir'+i+'-t')?.value)||0;
 const c=el('ir'+i+'-c'); if(c) c.textContent=t+'T x '+STATE.settings.avgMtrPerTaka+'m = '+Math.round(t*STATE.settings.avgMtrPerTaka)+' mtrs';
 }
 // ═══ EXCHANGE SAREES SYSTEM ══════════════════════════════════════
-let _exRows=[{}];
+let _exSelectedSKUs=[];
 function openExchangeForm(editId){
-_exRows=[{}];
-const custOpts=STATE.customers.filter(c=>!c._deleted).map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
 const ex=editId?(STATE.exchanges||[]).find(e=>e.id===editId):null;
-el('inwtit').textContent=ex?'Edit Exchange':'New Exchange Sarees';
-el('inwsub').textContent=ex?ex.ref:'';
-if(ex) _exRows=ex.rows.map(r=>({...r}));
-const cut=ex?ex.cut:'';
+const custOpts=STATE.customers.filter(c=>!c._deleted).map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
+el('inwtit').textContent=ex?'Exchange: '+ex.ref:'New Exchange Challan';
+el('inwsub').textContent=ex?ex.status:'Stage 1 — Enter details';
+_exSelectedSKUs=ex?ex.rows.map(r=>({...r})):[];
+const isEdit=!!ex;
+const stage=ex?(ex.status==='Pending'?2:ex.status==='Under Process'?3:4):1;
 el('inwbod').innerHTML=
 '<input type="hidden" id="ex-edit-id" value="'+(editId||'')+'"/>'+
 '<div id="ex-status-bar"></div>'+
-'<div class="ir2"><div class="fg"><label>Date</label><input class="inp" type="date" id="ex-date" value="'+(ex?ex.date:today())+'"/></div><div class="fg"><label>Ref No.</label><input class="inp mono" id="ex-ref" value="'+(ex?ex.ref:nextExchRef())+'"/></div></div>'+
-'<div class="fg"><label>Party / Customer *</label><select class="sel" id="ex-cust"><option value="">Select customer...</option>'+custOpts+'</select></div>'+
-'<div class="ir2"><div class="fg"><label>Total Sarees (header)</label><input class="inp big mono" type="number" id="ex-htot" min="0" step="1" value="'+(ex?ex.totalSarees:'')+'"/></div><div class="fg"><label>Saree Cut (mtrs/saree)</label><input class="inp big mono" type="number" id="ex-cut" min="0" step="0.1" value="'+cut+'" oninput="renderExRows()"/></div></div>'+
-'<div class="stl" style="padding:8px 0;font-size:10px">SKU Entries</div><div id="ex-rows"></div>'+
-'<button class="btn bs bfl mt8" onclick="addExRow()">+ Add SKU</button>'+
+'<div class="ir2"><div class="fg"><label>Date</label><input class="inp" type="date" id="ex-date" value="'+(ex?ex.date:today())+'"'+(stage>1?' disabled':'')+'/></div>'+
+'<div class="fg"><label>Ref No.</label><input class="inp mono" id="ex-ref" value="'+(ex?ex.ref:nextExchRef())+'"'+(stage>1?' disabled':'')+'/></div></div>'+
+'<div class="fg"><label>Party / Customer *</label><div style="display:flex;gap:6px">'+
+'<select class="sel" id="ex-cust" style="flex:1"'+(stage>1?' disabled':'')+'><option value="">Select customer...</option>'+custOpts+'</select>'+
+(stage<=1?'<button class="ai" onclick="addCustFromExchange()">+ New</button>':'')+
+'</div></div>'+
+'<div class="ir2"><div class="fg"><label>Total Sarees</label><input class="inp big mono" type="number" id="ex-htot" min="0" step="1" value="'+(ex?ex.totalSarees:'')+'"'+(stage>1?' disabled':'')+'/></div>'+
+'<div class="fg"><label>Saree Cut (mtrs/saree)</label><input class="inp big mono" type="number" id="ex-cut" min="0" step="0.1" value="'+(ex?ex.cut:'')+'"'+(stage>1?' disabled':'')+'/></div></div>'+
+(stage<=1?'<div class="stl" style="padding:8px 0 4px;font-size:10px">Pick SKUs</div>'+
+'<div class="fg"><label>Select Item</label><select class="sel" id="ex-item-pick" onchange="onExItemPick()"><option value="">Choose item to pick SKUs...</option>'+
+STATE.items.map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+'</select></div>'+
+'<div id="ex-sku-picker"></div>':'')+
+'<div class="stl" style="padding:8px 0 4px;font-size:10px">SKU Entries'+(stage>1?' — '+(stage===2?'Enter Damaged Sarees':stage===3?'Enter Exchanged Sarees':'Complete'):'')+'</div>'+
+'<div id="ex-sku-table"></div>'+
 '<div id="ex-summary" class="mt8"></div>'+
 '<div class="stl" style="padding:12px 0 4px;font-size:10px">Receiver Details</div>'+
 '<div class="fg"><label>Khata Name</label><input class="inp" id="ex-khata" value="'+(ex?ex.khata:'')+'"/></div>'+
-'<div class="ir2"><div class="fg"><label>Phone Number</label><input class="inp" id="ex-phone" type="tel" value="'+(ex?ex.phone:'')+'"/></div><div class="fg"><label>Person Name</label><input class="inp" id="ex-person" value="'+(ex?ex.person:'')+'"/></div></div>'+
+'<div class="ir2"><div class="fg"><label>Phone Number</label><input class="inp" id="ex-phone" type="tel" value="'+(ex?ex.phone:'')+'"/></div>'+
+'<div class="fg"><label>Person Name</label><input class="inp" id="ex-person" value="'+(ex?ex.person:'')+'"/></div></div>'+
+(stage>=4?'<div class="fg mt8" style="display:flex;align-items:center;gap:8px;padding:10px;background:'+(ex.collected?'#D1FAE5':'#FEF3C7')+';border-radius:10px">'+
+'<input type="checkbox" id="ex-collected"'+(ex.collected?' checked':'')+' onchange="toggleExCollected(\''+editId+'\')"/>'+
+'<label for="ex-collected" style="margin:0;font-size:13px;font-weight:700;color:'+(ex.collected?'#059669':'#92400E')+'">'+
+(ex.collected?'✅ Collected by receiver':'⏳ Not yet collected')+'</label></div>':'')+
 '<div class="fg mt8"><label>Notes</label><input class="inp" id="ex-notes" value="'+(ex?ex.notes||'':'')+'"/></div>';
-if(ex&&el('ex-cust')) el('ex-cust').value=ex.custId||'';
-renderExRows();
+if(ex) el('ex-cust').value=ex.custId||'';
+renderExSKUTable(stage);
 updateExStatusBar(ex);
+updateExSummary();
 const saveBtn=el('inw-save-btn');
-if(saveBtn){saveBtn.textContent='Save Exchange';saveBtn.onclick=saveExchange;}
+if(saveBtn){
+if(stage===1){saveBtn.textContent='Create Challan';saveBtn.onclick=saveExchange;}
+else if(stage===2){saveBtn.textContent='Save Damaged';saveBtn.onclick=saveExchange;}
+else if(stage===3){saveBtn.textContent='Save Exchanged';saveBtn.onclick=saveExchange;}
+else{saveBtn.textContent='Update';saveBtn.onclick=saveExchange;}
+}
 showMod('m-inw');
+}
+function addCustFromExchange(){
+window._returnToExchange=true;
+openCust();
+}
+function onExItemPick(){
+const iid=el('ex-item-pick')?.value;
+const picker=el('ex-sku-picker');if(!picker)return;
+if(!iid){picker.innerHTML='';return;}
+const item=STATE.items.find(i=>i.id===iid);if(!item){picker.innerHTML='';return;}
+const ranges=[...new Set(item.colours.map(c=>c.range||'Default'))].sort();
+const alreadyPicked=new Set(_exSelectedSKUs.map(r=>r.itemId+'_'+r.colIdx));
+picker.innerHTML=
+'<div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">'+
+'<button class="rchip on" onclick="filterExPicker(\'all\',this)">All</button>'+
+ranges.map(r=>'<button class="rchip" onclick="filterExPicker(\''+escHtml(r)+'\',this)">'+escHtml(r)+'</button>').join('')+'</div>'+
+'<div id="ex-picker-list" style="max-height:250px;overflow-y:auto;border:1px solid var(--br);border-radius:10px">'+
+item.colours.filter(c=>!c.discontinued).map((col,ci)=>{
+const picked=alreadyPicked.has(iid+'_'+ci);
+return '<label data-range="'+(col.range||'Default')+'" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--br);cursor:pointer;'+(picked?'opacity:.4':'')+'"'+
+(picked?' title="Already added"':'')+'>'+
+'<input type="checkbox" class="ex-pick-cb" data-iid="'+iid+'" data-ci="'+ci+'"'+(picked?' checked disabled':'')+' style="width:18px;height:18px"/>'+
+'<span class="cdot" style="background:'+(col.hex||'#ccc')+'"></span>'+
+'<div style="flex:1"><div style="font-size:12px;font-weight:700">'+col.name+'</div>'+
+'<div style="font-size:10px;color:var(--t3)">'+col.range+' · <span class="sku">'+col.sku+'</span></div></div>'+
+'<span class="stk '+(col.stock_taka>0?'ok':'no')+'">'+(col.stock_taka||0)+'T</span></label>';
+}).join('')+'</div>'+
+'<button class="btn bp bfl mt8" onclick="confirmExPick()">Add Selected SKUs</button>';
+}
+function filterExPicker(range,btn){
+btn.parentElement.querySelectorAll('.rchip').forEach(b=>b.classList.remove('on'));
+btn.classList.add('on');
+document.querySelectorAll('#ex-picker-list label').forEach(l=>{
+l.style.display=(range==='all'||l.dataset.range===range)?'flex':'none';
+});
+}
+function confirmExPick(){
+document.querySelectorAll('.ex-pick-cb:checked:not(:disabled)').forEach(cb=>{
+const iid=cb.dataset.iid, ci=parseInt(cb.dataset.ci);
+const item=STATE.items.find(i=>i.id===iid);if(!item)return;
+const col=item.colours[ci];if(!col)return;
+_exSelectedSKUs.push({itemId:iid,colIdx:ci,itemName:item.name,colourName:col.name,sku:col.sku,range:col.range||'Default',totalSarees:0,damagedSarees:0,reusableSarees:0,exchangedSarees:0});
+});
+el('ex-sku-picker').innerHTML='';
+el('ex-item-pick').value='';
+renderExSKUTable(1);
+updateExSummary();
+}
+function removeExSKU(idx){
+_exSelectedSKUs.splice(idx,1);
+renderExSKUTable(1);
+updateExSummary();
+}
+function renderExSKUTable(stage){
+const c=el('ex-sku-table');if(!c)return;
+if(!_exSelectedSKUs.length){c.innerHTML='<div style="text-align:center;padding:16px;color:var(--t3);font-size:12px">No SKUs added yet. Pick from item above.</div>';return;}
+const cut=parseFloat(el('ex-cut')?.value)||0;
+const avg=STATE.settings.avgMtrPerTaka||90;
+let html='<div style="overflow-x:auto"><table style="font-size:11px;width:100%"><thead><tr>'+
+'<th>SKU</th><th style="width:60px">Total</th><th style="width:60px">Damaged</th><th style="width:60px">Reuse</th><th style="width:60px">Exch</th>'+
+(stage<=1?'<th style="width:30px"></th>':'')+
+'</tr></thead><tbody>';
+_exSelectedSKUs.forEach((r,i)=>{
+const reuse=Math.max(0,(r.totalSarees||0)-(r.damagedSarees||0));
+const done=(r.exchangedSarees||0)===(r.totalSarees||0)&&(r.totalSarees||0)>0;
+html+='<tr style="'+(done?'background:#D1FAE5':'')+'">'+
+'<td><div style="font-weight:700;font-size:11px">'+r.colourName+'</div><div style="font-size:9px;color:var(--t3)">'+r.itemName+' · '+r.range+'</div></td>'+
+'<td><input type="number" min="0" step="1" value="'+(r.totalSarees||'')+'" style="width:100%;padding:4px;border:1px solid var(--br);border-radius:6px;font-size:12px;font-family:inherit;text-align:center'+(stage>1?';background:#f3f4f6':'')+'" oninput="onExSKUInput('+i+',\'tot\',this.value)"'+(stage>1?' disabled':'')+'/></td>'+
+'<td><input type="number" min="0" step="1" value="'+(r.damagedSarees||'')+'" style="width:100%;padding:4px;border:1px solid '+(stage===2?'#D97706':'var(--br)')+';border-radius:6px;font-size:12px;font-family:inherit;text-align:center;'+(stage===2?'background:#FEF3C7;font-weight:700':'')+(stage<2||stage>3?';background:#f3f4f6':'')+'" oninput="onExSKUInput('+i+',\'dmg\',this.value)"'+(stage<2||stage>3?' disabled':'')+'/></td>'+
+'<td style="text-align:center;font-weight:700;color:#059669;font-size:12px">'+reuse+'</td>'+
+'<td><input type="number" min="0" step="1" value="'+(r.exchangedSarees||'')+'" style="width:100%;padding:4px;border:1px solid '+(stage===3?'#4F46E5':'var(--br)')+';border-radius:6px;font-size:12px;font-family:inherit;text-align:center;'+(stage===3?'background:#EEF2FF;font-weight:700':'')+(stage<3||stage>3?';background:#f3f4f6':'')+'" oninput="onExSKUInput('+i+',\'exch\',this.value)"'+(stage<3||stage>3?' disabled':'')+'/></td>'+
+(stage<=1?'<td><button onclick="removeExSKU('+i+')" style="background:none;border:none;color:var(--R);cursor:pointer;font-size:14px">✕</button></td>':'')+
+'</tr>';
+});
+html+='</tbody></table></div>';
+c.innerHTML=html;
+}
+function onExSKUInput(idx,field,val){
+const v=parseInt(val)||0;
+if(field==='tot') _exSelectedSKUs[idx].totalSarees=v;
+else if(field==='dmg') _exSelectedSKUs[idx].damagedSarees=v;
+else if(field==='exch') _exSelectedSKUs[idx].exchangedSarees=v;
+_exSelectedSKUs[idx].reusableSarees=Math.max(0,(_exSelectedSKUs[idx].totalSarees||0)-(_exSelectedSKUs[idx].damagedSarees||0));
+updateExSummary();
 }
 function updateExStatusBar(ex){
 const bar=el('ex-status-bar');if(!bar)return;
-const status=ex?ex.status:'Pending';
-const colors={Pending:'#D97706','Under Process':'#0891B2',Ready:'#059669'};
-const bg={Pending:'#FEF3C7','Under Process':'#CFFAFE',Ready:'#D1FAE5'};
+const status=ex?ex.status:'New';
+const colors={Pending:'#D97706','Under Process':'#0891B2',Ready:'#059669',Collected:'#064E3B',New:'#6366F1'};
+const bg={Pending:'#FEF3C7','Under Process':'#CFFAFE',Ready:'#D1FAE5',Collected:'#D1FAE5',New:'#EEF2FF'};
+const icons={Pending:'⏳','Under Process':'⚙️',Ready:'✅',Collected:'📦',New:'📝'};
 bar.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:'+(bg[status]||'#F3F4F6')+';border-radius:10px;margin-bottom:12px;border-left:4px solid '+(colors[status]||'#999')+'">'+
-'<div style="font-size:18px">'+(status==='Ready'?'✅':status==='Under Process'?'⚙️':'⏳')+'</div>'+
-'<div style="flex:1"><div style="font-size:12px;font-weight:800;color:'+(colors[status]||'#333')+'">Status: '+status+'</div></div>'+
+'<div style="font-size:18px">'+(icons[status]||'📝')+'</div>'+
+'<div style="flex:1"><div style="font-size:12px;font-weight:800;color:'+(colors[status]||'#333')+'">Status: '+status+'</div>'+
+(status==='Pending'?'<div style="font-size:10px;color:var(--t3)">Enter damaged sarees to process</div>':'')+
+(status==='Under Process'?'<div style="font-size:10px;color:var(--t3)">Enter exchanged sarees to complete</div>':'')+
+'</div>'+
 (status==='Ready'&&ex?'<button class="wa" style="padding:5px 10px;font-size:11px" onclick="waExchangeReady(\''+ex.id+'\')">📲 Notify</button>':'')+
 '</div>';
 }
-function addExRow(){_exRows.push({});renderExRows();}
-function remExRow(i){_exRows.splice(i,1);renderExRows();}
-function renderExRows(){
-const cut=parseFloat(el('ex-cut')?.value)||0;
-const avg=STATE.settings.avgMtrPerTaka||90;
-const c=el('ex-rows');if(!c)return;
-c.innerHTML=_exRows.map((r,i)=>{
-const tot=r.totalSarees||0,dmg=r.damagedSarees||0,reuse=Math.max(0,tot-dmg),exch=r.exchangedSarees||0;
-const reuseMtrs=reuse*cut,reuseTaka=avg?Math.round(reuseMtrs/avg):0;
-const exchMtrs=exch*cut,exchTaka=avg?Math.round(exchMtrs/avg):0;
-return '<div class="sr su" style="margin-bottom:10px"><div class="srh"><span>SKU '+(i+1)+'</span>'+(i>0?'<button onclick="remExRow('+i+')" class="btn bd bxs">✕</button>':'')+'</div>'+
-buildCascade('ex'+i,false)+
-'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">'+
-'<div class="fg" style="margin:0"><label>Total Sarees</label><input class="inp mono" type="number" id="ex'+i+'-tot" min="0" step="1" value="'+tot+'" oninput="onExRowChange('+i+')"/></div>'+
-'<div class="fg" style="margin:0"><label>Damaged</label><input class="inp mono" type="number" id="ex'+i+'-dmg" min="0" step="1" value="'+(dmg||'')+'" oninput="onExRowChange('+i+')"/></div>'+
-'<div class="fg" style="margin:0"><label>Reusable</label><div class="inp mono" style="background:var(--Gl);color:var(--Gd);font-weight:800">'+reuse+'</div></div>'+
-'<div class="fg" style="margin:0"><label>Exchanged</label><input class="inp mono" type="number" id="ex'+i+'-exch" min="0" step="1" value="'+(exch||'')+'" oninput="onExRowChange('+i+')"/></div>'+
-'</div>'+
-(cut?'<div style="display:flex;gap:8px;margin-top:6px;font-size:10px;color:var(--t3)">'+
-'<span style="background:#D1FAE5;padding:2px 6px;border-radius:4px;color:#065F46">↑ Reuse: '+reuse+'×'+cut+'m = '+reuseMtrs+'m = <b>'+reuseTaka+'T add</b></span>'+
-'<span style="background:#FEE2E2;padding:2px 6px;border-radius:4px;color:#991B1B">↓ Exch: '+exch+'×'+cut+'m = '+exchMtrs+'m = <b>'+exchTaka+'T deduct</b></span>'+
-'</div>':'')+
-'</div>';
-}).join('');
-updateExSummary();
-}
-function onExRowChange(i){
-const tot=parseInt(el('ex'+i+'-tot')?.value)||0;
-const dmg=parseInt(el('ex'+i+'-dmg')?.value)||0;
-const exch=parseInt(el('ex'+i+'-exch')?.value)||0;
-_exRows[i].totalSarees=tot;
-_exRows[i].damagedSarees=dmg;
-_exRows[i].exchangedSarees=exch;
-renderExRows();
-}
 function updateExSummary(){
 const htot=parseInt(el('ex-htot')?.value)||0;
-const skuTot=_exRows.reduce((s,r)=>s+(r.totalSarees||0),0);
+const skuTot=_exSelectedSKUs.reduce((s,r)=>s+(r.totalSarees||0),0);
 const cut=parseFloat(el('ex-cut')?.value)||0;
 const avg=STATE.settings.avgMtrPerTaka||90;
-const totReuse=_exRows.reduce((s,r)=>s+Math.max(0,(r.totalSarees||0)-(r.damagedSarees||0)),0);
-const totExch=_exRows.reduce((s,r)=>s+(r.exchangedSarees||0),0);
-const reuseTaka=avg?Math.round(totReuse*cut/avg):0;
-const exchTaka=avg?Math.round(totExch*cut/avg):0;
+const totReuse=_exSelectedSKUs.reduce((s,r)=>s+(r.reusableSarees||Math.max(0,(r.totalSarees||0)-(r.damagedSarees||0))),0);
+const totExch=_exSelectedSKUs.reduce((s,r)=>s+(r.exchangedSarees||0),0);
+const totDmg=_exSelectedSKUs.reduce((s,r)=>s+(r.damagedSarees||0),0);
+const reuseTaka=avg&&cut?Math.round(totReuse*cut/avg):0;
+const exchTaka=avg&&cut?Math.round(totExch*cut/avg):0;
 const mismatch=htot&&skuTot&&htot!==skuTot;
-const allDone=skuTot>0&&_exRows.every(r=>(r.exchangedSarees||0)===(r.totalSarees||0));
-const hasDmg=_exRows.some(r=>(r.damagedSarees||0)>0);
-const status=allDone?'Ready':hasDmg?'Under Process':'Pending';
 const sm=el('ex-summary');if(!sm)return;
 sm.innerHTML=
-(mismatch?'<div class="wb">⚠ Header Total Sarees ('+htot+') ≠ Sum of SKU Total ('+skuTot+'). Please correct.</div>':'')+
+(mismatch?'<div class="wb">⚠ Total Sarees ('+htot+') ≠ SKU sum ('+skuTot+'). Must match.</div>':'')+
 '<div style="background:var(--Pl);border-radius:10px;padding:10px 12px;font-size:12px">'+
-'<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Total Sarees (SKU sum)</span><b>'+skuTot+'</b></div>'+
-'<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Total Reusable</span><b style="color:#059669">'+totReuse+' → +'+reuseTaka+'T</b></div>'+
-'<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Total Exchanged</span><b style="color:#DC2626">'+totExch+' → -'+exchTaka+'T</b></div>'+
-'<div style="display:flex;justify-content:space-between;border-top:1px solid var(--br);padding-top:4px"><span>Auto Status</span><b style="color:'+(status==='Ready'?'#059669':status==='Under Process'?'#0891B2':'#D97706')+'">'+status+'</b></div>'+
+'<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>SKUs</span><b>'+_exSelectedSKUs.length+'</b></div>'+
+'<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>Total Sarees</span><b>'+skuTot+'</b></div>'+
+'<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>Damaged</span><b style="color:#DC2626">'+totDmg+'</b></div>'+
+'<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>Reusable</span><b style="color:#059669">'+totReuse+(cut?' → +'+reuseTaka+'T':' (set cut)')+'</b></div>'+
+'<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>Exchanged</span><b style="color:#4F46E5">'+totExch+(cut?' → -'+exchTaka+'T':' (set cut)')+'</b></div>'+
 '</div>';
 }
 function saveExchange(){
@@ -1355,49 +1432,41 @@ const person=(el('ex-person')?.value||'').trim();
 const notes=(el('ex-notes')?.value||'').trim();
 if(!custId){toast('Select a customer','er');return;}
 if(!cut){toast('Enter saree cut (meters per saree)','er');return;}
-// Validate rows
-const rows=[];
-for(let i=0;i<_exRows.length;i++){
-const sel=getSel('ex'+i);if(!sel) continue;
-const tot=parseInt(el('ex'+i+'-tot')?.value)||0;
-if(!tot) continue;
-const dmg=parseInt(el('ex'+i+'-dmg')?.value)||0;
-const exch=parseInt(el('ex'+i+'-exch')?.value)||0;
-if(exch>tot){toast('SKU '+(i+1)+': Exchanged cannot exceed Total','er');return;}
-rows.push({itemId:sel.itemId,colIdx:sel.colIdx,itemName:sel.item.name,colourName:sel.col.name,sku:sel.col.sku,totalSarees:tot,damagedSarees:dmg,reusableSarees:Math.max(0,tot-dmg),exchangedSarees:exch});
-}
-if(!rows.length){toast('Add at least one SKU with sarees','er');return;}
+const rows=_exSelectedSKUs.filter(r=>r.totalSarees>0);
+if(!rows.length){toast('Add SKUs with total sarees','er');return;}
 const skuTot=rows.reduce((s,r)=>s+r.totalSarees,0);
-if(htot&&htot!==skuTot){toast('Header Total ('+htot+') ≠ SKU sum ('+skuTot+'). Fix before saving.','er');return;}
-// Determine status
-const allDone=rows.every(r=>r.exchangedSarees===r.totalSarees);
-const hasDmg=rows.some(r=>r.damagedSarees>0);
-const status=allDone?'Ready':hasDmg?'Under Process':'Pending';
+if(htot&&htot!==skuTot){toast('Total Sarees ('+htot+') ≠ SKU sum ('+skuTot+')','er');return;}
+rows.forEach(r=>{r.reusableSarees=Math.max(0,r.totalSarees-r.damagedSarees);});
+for(let r of rows){if((r.exchangedSarees||0)>r.totalSarees){toast(r.colourName+': Exchanged > Total','er');return;}}
+const allExch=rows.every(r=>(r.exchangedSarees||0)===r.totalSarees);
+const hasDmg=rows.some(r=>(r.damagedSarees||0)>0);
+const hasExch=rows.some(r=>(r.exchangedSarees||0)>0);
+const status=allExch?'Ready':hasExch||hasDmg?'Under Process':'Pending';
 const avg=STATE.settings.avgMtrPerTaka||90;
 if(editId){
-// Update existing
 const ex=(STATE.exchanges||[]).find(e=>e.id===editId);
 if(ex){
 ex.date=date;ex.ref=ref;ex.custId=custId;ex.custName=custName;
 ex.totalSarees=htot||skuTot;ex.cut=cut;
 ex.khata=khata;ex.phone=phone;ex.person=person;ex.notes=notes;
-ex.rows=rows;ex.status=status;ex._ts=Date.now();
+ex.rows=rows;ex.status=ex.collected?'Collected':status;ex._ts=Date.now();
 }
 } else {
-// New exchange
-const obj=stamp({id:uid(),ref,date,status,custId,custName,totalSarees:htot||skuTot,cut,khata,phone,person,rows,notes,by:STATE.user?.name||'',fy:STATE.settings.currentFY||''});
+const obj=stamp({id:uid(),ref,date,status,collected:false,custId,custName,totalSarees:htot||skuTot,cut,khata,phone,person,rows,notes,by:STATE.user?.name||'',fy:STATE.settings.currentFY||''});
 if(!STATE.exchanges) STATE.exchanges=[];
 STATE.exchanges.push(obj);
-// Stock effects: add reusable, deduct exchanged
-rows.forEach(r=>{
-const reuseTaka=avg?Math.round(r.reusableSarees*cut/avg):0;
-const exchTaka=avg?Math.round(r.exchangedSarees*cut/avg):0;
-if(reuseTaka>0) addStock(r.itemId,r.colIdx,reuseTaka,'exchange',custName,ref,'Reusable '+r.reusableSarees+' sarees');
-if(exchTaka>0) deductStock(r.itemId,r.colIdx,exchTaka,'exchange',custName,ref,'Exchanged '+r.exchangedSarees+' sarees');
-});
 }
 persist(); hideMod('m-inw'); renderDash(); renderInRec(); renderExchangeList();
 toast('Exchange '+(editId?'updated':'saved')+' — '+status,'ok');
+}
+function toggleExCollected(exId){
+const ex=(STATE.exchanges||[]).find(e=>e.id===exId);if(!ex)return;
+ex.collected=!ex.collected;
+ex.status=ex.collected?'Collected':'Ready';
+ex._ts=Date.now();
+persist(); renderExchangeList();
+toast(ex.collected?'Marked as collected':'Marked as not collected','ok');
+openExchangeForm(exId);
 }
 function waExchangeReady(exId){
 const ex=(STATE.exchanges||[]).find(e=>e.id===exId);if(!ex)return;
@@ -1405,26 +1474,44 @@ const ph=ex.phone;if(!ph){toast('No phone number for receiver','er');return;}
 const skuList=ex.rows.map((r,i)=>(i+1)+'. '+r.itemName+' '+r.colourName+' — '+r.exchangedSarees+' sarees').join('\n');
 const msg='*'+STATE.settings.companyName+'*\n\n'+
 'Dear *'+(ex.person||ex.khata||ex.custName)+'*,\n\n'+
-'Your exchange sarees are *READY* for delivery/pickup.\n\n'+
+'Your exchange sarees are *READY* for pickup/delivery! 🎉\n\n'+
 '*Ref:* '+ex.ref+'\n*Date:* '+fmtDate(ex.date)+'\n\n'+
-'*Exchange SKUs:*\n'+skuList+'\n\n'+
-'*Total Sarees:* '+ex.totalSarees+'\n\n'+
-'Please collect at your earliest convenience.\n— '+STATE.settings.companyName;
+'*Sarees:*\n'+skuList+'\n\n'+
+'*Total:* '+ex.totalSarees+' sarees\n\n'+
+'Please collect at your earliest.\n— '+STATE.settings.companyName+'\n'+STATE.settings.phone;
 openWA(ph,msg);
 }
-function renderExchangeList(){
+let _exchFilter='all';
+function renderExchangeList(filter){
+_exchFilter=filter||_exchFilter||'all';
 const c=el('exch-list');if(!c)return;
-const list=(STATE.exchanges||[]).filter(e=>!e._deleted).sort((a,b)=>new Date(b.date)-new Date(a.date));
-if(!list.length){c.innerHTML='<div class="emp"><div class="emj">🔄</div><h3>No Exchanges</h3><p>Tap Exchange button above to create</p></div>';return;}
-c.innerHTML=list.map(ex=>{
-const sc={Pending:'#D97706','Under Process':'#0891B2',Ready:'#059669'}[ex.status]||'#999';
-const ico={Pending:'⏳','Under Process':'⚙️',Ready:'✅'}[ex.status]||'🔄';
-return '<div class="et" onclick="openExchangeForm(\''+ex.id+'\')" style="border-left:3px solid '+sc+'">'+
+const all=(STATE.exchanges||[]).filter(e=>!e._deleted).sort((a,b)=>new Date(b.date)-new Date(a.date));
+const counts={all:all.length,Pending:all.filter(e=>e.status==='Pending').length,'Under Process':all.filter(e=>e.status==='Under Process').length,Ready:all.filter(e=>e.status==='Ready').length,Collected:all.filter(e=>e.status==='Collected').length};
+const list=_exchFilter==='all'?all:all.filter(e=>e.status===_exchFilter);
+const tabs=['all','Pending','Under Process','Ready','Collected'];
+const tabColors={all:'var(--P)',Pending:'#D97706','Under Process':'#0891B2',Ready:'#059669',Collected:'#064E3B'};
+let html='<div style="display:flex;gap:4px;padding:0 16px 8px;overflow-x:auto">';
+tabs.forEach(t=>{
+const lbl=t==='all'?'All':t;
+const cnt=counts[t]||0;
+const on=_exchFilter===t;
+html+='<button onclick="renderExchangeList(\''+t+'\')" style="padding:5px 10px;border-radius:8px;border:1.5px solid '+(on?tabColors[t]:'var(--br)')+';background:'+(on?tabColors[t]+'18':'var(--sf)')+';color:'+(on?tabColors[t]:'var(--t3)')+';font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">'+lbl+' ('+cnt+')</button>';
+});
+html+='</div>';
+if(!list.length){html+='<div class="emp"><div class="emj">🔄</div><h3>No '+((_exchFilter==='all'?'':_exchFilter)+' Exchanges').trim()+'</h3></div>';c.innerHTML=html;return;}
+list.forEach(ex=>{
+const sc={Pending:'#D97706','Under Process':'#0891B2',Ready:'#059669',Collected:'#064E3B'}[ex.status]||'#999';
+const ico={Pending:'⏳','Under Process':'⚙️',Ready:'✅',Collected:'📦'}[ex.status]||'🔄';
+const progress=ex.rows.length?Math.round(ex.rows.filter(r=>(r.exchangedSarees||0)===r.totalSarees).length/ex.rows.length*100):0;
+html+='<div class="et" onclick="openExchangeForm(\''+ex.id+'\')" style="border-left:3px solid '+sc+';margin:0 16px 8px">'+
 '<div class="ei" style="background:'+sc+'22;color:'+sc+'">'+ico+'</div>'+
-'<div class="eb"><div class="etit">'+ex.ref+' — '+ex.custName+'</div>'+
-'<div class="esub">'+fmtDate(ex.date)+' · '+ex.totalSarees+' sarees'+(ex.person?' · '+ex.person:'')+'</div></div>'+
+'<div class="eb"><div class="etit">'+escHtml(ex.ref)+' — '+escHtml(ex.custName)+'</div>'+
+'<div class="esub">'+fmtDate(ex.date)+' · '+ex.totalSarees+' sarees'+(ex.person?' · '+escHtml(ex.person):'')+'</div>'+
+(progress>0&&progress<100?'<div style="margin-top:4px;background:#E5E7EB;border-radius:4px;height:4px;overflow:hidden"><div style="background:'+sc+';height:100%;width:'+progress+'%"></div></div>':'')+
+'</div>'+
 '<div class="er"><span class="bdg" style="background:'+sc+'22;color:'+sc+'">'+ex.status+'</span></div></div>';
-}).join('');
+});
+c.innerHTML=html;
 }
 async function saveInward(){
 const date=el('in-date')?.value, ref=el('in-ref')?.value.trim(), notes=el('in-notes')?.value.trim();
