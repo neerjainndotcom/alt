@@ -23,7 +23,7 @@
 </div>
 <div id="ls"><div class="lg"></div><div class="lglow"></div><div class="lcard"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p>Amrit Laxmi Textile · Surat</p></div><div id="lf"><div class="lf"><label>Username</label><input type="text" id="lu" placeholder="Enter username" autocomplete="username"/></div><div class="lf"><label>Password</label><input type="password" id="lp" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div><button class="lbtn" onclick="doLogin()">Sign In →</button><div class="lerr" id="le"></div><div style="display:flex;justify-content:space-between;margin-top:14px"><button onclick="showForgotUsername()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Username?</button><button onclick="showForgotPassword()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Password?</button></div><div style="margin-top:14px;background:rgba(255,165,0,0.15);border-radius:10px;padding:12px;border:1.5px solid rgba(255,165,0,0.4)"><div style="font-size:11px;color:rgba(255,255,255,0.9);margin-bottom:8px;text-align:center;font-weight:700">&#x1F4F1; First time on this phone / New device?</div><button onclick="loginScreenSyncFirebase()" style="width:100%;background:linear-gradient(135deg,#D97706,#F59E0B);color:white;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 15px rgba(217,119,6,.4)">&#x1F525; Load Data from Firebase</button><div id="ls-sync-status" style="font-size:12px;color:rgba(255,255,255,0.9);margin-top:8px;text-align:center;min-height:18px;font-weight:600"></div><div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:6px;text-align:center">Tap this button to load all your data before logging in</div></div><div style="text-align:center;margin-top:10px"><button onclick="showEmergencyRecovery()" style="background:none;border:none;color:rgba(255,80,80,0.7);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline">&#x1F6A8; Admin locked out?</button></div><div id="login-version" style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3)"></div></div><div id="of" class="hid"><p style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:20px;line-height:1.6">📱 New device detected!<br>OTP sent to admin WhatsApp.<br>Ask admin to share the code.</p><div class="lf"><label>One-Time Password</label><input type="number" class="otp-inp" id="oi" placeholder="000000" maxlength="6"/></div><button class="lbtn" onclick="doOTP()">Verify OTP →</button><div class="lerr" id="oe"></div><button style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit" onclick="showEl('lf');hideEl('of')">← Back</button></div></div>
 </div>
-<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:10px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bgh bsm" onclick="toggleLang()">&#x1F310; <span id="ll">हिंदी</span></button><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-contacts-widget"></div><div id="dash-followup-alert"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov" id="dash-stk-title">Stock Overview</div><div style="padding:0 16px 8px" id="dash-stk-search"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('out',this)">Outstanding</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div id="billst"></div></div><div class="tp" id="tp-out"><div style="padding:8px 16px"><button class="wa" style="padding:6px 14px;font-size:12px" onclick="waOutstanding()">&#x1F4F2; Share Outstanding</button></div><div id="outlst"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg"><label>Customer</label><select class="sel" id="inv-cust-sel" onchange="onInvCustSelect()" style="font-size:14px;padding:10px 12px"><option value="">Select customer...</option></select></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="showInward('exch')"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div></div></div><div class="stl" data-i18n="recent">Recent Inward</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="inward-search" placeholder="Search by item, colour, party..." oninput="renderInRec(this.value)"/></div></div><div id="inrec"></div></div></div><div id="s-jw" class="scr"><div class="shdr"><div class="hr"><div><h2>⚙️ Job Work</h2><p class="sub">Challans & Processing</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="showJWForm('s2j')">Shop → Job Work</button></div></div><div class="tb mt8"><button class="tbb on" onclick="jwTab('pnd',this)">Pending</button><button class="tbb" onclick="jwTab('rec',this)">Received</button><button class="tbb" onclick="jwTab('all',this)">All</button></div></div><div class="tp on" id="tp-pnd"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="jw-search" placeholder="Search by ref, party, item..." oninput="renderJWLists(this.value)"/></div></div><div id="jwpnd"></div></div><div class="tp" id="tp-rec"><div id="jwrec"></div></div><div class="tp" id="tp-all"><div id="jwall"></div></div></div><div id="s-masters" class="scr"><div class="shdr"><h2>🗂️ Masters</h2><div class="tb mt8"><button class="tbb on" onclick="mTab('itm',this)">Items</button><button class="tbb" onclick="mTab('cst',this)">Customers</button><button class="tbb" onclick="mTab('brk',this)">Brokers</button><button class="tbb" onclick="mTab('sup',this)">Suppliers</button><button class="tbb" onclick="mTab('prd',this)">Products</button></div></div><div class="tp on" id="tp-itm"><div class="srch"><span>🔍</span><input type="text" placeholder="Search items..." oninput="renderItems(this.value)"/></div><div id="itmlst"></div></div><div class="tp" id="tp-cst"><div class="srch"><span>🔍</span><input type="text" placeholder="Search customers..." oninput="renderCusts(this.value)"/></div><div id="cstlst"></div></div><div class="tp" id="tp-brk"><div id="brklst"></div></div><div class="tp" id="tp-sup"><div id="suplst"></div></div><div class="tp" id="tp-prd"><div id="prdlst"></div></div></div><div id="s-admin" class="scr"><div class="shdr"><div class="hr"><h2>👑 Admin</h2><button class="btn bp bsm" id="admin-add-usr-btn" onclick="openUserModal()" style="display:none">+ User</button></div><div class="tb mt8"><button class="tbb on" onclick="aTab('set',this)">Settings</button><button class="tbb" onclick="aTab('usr',this)">Users</button><button class="tbb" onclick="aTab('dev',this)">Devices</button><button class="tbb" onclick="aTab('led',this)">Ledger</button><button class="tbb" onclick="aTab('db',this)">Database</button><button class="tbb" onclick="aTab('fy',this)">Fin Year</button><button class="tbb" data-tab="flags" onclick="aTab('flags',this)" id="admin-flag-tab">Flags <span id="flag-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:3px">!</span></button></div></div><div class="tp on" id="tp-set" style="background:var(--bg)"><div id="setbod" class="p16" style="background:var(--bg)"></div></div><div class="tp" id="tp-usr" style="background:var(--bg)"><div id="usrlst"></div></div><div class="tp" id="tp-dev" style="background:var(--bg)"><div id="devlst"></div></div><div class="tp" id="tp-led" style="background:var(--bg)"><div class="srch"><span>🔍</span><input type="text" placeholder="Filter ledger..." oninput="renderLedger(this.value)"/></div><div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap" id="ldflt"></div><div id="ledbod" class="p16"></div></div><div class="tp" id="tp-db" style="background:var(--bg)"><div id="dbbod" class="p16"></div></div><div class="tp" id="tp-fy" style="background:var(--bg)"><div id="fybody" class="p16"></div></div><div class="tp" id="tp-flags" style="background:var(--bg);overflow-y:auto;padding-bottom:80px"><div id="flagged-body" class="p16"></div></div></div><div id="s-reports" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CA; Reports</h2><p class="sub">Stock, Sales, SKU Analysis</p></div></div><div class="tb mt8"><button class="tbb on" onclick="repTab('stock',this)">Stock</button><button class="tbb" onclick="repTab('vsorder',this)">vs Orders</button><button class="tbb" onclick="repTab('daily',this)">Daily Sales</button><button class="tbb" onclick="repTab('topsku',this)">Top SKUs</button><button class="tbb" onclick="repTab('trends',this)">&#x1F4C8; Trends</button></div></div><div class="tp on" id="tp-rstock" style="overflow-y:auto;padding-bottom:80px"><div id="rep-stock-body" class="p16"></div></div><div class="tp" id="tp-rvsorder" style="overflow-y:auto;padding-bottom:80px"><div id="rep-vsorder-body" class="p16"></div></div><div class="tp" id="tp-rdaily" style="overflow-y:auto;padding-bottom:80px"><div style="padding:12px 16px;display:flex;gap:8px;align-items:center"><input type="date" id="rep-daily-date" class="inp" style="flex:1" value=""/><button class="btn bp bsm" onclick="renderDailyReport()">Go</button></div><div id="rep-daily-body" class="p16"></div></div><div class="tp" id="tp-rtopsku" style="overflow-y:auto;padding-bottom:80px"><div id="rep-topsku-body" class="p16"></div></div><div class="tp" id="tp-rtrends" style="overflow-y:auto;padding-bottom:80px"><div class="p16"><div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"><button class="sw on" id="trn-7" onclick="renderTrends(7,this)">7 Days</button><button class="sw" id="trn-14" onclick="renderTrends(14,this)">14 Days</button><button class="sw" id="trn-28" onclick="renderTrends(28,this)">28 Days</button><button class="sw" id="trn-90" onclick="renderTrends(90,this)">3 Months</button></div><div id="rep-trends-body"></div></div></div></div><div id="s-leads" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F3AF; Leads</h2><p class="sub">Lead Management</p></div><button class="btn bp bsm" onclick="openNewLead()">+ Lead</button></div><div class="tb mt8"><button class="tbb on" onclick="leadTab('all',this)">All</button><button class="tbb" onclick="leadTab('mine',this)">Mine</button><button class="tbb" onclick="leadTab('today',this)">Follow Up</button><button class="tbb" onclick="leadTab('won',this)">Won/Lost</button><button class="tbb" onclick="leadTab('recurring',this)" id="lead-rec-tab">Recurring <span id="lead-rec-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:2px">!</span></button></div></div><div class="tp on" id="tp-lall"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="lead-search" placeholder="Search by name, phone, status, salesman..." oninput="renderLeads('all',this.value)"/></div></div><div id="lead-lst-all"></div></div><div class="tp" id="tp-lmine"><div id="lead-lst-mine"></div></div><div class="tp" id="tp-ltoday"><div id="lead-lst-today"></div></div><div class="tp" id="tp-lwon"><div id="lead-lst-won"></div></div><div class="tp" id="tp-lrecurring"><div id="lead-rec-list" class="p16"></div></div></div></div><div id="s-tasks" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CB; Tasks</h2><p class="sub" id="task-sub">Your task list</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="openNewTaskInstance()" id="task-add-btn">+ Task</button><button class="btn bgh bsm" onclick="openNewTaskTemplate()" id="task-tpl-btn" style="display:none">+ Template</button></div></div><div class="tb mt8"><button class="tbb on" onclick="taskTab('my',this)" id="ttab-my">My Tasks</button><button class="tbb" onclick="taskTab('all',this)" id="ttab-all" style="display:none">All Tasks</button><button class="tbb" onclick="taskTab('templates',this)" id="ttab-tpl" style="display:none">Templates</button><button class="tbb" onclick="taskTab('leave',this)" id="ttab-lv" style="display:none">Leave</button><button class="tbb" onclick="taskTab('rep',this)" id="ttab-rep" style="display:none">&#x1F4CA; Report</button></div></div><div class="tp on" id="tp-tmy"><div style="padding:8px 16px 0"><div class="srch"><span>🔍</span><input type="text" id="task-search" placeholder="Search by task name, category..." oninput="renderMyTasks(this.value)"/></div></div><div id="task-lst-my" class="p16"></div></div><div class="tp" id="tp-tall"><div id="task-lst-all" class="p16"></div></div><div class="tp" id="tp-ttemplates"><div id="task-lst-tpl" class="p16"></div></div><div class="tp" id="tp-tleave"><div id="task-lst-lv" class="p16"></div></div><div class="tp" id="tp-trep"><div class="p16"><div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><input type="date" class="inp" id="trep-from" style="flex:1"/><span>to</span><input type="date" class="inp" id="trep-to" style="flex:1"/><button class="btn bp bsm" onclick="renderTaskReport()">Go</button></div><button class="btn bd bsm" onclick="openDeleteCompletedTasks()" style="margin-bottom:12px">&#x1F5D1; Delete Completed Tasks</button><div id="task-report-body"></div></div></div></div><button id="global-refresh-btn" onclick="manualRefresh()" style="position:fixed;bottom:80px;left:16px;z-index:500;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#4F46E5,#6366F1);color:white;border:none;font-size:18px;cursor:pointer;box-shadow:0 4px 15px rgba(79,70,229,.4);display:flex;align-items:center;justify-content:center" title="Refresh data">&#x1F504;</button><button id="global-fab-btn" style="display:none;position:fixed;bottom:80px;right:16px;z-index:500;width:54px;height:54px;border-radius:16px;background:var(--P);color:#fff;border:none;font-size:26px;cursor:pointer;box-shadow:0 4px 20px rgba(79,70,229,.4);align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation" title="Add new">+</button><nav id="bn"><button class="nb on" onclick="setNav('dash')" id="nb-dash"><span class="ni">📊</span>Dash</button><button class="nb" onclick="setNav('sales')" id="nb-sales"><span class="ni">🧾</span>Sales</button><button class="nb" onclick="setNav('inward')" id="nb-inward"><span class="ni">📥</span>Inward</button><button class="nb" onclick="setNav('jw')" id="nb-jw"><span class="ni">⚙️</span>Job Work</button><button class="nb" onclick="setNav('masters')" id="nb-masters"><span class="ni">🗂️</span>Masters</button><button class="nb" onclick="setNav('reports')" id="nb-reports"><span class="ni">&#x1F4CA;</span>Reports</button><button class="nb" onclick="setNav('leads')" id="nb-leads"><span class="ni">&#x1F3AF;</span>Leads</button><button class="nb" onclick="setNav('tasks')" id="nb-tasks"><span class="ni">&#x1F4CB;</span>Tasks<span class="ndot hid" id="tdot"></span></button><button class="nb" onclick="setNav('admin')" id="nb-admin"><span class="ni">👑</span>Admin<span class="ndot hid" id="adot"></span></button></nav>
+<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:10px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bgh bsm" onclick="toggleLang()">&#x1F310; <span id="ll">हिंदी</span></button><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov" id="dash-stk-title">Stock Overview</div><div style="padding:0 16px 8px" id="dash-stk-search"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('out',this)">Outstanding</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div id="billst"></div></div><div class="tp" id="tp-out"><div style="padding:8px 16px"><button class="wa" style="padding:6px 14px;font-size:12px" onclick="waOutstanding()">&#x1F4F2; Share Outstanding</button></div><div id="outlst"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg"><label>Customer</label><select class="sel" id="inv-cust-sel" onchange="onInvCustSelect()" style="font-size:14px;padding:10px 12px"><option value="">Select customer...</option></select></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="showInward('exch')"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div></div></div><div class="stl" data-i18n="recent">Recent Inward</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="inward-search" placeholder="Search by item, colour, party..." oninput="renderInRec(this.value)"/></div></div><div id="inrec"></div><div class="stl" style="margin-top:8px">Exchange Sarees</div><div id="exch-list"></div></div></div><div id="s-jw" class="scr"><div class="shdr"><div class="hr"><div><h2>⚙️ Job Work</h2><p class="sub">Challans & Processing</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="showJWForm('s2j')">Shop → Job Work</button></div></div><div class="tb mt8"><button class="tbb on" onclick="jwTab('pnd',this)">Pending</button><button class="tbb" onclick="jwTab('rec',this)">Received</button><button class="tbb" onclick="jwTab('all',this)">All</button></div></div><div class="tp on" id="tp-pnd"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="jw-search" placeholder="Search by ref, party, item..." oninput="renderJWLists(this.value)"/></div></div><div id="jwpnd"></div></div><div class="tp" id="tp-rec"><div id="jwrec"></div></div><div class="tp" id="tp-all"><div id="jwall"></div></div></div><div id="s-masters" class="scr"><div class="shdr"><h2>🗂️ Masters</h2><div class="tb mt8"><button class="tbb on" onclick="mTab('itm',this)">Items</button><button class="tbb" onclick="mTab('cst',this)">Customers</button><button class="tbb" onclick="mTab('brk',this)">Brokers</button><button class="tbb" onclick="mTab('sup',this)">Suppliers</button><button class="tbb" onclick="mTab('prd',this)">Products</button></div></div><div class="tp on" id="tp-itm"><div class="srch"><span>🔍</span><input type="text" placeholder="Search items..." oninput="renderItems(this.value)"/></div><div id="itmlst"></div></div><div class="tp" id="tp-cst"><div class="srch"><span>🔍</span><input type="text" placeholder="Search customers..." oninput="renderCusts(this.value)"/></div><div id="cstlst"></div></div><div class="tp" id="tp-brk"><div id="brklst"></div></div><div class="tp" id="tp-sup"><div id="suplst"></div></div><div class="tp" id="tp-prd"><div id="prdlst"></div></div></div><div id="s-admin" class="scr"><div class="shdr"><div class="hr"><h2>👑 Admin</h2><button class="btn bp bsm" id="admin-add-usr-btn" onclick="openUserModal()" style="display:none">+ User</button></div><div class="tb mt8"><button class="tbb on" onclick="aTab('set',this)">Settings</button><button class="tbb" onclick="aTab('usr',this)">Users</button><button class="tbb" onclick="aTab('dev',this)">Devices</button><button class="tbb" onclick="aTab('led',this)">Ledger</button><button class="tbb" onclick="aTab('db',this)">Database</button><button class="tbb" onclick="aTab('fy',this)">Fin Year</button><button class="tbb" data-tab="flags" onclick="aTab('flags',this)" id="admin-flag-tab">Flags <span id="flag-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:3px">!</span></button></div></div><div class="tp on" id="tp-set" style="background:var(--bg)"><div id="setbod" class="p16" style="background:var(--bg)"></div></div><div class="tp" id="tp-usr" style="background:var(--bg)"><div id="usrlst"></div></div><div class="tp" id="tp-dev" style="background:var(--bg)"><div id="devlst"></div></div><div class="tp" id="tp-led" style="background:var(--bg)"><div class="srch"><span>🔍</span><input type="text" placeholder="Filter ledger..." oninput="renderLedger(this.value)"/></div><div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap" id="ldflt"></div><div id="ledbod" class="p16"></div></div><div class="tp" id="tp-db" style="background:var(--bg)"><div id="dbbod" class="p16"></div></div><div class="tp" id="tp-fy" style="background:var(--bg)"><div id="fybody" class="p16"></div></div><div class="tp" id="tp-flags" style="background:var(--bg);overflow-y:auto;padding-bottom:80px"><div id="flagged-body" class="p16"></div></div></div><div id="s-reports" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CA; Reports</h2><p class="sub">Stock, Sales, SKU Analysis</p></div></div><div class="tb mt8"><button class="tbb on" onclick="repTab('stock',this)">Stock</button><button class="tbb" onclick="repTab('vsorder',this)">vs Orders</button><button class="tbb" onclick="repTab('daily',this)">Daily Sales</button><button class="tbb" onclick="repTab('topsku',this)">Top SKUs</button><button class="tbb" onclick="repTab('trends',this)">&#x1F4C8; Trends</button></div></div><div class="tp on" id="tp-rstock" style="overflow-y:auto;padding-bottom:80px"><div id="rep-stock-body" class="p16"></div></div><div class="tp" id="tp-rvsorder" style="overflow-y:auto;padding-bottom:80px"><div id="rep-vsorder-body" class="p16"></div></div><div class="tp" id="tp-rdaily" style="overflow-y:auto;padding-bottom:80px"><div style="padding:12px 16px;display:flex;gap:8px;align-items:center"><input type="date" id="rep-daily-date" class="inp" style="flex:1" value=""/><button class="btn bp bsm" onclick="renderDailyReport()">Go</button></div><div id="rep-daily-body" class="p16"></div></div><div class="tp" id="tp-rtopsku" style="overflow-y:auto;padding-bottom:80px"><div id="rep-topsku-body" class="p16"></div></div><div class="tp" id="tp-rtrends" style="overflow-y:auto;padding-bottom:80px"><div class="p16"><div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"><button class="sw on" id="trn-7" onclick="renderTrends(7,this)">7 Days</button><button class="sw" id="trn-14" onclick="renderTrends(14,this)">14 Days</button><button class="sw" id="trn-28" onclick="renderTrends(28,this)">28 Days</button><button class="sw" id="trn-90" onclick="renderTrends(90,this)">3 Months</button></div><div id="rep-trends-body"></div></div></div></div><div id="s-leads" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F3AF; Leads</h2><p class="sub">Lead Management</p></div><button class="btn bp bsm" onclick="openNewLead()">+ Lead</button></div><div class="tb mt8"><button class="tbb on" onclick="leadTab('all',this)">All</button><button class="tbb" onclick="leadTab('mine',this)">Mine</button><button class="tbb" onclick="leadTab('today',this)">Follow Up</button><button class="tbb" onclick="leadTab('won',this)">Won/Lost</button><button class="tbb" onclick="leadTab('recurring',this)" id="lead-rec-tab">Recurring <span id="lead-rec-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:2px">!</span></button></div></div><div class="tp on" id="tp-lall"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="lead-search" placeholder="Search by name, phone, status, salesman..." oninput="renderLeads('all',this.value)"/></div></div><div id="lead-lst-all"></div></div><div class="tp" id="tp-lmine"><div id="lead-lst-mine"></div></div><div class="tp" id="tp-ltoday"><div id="lead-lst-today"></div></div><div class="tp" id="tp-lwon"><div id="lead-lst-won"></div></div><div class="tp" id="tp-lrecurring"><div id="lead-rec-list" class="p16"></div></div></div></div><div id="s-tasks" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CB; Tasks</h2><p class="sub" id="task-sub">Your task list</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="openNewTaskInstance()" id="task-add-btn">+ Task</button><button class="btn bgh bsm" onclick="openNewTaskTemplate()" id="task-tpl-btn" style="display:none">+ Template</button></div></div><div class="tb mt8"><button class="tbb on" onclick="taskTab('my',this)" id="ttab-my">My Tasks</button><button class="tbb" onclick="taskTab('all',this)" id="ttab-all" style="display:none">All Tasks</button><button class="tbb" onclick="taskTab('templates',this)" id="ttab-tpl" style="display:none">Templates</button><button class="tbb" onclick="taskTab('leave',this)" id="ttab-lv" style="display:none">Leave</button><button class="tbb" onclick="taskTab('rep',this)" id="ttab-rep" style="display:none">&#x1F4CA; Report</button></div></div><div class="tp on" id="tp-tmy"><div style="padding:8px 16px 0"><div class="srch"><span>🔍</span><input type="text" id="task-search" placeholder="Search by task name, category..." oninput="renderMyTasks(this.value)"/></div></div><div id="task-lst-my" class="p16"></div></div><div class="tp" id="tp-tall"><div id="task-lst-all" class="p16"></div></div><div class="tp" id="tp-ttemplates"><div id="task-lst-tpl" class="p16"></div></div><div class="tp" id="tp-tleave"><div id="task-lst-lv" class="p16"></div></div><div class="tp" id="tp-trep"><div class="p16"><div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><input type="date" class="inp" id="trep-from" style="flex:1"/><span>to</span><input type="date" class="inp" id="trep-to" style="flex:1"/><button class="btn bp bsm" onclick="renderTaskReport()">Go</button></div><button class="btn bd bsm" onclick="openDeleteCompletedTasks()" style="margin-bottom:12px">&#x1F5D1; Delete Completed Tasks</button><div id="task-report-body"></div></div></div></div><button id="global-refresh-btn" onclick="manualRefresh()" style="position:fixed;bottom:80px;left:16px;z-index:500;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#4F46E5,#6366F1);color:white;border:none;font-size:18px;cursor:pointer;box-shadow:0 4px 15px rgba(79,70,229,.4);display:flex;align-items:center;justify-content:center" title="Refresh data">&#x1F504;</button><button id="global-fab-btn" style="display:none;position:fixed;bottom:80px;right:16px;z-index:500;width:54px;height:54px;border-radius:16px;background:var(--P);color:#fff;border:none;font-size:26px;cursor:pointer;box-shadow:0 4px 20px rgba(79,70,229,.4);align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation" title="Add new">+</button><nav id="bn"><button class="nb on" onclick="setNav('dash')" id="nb-dash"><span class="ni">📊</span>Dash</button><button class="nb" onclick="setNav('sales')" id="nb-sales"><span class="ni">🧾</span>Sales</button><button class="nb" onclick="setNav('inward')" id="nb-inward"><span class="ni">📥</span>Inward</button><button class="nb" onclick="setNav('jw')" id="nb-jw"><span class="ni">⚙️</span>Job Work</button><button class="nb" onclick="setNav('masters')" id="nb-masters"><span class="ni">🗂️</span>Masters</button><button class="nb" onclick="setNav('reports')" id="nb-reports"><span class="ni">&#x1F4CA;</span>Reports</button><button class="nb" onclick="setNav('leads')" id="nb-leads"><span class="ni">&#x1F3AF;</span>Leads</button><button class="nb" onclick="setNav('tasks')" id="nb-tasks"><span class="ni">&#x1F4CB;</span>Tasks<span class="ndot hid" id="tdot"></span></button><button class="nb" onclick="setNav('admin')" id="nb-admin"><span class="ni">👑</span>Admin<span class="ndot hid" id="adot"></span></button></nav>
 </div>
 
 <div class="ov" id="m-item" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="itmtit">New Item</h3><p class="sub">Fabric type</p></div><button class="btn bgh bsm" onclick="hideMod('m-item')">✕</button></div></div><div class="shb"><input type="hidden" id="itm-id"/><div class="fg"><label>Item Name *</label><input class="inp" id="itm-name" placeholder="e.g. FRENDY CHIFFON"/></div><div class="fg"><label>HSN Code</label><input class="inp" id="itm-hsn" placeholder="e.g. 5407"/></div><div class="dvd"></div><div class="hr" style="margin-bottom:10px"><label style="margin-bottom:0">Ranges &amp; Colours</label><button class="ai" onclick="openAddRange()">+ Add Range</button></div><div id="itmrng"></div></div><div class="shf" style="flex-wrap:wrap;gap:8px"><button class="btn bd bfl" id="itm-del-btn" style="display:none" onclick="deleteItem()">Delete Item</button><div style="display:flex;gap:8px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-item')">Cancel</button><button class="btn bp bfl" onclick="saveItem()">Save Item</button></div></div>
@@ -44,7 +44,7 @@
 </div></div>
 <div class="ov" id="m-stafftype" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Staff Types</h3><p class="sub">Define roles &amp; permissions</p></div><button class="btn bgh bsm" onclick="hideMod('m-stafftype')">&#x2715;</button></div></div><div class="shb"><div id="stafftype-list"></div><div class="dvd"></div><div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:10px">&#x2795; New Staff Type</div><div class="ir2"><div class="fg"><label>Type Name *</label><input class="inp" id="st-name" placeholder="e.g. Store Keeper"/></div><div class="fg"><label>Colour</label><input type="color" id="st-color" value="#4F46E5" style="width:100%;height:42px;border-radius:10px;border:1.5px solid var(--br);cursor:pointer;padding:3px"/></div></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;margin-top:4px">Default Permissions for this Type</div><div id="st-perms" style="background:var(--bg);border-radius:12px;padding:12px;border:1px solid var(--br)"></div><button class="btn bp bfl mt12" onclick="addStaffType()">Add Staff Type</button></div>
 </div></div>
-<div class="ov" id="m-inw" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="inwtit">Inward</h3><p class="sub" id="inwsub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-inw')">✕</button></div></div><div class="shb" id="inwbod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-inw')">Cancel</button><button class="btn bp bfl" onclick="saveInward()">Save Entry</button></div>
+<div class="ov" id="m-inw" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="inwtit">Inward</h3><p class="sub" id="inwsub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-inw')">✕</button></div></div><div class="shb" id="inwbod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-inw')">Cancel</button><button class="btn bp bfl" id="inw-save-btn" onclick="saveInward()">Save Entry</button></div>
 </div></div>
 <div class="ov" id="m-jw" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="jwtit">Job Work Challan</h3><p class="sub" id="jwsub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-jw')">✕</button></div></div><div class="shb" id="jwbod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-jw')">Cancel</button><button class="btn bp bfl" onclick="saveJW()">Save Challan</button></div>
 </div></div>
@@ -137,12 +137,12 @@ const detState = gstin => STATES[(gstin||'').substring(0,2)] || '';
 const gstType = cGstin => !cGstin||cGstin.length<2 ? 'none' : STATE.settings.gstin.substring(0,2)===cGstin.substring(0,2) ? 'same' : 'diff';
 let STATE = {
 user:null, items:[], entries:[], customers:[], brokers:[], products:[], suppliers:[],
-users:[], deviceReqs:[], jobWork:[], orders:[], bills:[], payments:[], leads:[], flaggedEntries:[], recurringLeads:[], taskTemplates:[], taskInstances:[], staffLeave:[],
+users:[], deviceReqs:[], jobWork:[], orders:[], bills:[], payments:[], leads:[], flaggedEntries:[], recurringLeads:[], taskTemplates:[], taskInstances:[], staffLeave:[], exchanges:[],
 settings:{
 companyName:'AMRIT LAXMI TEXTILE', gstin:'24AAXPJ5150B1ZU',
 address:'B-3 3022, REGENT TEXTILE MARKET, RING ROAD, SURAT-395002',
 phone:'9913866366', email:'amritlaxmitextiles@gmail.com',
-orderPrefix:'B/', discount:5, discountDays:45, nettDays:120,
+orderPrefix:'B/', exchPrefix:'EX-', discount:5, discountDays:45, nettDays:120,
 avgMtrPerTaka:90, avgMtrPerTP:45, adminWhatsApp:'919913866366', gasUrl:'https://script.google.com/macros/s/AKfycbzwD4Ap7ACcJlqk-9BtTxPvJYY-yCkWn2KTLeXsqUlTVyoZFjOUQ66uVZ4zMoKIlFLp/exec',
 staffTypes:[
 {id:'salesman', name:'Salesman', color:'#4F46E5'},
@@ -223,6 +223,7 @@ STATE.recurringLeads=lsGet('vs_rec_leads')||[];
 STATE.taskTemplates=lsGet('vs_task_templates')||[];
 STATE.taskInstances=lsGet('vs_task_instances')||[];
 STATE.staffLeave=lsGet('vs_staff_leave')||[];
+STATE.exchanges=lsGet('vs_exchanges')||[];
 }
 const _lsCache={};
 function lsSaveIfChanged(key,val){
@@ -233,7 +234,7 @@ try{ localStorage.setItem(key,str); }catch(e){}
 }
 function persist(){
 // Auto-stamp any records that don't have _ts yet
-['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork','leads','taskTemplates','taskInstances','staffLeave','recurringLeads','flaggedEntries'].forEach(k=>{
+['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork','leads','taskTemplates','taskInstances','staffLeave','exchanges','recurringLeads','flaggedEntries'].forEach(k=>{
   (STATE[k]||[]).forEach(item=>{if(!item._ts)item._ts=Date.now();});
 });
 lsSave('vs_items',STATE.items); lsSave('vs_entries',STATE.entries);
@@ -248,6 +249,7 @@ if(STATE.flaggedEntries) lsSave('vs_flagged',STATE.flaggedEntries);
 if(STATE.recurringLeads) lsSave('vs_rec_leads',STATE.recurringLeads);
 if(STATE.taskInstances) lsSave('vs_task_instances',STATE.taskInstances);
 if(STATE.staffLeave) lsSave('vs_staff_leave',STATE.staffLeave);
+if(STATE.exchanges) lsSave('vs_exchanges',STATE.exchanges);
 setTimeout(autoSyncFirebase, 800);
 }
 function autoSyncFirebase(){
@@ -284,7 +286,7 @@ function autoSyncFirebase(){
         orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],
         jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],
         taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],
-        staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
+        staffLeave:STATE.staffLeave||[],exchanges:STATE.exchanges||[],recurringLeads:STATE.recurringLeads||[],
         settings:{...STATE.settings,lastSync:new Date().toISOString()},
         syncedAt:new Date().toISOString()};
       if(GAS_URL){
@@ -466,7 +468,7 @@ if(tab==='dash') renderDash();
 if(tab==='masters'){requestAnimationFrame(()=>{renderItems();renderCusts();renderBrks();renderSups();renderPrds();});}
 if(tab==='sales'){requestAnimationFrame(()=>{renderOrders();renderBills();renderOutstanding();});}
 if(tab==='jw') renderJWLists();
-if(tab==='inward') renderInRec();
+if(tab==='inward'){ renderInRec(); renderExchangeList(); }
 if(tab==='admin'){
 if(STATE.user?.role!=='admin'){toast('Admin access restricted','er');return;}
 renderUsers();renderDevices();renderLedger();renderSettingsForm();
@@ -646,7 +648,6 @@ renderDashAlerts();
 try{renderFollowupAlert();}catch(e){console.warn('Followup alert:',e);}
 try{renderDashRecurringVisits();}catch(e){console.warn('Recurring visits:',e);}
 renderDashTaskWidget();
-renderDashContactsWidget();
 const canSeeStock=isAdmin||hp('stock_overview');
 if(canSeeStock) renderStock();
 ['dash-stk-title','dash-stk-search','stkov'].forEach(id2=>{const e=el(id2);if(e)e.style.display=canSeeStock?'':'none';});
@@ -689,6 +690,7 @@ hdr.innerHTML=
 '<h4>'+item.name+' <span style="font-weight:400;font-size:11px;color:var(--t3)">'+item.colours.length+' colours</span></h4>'+
 '<div><span class="mono fw7 cP">'+totT+'T</span> <span class="xs ct3">'+fmtN(totT*STATE.settings.avgMtrPerTaka)+'m</span></div>';
 const body=document.createElement('div');
+if(!q) body.style.display='none';
 hdr.onclick=()=>{body.style.display=body.style.display==='none'?'':'none';};
 card.appendChild(hdr);
 const colsToShow=q
@@ -1188,22 +1190,28 @@ else STATE.products.push({id:uid(),...obj});
 lsSave('vs_products',STATE.products); hideMod('m-prd'); renderPrds(); toast('Product saved','ok');
 }
 let _inType='mill', _inRows=[{}];
+function nextExchRef(){
+const pfx=STATE.settings.exchPrefix||'EX-';
+const exchEntries=(STATE.entries||[]).filter(e=>e.type==='exchange'&&(e.ref||'').startsWith(pfx));
+return pfx+String(exchEntries.length+1).padStart(3,'0');
+}
 function showInward(type){
+if(type==='exch'){openExchangeForm();return;}
 _inType=type; _inRows=[{}];
-const T={mill:'Mill G.P',jwin:'Job Work Inward',exch:'Exchange Inward'};
+const T={mill:'Mill G.P',jwin:'Job Work Inward'};
 el('inwtit').textContent=T[type]||'Inward'; el('inwsub').textContent='';
+const saveBtn=el('inw-save-btn');
+if(saveBtn){saveBtn.textContent='Save Entry';saveBtn.onclick=saveInward;}
 buildInward(); showMod('m-inw');
 }
 function buildInward(){
 const supOpts=STATE.suppliers.map(s=>'<option value="'+s.id+'" data-g="'+s.group+'">'+s.name+' ('+s.group+')</option>').join('');
-const exchSec=_inType==='exch'?
-'<div class="ir2"><div class="fg"><label>Total Sarees</label><input class="inp big mono" type="number" id="ex-tot" step="1" oninput="calcEx()"/></div><div class="fg"><label>Reusable Sarees</label><input class="inp big mono" type="number" id="ex-ru" step="1" oninput="calcEx()"/></div></div><div class="cb hid" id="ex-cb"></div>':'';
 const gpSec=_inType==='jwin'?
 '<div class="fg"><label>Mill G.P Number</label><input class="inp" id="in-gpno" placeholder="Which GP\'s goods received from JW?"/></div>':'';
 el('inwbod').innerHTML=
 '<div class="ir2"><div class="fg"><label>Date</label><input class="inp" type="date" id="in-date" value="'+today()+'"/></div><div class="fg"><label>Ref No.</label><input class="inp" id="in-ref" placeholder="Bill/DC no."/></div></div>'+
 '<div class="fg"><label>Party / Supplier</label><select class="sel" id="in-pty"><option value="">Select supplier...</option>'+supOpts+'</select></div>'+
-gpSec+exchSec+
+gpSec+
 '<div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs</div><div id="in-rows"></div>'+
 '<button class="btn bs bfl mt8" onclick="addInRow()">+ Add SKU</button>'+
 '<div class="fg mt12"><label>Notes</label><input class="inp" id="in-notes" placeholder="Optional"/></div>';
@@ -1216,8 +1224,14 @@ document.querySelectorAll('#inwbod .sw').forEach(b=>b.classList.remove('on')); b
 d==='jw'?showEl('in-jwsec'):hideEl('in-jwsec');
 }
 function calcEx(){
-const ru=parseInt(el('ex-ru')?.value)||0, mtrs=ru*4.5, taka=Math.round(mtrs/STATE.settings.avgMtrPerTaka);
-const c=el('ex-cb'); if(c){c.classList.remove('hid');c.textContent=ru+' x 4.5m = '+mtrs+'m / '+STATE.settings.avgMtrPerTaka+' = '+taka+'T to add back';}
+const tot=parseInt(el('ex-tot')?.value)||0;
+const ru=parseInt(el('ex-ru')?.value)||0;
+const cut=parseInt(el('ex-cut')?.value)||0;
+const c=el('ex-cb'); if(!c) return;
+if(!tot&&!ru&&!cut){c.classList.add('hid');return;}
+c.classList.remove('hid');
+const mtrs=ru*4.5, taka=Math.round(mtrs/STATE.settings.avgMtrPerTaka);
+c.textContent='Total: '+tot+' | Reusable: '+ru+' ('+mtrs+'m = '+taka+'T back) | Cut: '+cut+' | Waste: '+Math.max(0,tot-ru-cut);
 }
 function addInRow(){_inRows.push({});renderInRows();}
 function remInRow(i){_inRows.splice(i,1);renderInRows();}
@@ -1228,16 +1242,201 @@ function updIRC(i){
 const t=parseInt(el('ir'+i+'-t')?.value)||0;
 const c=el('ir'+i+'-c'); if(c) c.textContent=t+'T x '+STATE.settings.avgMtrPerTaka+'m = '+Math.round(t*STATE.settings.avgMtrPerTaka)+' mtrs';
 }
+// ═══ EXCHANGE SAREES SYSTEM ══════════════════════════════════════
+let _exRows=[{}];
+function openExchangeForm(editId){
+_exRows=[{}];
+const custOpts=STATE.customers.filter(c=>!c._deleted).map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
+const ex=editId?(STATE.exchanges||[]).find(e=>e.id===editId):null;
+el('inwtit').textContent=ex?'Edit Exchange':'New Exchange Sarees';
+el('inwsub').textContent=ex?ex.ref:'';
+if(ex) _exRows=ex.rows.map(r=>({...r}));
+const cut=ex?ex.cut:'';
+el('inwbod').innerHTML=
+'<input type="hidden" id="ex-edit-id" value="'+(editId||'')+'"/>'+
+'<div id="ex-status-bar"></div>'+
+'<div class="ir2"><div class="fg"><label>Date</label><input class="inp" type="date" id="ex-date" value="'+(ex?ex.date:today())+'"/></div><div class="fg"><label>Ref No.</label><input class="inp mono" id="ex-ref" value="'+(ex?ex.ref:nextExchRef())+'"/></div></div>'+
+'<div class="fg"><label>Party / Customer *</label><select class="sel" id="ex-cust"><option value="">Select customer...</option>'+custOpts+'</select></div>'+
+'<div class="ir2"><div class="fg"><label>Total Sarees (header)</label><input class="inp big mono" type="number" id="ex-htot" min="0" step="1" value="'+(ex?ex.totalSarees:'')+'"/></div><div class="fg"><label>Saree Cut (mtrs/saree)</label><input class="inp big mono" type="number" id="ex-cut" min="0" step="0.1" value="'+cut+'" oninput="renderExRows()"/></div></div>'+
+'<div class="stl" style="padding:8px 0;font-size:10px">SKU Entries</div><div id="ex-rows"></div>'+
+'<button class="btn bs bfl mt8" onclick="addExRow()">+ Add SKU</button>'+
+'<div id="ex-summary" class="mt8"></div>'+
+'<div class="stl" style="padding:12px 0 4px;font-size:10px">Receiver Details</div>'+
+'<div class="fg"><label>Khata Name</label><input class="inp" id="ex-khata" value="'+(ex?ex.khata:'')+'"/></div>'+
+'<div class="ir2"><div class="fg"><label>Phone Number</label><input class="inp" id="ex-phone" type="tel" value="'+(ex?ex.phone:'')+'"/></div><div class="fg"><label>Person Name</label><input class="inp" id="ex-person" value="'+(ex?ex.person:'')+'"/></div></div>'+
+'<div class="fg mt8"><label>Notes</label><input class="inp" id="ex-notes" value="'+(ex?ex.notes||'':'')+'"/></div>';
+if(ex&&el('ex-cust')) el('ex-cust').value=ex.custId||'';
+renderExRows();
+updateExStatusBar(ex);
+const saveBtn=el('inw-save-btn');
+if(saveBtn){saveBtn.textContent='Save Exchange';saveBtn.onclick=saveExchange;}
+showMod('m-inw');
+}
+function updateExStatusBar(ex){
+const bar=el('ex-status-bar');if(!bar)return;
+const status=ex?ex.status:'Pending';
+const colors={Pending:'#D97706','Under Process':'#0891B2',Ready:'#059669'};
+const bg={Pending:'#FEF3C7','Under Process':'#CFFAFE',Ready:'#D1FAE5'};
+bar.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:'+(bg[status]||'#F3F4F6')+';border-radius:10px;margin-bottom:12px;border-left:4px solid '+(colors[status]||'#999')+'">'+
+'<div style="font-size:18px">'+(status==='Ready'?'✅':status==='Under Process'?'⚙️':'⏳')+'</div>'+
+'<div style="flex:1"><div style="font-size:12px;font-weight:800;color:'+(colors[status]||'#333')+'">Status: '+status+'</div></div>'+
+(status==='Ready'&&ex?'<button class="wa" style="padding:5px 10px;font-size:11px" onclick="waExchangeReady(\''+ex.id+'\')">📲 Notify</button>':'')+
+'</div>';
+}
+function addExRow(){_exRows.push({});renderExRows();}
+function remExRow(i){_exRows.splice(i,1);renderExRows();}
+function renderExRows(){
+const cut=parseFloat(el('ex-cut')?.value)||0;
+const avg=STATE.settings.avgMtrPerTaka||90;
+const c=el('ex-rows');if(!c)return;
+c.innerHTML=_exRows.map((r,i)=>{
+const tot=r.totalSarees||0,dmg=r.damagedSarees||0,reuse=Math.max(0,tot-dmg),exch=r.exchangedSarees||0;
+const reuseMtrs=reuse*cut,reuseTaka=avg?Math.round(reuseMtrs/avg):0;
+const exchMtrs=exch*cut,exchTaka=avg?Math.round(exchMtrs/avg):0;
+return '<div class="sr su" style="margin-bottom:10px"><div class="srh"><span>SKU '+(i+1)+'</span>'+(i>0?'<button onclick="remExRow('+i+')" class="btn bd bxs">✕</button>':'')+'</div>'+
+buildCascade('ex'+i,false)+
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">'+
+'<div class="fg" style="margin:0"><label>Total Sarees</label><input class="inp mono" type="number" id="ex'+i+'-tot" min="0" step="1" value="'+tot+'" oninput="onExRowChange('+i+')"/></div>'+
+'<div class="fg" style="margin:0"><label>Damaged</label><input class="inp mono" type="number" id="ex'+i+'-dmg" min="0" step="1" value="'+(dmg||'')+'" oninput="onExRowChange('+i+')"/></div>'+
+'<div class="fg" style="margin:0"><label>Reusable</label><div class="inp mono" style="background:var(--Gl);color:var(--Gd);font-weight:800">'+reuse+'</div></div>'+
+'<div class="fg" style="margin:0"><label>Exchanged</label><input class="inp mono" type="number" id="ex'+i+'-exch" min="0" step="1" value="'+(exch||'')+'" oninput="onExRowChange('+i+')"/></div>'+
+'</div>'+
+(cut?'<div style="display:flex;gap:8px;margin-top:6px;font-size:10px;color:var(--t3)">'+
+'<span style="background:#D1FAE5;padding:2px 6px;border-radius:4px;color:#065F46">↑ Reuse: '+reuse+'×'+cut+'m = '+reuseMtrs+'m = <b>'+reuseTaka+'T add</b></span>'+
+'<span style="background:#FEE2E2;padding:2px 6px;border-radius:4px;color:#991B1B">↓ Exch: '+exch+'×'+cut+'m = '+exchMtrs+'m = <b>'+exchTaka+'T deduct</b></span>'+
+'</div>':'')+
+'</div>';
+}).join('');
+updateExSummary();
+}
+function onExRowChange(i){
+const tot=parseInt(el('ex'+i+'-tot')?.value)||0;
+const dmg=parseInt(el('ex'+i+'-dmg')?.value)||0;
+const exch=parseInt(el('ex'+i+'-exch')?.value)||0;
+_exRows[i].totalSarees=tot;
+_exRows[i].damagedSarees=dmg;
+_exRows[i].exchangedSarees=exch;
+renderExRows();
+}
+function updateExSummary(){
+const htot=parseInt(el('ex-htot')?.value)||0;
+const skuTot=_exRows.reduce((s,r)=>s+(r.totalSarees||0),0);
+const cut=parseFloat(el('ex-cut')?.value)||0;
+const avg=STATE.settings.avgMtrPerTaka||90;
+const totReuse=_exRows.reduce((s,r)=>s+Math.max(0,(r.totalSarees||0)-(r.damagedSarees||0)),0);
+const totExch=_exRows.reduce((s,r)=>s+(r.exchangedSarees||0),0);
+const reuseTaka=avg?Math.round(totReuse*cut/avg):0;
+const exchTaka=avg?Math.round(totExch*cut/avg):0;
+const mismatch=htot&&skuTot&&htot!==skuTot;
+const allDone=skuTot>0&&_exRows.every(r=>(r.exchangedSarees||0)===(r.totalSarees||0));
+const hasDmg=_exRows.some(r=>(r.damagedSarees||0)>0);
+const status=allDone?'Ready':hasDmg?'Under Process':'Pending';
+const sm=el('ex-summary');if(!sm)return;
+sm.innerHTML=
+(mismatch?'<div class="wb">⚠ Header Total Sarees ('+htot+') ≠ Sum of SKU Total ('+skuTot+'). Please correct.</div>':'')+
+'<div style="background:var(--Pl);border-radius:10px;padding:10px 12px;font-size:12px">'+
+'<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Total Sarees (SKU sum)</span><b>'+skuTot+'</b></div>'+
+'<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Total Reusable</span><b style="color:#059669">'+totReuse+' → +'+reuseTaka+'T</b></div>'+
+'<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Total Exchanged</span><b style="color:#DC2626">'+totExch+' → -'+exchTaka+'T</b></div>'+
+'<div style="display:flex;justify-content:space-between;border-top:1px solid var(--br);padding-top:4px"><span>Auto Status</span><b style="color:'+(status==='Ready'?'#059669':status==='Under Process'?'#0891B2':'#D97706')+'">'+status+'</b></div>'+
+'</div>';
+}
+function saveExchange(){
+const editId=el('ex-edit-id')?.value;
+const date=el('ex-date')?.value;
+const ref=el('ex-ref')?.value.trim();
+const custId=el('ex-cust')?.value;
+const custName=STATE.customers.find(c=>c.id===custId)?.name||'';
+const htot=parseInt(el('ex-htot')?.value)||0;
+const cut=parseFloat(el('ex-cut')?.value)||0;
+const khata=(el('ex-khata')?.value||'').trim();
+const phone=(el('ex-phone')?.value||'').trim();
+const person=(el('ex-person')?.value||'').trim();
+const notes=(el('ex-notes')?.value||'').trim();
+if(!custId){toast('Select a customer','er');return;}
+if(!cut){toast('Enter saree cut (meters per saree)','er');return;}
+// Validate rows
+const rows=[];
+for(let i=0;i<_exRows.length;i++){
+const sel=getSel('ex'+i);if(!sel) continue;
+const tot=parseInt(el('ex'+i+'-tot')?.value)||0;
+if(!tot) continue;
+const dmg=parseInt(el('ex'+i+'-dmg')?.value)||0;
+const exch=parseInt(el('ex'+i+'-exch')?.value)||0;
+if(exch>tot){toast('SKU '+(i+1)+': Exchanged cannot exceed Total','er');return;}
+rows.push({itemId:sel.itemId,colIdx:sel.colIdx,itemName:sel.item.name,colourName:sel.col.name,sku:sel.col.sku,totalSarees:tot,damagedSarees:dmg,reusableSarees:Math.max(0,tot-dmg),exchangedSarees:exch});
+}
+if(!rows.length){toast('Add at least one SKU with sarees','er');return;}
+const skuTot=rows.reduce((s,r)=>s+r.totalSarees,0);
+if(htot&&htot!==skuTot){toast('Header Total ('+htot+') ≠ SKU sum ('+skuTot+'). Fix before saving.','er');return;}
+// Determine status
+const allDone=rows.every(r=>r.exchangedSarees===r.totalSarees);
+const hasDmg=rows.some(r=>r.damagedSarees>0);
+const status=allDone?'Ready':hasDmg?'Under Process':'Pending';
+const avg=STATE.settings.avgMtrPerTaka||90;
+if(editId){
+// Update existing
+const ex=(STATE.exchanges||[]).find(e=>e.id===editId);
+if(ex){
+ex.date=date;ex.ref=ref;ex.custId=custId;ex.custName=custName;
+ex.totalSarees=htot||skuTot;ex.cut=cut;
+ex.khata=khata;ex.phone=phone;ex.person=person;ex.notes=notes;
+ex.rows=rows;ex.status=status;ex._ts=Date.now();
+}
+} else {
+// New exchange
+const obj=stamp({id:uid(),ref,date,status,custId,custName,totalSarees:htot||skuTot,cut,khata,phone,person,rows,notes,by:STATE.user?.name||'',fy:STATE.settings.currentFY||''});
+if(!STATE.exchanges) STATE.exchanges=[];
+STATE.exchanges.push(obj);
+// Stock effects: add reusable, deduct exchanged
+rows.forEach(r=>{
+const reuseTaka=avg?Math.round(r.reusableSarees*cut/avg):0;
+const exchTaka=avg?Math.round(r.exchangedSarees*cut/avg):0;
+if(reuseTaka>0) addStock(r.itemId,r.colIdx,reuseTaka,'exchange',custName,ref,'Reusable '+r.reusableSarees+' sarees');
+if(exchTaka>0) deductStock(r.itemId,r.colIdx,exchTaka,'exchange',custName,ref,'Exchanged '+r.exchangedSarees+' sarees');
+});
+}
+persist(); hideMod('m-inw'); renderDash(); renderInRec(); renderExchangeList();
+toast('Exchange '+(editId?'updated':'saved')+' — '+status,'ok');
+}
+function waExchangeReady(exId){
+const ex=(STATE.exchanges||[]).find(e=>e.id===exId);if(!ex)return;
+const ph=ex.phone;if(!ph){toast('No phone number for receiver','er');return;}
+const skuList=ex.rows.map((r,i)=>(i+1)+'. '+r.itemName+' '+r.colourName+' — '+r.exchangedSarees+' sarees').join('\n');
+const msg='*'+STATE.settings.companyName+'*\n\n'+
+'Dear *'+(ex.person||ex.khata||ex.custName)+'*,\n\n'+
+'Your exchange sarees are *READY* for delivery/pickup.\n\n'+
+'*Ref:* '+ex.ref+'\n*Date:* '+fmtDate(ex.date)+'\n\n'+
+'*Exchange SKUs:*\n'+skuList+'\n\n'+
+'*Total Sarees:* '+ex.totalSarees+'\n\n'+
+'Please collect at your earliest convenience.\n— '+STATE.settings.companyName;
+openWA(ph,msg);
+}
+function renderExchangeList(){
+const c=el('exch-list');if(!c)return;
+const list=(STATE.exchanges||[]).filter(e=>!e._deleted).sort((a,b)=>new Date(b.date)-new Date(a.date));
+if(!list.length){c.innerHTML='<div class="emp"><div class="emj">🔄</div><h3>No Exchanges</h3><p>Tap Exchange button above to create</p></div>';return;}
+c.innerHTML=list.map(ex=>{
+const sc={Pending:'#D97706','Under Process':'#0891B2',Ready:'#059669'}[ex.status]||'#999';
+const ico={Pending:'⏳','Under Process':'⚙️',Ready:'✅'}[ex.status]||'🔄';
+return '<div class="et" onclick="openExchangeForm(\''+ex.id+'\')" style="border-left:3px solid '+sc+'">'+
+'<div class="ei" style="background:'+sc+'22;color:'+sc+'">'+ico+'</div>'+
+'<div class="eb"><div class="etit">'+ex.ref+' — '+ex.custName+'</div>'+
+'<div class="esub">'+fmtDate(ex.date)+' · '+ex.totalSarees+' sarees'+(ex.person?' · '+ex.person:'')+'</div></div>'+
+'<div class="er"><span class="bdg" style="background:'+sc+'22;color:'+sc+'">'+ex.status+'</span></div></div>';
+}).join('');
+}
 async function saveInward(){
 const date=el('in-date')?.value, ref=el('in-ref')?.value.trim(), notes=el('in-notes')?.value.trim();
-const pId=el('in-pty')?.value, party=STATE.suppliers.find(s=>s.id===pId)?.name||'';
+const pId=el('in-pty')?.value;
+const party=STATE.suppliers.find(s=>s.id===pId)?.name||'';
 const gpNo=el('in-gpno')?.value?.trim()||'';
 const fullNote=gpNo?('GP: '+gpNo+(notes?' | '+notes:'')):notes;
 let saved=0;
 for(let i=0;i<_inRows.length;i++){
 const sel=getSel('ir'+i); if(!sel) continue;
 const taka=Math.round(parseInt(el('ir'+i+'-t')?.value)||0); if(!taka) continue;
-const entryType=_inType==='mill'?'mill':(_inType==='jwin'?'jobwork':_inType);
+const entryType=_inType==='mill'?'mill':'jobwork';
 addStock(sel.itemId,sel.colIdx,taka,entryType,party,ref,fullNote);
 saved++;
 }
@@ -2312,6 +2511,9 @@ c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Compa
 '<div class="ir2"><div class="fg"><label>Padding Digits</label><input class="inp mono" type="number" id="s-bpad" step="1" min="1" max="8" value="'+(s.billPadLen||4)+'"/></div>'+
 '<div class="fg"><label>Preview</label><div class="inp mono" style="background:var(--Pl);color:var(--Pd);font-weight:800;display:flex;align-items:center" id="s-bprev">'+(s.billPrefix||'INV-')+String(s.billStartNo||1).padStart(s.billPadLen||4,'0')+'</div></div></div>'+
 '</div>'+
+'<div class="card mt12"><div class="fw8" style="margin-bottom:14px">Exchange Settings</div>'+
+'<div class="fg"><label>Exchange Ref Prefix</label><input class="inp mono" id="s-expfx" placeholder="EX-" value="'+(s.exchPrefix||'EX-')+'"/></div>'+
+'<div style="font-size:11px;color:var(--t3);margin-top:4px">Auto-generated ref will be like '+(s.exchPrefix||'EX-')+'001, '+(s.exchPrefix||'EX-')+'002 etc.</div></div>'+
 '<div class="card mt12" style="background:#F9FAFB;text-align:center"><div style="font-size:11px;color:var(--t3)">ALT Stock v'+APP_VERSION+' | Build: '+APP_BUILD_DATE+'</div></div>'+
 '<button class="btn bp bfl mt16" onclick="saveSettings()">Save Settings</button>'+
 '<button class="btn bd bfl mt8" onclick="logout()">Logout</button>'+
@@ -2332,6 +2534,7 @@ email:sn('s-em',STATE.settings.email),
 adminWhatsApp:sn('s-wa',STATE.settings.adminWhatsApp),
 orderPrefix:sn('s-pfx',STATE.settings.orderPrefix||'B/'),
 billPrefix:sn('s-bpfx',STATE.settings.billPrefix||'INV-'),
+exchPrefix:sn('s-expfx',STATE.settings.exchPrefix||'EX-'),
 billStartNo:si('s-bsno',STATE.settings.billStartNo||1),
 billPadLen:si('s-bpad',STATE.settings.billPadLen||4),
 discount:sf('s-disc',STATE.settings.discount),
@@ -2700,8 +2903,6 @@ const PERM_DEFS=[
 {id:'masters_edit',grp:'Masters',   lbl:'Edit Masters',       desc:'Add/edit items, customers, suppliers'},
 {id:'masters_delete',grp:'Masters', lbl:'Delete Masters',     desc:'Delete items, customers, suppliers'},
 {id:'stock_overview',grp:'Dashboard',lbl:'Stock Overview',     desc:'See stock overview with search on dashboard'},
-{id:'contacts_customers',grp:'Dashboard',lbl:'Customer Directory',desc:'View customer contacts, call & WhatsApp from dashboard'},
-{id:'contacts_brokers',grp:'Dashboard',lbl:'Broker Directory',desc:'View broker contacts, call & WhatsApp from dashboard'},
 {id:'reports',          grp:'Reports', lbl:'View Reports Tab',      desc:'Access the Reports section'},
 {id:'rep_stock',        grp:'Reports', lbl:'Current Stock Report',  desc:'See current taka & meters per SKU'},
 {id:'rep_vsorder',      grp:'Reports', lbl:'Stock vs Orders',       desc:'See stock shortage vs pending orders'},
@@ -2716,7 +2917,7 @@ const PERM_DEFS=[
 {id:'cancel_bill', grp:'Ledger',    lbl:'Cancel Bills',       desc:'Cancel dispatched bills (stock reversal)'},
 {id:'flag_entry',  grp:'Ledger',    lbl:'Flag Wrong Entries', desc:'Flag entries for admin review'},
 ];
-const DEFAULT_PERMS={dash:0,sales_view:0,sales_order:0,sales_edit:0,sales_bill:0,sales_delete:0,sales_cancel:0,sales_wa:0,inward_view:0,inward:0,inward_delete:0,jw:0,jw_delete:0,masters_view:0,masters_edit:0,masters_delete:0,stock_overview:0,contacts_customers:0,contacts_brokers:0,reports:0,rep_stock:0,rep_vsorder:0,rep_daily:0,rep_topsku:0,reports_wa:0,leads_view:0,leads_edit:0,leads_assign:0,ledger_view:0,delete_entry:0,cancel_bill:0,flag_entry:0};
+const DEFAULT_PERMS={dash:0,sales_view:0,sales_order:0,sales_edit:0,sales_bill:0,sales_delete:0,sales_cancel:0,sales_wa:0,inward_view:0,inward:0,inward_delete:0,jw:0,jw_delete:0,masters_view:0,masters_edit:0,masters_delete:0,stock_overview:0,reports:0,rep_stock:0,rep_vsorder:0,rep_daily:0,rep_topsku:0,reports_wa:0,leads_view:0,leads_edit:0,leads_assign:0,ledger_view:0,delete_entry:0,cancel_bill:0,flag_entry:0};
 function getStaffTypes(){
 return [...((STATE.settings||{}).staffTypes||[]),{id:'admin',name:'Admin',color:'#E11D48'}];
 }
@@ -6542,7 +6743,7 @@ async function hybridSaveAll(silent){
     orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],
     jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],
     taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],
-    staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
+    staffLeave:STATE.staffLeave||[],exchanges:STATE.exchanges||[],recurringLeads:STATE.recurringLeads||[],
     settings:STATE.settings,syncedAt:new Date().toISOString()};
   let fb=false,gs=false;
   // Google Sheets FIRST (primary)
@@ -6670,107 +6871,6 @@ function setLeadStatus(id,status){
 }
 
 // ═══ DASHBOARD TASK WIDGET ═══════════════════════════════════════
-function renderDashContactsWidget(){
-  const c=el('dash-contacts-widget');if(!c)return;
-  const isAdmin=STATE.user?.role==='admin';
-  const showCust=isAdmin||hasPerm('contacts_customers');
-  const showBrk=isAdmin||hasPerm('contacts_brokers');
-  if(!showCust&&!showBrk){c.innerHTML='';return;}
-  let tabs='';
-  if(showCust) tabs+='<button class="sw on" onclick="switchContactTab(\'cust\',this)">Customers</button>';
-  if(showBrk) tabs+='<button class="sw'+(showCust?'':' on')+'" onclick="switchContactTab(\'brk\',this)">Brokers</button>';
-  c.innerHTML=
-  '<div style="margin:0 16px 10px;background:var(--sf);border:1.5px solid var(--br);border-radius:14px;padding:14px 16px">'+
-  '<div style="font-size:13px;font-weight:900;color:var(--Pd);margin-bottom:10px">📇 Contacts Directory</div>'+
-  '<div style="display:flex;gap:4px;margin-bottom:10px">'+tabs+'</div>'+
-  '<div id="cdir-body"></div>'+
-  '</div>';
-  const first=showCust?'cust':'brk';
-  showContactList(first);
-}
-function switchContactTab(type,btn){
-  const parent=btn.parentElement;
-  parent.querySelectorAll('.sw').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  showContactList(type);
-}
-function showContactList(type){
-  const body=el('cdir-body');if(!body)return;
-  let list=[];
-  if(type==='cust') list=(STATE.customers||[]).filter(c=>!c._deleted).map(c=>({id:c.id,name:c.name,phone:c.phone||'',wa:c.whatsapp||c.phone||'',sub:c.address||c.gstin||'',type:'cust'}));
-  else if(type==='brk') list=(STATE.brokers||[]).filter(b=>!b._deleted).map(b=>({id:b.id,name:b.name,phone:b.phone||'',wa:b.phone||'',sub:b.commission?b.commission+'% commission':'',type:'brk'}));
-  if(!list.length){body.innerHTML='<div style="text-align:center;padding:16px;color:var(--t3);font-size:12px">No contacts found</div>';return;}
-  body.innerHTML='<div style="margin-bottom:8px"><input type="text" class="inp" id="cdir-search" placeholder="Search name or phone..." oninput="filterContactList(\''+type+'\')" style="font-size:13px;padding:8px 10px"/></div><div id="cdir-list"></div>';
-  window._cdirList=list;
-  window._cdirType=type;
-  renderContactCards(list);
-}
-function filterContactList(type){
-  const q=(el('cdir-search')?.value||'').toLowerCase();
-  const filtered=(window._cdirList||[]).filter(c=>c.name.toLowerCase().includes(q)||(c.phone||'').includes(q));
-  renderContactCards(filtered);
-}
-function renderContactCards(list){
-  const c=el('cdir-list');if(!c)return;
-  if(!list.length){c.innerHTML='<div style="text-align:center;padding:12px;color:var(--t3);font-size:12px">No matches</div>';return;}
-  c.innerHTML='<div style="max-height:300px;overflow-y:auto">'+list.map(ct=>{
-    const hasPhone=!!ct.phone;
-    const hasWa=!!ct.wa;
-    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--br)">'+
-    '<div style="width:34px;height:34px;border-radius:10px;background:var(--Pl);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:var(--P);flex-shrink:0">'+ct.name.charAt(0).toUpperCase()+'</div>'+
-    '<div style="flex:1;min-width:0">'+
-    '<div style="font-size:13px;font-weight:700">'+escHtml(ct.name)+'</div>'+
-    (ct.phone?'<div style="font-size:11px;color:var(--t3)">'+escHtml(ct.phone)+'</div>':'')+
-    (ct.sub?'<div style="font-size:10px;color:var(--t3)">'+escHtml(ct.sub)+'</div>':'')+
-    '</div>'+
-    '<div style="display:flex;gap:5px;flex-shrink:0">'+
-    (hasPhone?'<button onclick="event.stopPropagation();window.location.href=\'tel:'+ct.phone.replace(/\D/g,'')+'\'" style="width:32px;height:32px;border-radius:8px;border:1.5px solid var(--Ps);background:var(--Pl);color:var(--P);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center" title="Call">📞</button>':'')+
-    (hasWa?'<button onclick="event.stopPropagation();openWA(\''+escHtml(ct.wa)+'\',\'\')" style="width:32px;height:32px;border-radius:8px;border:1.5px solid #A7F3D0;background:#D1FAE5;color:#059669;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center" title="WhatsApp">💬</button>':'')+
-    '<button onclick="event.stopPropagation();openContactEdit(\''+ct.type+'\',\''+ct.id+'\')" style="width:32px;height:32px;border-radius:8px;border:1.5px solid var(--br);background:var(--bg);color:var(--t2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center" title="Edit">✏️</button>'+
-    '</div></div>';
-  }).join('')+'</div>';
-}
-function openContactEdit(type,id){
-  let record,fields;
-  if(type==='cust'){
-    record=STATE.customers.find(c=>c.id===id);if(!record)return;
-    fields=[{key:'name',lbl:'Name',val:record.name||''},{key:'phone',lbl:'Phone',val:record.phone||'',type:'tel'},{key:'whatsapp',lbl:'WhatsApp',val:record.whatsapp||'',type:'tel'},{key:'address',lbl:'Address',val:record.address||''},{key:'email',lbl:'Email',val:record.email||'',type:'email'}];
-  } else if(type==='brk'){
-    record=STATE.brokers.find(b=>b.id===id);if(!record)return;
-    fields=[{key:'name',lbl:'Name',val:record.name||''},{key:'phone',lbl:'Phone',val:record.phone||'',type:'tel'},{key:'commission',lbl:'Commission %',val:record.commission||'',type:'number'}];
-  }
-  if(!record)return;
-  const div=document.createElement('div');div.id='m-cedit';
-  div.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center';
-  div.innerHTML='<div style="background:white;border-radius:16px 16px 0 0;width:min(500px,100%);padding:16px;max-height:70vh;overflow-y:auto">'+
-  '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><h3 style="margin:0;font-size:16px;font-weight:800">Edit '+escHtml(record.name)+'</h3><button onclick="rmEl(\'m-cedit\')" style="background:none;border:none;font-size:18px;cursor:pointer">✕</button></div>'+
-  fields.map(f=>'<div class="fg"><label>'+f.lbl+'</label><input class="inp" id="cedit-'+f.key+'" type="'+(f.type||'text')+'" value="'+escHtml(f.val)+'"/></div>').join('')+
-  '<div style="display:flex;gap:8px;margin-top:12px"><button class="btn bgh bfl" onclick="rmEl(\'m-cedit\')">Cancel</button><button class="btn bp bfl" onclick="saveContactEdit(\''+type+'\',\''+id+'\')">Save</button></div></div>';
-  document.body.appendChild(div);
-}
-function saveContactEdit(type,id){
-  if(type==='cust'){
-    const r=STATE.customers.find(c=>c.id===id);if(!r)return;
-    r.name=(el('cedit-name')?.value||'').trim()||r.name;
-    r.phone=(el('cedit-phone')?.value||'').trim();
-    r.whatsapp=(el('cedit-whatsapp')?.value||'').trim();
-    r.address=(el('cedit-address')?.value||'').trim();
-    r.email=(el('cedit-email')?.value||'').trim();
-    r._ts=Date.now();
-    lsSave('vs_customers',STATE.customers);
-  } else if(type==='brk'){
-    const r=STATE.brokers.find(b=>b.id===id);if(!r)return;
-    r.name=(el('cedit-name')?.value||'').trim()||r.name;
-    r.phone=(el('cedit-phone')?.value||'').trim();
-    r.commission=parseFloat(el('cedit-commission')?.value)||0;
-    r._ts=Date.now();
-    lsSave('vs_brokers',STATE.brokers);
-  }
-  rmEl('m-cedit');
-  toast('Contact updated','ok');
-  autoSyncFirebase();
-  renderDashContactsWidget();
-}
 function renderDashTaskWidget(){
   const c=el('dash-task-widget');if(!c)return;
   const td=today(),myId=STATE.user?.id;
