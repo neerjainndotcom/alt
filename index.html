@@ -1271,18 +1271,18 @@ const stage=ex?(ex.status==='Pending'?2:ex.status==='Under Process'?3:4):1;
 el('inwbod').innerHTML=
 '<input type="hidden" id="ex-edit-id" value="'+(editId||'')+'"/>'+
 '<div id="ex-status-bar"></div>'+
-'<div class="ir2"><div class="fg"><label>Date</label><input class="inp" type="date" id="ex-date" value="'+(ex?ex.date:today())+'"'+(stage>1?' disabled':'')+'/></div>'+
-'<div class="fg"><label>Ref No.</label><input class="inp mono" id="ex-ref" value="'+(ex?ex.ref:nextExchRef())+'"'+(stage>1?' disabled':'')+'/></div></div>'+
+'<div class="ir2"><div class="fg"><label>Date</label><input class="inp" type="date" id="ex-date" value="'+(ex?ex.date:today())+'"/></div>'+
+'<div class="fg"><label>Ref No.</label><input class="inp mono" id="ex-ref" value="'+(ex?ex.ref:nextExchRef())+'"/></div></div>'+
 '<div class="fg"><label>Party / Customer *</label><div style="display:flex;gap:6px">'+
-'<select class="sel" id="ex-cust" style="flex:1"'+(stage>1?' disabled':'')+'><option value="">Select customer...</option>'+custOpts+'</select>'+
-(stage<=1?'<button class="ai" onclick="addCustFromExchange()">+ New</button>':'')+
+'<select class="sel" id="ex-cust" style="flex:1"><option value="">Select customer...</option>'+custOpts+'</select>'+
+'<button class="ai" onclick="addCustFromExchange()">+ New</button>'+
 '</div></div>'+
-'<div class="ir2"><div class="fg"><label>Total Sarees</label><input class="inp big mono" type="number" id="ex-htot" min="0" step="1" value="'+(ex?ex.totalSarees:'')+'"'+(stage>1?' disabled':'')+'/></div>'+
-'<div class="fg"><label>Saree Cut (mtrs/saree)</label><input class="inp big mono" type="number" id="ex-cut" min="0" step="0.1" value="'+(ex?ex.cut:'')+'"'+(stage>1?' disabled':'')+'/></div></div>'+
-(stage<=1?'<div class="stl" style="padding:8px 0 4px;font-size:10px">Pick SKUs</div>'+
+'<div class="ir2"><div class="fg"><label>Total Sarees</label><input class="inp big mono" type="number" id="ex-htot" min="0" step="1" value="'+(ex?ex.totalSarees:'')+'"/></div>'+
+'<div class="fg"><label>Saree Cut (mtrs/saree)</label><input class="inp big mono" type="number" id="ex-cut" min="0" step="0.1" value="'+(ex?ex.cut:'')+'"/></div></div>'+
+'<div class="stl" style="padding:8px 0 4px;font-size:10px">Pick SKUs</div>'+
 '<div class="fg"><label>Select Item</label><select class="sel" id="ex-item-pick" onchange="onExItemPick()"><option value="">Choose item to pick SKUs...</option>'+
 STATE.items.map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+'</select></div>'+
-'<div id="ex-sku-picker"></div>':'')+
+'<div id="ex-sku-picker"></div>'+
 '<div class="stl" style="padding:8px 0 4px;font-size:10px">SKU Entries'+(stage>1?' — '+(stage===2?'Enter Damaged Sarees':stage===3?'Enter Exchanged Sarees':'Complete'):'')+'</div>'+
 '<div id="ex-sku-table"></div>'+
 '<div id="ex-summary" class="mt8"></div>'+
@@ -1301,10 +1301,8 @@ updateExStatusBar(ex);
 updateExSummary();
 const saveBtn=el('inw-save-btn');
 if(saveBtn){
-if(stage===1){saveBtn.textContent='Create Challan';saveBtn.onclick=saveExchange;}
-else if(stage===2){saveBtn.textContent='Save Damaged';saveBtn.onclick=saveExchange;}
-else if(stage===3){saveBtn.textContent='Save Exchanged';saveBtn.onclick=saveExchange;}
-else{saveBtn.textContent='Update';saveBtn.onclick=saveExchange;}
+saveBtn.textContent=isEdit?'Save Changes':'Create Challan';
+saveBtn.onclick=saveExchange;
 }
 showMod('m-inw');
 }
@@ -1367,8 +1365,7 @@ const cut=parseFloat(el('ex-cut')?.value)||0;
 const avg=STATE.settings.avgMtrPerTaka||90;
 let html='<div style="overflow-x:auto"><table style="font-size:11px;width:100%"><thead><tr>'+
 '<th>SKU</th><th style="width:55px">Total</th><th style="width:55px">Dmg</th><th style="width:50px">Reuse</th><th style="width:55px">Exch</th>'+
-(stage<=1?'<th style="width:24px"></th>':'')+
-(stage===3?'<th style="width:28px">Sub</th>':'')+
+'<th style="width:50px"></th>'+
 '</tr></thead><tbody>';
 _exSelectedSKUs.forEach((r,i)=>{
 const reuse=Math.max(0,(r.totalSarees||0)-(r.damagedSarees||0));
@@ -1378,12 +1375,12 @@ html+='<tr style="'+(done?'background:#D1FAE5':'')+'">'+
 '<td><div style="font-weight:700;font-size:11px">'+r.colourName+'</div><div style="font-size:9px;color:var(--t3)">'+r.itemName+' · '+(r.range||'')+'</div>'+
 (hasSub?'<div style="font-size:9px;color:#4F46E5;font-weight:700;margin-top:2px">↳ '+(r.subQty||0)+' from '+r.subColourName+' ('+r.subItemName+'), '+Math.max(0,(r.exchangedSarees||0)-(r.subQty||0))+' from original</div>':'')+
 '</td>'+
-'<td><input type="number" min="0" step="1" value="'+(r.totalSarees||'')+'" style="width:100%;padding:4px;border:1px solid var(--br);border-radius:6px;font-size:12px;font-family:inherit;text-align:center'+(stage>1?';background:#f3f4f6':'')+'" oninput="onExSKUInput('+i+',\'tot\',this.value)"'+(stage>1?' disabled':'')+'/></td>'+
-'<td><input type="number" min="0" step="1" value="'+(r.damagedSarees||'')+'" style="width:100%;padding:4px;border:1px solid '+(stage===2?'#D97706':'var(--br)')+';border-radius:6px;font-size:12px;font-family:inherit;text-align:center;'+(stage===2?'background:#FEF3C7;font-weight:700':'')+(stage<2||stage>3?';background:#f3f4f6':'')+'" oninput="onExSKUInput('+i+',\'dmg\',this.value)"'+(stage<2||stage>3?' disabled':'')+'/></td>'+
+'<td><input type="number" min="0" step="1" value="'+(r.totalSarees||'')+'" style="width:100%;padding:4px;border:1px solid var(--br);border-radius:6px;font-size:12px;font-family:inherit;text-align:center" oninput="onExSKUInput('+i+',\'tot\',this.value)"/></td>'+
+'<td><input type="number" min="0" step="1" value="'+(r.damagedSarees||'')+'" style="width:100%;padding:4px;border:1px solid '+(stage===2?'#D97706':'var(--br)')+';border-radius:6px;font-size:12px;font-family:inherit;text-align:center;'+(stage===2?'background:#FEF3C7;font-weight:700':'')+'" oninput="onExSKUInput('+i+',\'dmg\',this.value)"/></td>'+
 '<td style="text-align:center;font-weight:700;color:#059669;font-size:12px">'+reuse+'</td>'+
-'<td><input type="number" min="0" step="1" value="'+(r.exchangedSarees||'')+'" style="width:100%;padding:4px;border:1px solid '+(stage===3?'#4F46E5':'var(--br)')+';border-radius:6px;font-size:12px;font-family:inherit;text-align:center;'+(stage===3?'background:#EEF2FF;font-weight:700':'')+(stage<3||stage>3?';background:#f3f4f6':'')+'" oninput="onExSKUInput('+i+',\'exch\',this.value)"'+(stage<3||stage>3?' disabled':'')+'/></td>'+
-(stage<=1?'<td><button onclick="removeExSKU('+i+')" style="background:none;border:none;color:var(--R);cursor:pointer;font-size:14px">✕</button></td>':'')+
-(stage===3?'<td><button onclick="openExSubstitute('+i+')" style="background:'+(hasSub?'#EEF2FF':'none')+';border:1px solid '+(hasSub?'#4F46E5':'var(--br)')+';border-radius:6px;padding:2px 6px;font-size:9px;font-weight:700;color:'+(hasSub?'#4F46E5':'var(--t3)')+';cursor:pointer" title="Substitute with different SKU">↔</button></td>':'')+
+'<td><input type="number" min="0" step="1" value="'+(r.exchangedSarees||'')+'" style="width:100%;padding:4px;border:1px solid '+(stage===3?'#4F46E5':'var(--br)')+';border-radius:6px;font-size:12px;font-family:inherit;text-align:center;'+(stage===3?'background:#EEF2FF;font-weight:700':'')+'" oninput="onExSKUInput('+i+',\'exch\',this.value)"/></td>'+
+'<td style="display:flex;gap:2px"><button onclick="openExSubstitute('+i+')" style="background:'+(hasSub?'#EEF2FF':'none')+';border:1px solid '+(hasSub?'#4F46E5':'var(--br)')+';border-radius:6px;padding:2px 5px;font-size:9px;font-weight:700;color:'+(hasSub?'#4F46E5':'var(--t3)')+';cursor:pointer" title="Substitute SKU">↔</button>'+
+'<button onclick="removeExSKU('+i+')" style="background:none;border:1px solid var(--br);border-radius:6px;padding:2px 5px;font-size:9px;color:var(--R);cursor:pointer" title="Remove">✕</button></td>'+
 '</tr>';
 });
 html+='</tbody></table></div>';
@@ -4490,15 +4487,35 @@ c.innerHTML=
 '<div class="fw7 sm" style="margin-bottom:8px">All Financial Years</div>'+
 allFYs.map(fy=>{
   const isCur=fy===curFY;
+  const arch=!isCur?lsGet('vs_fy_archive_'+fy):null;
+  const cf=arch?.carryForwardOptions||{};
+  const hasUnforwarded=arch&&(!cf.stock||!cf.orders||!cf.jw||!cf.exch||!cf.leads||!cf.tasks);
+  const fwdLog=arch?.forwardLog||{};
+  const fwdBtns=[];
+  if(arch&&!cf.stock) fwdBtns.push({key:'stock',lbl:'📦 Stock',fn:"forwardFromArchive('"+fy+"','stock')"});
+  if(arch&&!cf.orders){const n=(arch.orders||[]).filter(o=>o.status==='pending'||o.status==='billed').length;if(n)fwdBtns.push({key:'orders',lbl:'🧾 Orders ('+n+')',fn:"forwardFromArchive('"+fy+"','orders')"});}
+  if(arch&&!cf.jw){const n=(arch.jobWork||[]).filter(j=>j.status==='pending').length;if(n)fwdBtns.push({key:'jobWork',lbl:'⚙️ JW ('+n+')',fn:"forwardFromArchive('"+fy+"','jobWork')"});}
+  if(arch&&!cf.exch){const n=(arch.exchanges||[]).filter(e=>e.status!=='Collected'&&e.status!=='Ready').length;if(n)fwdBtns.push({key:'exchanges',lbl:'🔄 Exchanges ('+n+')',fn:"forwardFromArchive('"+fy+"','exchanges')"});}
+  if(arch&&!cf.leads){const n=(arch.leads||[]).filter(l=>l.status!=='Won'&&l.status!=='Lost'&&l.status!=='Closed').length;if(n)fwdBtns.push({key:'leads',lbl:'🎯 Leads ('+n+')',fn:"forwardFromArchive('"+fy+"','leads')"});}
+  if(arch&&!cf.tasks){const n=(arch.taskTemplates||[]).length;if(n)fwdBtns.push({key:'tasks',lbl:'📋 Tasks ('+n+')',fn:"forwardFromArchive('"+fy+"','tasks')"});}
   return '<div style="border:1.5px solid '+(isCur?'var(--P)':'var(--br)')+';border-radius:12px;margin-bottom:8px;overflow:hidden;background:white">'+
   '<div style="padding:12px 14px;display:flex;align-items:center;gap:8px">'+
   '<div style="flex:1"><div class="fw7">FY '+fy+(isCur?' <span style="font-size:10px;background:var(--P);color:white;padding:1px 7px;border-radius:5px">CURRENT</span>':'')+'</div></div>'+
   '</div>'+
   (!isCur?'<div style="display:flex;border-top:1px solid #F3F4F6">'+
-  '<button onclick="viewFYSummary(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;font-size:11px;font-weight:700;color:#4F46E5;cursor:pointer">&#x1F4CB; View</button>'+
-  '<button onclick="downloadFYPdf(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#059669;cursor:pointer">&#x1F4C4; PDF Report</button>'+
-  '<button onclick="deleteFYData(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#DC2626;cursor:pointer">&#x1F5D1; Delete</button>'+
+  '<button onclick="viewFYSummary(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;font-size:11px;font-weight:700;color:#4F46E5;cursor:pointer">📋 View</button>'+
+  '<button onclick="downloadFYPdf(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#059669;cursor:pointer">📄 PDF</button>'+
+  '<button onclick="deleteFYData(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#DC2626;cursor:pointer">🗑 Delete</button>'+
   '</div>':'')+
+  (fwdBtns.length?'<div style="border-top:1px solid #F3F4F6;padding:8px 12px;background:#FEF3C7">'+
+  '<div style="font-size:10px;font-weight:700;color:#92400E;margin-bottom:6px">⬆ Forward to Current Year</div>'+
+  '<div style="display:flex;gap:4px;flex-wrap:wrap">'+
+  fwdBtns.map(b=>{const done=fwdLog[b.key];return done
+  ?'<div style="padding:5px 10px;border-radius:8px;border:1px solid #059669;background:#D1FAE5;font-size:10px;font-family:inherit">'+
+  '<div style="font-weight:700;color:#059669">✅ '+b.lbl+'</div>'+
+  '<div style="font-size:9px;color:#065F46">'+done.count+' forwarded · '+done.date+'</div></div>'
+  :'<button onclick="'+b.fn+'" style="padding:5px 10px;border-radius:8px;border:1px solid #D97706;background:white;font-size:10px;font-weight:700;color:#D97706;cursor:pointer;font-family:inherit">'+b.lbl+'</button>';}).join('')+
+  '</div></div>':'')+
   '</div>';
 }).join('');
 }
@@ -4511,52 +4528,150 @@ async function openNewFY(){
 const curFY=STATE.settings.currentFY||getCurrentFY();
 const yr=parseInt(curFY.split('-')[0]);
 const nextFY=(yr+1)+'-'+(String(yr+2).slice(-2));
-const ok=await appConfirm('Open New Financial Year?',
-'FY '+nextFY+' will be created.\n\n'+
-'✅ Stock levels carry forward as opening balance\n'+
-'✅ Settings, customers, items, users stay the same\n'+
-'✅ Old year data is archived (view anytime)\n'+
-'✅ New year starts with fresh orders, bills, payments',
-'&#x1F4C5;','Open FY '+nextFY,'ok');
-if(!ok) return;
+const pendOrd=STATE.orders.filter(o=>o.status==='pending'||o.status==='billed').length;
+const pendJW=(STATE.jobWork||[]).filter(j=>j.status==='pending').length;
+const pendExch=(STATE.exchanges||[]).filter(e=>e.status!=='Collected'&&e.status!=='Ready').length;
+const div=document.createElement('div');div.id='m-newfy';
+div.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
+div.innerHTML='<div style="background:white;border-radius:16px 16px 0 0;width:min(500px,100%);padding:16px;max-height:85vh;overflow-y:auto">'+
+'<h3 style="margin:0 0 4px;font-size:17px;font-weight:900">Open FY '+nextFY+'</h3>'+
+'<div style="font-size:11px;color:var(--t3);margin-bottom:14px">Current FY '+curFY+' will be archived. Choose what to carry forward to the new year.</div>'+
+'<div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">Always Carried Forward</div>'+
+'<div style="background:#D1FAE5;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#065F46">'+
+'✅ Items, Customers, Brokers, Suppliers, Users, Settings — <b>always</b></div>'+
+'<div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">Choose What to Carry Forward</div>'+
+'<label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:6px;cursor:pointer">'+
+'<input type="checkbox" id="fy-cf-stock" checked style="width:18px;height:18px"/>'+
+'<div><div style="font-size:13px;font-weight:700">Stock Levels (Opening Balance)</div>'+
+'<div style="font-size:10px;color:var(--t3)">Current stock becomes opening balance in new year</div></div></label>'+
+'<label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:6px;cursor:pointer">'+
+'<input type="checkbox" id="fy-cf-orders" checked style="width:18px;height:18px"/>'+
+'<div><div style="font-size:13px;font-weight:700">Pending Orders ('+pendOrd+')</div>'+
+'<div style="font-size:10px;color:var(--t3)">Unfulfilled orders move to new year</div></div></label>'+
+'<label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:6px;cursor:pointer">'+
+'<input type="checkbox" id="fy-cf-jw" checked style="width:18px;height:18px"/>'+
+'<div><div style="font-size:13px;font-weight:700">Pending Job Work ('+pendJW+')</div>'+
+'<div style="font-size:10px;color:var(--t3)">Unfinished JW challans move to new year</div></div></label>'+
+'<label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:6px;cursor:pointer">'+
+'<input type="checkbox" id="fy-cf-exch" checked style="width:18px;height:18px"/>'+
+'<div><div style="font-size:13px;font-weight:700">Pending Exchanges ('+pendExch+')</div>'+
+'<div style="font-size:10px;color:var(--t3)">Incomplete exchange challans move to new year</div></div></label>'+
+'<label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:6px;cursor:pointer">'+
+'<input type="checkbox" id="fy-cf-leads" style="width:18px;height:18px"/>'+
+'<div><div style="font-size:13px;font-weight:700">Active Leads ('+((STATE.leads||[]).filter(l=>l.status!=='Won'&&l.status!=='Lost'&&l.status!=='Closed').length)+')</div>'+
+'<div style="font-size:10px;color:var(--t3)">Open leads carry forward (Won/Lost stay in archive)</div></div></label>'+
+'<label style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:6px;cursor:pointer">'+
+'<input type="checkbox" id="fy-cf-tasks" style="width:18px;height:18px"/>'+
+'<div><div style="font-size:13px;font-weight:700">Task Templates</div>'+
+'<div style="font-size:10px;color:var(--t3)">Recurring task templates carry forward</div></div></label>'+
+'<div style="display:flex;gap:8px;margin-top:14px">'+
+'<button class="btn bgh bfl" onclick="rmEl(\'m-newfy\')">Cancel</button>'+
+'<button class="btn bp bfl" onclick="confirmNewFY(\''+curFY+'\',\''+nextFY+'\')">Open FY '+nextFY+'</button></div></div>';
+document.body.appendChild(div);
+}
+function confirmNewFY(curFY,nextFY){
+const cfStock=el('fy-cf-stock')?.checked;
+const cfOrders=el('fy-cf-orders')?.checked;
+const cfJW=el('fy-cf-jw')?.checked;
+const cfExch=el('fy-cf-exch')?.checked;
+const cfLeads=el('fy-cf-leads')?.checked;
+const cfTasks=el('fy-cf-tasks')?.checked;
+rmEl('m-newfy');
 // Step 1: Archive current FY data
 const archive={
   orders:[...STATE.orders],
   bills:[...STATE.bills],
   entries:[...STATE.entries],
   payments:[...(STATE.payments||[])],
-  jobWork:[...(STATE.jobWork||[])]
+  jobWork:[...(STATE.jobWork||[])],
+  exchanges:[...(STATE.exchanges||[])],
+  leads:[...(STATE.leads||[])],
+  taskTemplates:[...(STATE.taskTemplates||[])],
+  carryForwardOptions:{stock:cfStock,orders:cfOrders,jw:cfJW,exch:cfExch,leads:cfLeads,tasks:cfTasks}
 };
 lsSave('vs_fy_archive_'+curFY,archive);
-// Step 2: Create opening balance entries for new FY
+// Step 2: Opening balance entries
 const openingEntries=[];
+if(cfStock){
 STATE.items.forEach(item=>{
   item.colours.forEach((col,idx)=>{
     if((col.stock_taka||0)>0){
-      openingEntries.push({id:uid(),date:today(),type:'opening',direction:'in',party:'Carry Forward FY '+curFY,
+      openingEntries.push({id:uid(),voucherNo:'OB-'+item.name.substring(0,3).toUpperCase()+'-'+idx,date:today(),type:'opening',direction:'in',party:'Carry Forward FY '+curFY,
         itemId:item.id,itemName:item.name,colIdx:idx,colourName:col.name,sku:col.sku,
         taka:col.stock_taka,mtrs:col.stock_mtrs||0,fy:nextFY,note:'Opening balance from FY '+curFY,by:'System'});
     }
   });
 });
-// Step 3: Start new FY fresh — keep only pending orders and pending job work
-const pendingOrders=STATE.orders.filter(o=>o.status==='pending'||o.status==='billed');
+} else {
+// Reset all stock to zero if not carrying forward
+STATE.items.forEach(item=>item.colours.forEach(col=>{col.stock_taka=0;col.stock_mtrs=0;}));
+}
+// Step 3: Build new FY data
+const pendingOrders=cfOrders?STATE.orders.filter(o=>o.status==='pending'||o.status==='billed'):[];
 pendingOrders.forEach(o=>o.fy=nextFY);
-const pendingJW=(STATE.jobWork||[]).filter(j=>j.status==='pending');
+const pendingJW=cfJW?(STATE.jobWork||[]).filter(j=>j.status==='pending'):[];
 pendingJW.forEach(j=>j.fy=nextFY);
+const pendingExch=cfExch?(STATE.exchanges||[]).filter(e=>e.status!=='Collected'&&e.status!=='Ready'):[];
+pendingExch.forEach(e=>e.fy=nextFY);
+const activeLeads=cfLeads?(STATE.leads||[]).filter(l=>l.status!=='Won'&&l.status!=='Lost'&&l.status!=='Closed'):[];
 STATE.orders=pendingOrders;
 STATE.bills=[];
 STATE.entries=openingEntries;
 STATE.payments=[];
 STATE.jobWork=pendingJW;
+STATE.exchanges=pendingExch;
+STATE.leads=activeLeads;
+if(!cfTasks){STATE.taskTemplates=[];STATE.taskInstances=[];}
+else{STATE.taskInstances=[];}
 // Step 4: Update FY settings
 if(!STATE.settings.allFYs) STATE.settings.allFYs=[curFY];
 if(!STATE.settings.allFYs.includes(curFY)) STATE.settings.allFYs.push(curFY);
 STATE.settings.allFYs.push(nextFY);
 STATE.settings.currentFY=nextFY;
 persist(); renderFYTab(); renderDash();
-toast('FY '+nextFY+' opened! Old data archived. Stock carried forward.','ok');
+toast('FY '+nextFY+' opened! Data archived.','ok');
 autoSyncFirebase();
+}
+function forwardFromArchive(fy,dataType){
+const archive=lsGet('vs_fy_archive_'+fy);
+if(!archive){toast('No archive found for FY '+fy,'er');return;}
+let count=0;
+if(dataType==='orders'){
+const pend=(archive.orders||[]).filter(o=>o.status==='pending'||o.status==='billed');
+pend.forEach(o=>{o.fy=STATE.settings.currentFY;if(!STATE.orders.find(x=>x.id===o.id)){STATE.orders.push(o);count++;}});
+}else if(dataType==='jobWork'){
+const pend=(archive.jobWork||[]).filter(j=>j.status==='pending');
+pend.forEach(j=>{j.fy=STATE.settings.currentFY;if(!STATE.jobWork.find(x=>x.id===j.id)){STATE.jobWork.push(j);count++;}});
+}else if(dataType==='exchanges'){
+const pend=(archive.exchanges||[]).filter(e=>e.status!=='Collected'&&e.status!=='Ready');
+pend.forEach(e=>{e.fy=STATE.settings.currentFY;if(!(STATE.exchanges||[]).find(x=>x.id===e.id)){STATE.exchanges.push(e);count++;}});
+}else if(dataType==='leads'){
+const active=(archive.leads||[]).filter(l=>l.status!=='Won'&&l.status!=='Lost'&&l.status!=='Closed');
+active.forEach(l=>{if(!(STATE.leads||[]).find(x=>x.id===l.id)){STATE.leads.push(l);count++;}});
+}else if(dataType==='tasks'){
+(archive.taskTemplates||[]).forEach(t=>{if(!(STATE.taskTemplates||[]).find(x=>x.id===t.id)){STATE.taskTemplates.push(t);count++;}});
+}else if(dataType==='stock'){
+(archive.entries||[]).filter(e=>e.type==='opening'||((e.direction==='in')&&e.type!=='sale')).length;
+// Recalculate stock from archive entries
+const stockMap={};
+(archive.entries||[]).forEach(e=>{
+const k=e.itemId+'_'+e.colIdx;
+if(!stockMap[k])stockMap[k]={itemId:e.itemId,colIdx:e.colIdx,itemName:e.itemName,colourName:e.colourName,sku:e.sku,taka:0};
+stockMap[k].taka+=(e.direction==='in'?1:-1)*(e.taka||0);
+});
+Object.values(stockMap).forEach(s=>{
+if(s.taka>0){
+addStock(s.itemId,s.colIdx,s.taka,'opening','Forwarded from FY '+fy,'','Stock from FY '+fy);
+count++;
+}
+});
+}
+if(count>0){
+if(!archive.forwardLog) archive.forwardLog={};
+archive.forwardLog[dataType]={count,date:new Date().toLocaleString(),ts:Date.now()};
+lsSave('vs_fy_archive_'+fy,archive);
+persist();renderFYTab();renderDash();toast('Forwarded '+count+' '+dataType+' from FY '+fy,'ok');
+}else{toast('Nothing to forward — already up to date or empty','ok');}
 }
 function viewFYSummary(fy){
   const archive=lsGet('vs_fy_archive_'+fy);
