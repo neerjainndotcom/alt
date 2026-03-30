@@ -4000,7 +4000,6 @@ html+='<div style="padding:8px;background:#F9FAFB;border-radius:8px;margin-botto
 el('lead-det-body').innerHTML=html;
 const foot=el('lead-det-foot'); foot.innerHTML='';
 const mk=(cls,txt,fn)=>{const b=document.createElement('button');b.className='btn '+cls;b.style.cssText='-webkit-tap-highlight-color:transparent;touch-action:manipulation';b.innerHTML=txt;b.onclick=fn;return b;};
-const isAdmin=STATE.user?.role==='admin';
 const isMyLead=lead.assignedId===STATE.user?.id;
 const canEdit=isAdmin||isMyLead;
 const canUpdate=isAdmin||isMyLead;
