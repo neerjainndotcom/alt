@@ -7465,6 +7465,20 @@ function renderTaskReport(){
   c.innerHTML=h;
 }
 
+function recalcStockFromEntries(){
+  // Reset all stock to 0
+  STATE.items.forEach(item=>item.colours.forEach(col=>{col.stock_taka=0;col.stock_mtrs=0;}));
+  // Rebuild from ledger entries
+  STATE.entries.forEach(e=>{
+    const item=STATE.items.find(i=>i.id===e.itemId); if(!item) return;
+    const col=item.colours[e.colIdx]; if(!col) return;
+    if(e.direction==='in') col.stock_taka=Math.round((col.stock_taka||0)+(e.taka||0));
+    else col.stock_taka=Math.round((col.stock_taka||0)-(e.taka||0));
+  });
+  // Recalc meters
+  const avg=STATE.settings.avgMtrPerTaka||30;
+  STATE.items.forEach(item=>{item.colours.forEach(col=>{col.stock_mtrs=Math.round((col.stock_taka||0)*avg);});item._ts=Date.now();});
+}
 function applyCloudData(d){
   if(!d)return;
   const keep={firebaseUrl:STATE.settings.firebaseUrl,firebaseSecret:STATE.settings.firebaseSecret};
@@ -7482,6 +7496,7 @@ function applyCloudData(d){
   if(d.settings)STATE.settings={...STATE.settings,...d.settings,...keep};
   STATE.settings.lastSync=new Date().toISOString();
   try{migrateData();}catch(e){}
+  recalcStockFromEntries();
   lsSave('vs_items',STATE.items);lsSave('vs_entries',STATE.entries);
   lsSave('vs_customers',STATE.customers);lsSave('vs_brokers',STATE.brokers);
   lsSave('vs_suppliers',STATE.suppliers);lsSave('vs_users',STATE.users);
