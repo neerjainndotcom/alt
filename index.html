@@ -761,6 +761,7 @@ taka=Math.round(taka);
 const item=STATE.items.find(i=>i.id===itemId); if(!item||!item.colours[cIdx]) return;
 item.colours[cIdx].stock_taka=Math.round((item.colours[cIdx].stock_taka||0)+taka);
 item.colours[cIdx].stock_mtrs=Math.round(item.colours[cIdx].stock_taka*STATE.settings.avgMtrPerTaka);
+item._ts=Date.now();
 STATE.entries.push({id:uid(),date:today(),type,direction:'in',party,itemId,itemName:item.name,colIdx:cIdx,colourName:item.colours[cIdx].name,sku:item.colours[cIdx].sku,taka,mtrs:Math.round(taka*STATE.settings.avgMtrPerTaka),ref,note,by:STATE.user?.name||'',fy:STATE.settings.currentFY||getCurrentFY()});
 lsSave('vs_items',STATE.items); lsSave('vs_entries',STATE.entries);
 }
@@ -769,6 +770,7 @@ taka=Math.round(taka);
 const item=STATE.items.find(i=>i.id===itemId); if(!item||!item.colours[cIdx]) return;
 item.colours[cIdx].stock_taka=Math.round((item.colours[cIdx].stock_taka||0)-taka);
 item.colours[cIdx].stock_mtrs=Math.round(item.colours[cIdx].stock_taka*STATE.settings.avgMtrPerTaka);
+item._ts=Date.now();
 STATE.entries.push({id:uid(),date:today(),type,direction:'out',party,itemId,itemName:item.name,colIdx:cIdx,colourName:item.colours[cIdx].name,sku:item.colours[cIdx].sku,taka,mtrs:Math.round(taka*STATE.settings.avgMtrPerTaka),ref,by:STATE.user?.name||'',fy:STATE.settings.currentFY||getCurrentFY()});
 lsSave('vs_items',STATE.items); lsSave('vs_entries',STATE.entries);
 }
@@ -2559,6 +2561,7 @@ if(dir==='+') addStock(iid,idx,qty,'adjustment','Stock Adjustment','',reason);
 else{
 col.stock_taka=Math.round((col.stock_taka||0)-qty);
 col.stock_mtrs=Math.round(col.stock_taka*STATE.settings.avgMtrPerTaka);
+item._ts=Date.now();
 STATE.entries.push({id:uid(),date:today(),type:'adjustment',direction:'out',party:'Adjustment',itemId:iid,itemName:item.name,colIdx:idx,colourName:col.name,sku:col.sku,taka:qty,mtrs:Math.round(qty*STATE.settings.avgMtrPerTaka),ref:'',note:reason,by:STATE.user?.name||'',fy:STATE.settings.currentFY||getCurrentFY()});
 }
 });
