@@ -33,7 +33,7 @@
 <div class="ov" id="m-aclr" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="aclrtit">Add Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-aclr')">✕</button></div></div><div class="shb"><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="aclr-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('aclr-rows','aclr-cnt')"/></div><div id="aclr-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-aclr')">Cancel</button><button class="btn bp bfl" onclick="saveAddClrs()">Add Colours</button></div>
 </div></div>
 <div class="ov" id="m-edit-clr" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>✏️ Edit Colour / SKU</h3><p class="sub" id="edit-clr-range-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-edit-clr')">✕</button></div></div><div class="shb"><input type="hidden" id="ec-item-id"/><input type="hidden" id="ec-col-idx"/><div style="background:var(--Pl);border-radius:10px;padding:12px 14px;margin-bottom:16px"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Current SKU</div><div id="ec-old-sku" style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--Pd)"></div></div><div class="fg"><label>Colour Name *</label><input class="inp" id="ec-name" placeholder="e.g. DUSTY PINK" oninput="previewEditSKU()" style="text-transform:uppercase"/></div><div class="ir2"><div class="fg"><label>Colour Code *</label><input class="inp mono" id="ec-code" placeholder="e.g. DP01" oninput="previewEditSKU()" style="text-transform:uppercase"/></div><div class="fg"><label>Colour (Hex)</label><div style="display:flex;gap:8px;align-items:center"><input type="color" id="ec-hex" style="width:52px;height:44px;border-radius:8px;border:1.5px solid var(--br);cursor:pointer;padding:3px"/><span id="ec-hex-lbl" style="font-size:12px;font-weight:700;color:var(--t2)"></span></div></div></div><div style="background:var(--Gl);border-radius:10px;padding:12px 14px;margin-bottom:6px" id="ec-new-sku-wrap"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">New SKU Preview</div><div id="ec-new-sku" style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--Gd)"></div></div><div id="ec-entries-note" style="display:none;background:var(--Al);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--Ad);font-weight:600;margin-bottom:6px"></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-edit-clr')">Cancel</button><button class="btn bp bfl" onclick="saveEditClr()">Save Changes</button></div></div></div>
-<div class="ov" id="m-cst" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="csttit">New Customer</h3><button class="btn bgh bsm" onclick="hideMod('m-cst')">✕</button></div></div><div class="shb"><input type="hidden" id="cst-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="cst-name"/></div><div class="fg"><label>Phone</label><input class="inp" id="cst-ph" type="tel"/></div></div><div class="fg"><label>GSTIN</label><div class="fi"><input class="inp mono" id="cst-gst" placeholder="22AAAAA0000A1Z5" oninput="detCstState()"/><button class="ai" onclick="gstLkp()">🔍 Lookup</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px" id="cst-si">Enter GSTIN to detect state</div></div><div class="fg"><label>Address</label><textarea class="ta" id="cst-addr" rows="2"></textarea></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="cst-wa" type="tel" placeholder="91XXXXXXXXXX"/></div><div class="fg"><label>Email</label><input class="inp" id="cst-em" type="email"/></div></div><div class="dvd"></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Payment Terms (leave blank for global defaults)</div><div class="ir2"><div class="fg"><label>Discount %</label><input class="inp mono" id="cst-disc" type="number" step="0.1" placeholder="e.g. 5"/></div><div class="fg"><label>Discount Days</label><input class="inp mono" id="cst-dd" type="number" step="1" placeholder="e.g. 45"/></div></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="cst-nd" type="number" step="1" placeholder="e.g. 120"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-cst')">Cancel</button><button class="btn bp bfl" onclick="saveCust()">Save</button></div>
+<div class="ov" id="m-cst" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="csttit">New Customer</h3><button class="btn bgh bsm" onclick="hideMod('m-cst')">✕</button></div></div><div class="shb"><input type="hidden" id="cst-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="cst-name"/></div><div class="fg"><label>Phone</label><input class="inp" id="cst-ph" type="tel"/></div></div><div class="fg"><label>GSTIN</label><div class="fi"><input class="inp mono" id="cst-gst" placeholder="22AAAAA0000A1Z5" oninput="detCstState()"/><button class="ai" onclick="gstLkp()">🔍 Lookup</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px" id="cst-si">Enter GSTIN to detect state</div></div><div class="fg"><label>Address</label><textarea class="ta" id="cst-addr" rows="2"></textarea></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="cst-wa" type="tel" placeholder="91XXXXXXXXXX"/></div><div class="fg"><label>Email</label><input class="inp" id="cst-em" type="email"/></div></div><div class="fg"><label>Default Broker (auto-fills in orders)</label><div style="position:relative"><select class="sel" id="cst-brk" style="border:1.5px solid var(--br)"><option value="">— No default broker —</option></select></div><div style="font-size:11px;color:var(--t3);margin-top:4px">When selected here, broker auto-fills every time this customer is chosen in an order.</div></div><div class="dvd"></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Payment Terms (leave blank for global defaults)</div><div class="ir2"><div class="fg"><label>Discount %</label><input class="inp mono" id="cst-disc" type="number" step="0.1" placeholder="e.g. 5"/></div><div class="fg"><label>Discount Days</label><input class="inp mono" id="cst-dd" type="number" step="1" placeholder="e.g. 45"/></div></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="cst-nd" type="number" step="1" placeholder="e.g. 120"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-cst')">Cancel</button><button class="btn bp bfl" onclick="saveCust()">Save</button></div>
 </div></div>
 <div class="ov" id="m-brk" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Broker</h3><button class="btn bgh bsm" onclick="hideMod('m-brk')">✕</button></div></div><div class="shb"><input type="hidden" id="brk-id"/><div class="fg"><label>Name *</label><input class="inp" id="brk-name"/></div><div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="brk-ph" type="tel"/></div><div class="fg"><label>Commission %</label><input class="inp" id="brk-cm" type="number" step="0.1" placeholder="2.5"/></div></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-brk')">Cancel</button><button class="btn bp bfl" onclick="saveBrk()">Save</button></div>
 </div></div>
@@ -67,7 +67,7 @@
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" capture="environment" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
 </div></div><script>
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.1.7';
+const APP_VERSION='1.2.1';
 const APP_BUILD_DATE='2026-04-01';
 const DATA_VERSION=2;
 // ═══════════════════════════════════════════════════════════════════════
@@ -1064,6 +1064,7 @@ el('cst-id').value=''; el('cst-name').value=''; el('cst-ph').value='';
 el('cst-gst').value=''; el('cst-addr').value=''; el('cst-wa').value=''; el('cst-em').value='';
 el('cst-disc').value=''; el('cst-dd').value=''; el('cst-nd').value='';
 el('csttit').textContent='New Customer'; el('cst-si').textContent='Enter GSTIN to detect state';
+populateCstBrkSel('');
 showMod('m-cst');
 }
 function editCust(id){
@@ -1074,7 +1075,14 @@ el('cst-wa').value=x.whatsapp||''; el('cst-em').value=x.email||'';
 el('cst-disc').value=x.discount!=null?x.discount:'';
 el('cst-dd').value=x.discountDays!=null?x.discountDays:'';
 el('cst-nd').value=x.nettDays!=null?x.nettDays:'';
-el('csttit').textContent='Edit Customer'; detCstState(); showMod('m-cst');
+el('csttit').textContent='Edit Customer'; detCstState();
+populateCstBrkSel(x.defaultBrokerId||'');
+showMod('m-cst');
+}
+function populateCstBrkSel(selectedId){
+const s=el('cst-brk'); if(!s) return;
+s.innerHTML='<option value="">— No default broker —</option>'+
+active(STATE.brokers).map(b=>'<option value="'+b.id+'"'+(b.id===selectedId?' selected':'')+'>'+b.name+(b.commission?' ('+b.commission+'%)':'')+'</option>').join('');
 }
 function detCstState(){
 const gstin=el('cst-gst')?.value||'';
@@ -1088,7 +1096,11 @@ const gstin=(el('cst-gst').value||'').trim().toUpperCase();
 const id=el('cst-id').value;
 if(!id&&isDuplicate(STATE.customers,'name',name)){toast('Customer "'+name+'" already exists','er');return;}
 const cDisc=el('cst-disc')?.value.trim(); const cDd=el('cst-dd')?.value.trim(); const cNd=el('cst-nd')?.value.trim();
+const brkId=(el('cst-brk')?.value||'').trim();
+const brk=brkId?STATE.brokers.find(b=>b.id===brkId):null;
 const obj={name,gstin,state:detState(gstin),phone:el('cst-ph').value.trim(),address:el('cst-addr').value.trim(),whatsapp:el('cst-wa').value.trim(),email:el('cst-em').value.trim(),
+defaultBrokerId:brkId||undefined,
+defaultBrokerName:brk?.name||undefined,
 discount:cDisc!==''?parseFloat(cDisc):undefined,
 discountDays:cDd!==''?parseInt(cDd):undefined,
 nettDays:cNd!==''?parseInt(cNd):undefined};
@@ -1412,13 +1424,14 @@ el('ordbod').innerHTML=
 '<div style="background:#1e1b4b;border-radius:12px;padding:12px;margin:12px 0">'+
 '<div style="font-size:10px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">&#x2B50; Set once, auto-fills all rows below</div>'+
 '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'+
-'<div><div style="font-size:10px;font-weight:700;color:var(--t3);margin-bottom:3px">Cut (mtr)</div>'+
-'<input class="inp mono" type="number" step="0.25" id="od-def-cut" value="6.00" oninput="applyDefaults()" style="text-align:center;padding:7px"/></div>'+
-'<div><div style="font-size:10px;font-weight:700;color:var(--t3);margin-bottom:3px">Sarees</div>'+
-'<input class="inp mono" type="number" step="1" id="od-def-pcs" placeholder="—" oninput="applyDefaults()" style="text-align:center;padding:7px"/></div>'+
+'<div><div style="font-size:10px;font-weight:700;color:var(--t3);margin-bottom:3px">Cut (mtr/saree)</div>'+
+'<input class="inp mono" type="number" step="0.25" id="od-def-cut" value="6.00" oninput="applyDefaults();updateOrdDefCalc()" style="text-align:center;padding:7px"/></div>'+
+'<div><div style="font-size:10px;font-weight:700;color:var(--t3);margin-bottom:3px">Sarees / Colour</div>'+
+'<input class="inp mono" type="number" step="1" id="od-def-pcs" placeholder="—" oninput="applyDefaults();updateOrdDefCalc()" style="text-align:center;padding:7px"/></div>'+
 '<div><div style="font-size:10px;font-weight:700;color:var(--t3);margin-bottom:3px">Rate &#x20B9;/mtr</div>'+
 '<input class="inp mono" type="number" step="0.01" id="od-def-rate" placeholder="—" oninput="applyDefaults()" style="text-align:center;padding:7px"/></div>'+
 '</div>'+
+'<div id="od-def-calc" style="display:none;margin-top:8px;background:rgba(99,102,241,.15);border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;color:#A5B4FC;font-family:monospace;line-height:1.6;border-left:3px solid #6366F1"></div>'+
 '</div>'+
 '<div id="od-lots"></div>'+
 '<button class="btn bs bfl mt8" onclick="addOrdLot()">+ Add LOT / Item</button>'+
@@ -1451,9 +1464,18 @@ info.innerHTML=
 (cust.state?'<div><span style="color:var(--t3);font-size:10px">State</span><div style="font-weight:700">'+cust.state+' '+gstBadge+'</div></div>':'')+
 '<div style="width:100%"><span style="color:var(--t3);font-size:10px">Payment Terms</span>'+
 '<div style="font-weight:700;color:var(--Pd)">'+disc+'% disc / '+dd+'d  |  Nett '+nd+'d</div></div>'+
+(cust.defaultBrokerName||cust.defaultBrokerId?
+(()=>{const brk=STATE.brokers.find(b=>b.id===cust.defaultBrokerId);
+return '<div style="width:100%"><span style="color:var(--t3);font-size:10px">Default Broker (auto-filled)</span>'+
+'<div style="font-weight:700;color:var(--Ad)">🤝 '+(brk?brk.name+(brk.commission?' · '+brk.commission+'% commission':''):cust.defaultBrokerName||'')+'</div></div>';})()
+:'')+
 (cust.address?'<div style="width:100%"><span style="color:var(--t3);font-size:10px">Address</span><div style="font-weight:600;color:var(--t2)">'+cust.address+'</div></div>':'')+
 '</div>';
-if(cust.defaultBrokerId){const bs=el('od-b');if(bs)bs.value=cust.defaultBrokerId;}
+// Auto-fill broker field
+if(cust.defaultBrokerId){
+const bs=el('od-b');
+if(bs){bs.value=cust.defaultBrokerId;}
+}
 calcOrdTot();
 }
 function openCustFromOrder(){
@@ -1464,6 +1486,7 @@ if(el('cst-disc')) el('cst-disc').value='';
 if(el('cst-dd')) el('cst-dd').value='';
 if(el('cst-nd')) el('cst-nd').value='';
 el('csttit').textContent='New Customer'; el('cst-si').textContent='Enter GSTIN to detect state';
+populateCstBrkSel('');
 showMod('m-cst');
 }
 let _ordLots=[{id:0}]; let _lotId=0;
@@ -1480,7 +1503,25 @@ function remOrdLot(id){
 _ordLots=_ordLots.filter(l=>l.id!==id);
 renderOrdLots(); calcOrdTot();
 }
+function updateOrdDefCalc(){
+const pcs=parseInt(el('od-def-pcs')?.value)||0;
+const cut=parseFloat(el('od-def-cut')?.value)||6;
+const avg=STATE.settings.avgMtrPerTaka||90;
+const calcEl=el('od-def-calc');
+if(!calcEl) return;
+if(pcs>0){
+const mtrs=pcs*cut;
+const takaRaw=mtrs/avg;
+const taka=Math.floor(takaRaw);
+calcEl.style.display='block';
+calcEl.innerHTML=
+pcs+' sarees &times; '+cut+'m = '+mtrs.toFixed(1)+'m &nbsp;&divide;&nbsp; '+avg+'m = '+takaRaw.toFixed(2)+' &nbsp;&rarr;&nbsp; <span style="font-size:13px;color:white">'+taka+' TAKA</span> per colour';
+}else{
+calcEl.style.display='none';
+}
+}
 function applyDefaults(){
+updateOrdDefCalc();
 const defCut=parseFloat(el('od-def-cut')?.value)||6;
 const defPcs=el('od-def-pcs')?.value||'';
 const defRate=el('od-def-rate')?.value||'';
@@ -1608,7 +1649,7 @@ thead.innerHTML=
 '<div></div>'+
 '<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.6px">Colour</div>'+
 '<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.6px;text-align:center">Stock</div>'+
-'<div style="font-size:9px;font-weight:800;color:#FBBF24;text-transform:uppercase;letter-spacing:.6px;text-align:center">Sarees</div>'+
+'<div style="font-size:9px;font-weight:800;color:#FBBF24;text-transform:uppercase;letter-spacing:.6px;text-align:center">Sarees/Clr</div>'+
 '<div style="font-size:9px;font-weight:800;color:#FBBF24;text-transform:uppercase;letter-spacing:.6px;text-align:center">Rate/mtr</div>'+
 '<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-transform:uppercase;letter-spacing:.6px;text-align:right">Amount</div>';
 body.appendChild(thead);
@@ -1645,9 +1686,12 @@ row.innerHTML=
 '<div style="text-align:center">'+
 '<span style="font-size:10px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:2px 5px;border-radius:5px">'+stk+'T</span>'+
 '</div>'+
+'<div style="display:flex;flex-direction:column;align-items:center;gap:1px">'+
 '<input type="number" id="od-lot-'+lid+'-p-'+idx+'" step="1" min="1" value="'+defPcs+'" oninput="calcOrdLot('+lid+')" disabled '+
 'style="width:100%;text-align:center;border:1.5px solid #D1D5DB;border-radius:7px;padding:5px 3px;font-size:14px;font-weight:800;font-family:monospace;'+
 'background:#F3F4F6;color:#9CA3AF;transition:.15s"/>'+
+'<div id="od-lot-'+lid+'-tk-'+idx+'" style="font-size:9px;font-weight:800;color:#6366F1;min-height:11px;letter-spacing:.2px"></div>'+
+'</div>'+
 '<input type="number" id="od-lot-'+lid+'-rt-'+idx+'" step="0.01" value="'+defRate+'" oninput="calcOrdLot('+lid+')" disabled '+
 'style="width:100%;text-align:center;border:1.5px solid #D1D5DB;border-radius:7px;padding:5px 3px;font-size:14px;font-weight:800;font-family:monospace;'+
 'background:#F3F4F6;color:#9CA3AF;transition:.15s"/>'+
@@ -1707,6 +1751,7 @@ const iid=el('od-lot-'+lid+'-i')?.value;
 const rng=el('od-lot-'+lid+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid); if(!item||!rng) return;
 const cut=parseFloat(el('od-lot-'+lid+'-cut')?.value)||6;
+const avg=STATE.settings.avgMtrPerTaka||90;
 let lotTotal=0;
 item.colours.filter(c=>c.range===rng).forEach(col=>{
 const idx=item.colours.indexOf(col);
@@ -1718,6 +1763,20 @@ const amtEl=el('od-lot-'+lid+'-amt-'+idx);
 if(amtEl){
 amtEl.style.color=amt>0?'var(--P)':'var(--t3)';
 amtEl.textContent=amt>0?('\u20B9'+fmtN(amt)):'—';
+}
+// ── Live taka calculation display ──
+const tkEl=el('od-lot-'+lid+'-tk-'+idx);
+if(tkEl){
+if(pcs>0){
+const mtrs=pcs*cut;
+const takaRaw=mtrs/avg;
+const taka=Math.floor(takaRaw);
+tkEl.innerHTML='= '+taka+'T';
+tkEl.title=pcs+' × '+cut+'m = '+mtrs.toFixed(1)+'m ÷ '+avg+'m = '+takaRaw.toFixed(2)+' → '+taka+'T';
+tkEl.style.color='#6366F1';
+}else{
+tkEl.textContent='';
+}
 }
 lotTotal+=amt;
 });
@@ -1779,7 +1838,7 @@ const chk=el('od-lot-'+lot.id+'-ck-'+idx); if(!chk?.checked) return;
 const pcs=parseInt(el('od-lot-'+lot.id+'-p-'+idx)?.value)||0; if(!pcs) return;
 const rate=parseFloat(el('od-lot-'+lot.id+'-rt-'+idx)?.value)||0;
 const mtrs=Math.round(pcs*cut*10)/10;
-const taka=Math.round(mtrs/STATE.settings.avgMtrPerTaka);
+const taka=Math.floor(mtrs/STATE.settings.avgMtrPerTaka);
 const rem=el('od-lot-'+lot.id+'-rem')?.value||'';
 items.push({itemId:iid,colIdx:idx,sku:col.sku,itemName:item.name,colourName:col.name,range:rng,pcs,cut,rate,mtrs,taka,amount:Math.round(mtrs*rate),remark:rem});
 });
@@ -3779,12 +3838,18 @@ skuMap[col.sku]={itemName:item.name,rng,colName:col.name,hex:col.hex,stock:col.s
 STATE.orders.filter(o=>o.status==='pending'||o.status==='billed').forEach(o=>{
 (o.items||[]).forEach(item=>{
 if(skuMap[item.sku]){
-skuMap[item.sku].orderedPcs+=(item.pcs||0);
-skuMap[item.sku].orderedTaka+=(item.taka||0);
+const pcs=item.pcs||0;
+const cut=item.cut||0;
+// Use stored taka if present; otherwise compute from pcs × cut ÷ avgMtrPerTaka
+const itemMtrs=Math.round(pcs*cut);
+const itemTaka=item.taka||Math.floor(itemMtrs/(STATE.settings.avgMtrPerTaka||90));
+skuMap[item.sku].orderedPcs+=pcs;
+skuMap[item.sku].orderedMtrs=(skuMap[item.sku].orderedMtrs||0)+itemMtrs;
+skuMap[item.sku].orderedTaka+=itemTaka;
 }
 });
 });
-const anyData=Object.values(skuMap).some(r=>r.stock>0||r.orderedPcs>0);
+const anyData=Object.values(skuMap).some(r=>r.stock>0||r.orderedTaka>0);
 let html=
 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
 '<div style="font-size:18px;font-weight:900;color:var(--tx)">Stock vs Pending Orders</div>'+
@@ -3809,7 +3874,7 @@ const rangePalette=[
 {bg:'#DC2626',text:'white'},
 ];
 Object.entries(itemGroups).forEach(([itemName,ranges])=>{
-const anyIssue=Object.values(ranges).flat().some(r=>r.orderedPcs>0&&r.orderedTaka>r.stock);
+const anyIssue=Object.values(ranges).flat().some(r=>r.orderedTaka>0&&r.orderedTaka>r.stock);
 let ri=0;
 html+=
 '<div style="margin-bottom:18px;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08)">'+
@@ -3825,7 +3890,7 @@ html+=
 '<div style="background:'+pal.bg+';padding:8px 16px;display:flex;align-items:center;gap:10px">'+
 '<span style="font-size:14px;font-weight:900;color:'+pal.text+'">'+rng+'</span>'+
 '</div>'+
-'<div style="display:grid;grid-template-columns:16px 1fr 60px 72px 72px;background:#F3F4F6;padding:6px 14px;border-bottom:1px solid #E5E7EB">'+
+'<div style="display:grid;grid-template-columns:16px 1fr 60px 80px 72px;background:#F3F4F6;padding:6px 14px;border-bottom:1px solid #E5E7EB">'+
 '<div></div>'+
 '<div style="font-size:11px;font-weight:800;color:#6B7280;text-transform:uppercase;letter-spacing:.5px">Colour</div>'+
 '<div style="font-size:11px;font-weight:800;color:#10B981;text-transform:uppercase;letter-spacing:.5px;text-align:center">Stock</div>'+
@@ -3834,15 +3899,22 @@ html+=
 '</div>';
 cols.forEach((r,ci)=>{
 const short=Math.max(0,r.orderedTaka-r.stock);
-const ok=short===0&&r.orderedPcs>0;
-const noOrder=r.orderedPcs===0;
+const noOrder=r.orderedTaka===0;
+const ok=!noOrder&&short===0;
 const rowBg=ci%2===0?'#FFFFFF':'#F9FAFB';
+// Formula sub-line: pcs × cut ÷ avg = taka
+const avg=STATE.settings.avgMtrPerTaka||90;
+const formulaLine=(!noOrder&&r.orderedPcs>0&&r.orderedMtrs>0)?
+'<div style="font-size:9px;color:#9CA3AF;margin-top:1px">'+r.orderedPcs+'pc × cut = '+r.orderedMtrs+'m ÷ '+avg+'m = '+(r.orderedMtrs/avg).toFixed(2)+' → '+r.orderedTaka+'T</div>':'';
 html+=
-'<div style="display:grid;grid-template-columns:16px 1fr 60px 72px 72px;align-items:center;padding:9px 14px;background:'+rowBg+';border-bottom:1px solid #F3F4F6">'+
+'<div style="display:grid;grid-template-columns:16px 1fr 60px 80px 72px;align-items:center;padding:9px 14px;background:'+rowBg+';border-bottom:1px solid #F3F4F6">'+
 '<div style="width:12px;height:12px;border-radius:50%;background:'+(r.hex||'#ccc')+';border:1.5px solid rgba(0,0,0,.12)"></div>'+
 '<div style="font-size:14px;font-weight:700;color:#111827">'+r.colName+'</div>'+
 '<div style="text-align:center;font-size:14px;font-weight:800;color:#059669">'+r.stock+'T</div>'+
-'<div style="text-align:center;font-size:14px;font-weight:700;color:'+(noOrder?'#9CA3AF':'#D97706')+'">'+(noOrder?'\u2014':r.orderedPcs+'pc')+'</div>'+
+'<div style="text-align:center">'+
+(noOrder?'<span style="color:#9CA3AF;font-size:13px">\u2014</span>':
+'<div style="font-size:14px;font-weight:800;color:#D97706">'+r.orderedTaka+'T</div>'+formulaLine)+
+'</div>'+
 '<div style="text-align:center">'+
 (noOrder?'<span style="color:#D1D5DB;font-size:13px">\u2014</span>':
 ok?'<span style="font-size:13px;font-weight:800;color:#059669;background:#D1FAE5;padding:3px 8px;border-radius:6px">\u2714 OK</span>':
