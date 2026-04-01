@@ -59,12 +59,15 @@
 </div></div>
 <div class="ov" id="m-manual-stock" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>✏️ Manual Stock Entry</h3><p class="sub">Add or deduct stock balance manually</p></div><button class="btn bgh bsm" onclick="hideMod('m-manual-stock')">✕</button></div></div><div class="shb"><div style="background:var(--Al);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--Ad);font-weight:600">⚠️ Use this only for balance corrections or physical count adjustments. All entries are logged.</div><div class="fg"><label>Select Item *</label><div style="position:relative"><select class="sel" id="ms-itm" onchange="onMSItemChange()" style="border:2px solid var(--P);border-radius:10px;padding:12px 40px 12px 14px;font-size:15px;font-weight:600;color:var(--tx);background:var(--Pl);appearance:none;-webkit-appearance:none;width:100%;cursor:pointer"><option value="">— Select item —</option></select><span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:18px;color:var(--P)">▾</span></div></div><div class="fg" id="ms-clr-wrap" style="display:none"><label>Select Colour *</label><div style="position:relative"><select class="sel" id="ms-clr" onchange="onMSColChange()" style="border:2px solid var(--T);border-radius:10px;padding:12px 40px 12px 14px;font-size:15px;font-weight:600;color:var(--tx);background:var(--Tl);appearance:none;-webkit-appearance:none;width:100%;cursor:pointer"><option value="">— Select colour —</option></select><span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:18px;color:var(--T)">▾</span></div></div><div id="ms-cur-stk" style="display:none;background:var(--Pl);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--Pd);font-weight:700"></div><div class="fg"><label>Direction *</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button id="ms-dir-in" onclick="setMSDir('in')" style="padding:12px;border-radius:10px;border:2px solid var(--G);background:var(--Gl);color:var(--Gd);font-family:inherit;font-size:14px;font-weight:800;cursor:pointer">📈 Stock IN (+)</button><button id="ms-dir-out" onclick="setMSDir('out')" style="padding:12px;border-radius:10px;border:2px solid var(--br);background:var(--sf);color:var(--t2);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer">📉 Stock OUT (−)</button></div></div><div class="fg"><label>Taka (Quantity) *</label><input class="inp mono" id="ms-taka" type="number" min="1" step="1" placeholder="e.g. 10" style="font-size:18px;font-weight:800;text-align:center"/></div><div class="fg"><label>Reason / Note *</label><input class="inp" id="ms-note" type="text" placeholder="e.g. Physical count correction, Damage write-off..."/></div><div class="fg"><label>Reference (optional)</label><input class="inp mono" id="ms-ref" type="text" placeholder="e.g. REF001"/></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-manual-stock')">Cancel</button><button class="btn bp bfl" onclick="saveManualStock()">Save Manual Entry</button></div></div></div>
 </div></div>
-<div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
+<div class="ov" id="m-transfer-hub" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>🔀 Transfer Stock</h3><p class="sub">Convert or move fabric stock</p></div><button class="btn bgh bsm" onclick="hideMod('m-transfer-hub')">✕</button></div></div><div class="shb"><div style="display:flex;flex-direction:column;gap:12px;padding:4px 0"><button onclick="hideMod('m-transfer-hub');openMixSarees()" style="display:flex;align-items:center;gap:16px;padding:18px;border-radius:14px;border:2px solid rgba(5,150,105,.3);background:var(--Gl);cursor:pointer;font-family:inherit;text-align:left;width:100%;transition:.15s"><span style="font-size:36px">🎨</span><div><div style="font-size:15px;font-weight:800;color:var(--Gd)">Convert to Mixed Sarees</div><div style="font-size:12px;color:var(--Gd);margin-top:3px;opacity:.8">Leftover fabric → counted saree pieces<br>Select item · Range · Colours → auto-calculates</div></div></button><button onclick="hideMod('m-transfer-hub');openMoveTaka()" style="display:flex;align-items:center;gap:16px;padding:18px;border-radius:14px;border:2px solid var(--Ps);background:var(--Pl);cursor:pointer;font-family:inherit;text-align:left;width:100%;transition:.15s"><span style="font-size:36px">↔️</span><div><div style="font-size:15px;font-weight:800;color:var(--Pd)">Move Takas</div><div style="font-size:12px;color:var(--Pd);margin-top:3px;opacity:.8">Transfer stock from one SKU to another<br>From colour → To colour, specify quantity</div></div></button><button onclick="hideMod('m-transfer-hub');openMixedInv()" style="display:flex;align-items:center;gap:16px;padding:18px;border-radius:14px;border:2px solid rgba(217,119,6,.3);background:var(--Al);cursor:pointer;font-family:inherit;text-align:left;width:100%;transition:.15s"><span style="font-size:36px">📦</span><div><div style="font-size:15px;font-weight:800;color:var(--Ad)">Mixed Sarees Inventory</div><div style="font-size:12px;color:var(--Ad);margin-top:3px;opacity:.8">View all mixed saree batches &amp; totals</div></div></button></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-transfer-hub')">Close</button></div></div></div>
+<div class="ov" id="m-mix-sarees" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>🎨 Convert to Mixed Sarees</h3><p class="sub">Fabric stock → mixed saree pieces</p></div><button class="btn bgh bsm" onclick="hideMod('m-mix-sarees')">✕</button></div></div><div class="shb"><div id="mix-cut-info" style="background:var(--Pl);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--Pd);font-weight:600"></div><div class="fg"><label>Step 1 — Select Item *</label><div style="position:relative"><select class="sel" id="mix-itm" onchange="onMixItemChange()" style="border:2px solid var(--P);border-radius:10px;padding:12px 40px 12px 14px;font-size:15px;font-weight:600;color:var(--tx);background:var(--Pl);appearance:none;-webkit-appearance:none;width:100%;cursor:pointer"><option value="">— Select item —</option></select><span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:18px;color:var(--P)">▾</span></div></div><div class="fg" id="mix-rng-wrap" style="display:none"><label>Step 2 — Select Range *</label><div id="mix-rng-btns" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"></div></div><div id="mix-clr-wrap" style="display:none"><div class="fg"><label>Step 3 — Select Colours (checkboxes)</label><div id="mix-clr-list" style="display:flex;flex-direction:column;gap:8px;margin-top:6px"></div></div></div><div id="mix-preview" style="display:none;background:var(--Gl);border-radius:12px;padding:14px;margin-top:4px"><div style="font-size:11px;font-weight:800;color:var(--Gd);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Conversion Preview</div><div id="mix-preview-rows" style="font-size:12px;color:var(--Gd);line-height:1.8"></div><div style="border-top:1.5px solid rgba(5,150,105,.3);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:700;color:var(--Gd)">Total Mixed Sarees</span><span id="mix-total-sarees" style="font-size:28px;font-weight:900;color:var(--Gd)">0</span></div><div id="mix-total-mtrs" style="font-size:11px;color:var(--Gd);opacity:.7;text-align:right;margin-top:2px"></div></div><div class="fg mt8"><label>Note (optional)</label><input class="inp" id="mix-note" type="text" placeholder="e.g. Season end clearance — BURBURY CHIFFON"/></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-mix-sarees')">Cancel</button><button class="btn bsuc bfl" id="mix-confirm-btn" onclick="saveMixSarees()" disabled style="opacity:.4">✅ Confirm Conversion</button></div></div></div>
+<div class="ov" id="m-move-taka" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>↔️ Move Takas</h3><p class="sub">Transfer stock between SKUs</p></div><button class="btn bgh bsm" onclick="hideMod('m-move-taka')">✕</button></div></div><div class="shb"><div style="background:var(--Al);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--Ad);font-weight:600">Moves stock OUT of source and IN to destination. Both entries logged in ledger.</div><div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:12px"><div style="font-size:11px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">📤 From (Source)</div><div class="fg"><label>Item</label><div style="position:relative"><select class="sel" id="mt-from-itm" onchange="onMTFromItemChange()" style="border:2px solid var(--R);border-radius:10px;padding:10px 36px 10px 12px;font-size:14px;font-weight:600;background:#FFF5F5;appearance:none;-webkit-appearance:none;width:100%;cursor:pointer"><option value="">— Select item —</option></select><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--R)">▾</span></div></div><div class="fg" id="mt-from-clr-wrap" style="display:none"><label>Colour</label><div style="position:relative"><select class="sel" id="mt-from-clr" onchange="onMTFromClrChange()" style="appearance:none;-webkit-appearance:none;cursor:pointer"><option value="">— Select colour —</option></select><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--t3)">▾</span></div></div><div class="fg" id="mt-from-stk" style="display:none"></div><div class="fg" id="mt-taka-wrap" style="display:none"><label>Takas to Move *</label><input class="inp mono" id="mt-taka" type="number" min="1" step="1" placeholder="0" style="font-size:18px;font-weight:800;text-align:center" oninput="calcMTPreview()"/><div class="cb" id="mt-taka-cb">— T = — mtrs</div></div></div><div style="background:var(--bg);border-radius:12px;padding:14px"><div style="font-size:11px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">📥 To (Destination)</div><div class="fg"><label>Item</label><div style="position:relative"><select class="sel" id="mt-to-itm" onchange="onMTToItemChange()" style="border:2px solid var(--G);border-radius:10px;padding:10px 36px 10px 12px;font-size:14px;font-weight:600;background:#F0FDF4;appearance:none;-webkit-appearance:none;width:100%;cursor:pointer"><option value="">— Select item —</option></select><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--G)">▾</span></div></div><div class="fg" id="mt-to-clr-wrap" style="display:none"><label>Colour</label><div style="position:relative"><select class="sel" id="mt-to-clr" style="appearance:none;-webkit-appearance:none;cursor:pointer"><option value="">— Select colour —</option></select><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--t3)">▾</span></div></div></div><div class="fg mt8"><label>Reason / Note *</label><input class="inp" id="mt-note" type="text" placeholder="e.g. Batch correction, wrong entry fix..."/></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-move-taka')">Cancel</button><button class="btn bp bfl" onclick="saveMoveTaka()">↔️ Move Takas</button></div></div></div>
+<div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" capture="environment" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
 </div></div><script>
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.1.4';
+const APP_VERSION='1.1.7';
 const APP_BUILD_DATE='2026-04-01';
 const DATA_VERSION=2;
 // ═══════════════════════════════════════════════════════════════════════
@@ -224,6 +227,7 @@ STATE.recurringLeads=lsGet('vs_rec_leads')||[];
 STATE.taskTemplates=lsGet('vs_task_templates')||[];
 STATE.taskInstances=lsGet('vs_task_instances')||[];
 STATE.staffLeave=lsGet('vs_staff_leave')||[];
+STATE.mixedSarees=lsGet('vs_mixed_sarees')||[];
 }
 const _lsCache={};
 function lsSaveIfChanged(key,val){
@@ -234,7 +238,7 @@ try{ localStorage.setItem(key,str); }catch(e){}
 }
 function persist(){
 // Auto-stamp any records that don't have _ts yet
-['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork','leads','taskTemplates','taskInstances','staffLeave','recurringLeads','flaggedEntries'].forEach(k=>{
+['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork','leads','taskTemplates','taskInstances','staffLeave','recurringLeads','flaggedEntries','mixedSarees'].forEach(k=>{
   (STATE[k]||[]).forEach(item=>{if(!item._ts)item._ts=Date.now();});
 });
 lsSave('vs_items',STATE.items); lsSave('vs_entries',STATE.entries);
@@ -249,6 +253,7 @@ if(STATE.flaggedEntries) lsSave('vs_flagged',STATE.flaggedEntries);
 if(STATE.recurringLeads) lsSave('vs_rec_leads',STATE.recurringLeads);
 if(STATE.taskInstances) lsSave('vs_task_instances',STATE.taskInstances);
 if(STATE.staffLeave) lsSave('vs_staff_leave',STATE.staffLeave);
+if(STATE.mixedSarees) lsSave('vs_mixed_sarees',STATE.mixedSarees);
 setTimeout(autoSyncFirebase, 800);
 }
 function autoSyncFirebase(){
@@ -386,6 +391,17 @@ async function logout(){
 }
 function initApp(){
 const vEl=el('d-version');if(vEl)vEl.textContent='v'+APP_VERSION+' ('+APP_BUILD_DATE+')';
+// ── LOCK IN FINANCIAL YEAR on first use ──────────────────────────
+// If currentFY is not saved yet, detect from calendar and lock it in now.
+// This prevents new entries from silently getting a different FY tag
+// if the date crosses April 1 before the admin manually opens a new FY.
+if(!STATE.settings.currentFY){
+  STATE.settings.currentFY=getCurrentFY();
+  if(!STATE.settings.allFYs) STATE.settings.allFYs=[];
+  if(!STATE.settings.allFYs.includes(STATE.settings.currentFY))
+    STATE.settings.allFYs.push(STATE.settings.currentFY);
+  lsSave('vs_settings',STATE.settings);
+}
 setNav('dash');
 renderSettingsForm();
 renderDBSetup();
@@ -578,6 +594,7 @@ const groups=[
 {title:'📦 '+tr('stat_stock'),btns:[
 {ico:'📦',lbl:tr('opening_stk'),sub:tr('set_init'),cl:'c-t',fn:'openOpening()'},
 {ico:'📊',lbl:tr('stk_adj'),sub:tr('corr_var'),cl:'c-t',fn:'openAdjust()'},
+{ico:'🔀',lbl:'Transfer Stock',sub:'Convert / Move takas',cl:'c-a',fn:'openTransferHub()'},
 ],cols:2},
 {title:'🗂️ '+tr('masters'),btns:[
 {ico:'🧵',lbl:tr('new_item'),sub:'Add item type',cl:'c-x',fn:'openItem()'},
@@ -2168,6 +2185,298 @@ function saveManualStock(){
   persist(); hideMod('m-manual-stock'); renderDash(); renderInRec();
   toast('Manual stock entry saved ('+dir.toUpperCase()+' '+taka+'T)','ok');
 }
+// ═══ TRANSFER STOCK SYSTEM ══════════════════════════════════════
+function openTransferHub(){
+  showMod('m-transfer-hub');
+}
+// ── Convert to Mixed Sarees ──────────────────────────────────────
+function openMixSarees(){
+  const cut=STATE.settings.mixedSareesCut||6;
+  const info=el('mix-cut-info');
+  if(info) info.textContent='Current cut: '+cut+' mtrs / saree (change in Admin → Settings)';
+  const sel=el('mix-itm');
+  if(sel){
+    sel.innerHTML='<option value="">— Select item —</option>'+
+      STATE.items.filter(i=>!i._deleted&&i.colours.some(c=>!c.discontinued&&(c.stock_taka||0)>0))
+      .map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
+    sel.selectedIndex=0;
+  }
+  const rw=el('mix-rng-wrap'); if(rw) rw.style.display='none';
+  const cw=el('mix-clr-wrap'); if(cw) cw.style.display='none';
+  const pv=el('mix-preview'); if(pv) pv.style.display='none';
+  const btn=el('mix-confirm-btn'); if(btn){btn.disabled=true;btn.style.opacity='.4';}
+  const n=el('mix-note'); if(n) n.value='';
+  showMod('m-mix-sarees');
+}
+function onMixItemChange(){
+  const iid=el('mix-itm')?.value;
+  const rw=el('mix-rng-wrap'); const cw=el('mix-clr-wrap'); const pv=el('mix-preview');
+  if(!iid){if(rw)rw.style.display='none';if(cw)cw.style.display='none';if(pv)pv.style.display='none';return;}
+  const item=STATE.items.find(i=>i.id===iid); if(!item) return;
+  const rngs=[...new Set(item.colours.filter(c=>!c.discontinued&&(c.stock_taka||0)>0).map(c=>c.range))];
+  if(!rngs.length){toast('No colours with stock for this item','er');if(rw)rw.style.display='none';return;}
+  const rb=el('mix-rng-btns');
+  if(rb) rb.innerHTML=rngs.map(r=>'<button onclick="onMixRangeSelect(\''+r+'\')" data-rng="'+r+'" style="padding:8px 16px;border-radius:8px;border:1.5px solid var(--br);background:var(--sf);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;color:var(--t2);transition:.15s">Range '+r+'</button>').join('');
+  if(rw) rw.style.display='block';
+  if(cw) cw.style.display='none';
+  if(pv) pv.style.display='none';
+  const btn=el('mix-confirm-btn'); if(btn){btn.disabled=true;btn.style.opacity='.4';}
+}
+function onMixRangeSelect(rng){
+  // Highlight selected range button
+  document.querySelectorAll('#mix-rng-btns button').forEach(b=>{
+    const sel=b.dataset.rng===rng;
+    b.style.background=sel?'var(--P)':'var(--sf)';
+    b.style.color=sel?'white':'var(--t2)';
+    b.style.borderColor=sel?'var(--P)':'var(--br)';
+  });
+  const iid=el('mix-itm')?.value;
+  const item=STATE.items.find(i=>i.id===iid); if(!item) return;
+  const cols=item.colours.map((c,i)=>({...c,_idx:i})).filter(c=>c.range===rng&&!c.discontinued&&(c.stock_taka||0)>0);
+  const cl=el('mix-clr-list');
+  if(cl){
+    cl.innerHTML=cols.map(col=>{
+      const mtrs=Math.round((col.stock_taka||0)*STATE.settings.avgMtrPerTaka);
+      const sarees=Math.floor(mtrs/(STATE.settings.mixedSareesCut||6));
+      return '<label style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg);border-radius:10px;border:1.5px solid var(--br);cursor:pointer;transition:.15s" '+
+      'onmouseenter="this.style.background=\'var(--Pl)\';this.style.borderColor=\'var(--Ps)\'" '+
+      'onmouseleave="this.style.background=\'var(--bg)\';this.style.borderColor=\'var(--br)\'">'+
+      '<input type="checkbox" value="'+col._idx+'" onchange="calcMixPreview()" style="width:18px;height:18px;accent-color:var(--P);flex-shrink:0;cursor:pointer"/>'+
+      '<span style="width:14px;height:14px;border-radius:50%;background:'+(col.hex||'#ccc')+';flex-shrink:0;border:1px solid rgba(0,0,0,.15)"></span>'+
+      '<div style="flex:1;min-width:0">'+
+      '<div style="font-size:13px;font-weight:700">'+col.name+'</div>'+
+      '<div style="font-size:11px;color:var(--t3);margin-top:2px"><span class="sku">'+col.sku+'</span></div>'+
+      '</div>'+
+      '<div style="text-align:right;flex-shrink:0">'+
+      '<div style="font-size:14px;font-weight:800;color:var(--Pd)">'+col.stock_taka+'T</div>'+
+      '<div style="font-size:10px;color:var(--t3)">'+mtrs+'m → '+sarees+' pcs</div>'+
+      '</div></label>';
+    }).join('');
+  }
+  const cw=el('mix-clr-wrap'); if(cw) cw.style.display='block';
+  const pv=el('mix-preview'); if(pv) pv.style.display='none';
+  const btn=el('mix-confirm-btn'); if(btn){btn.disabled=true;btn.style.opacity='.4';}
+}
+function calcMixPreview(){
+  const iid=el('mix-itm')?.value;
+  const item=STATE.items.find(i=>i.id===iid); if(!item) return;
+  const cut=STATE.settings.mixedSareesCut||6;
+  const checked=[...document.querySelectorAll('#mix-clr-list input[type=checkbox]:checked')];
+  const pv=el('mix-preview'); const btn=el('mix-confirm-btn');
+  if(!checked.length){if(pv)pv.style.display='none';if(btn){btn.disabled=true;btn.style.opacity='.4';}return;}
+  let totalMtrs=0; let rows='';
+  checked.forEach(chk=>{
+    const cidx=parseInt(chk.value);
+    const col=item.colours[cidx]; if(!col) return;
+    const mtrs=Math.round((col.stock_taka||0)*STATE.settings.avgMtrPerTaka);
+    const sarees=Math.floor(mtrs/cut);
+    totalMtrs+=mtrs;
+    rows+='<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(5,150,105,.2)">'+
+      '<span><span style="width:10px;height:10px;border-radius:50%;background:'+(col.hex||'#ccc')+';display:inline-block;border:1px solid rgba(0,0,0,.1);margin-right:6px"></span>'+col.name+'</span>'+
+      '<span><b>'+col.stock_taka+'T</b> → '+mtrs+'m → <b>'+sarees+' pcs</b></span></div>';
+  });
+  const totalSarees=Math.floor(totalMtrs/cut);
+  const prRows=el('mix-preview-rows'); if(prRows) prRows.innerHTML=rows;
+  const ts=el('mix-total-sarees'); if(ts) ts.textContent=totalSarees;
+  const tm=el('mix-total-mtrs'); if(tm) tm.textContent='Total: '+totalMtrs+'m ÷ '+cut+'m/saree = '+totalSarees+' pieces';
+  if(pv) pv.style.display='block';
+  if(btn){btn.disabled=totalSarees<=0;btn.style.opacity=totalSarees>0?'1':'.4';}
+}
+async function saveMixSarees(){
+  const iid=el('mix-itm')?.value;
+  const item=STATE.items.find(i=>i.id===iid);
+  if(!item){toast('Select item','er');return;}
+  const cut=STATE.settings.mixedSareesCut||6;
+  const checked=[...document.querySelectorAll('#mix-clr-list input[type=checkbox]:checked')];
+  if(!checked.length){toast('Select at least one colour','er');return;}
+  const sourceItems=[];
+  checked.forEach(chk=>{
+    const cidx=parseInt(chk.value);
+    const col=item.colours[cidx]; if(!col) return;
+    const taka=col.stock_taka||0; if(!taka) return;
+    const mtrs=Math.round(taka*STATE.settings.avgMtrPerTaka);
+    sourceItems.push({itemId:iid,colIdx:cidx,itemName:item.name,colourName:col.name,sku:col.sku,range:col.range,taka,mtrs});
+  });
+  if(!sourceItems.length){toast('No stock to convert','er');return;}
+  const totalMtrs=sourceItems.reduce((s,r)=>s+r.mtrs,0);
+  const totalSarees=Math.floor(totalMtrs/cut);
+  if(!totalSarees){toast('Not enough meters for even 1 saree','er');return;}
+  const note=(el('mix-note')?.value||'').trim();
+  const ok=await appConfirm(
+    'Confirm Conversion?',
+    sourceItems.map(r=>r.colourName+': '+r.taka+'T → '+r.mtrs+'m').join('\n')+
+    '\n\nTotal: '+totalMtrs+'m ÷ '+cut+'m = '+totalSarees+' Mixed Sarees\n\n'+
+    'Stock will be deducted from source colours.\n⏸ Selected colours will be auto-discontinued.',
+    '🎨','Convert','ok'
+  );
+  if(!ok) return;
+  // Deduct stock from each source colour and auto-discontinue the SKU
+  sourceItems.forEach(r=>{
+    deductStock(r.itemId,r.colIdx,r.taka,'transfer','Converted to Mixed Sarees');
+    // Patch the last entry note
+    const last=STATE.entries[STATE.entries.length-1];
+    if(last&&last.type==='transfer') last.note='Converted to Mixed Sarees'+(note?' — '+note:'');
+    // ── Auto-discontinue the colour — admin can re-activate via Masters ──
+    const srcItem=STATE.items.find(i=>i.id===r.itemId);
+    const srcCol=srcItem?.colours?.[r.colIdx];
+    if(srcCol&&!srcCol.discontinued){
+      srcCol.discontinued=true;
+      stamp(srcCol);
+    }
+  });
+  lsSave('vs_items',STATE.items);
+  // Create mixed sarees record
+  if(!STATE.mixedSarees) STATE.mixedSarees=[];
+  const ref='MIX-'+String((STATE.mixedSarees.length+1)).padStart(3,'0');
+  STATE.mixedSarees.push(stamp({
+    id:uid(),ref,date:today(),
+    sourceItems,totalMtrs,cut,totalSarees,
+    sareesSold:0,
+    note,by:STATE.user?.name||'',
+    fy:STATE.settings.currentFY||getCurrentFY()
+  }));
+  persist();
+  hideMod('m-mix-sarees');
+  renderDash();
+  toast('✅ '+totalSarees+' Mixed Sarees created ('+ref+')','ok');
+}
+async function deleteMixBatch(id){
+  const ok=await appConfirm('Delete this batch?','Stock deducted will NOT be reversed. This only removes the mixed sarees record.','⚠️','Delete','dr');
+  if(!ok) return;
+  softDelete(STATE.mixedSarees,id);
+  persist();
+  renderMixedInv();
+  toast('Batch deleted','ok');
+}
+function openMixedInv(){
+  renderMixedInv();
+  showMod('m-mixed-inv');
+}
+function renderMixedInv(){
+  const c=el('mixed-inv-body'); if(!c) return;
+  const batches=active(STATE.mixedSarees||[]).sort((a,b)=>b._ts-a._ts);
+  const totalSarees=batches.reduce((s,b)=>s+(b.totalSarees||0),0);
+  if(!batches.length){
+    c.innerHTML='<div class="emp"><div class="emj">🎨</div><h3>No Mixed Sarees Yet</h3><p>Use "Convert to Mixed Sarees" to create batches</p></div>';
+    return;
+  }
+  c.innerHTML=
+  '<div style="background:var(--Gl);border-radius:12px;padding:14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">'+
+  '<div><div style="font-size:11px;font-weight:700;color:var(--Gd);text-transform:uppercase;letter-spacing:.4px">Total Mixed Sarees</div>'+
+  '<div style="font-size:32px;font-weight:900;color:var(--Gd)">'+totalSarees+' pcs</div></div>'+
+  '<div style="font-size:36px">🎨</div></div>'+
+  batches.map(b=>{
+    const src=(b.sourceItems||[]).map(r=>r.colourName).join(', ');
+    return '<div style="background:var(--sf);border:1.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:10px">'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'+
+    '<div><div style="font-size:13px;font-weight:800;color:var(--P)">'+b.ref+'</div>'+
+    '<div style="font-size:11px;color:var(--t3)">'+fmtDate(b.date)+' · by '+b.by+'</div></div>'+
+    '<div style="font-size:22px;font-weight:900;color:var(--Gd);text-align:right">'+b.totalSarees+'<div style="font-size:10px;font-weight:600;color:var(--t3)">pieces</div></div></div>'+
+    '<div style="font-size:11px;color:var(--t2);background:var(--bg);border-radius:8px;padding:8px">'+
+    '<b>Sources:</b> '+src+'<br>'+
+    '<b>Total:</b> '+b.totalMtrs+'m ÷ '+b.cut+'m/saree = '+b.totalSarees+' pcs'+
+    (b.note?'<br><b>Note:</b> '+b.note:'')+'</div>'+
+    '<div style="margin-top:10px;display:flex;gap:6px">'+
+    '<button onclick="deleteMixBatch(\''+b.id+'\')" class="btn bd bxs" style="flex:1">🗑 Delete Record</button>'+
+    '</div></div>';
+  }).join('');
+}
+// ── Move Takas ───────────────────────────────────────────────────
+function openMoveTaka(){
+  const populateSel=id=>{
+    const s=el(id); if(!s) return;
+    s.innerHTML='<option value="">— Select item —</option>'+
+    STATE.items.filter(i=>!i._deleted).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
+    s.selectedIndex=0;
+  };
+  populateSel('mt-from-itm'); populateSel('mt-to-itm');
+  ['mt-from-clr-wrap','mt-from-stk','mt-taka-wrap','mt-to-clr-wrap'].forEach(id=>{const e=el(id);if(e)e.style.display='none';});
+  const n=el('mt-note'); if(n) n.value='';
+  const t=el('mt-taka'); if(t) t.value='';
+  showMod('m-move-taka');
+}
+function onMTFromItemChange(){
+  const iid=el('mt-from-itm')?.value;
+  const cw=el('mt-from-clr-wrap'); const sw=el('mt-from-stk'); const tw=el('mt-taka-wrap');
+  if(!iid){if(cw)cw.style.display='none';if(sw)sw.style.display='none';if(tw)tw.style.display='none';return;}
+  const item=STATE.items.find(i=>i.id===iid); if(!item) return;
+  const cols=item.colours.filter(c=>!c.discontinued&&(c.stock_taka||0)>0);
+  const s=el('mt-from-clr');
+  if(s){
+    s.innerHTML='<option value="">— Select colour —</option>'+
+    cols.map(c=>'<option value="'+item.colours.indexOf(c)+'">'+c.name+' ('+c.sku+') — '+c.stock_taka+'T</option>').join('');
+    s.selectedIndex=0;
+  }
+  if(cw) cw.style.display='block';
+  if(sw) sw.style.display='none';
+  if(tw) tw.style.display='none';
+}
+function onMTFromClrChange(){
+  const iid=el('mt-from-itm')?.value, cidx=parseInt(el('mt-from-clr')?.value);
+  const sw=el('mt-from-stk'); const tw=el('mt-taka-wrap');
+  if(!iid||isNaN(cidx)){if(sw)sw.style.display='none';if(tw)tw.style.display='none';return;}
+  const col=STATE.items.find(i=>i.id===iid)?.colours?.[cidx]; if(!col) return;
+  const mtrs=Math.round((col.stock_taka||0)*STATE.settings.avgMtrPerTaka);
+  if(sw){
+    sw.style.display='block';
+    sw.innerHTML='<div style="background:var(--Pl);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:700;color:var(--Pd)">Available: <b>'+col.stock_taka+'T</b> ('+mtrs+'m)</div>';
+  }
+  if(tw) tw.style.display='block';
+  calcMTPreview();
+}
+function onMTToItemChange(){
+  const iid=el('mt-to-itm')?.value;
+  const cw=el('mt-to-clr-wrap');
+  if(!iid){if(cw)cw.style.display='none';return;}
+  const item=STATE.items.find(i=>i.id===iid); if(!item) return;
+  const s=el('mt-to-clr');
+  if(s){
+    s.innerHTML='<option value="">— Select colour —</option>'+
+    item.colours.filter(c=>!c.discontinued).map(c=>'<option value="'+item.colours.indexOf(c)+'">'+c.name+' ('+c.sku+') — '+c.stock_taka+'T</option>').join('');
+    s.selectedIndex=0;
+  }
+  if(cw) cw.style.display='block';
+}
+function calcMTPreview(){
+  const t=parseInt(el('mt-taka')?.value)||0;
+  const cb=el('mt-taka-cb');
+  if(cb) cb.textContent=t>0?(t+'T = '+Math.round(t*STATE.settings.avgMtrPerTaka)+'m'):'— T = — mtrs';
+}
+async function saveMoveTaka(){
+  const fromIid=el('mt-from-itm')?.value;
+  const fromCidx=parseInt(el('mt-from-clr')?.value);
+  const toIid=el('mt-to-itm')?.value;
+  const toCidx=parseInt(el('mt-to-clr')?.value);
+  const taka=Math.round(parseInt(el('mt-taka')?.value)||0);
+  const note=(el('mt-note')?.value||'').trim();
+  if(!fromIid||isNaN(fromCidx)){toast('Select source item & colour','er');return;}
+  if(!toIid||isNaN(toCidx)){toast('Select destination item & colour','er');return;}
+  if(fromIid===toIid&&fromCidx===toCidx){toast('Source and destination are the same colour','er');return;}
+  if(!taka||taka<=0){toast('Enter takas to move','er');return;}
+  if(!note){toast('Enter a reason for the transfer','er');return;}
+  const fromItem=STATE.items.find(i=>i.id===fromIid);
+  const fromCol=fromItem?.colours?.[fromCidx];
+  const toItem=STATE.items.find(i=>i.id===toIid);
+  const toCol=toItem?.colours?.[toCidx];
+  if(!fromCol||!toCol){toast('Colour not found','er');return;}
+  if((fromCol.stock_taka||0)<taka){toast('Not enough stock. Available: '+fromCol.stock_taka+'T','er');return;}
+  const ok=await appConfirm(
+    'Move '+taka+'T?',
+    'FROM: '+fromItem.name+' → '+fromCol.name+' ('+fromCol.sku+')\n'+
+    'TO: '+toItem.name+' → '+toCol.name+' ('+toCol.sku+')\n'+
+    'Quantity: '+taka+'T ('+Math.round(taka*STATE.settings.avgMtrPerTaka)+'m)\nReason: '+note,
+    '↔️','Move Takas','ok'
+  );
+  if(!ok) return;
+  deductStock(fromIid,fromCidx,taka,'transfer','Transfer to '+toItem.name+' '+toCol.name);
+  const lastOut=STATE.entries[STATE.entries.length-1];
+  if(lastOut&&lastOut.type==='transfer') lastOut.note=note+' → '+toItem.name+' '+toCol.name;
+  addStock(toIid,toCidx,taka,'transfer','Transfer from '+fromItem.name+' '+fromCol.name,'',note);
+  persist();
+  hideMod('m-move-taka');
+  renderDash();
+  toast('↔️ Moved '+taka+'T from '+fromCol.name+' to '+toCol.name,'ok');
+}
 function openAdjust(){
 const sel=el('adj-itm');
 if(sel) sel.innerHTML='<option value="">Select item...</option>'+STATE.items.map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
@@ -2377,7 +2686,9 @@ c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Compa
 '<div class="ir2"><div class="fg"><label>Discount Days</label><input class="inp mono" id="s-dd" type="number" step="1" value="'+(s.discountDays||45)+'"/></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="s-nd" type="number" step="1" value="'+(s.nettDays||120)+'"/></div></div></div>'+
 '<div class="card mt12"><div class="fw8" style="margin-bottom:14px">Stock Settings</div>'+
 '<div class="ir2"><div class="fg"><label>Avg Meters / Taka</label><input class="inp mono" id="s-avg" type="number" step="0.5" value="'+(s.avgMtrPerTaka||90)+'"/></div><div class="fg"><label>Avg Meters / TP</label><input class="inp mono" id="s-avgtp" type="number" step="0.5" value="'+(s.avgMtrPerTP||45)+'"/></div></div>'+
-'<div class="xs ct3" style="margin-top:-8px">Changing Avg Mtr/Taka recalculates all meter displays</div></div>'+
+'<div class="xs ct3" style="margin-top:-8px">Changing Avg Mtr/Taka recalculates all meter displays</div>'+
+'<div class="fg mt12"><label>Mixed Sarees Cut (meters per saree)</label><input class="inp mono" id="s-mixcut" type="number" step="0.5" min="0.5" placeholder="e.g. 6" value="'+(s.mixedSareesCut||6)+'"/></div>'+
+'<div class="xs ct3" style="margin-top:-8px">Used when converting leftover fabric stock into mixed sarees. Default: 6 mtrs/saree.</div></div>'+
 '<div class="card mt12"><div class="fw8" style="margin-bottom:14px">WhatsApp &amp; Notifications</div>'+
 '<div class="fg"><label>Your WhatsApp Number (for report sharing)</label><input class="inp" id="s-adwa" type="tel" placeholder="91XXXXXXXXXX" value="'+(s.adminWhatsApp||'')+'"/></div>'+
 '<div style="font-size:11px;color:var(--t3);margin-top:4px">Reports and alerts will be shared to this number</div>'+
@@ -2416,7 +2727,8 @@ discount:sf('s-disc',STATE.settings.discount),
 discountDays:si('s-dd',STATE.settings.discountDays),
 nettDays:si('s-nd',STATE.settings.nettDays),
 avgMtrPerTaka:nA, avgMtrPerTP:sf('s-avgtp',STATE.settings.avgMtrPerTP),
-autoDeleteCompletedDays:si('s-autodel',STATE.settings.autoDeleteCompletedDays||0)
+autoDeleteCompletedDays:si('s-autodel',STATE.settings.autoDeleteCompletedDays||0),
+mixedSareesCut:sf('s-mixcut',STATE.settings.mixedSareesCut||6)
 };
 STATE.items.forEach(item=>item.colours.forEach(c=>{c.stock_mtrs=Math.round((c.stock_taka||0)*nA);}));
 persist(); renderDash(); renderSettingsForm(); toast('Settings saved','ok');
@@ -4113,18 +4425,42 @@ showMod('m-lead-det');
 function renderFYTab(){
 const c=el('fybody'); if(!c) return;
 const curFY=STATE.settings.currentFY||getCurrentFY();
+const calFY=getCurrentFY();
 const allFYs=STATE.settings.allFYs||[curFY];
 const curOrders=(STATE.orders||[]).length;
 const curBills=(STATE.bills||[]).length;
 const curEntries=(STATE.entries||[]).length;
+const fyMismatch=calFY!==curFY;
 c.innerHTML=
-'<div style="background:var(--Pl);border-radius:12px;padding:14px;margin-bottom:16px">'+
-'<div style="font-size:10px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Current Financial Year</div>'+
-'<div style="font-size:24px;font-weight:900;color:var(--P)">FY '+curFY+'</div>'+
-'<div style="font-size:12px;color:var(--t3);margin-top:6px">'+curOrders+' orders \u2022 '+curBills+' bills \u2022 '+curEntries+' entries</div>'+
+// ── How FY works — always visible explanation ──
+'<div style="background:var(--Gl);border:1.5px solid rgba(5,150,105,.25);border-radius:12px;padding:14px;margin-bottom:14px">'+
+'<div style="font-size:12px;font-weight:800;color:var(--Gd);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">✅ How Financial Year Works</div>'+
+'<div style="font-size:12px;color:var(--Gd);line-height:1.7">'+
+'• The app <b>auto-detected</b> your current FY ('+curFY+') from the calendar on first use.<br>'+
+'• <b>FY never changes or resets automatically</b> — your data is always safe.<br>'+
+'• <b>"Open New FY"</b> is a manual admin action — nothing happens without your confirmation.<br>'+
+'• When you open a new FY: old orders/bills/entries are <b>archived</b> (not deleted), stock carries forward as opening balance, and a fresh FY starts.<br>'+
+'• You can <b>view and download old FY data</b> anytime from this screen.'+
 '</div>'+
-'<button class="btn bp bfl" onclick="openNewFY()">&#x1F4C5; Open New Financial Year</button>'+
-'<div class="dvd" style="margin:16px 0"></div>'+
+'</div>'+
+// ── FY mismatch warning ──
+(fyMismatch?
+'<div style="background:var(--Al);border:1.5px solid rgba(217,119,6,.3);border-radius:12px;padding:14px;margin-bottom:14px">'+
+'<div style="font-size:12px;font-weight:800;color:var(--Ad);margin-bottom:6px">📅 Calendar is now in FY '+calFY+'</div>'+
+'<div style="font-size:12px;color:var(--Ad);line-height:1.6">Your app is still running on FY <b>'+curFY+'</b>. This is fine — no data is lost. When you are ready to start the new financial year, click <b>"Open New Financial Year"</b> below. Until then, all new entries continue in FY '+curFY+'.</div>'+
+'</div>':'')+
+// ── Current FY card ──
+'<div style="background:var(--Pl);border:1.5px solid var(--Ps);border-radius:12px;padding:14px;margin-bottom:14px">'+
+'<div style="font-size:10px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Active Financial Year</div>'+
+'<div style="font-size:24px;font-weight:900;color:var(--P)">FY '+curFY+'</div>'+
+'<div style="font-size:12px;color:var(--t3);margin-top:6px">'+curOrders+' orders · '+curBills+' bills · '+curEntries+' ledger entries</div>'+
+(fyMismatch?'<div style="font-size:11px;color:var(--Ad);margin-top:4px;font-weight:700">⚠️ Calendar FY is '+calFY+' — consider opening the new FY</div>':'')+
+'</div>'+
+'<button class="btn bp bfl" onclick="openNewFY()">📅 Open New Financial Year (FY '+(parseInt(curFY.split('-')[0])+1)+'-'+(String(parseInt(curFY.split('-')[0])+2).slice(-2))+')</button>'+
+'<div style="background:var(--bg);border-radius:10px;padding:10px 14px;margin-top:10px;margin-bottom:14px;font-size:11px;color:var(--t3);line-height:1.6">'+
+'⚠️ Only tap this when your current FY is truly over. This will archive all current orders, bills & entries, carry stock forward, and start fresh. <b>This action cannot be undone</b> (but old data is always archived and viewable).'+
+'</div>'+
+'<div class="dvd" style="margin:4px 0 16px"></div>'+
 '<div class="fw7 sm" style="margin-bottom:8px">All Financial Years</div>'+
 allFYs.map(fy=>{
   const isCur=fy===curFY;
@@ -4133,9 +4469,9 @@ allFYs.map(fy=>{
   '<div style="flex:1"><div class="fw7">FY '+fy+(isCur?' <span style="font-size:10px;background:var(--P);color:white;padding:1px 7px;border-radius:5px">CURRENT</span>':'')+'</div></div>'+
   '</div>'+
   (!isCur?'<div style="display:flex;border-top:1px solid #F3F4F6">'+
-  '<button onclick="viewFYSummary(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;font-size:11px;font-weight:700;color:#4F46E5;cursor:pointer">&#x1F4CB; View</button>'+
-  '<button onclick="downloadFYPdf(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#059669;cursor:pointer">&#x1F4C4; PDF Report</button>'+
-  '<button onclick="deleteFYData(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#DC2626;cursor:pointer">&#x1F5D1; Delete</button>'+
+  '<button onclick="viewFYSummary(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;font-size:11px;font-weight:700;color:#4F46E5;cursor:pointer">📋 View</button>'+
+  '<button onclick="downloadFYPdf(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#059669;cursor:pointer">📄 PDF Report</button>'+
+  '<button onclick="deleteFYData(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#DC2626;cursor:pointer">🗑 Delete</button>'+
   '</div>':'')+
   '</div>';
 }).join('');
@@ -4483,6 +4819,20 @@ c.innerHTML=html;
 }
 function renderDashAlerts(){
 const c=el('dash-alerts'); if(!c) return;
+// ── FY MISMATCH ALERT (admin only) ──────────────────────────────
+let fyAlertHtml='';
+if(STATE.user?.role==='admin'){
+  const calFY=getCurrentFY();
+  const lockedFY=STATE.settings.currentFY;
+  if(lockedFY && calFY!==lockedFY){
+    fyAlertHtml='<div onclick="setNav(\'admin\');setTimeout(()=>aTab(\'fy\',document.querySelector(\'#s-admin .tbb:nth-child(6)\')),100)" style="background:linear-gradient(135deg,#92400E,#D97706);border-radius:12px;padding:14px 16px;margin:0 16px 10px;cursor:pointer;display:flex;align-items:center;gap:12px">'+
+    '<div style="font-size:28px">📅</div>'+
+    '<div style="flex:1">'+
+    '<div style="font-size:13px;font-weight:900;color:white">New Financial Year — FY '+calFY+'</div>'+
+    '<div style="font-size:11px;color:rgba(255,255,255,.85);margin-top:3px;line-height:1.5">Calendar has moved to FY '+calFY+' but app is still on FY '+lockedFY+'. <b>All your data is safe.</b> Tap here to open new FY when ready.</div>'+
+    '</div><div style="font-size:20px;color:rgba(255,255,255,.7)">›</div></div>';
+  }
+}
 const lowStock=[];
 const outStock=[];
 STATE.items.forEach(item=>{
@@ -4610,7 +4960,7 @@ html+=
 }
 }
 if(!html) html='';
-c.innerHTML=html;
+c.innerHTML=fyAlertHtml+html;
 }
 async function flagEntryFromModal(){
 if(!_entryRef) return;
@@ -7045,7 +7395,7 @@ function applyCloudData(d){
   const keep={firebaseUrl:STATE.settings.firebaseUrl,firebaseSecret:STATE.settings.firebaseSecret};
   const keys=['items','entries','customers','brokers','suppliers','users','orders','bills',
    'payments','jobWork','leads','flaggedEntries',
-   'taskTemplates','taskInstances','staffLeave','recurringLeads'];
+   'taskTemplates','taskInstances','staffLeave','recurringLeads','mixedSarees'];
   const uniqueKeys={users:'username',customers:'name',brokers:'name',suppliers:'name'};
   const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;
   if(localCount<=1){
@@ -7068,6 +7418,7 @@ function applyCloudData(d){
   if(STATE.staffLeave)lsSave('vs_staff_leave',STATE.staffLeave);
   if(STATE.flaggedEntries)lsSave('vs_flagged',STATE.flaggedEntries);
   if(STATE.recurringLeads)lsSave('vs_rec_leads',STATE.recurringLeads);
+  if(STATE.mixedSarees)lsSave('vs_mixed_sarees',STATE.mixedSarees);
   renderDash();
   try{renderOrders();}catch(e){}
   try{renderBills();}catch(e){}
