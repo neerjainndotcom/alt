@@ -736,6 +736,9 @@ rDiv.appendChild(rHdr);
 rangeCols.forEach(col=>{
 const cIdx=item.colours.indexOf(col);
 const stk=col.stock_taka||0;
+const skuEntries=STATE.entries.filter(e=>e.sku===col.sku);
+if(skuEntries.length>0){toast('🚫 Cannot delete "'+col.sku+'" — '+skuEntries.length+' ledger entr'+(skuEntries.length===1?'y':'ies')+' exist for this SKU. Delete those entries first.','err');return;}
+if(stk>0){toast('🚫 Cannot delete "'+col.sku+'" — it has '+stk+'T of stock. Clear stock first.','err');return;}
 const cls=stk===0?'no':stk<5?'lo':'ok';
 const row=document.createElement('div');
 row.className='scr2';
