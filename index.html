@@ -261,30 +261,13 @@ function autoSyncFirebase(){
   window._autoSyncTimer=setTimeout(async()=>{
     if(window._syncRunning)return;
     window._syncRunning=true;
+    window._saveLock=true;
     try{
-      if(!window._initialPullDone&&!window._dataPulledFromServer){window._syncRunning=false;return;}
+      if(!window._initialPullDone&&!window._dataPulledFromServer){window._syncRunning=false;window._saveLock=false;return;}
       const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;
-      if(localCount<=1){window._syncRunning=false;return;}
+      if(localCount<=1){window._syncRunning=false;window._saveLock=false;return;}
       const fu=fbUrl('data');
-      // STEP 1: Pull from Google Sheets FIRST, fallback to Firebase
-      let pulled=false;
-      if(GAS_URL){
-        try{
-          const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'})});
-          const d=await r.json();
-          if(d&&typeof d==='object'&&(d.items||d.users)){applyCloudData(d);pulled=true;}
-        }catch(e){}
-      }
-      if(!pulled&&fu){
-        try{
-          const r=await fetch(fu);
-          if(r.ok){
-            const d=await r.json();
-            if(d&&typeof d==='object'&&(d.items||d.users)){applyCloudData(d);pulled=true;}
-          }
-        }catch(e){}
-      }
-      // STEP 2: Push merged data to Google Sheets FIRST, then Firebase
+      // STEP 1: PUSH local data to servers FIRST (so server has our latest data)
       const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
         brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
         orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],
@@ -302,9 +285,28 @@ function autoSyncFirebase(){
           if(r.ok)setLiveStatus('live');
         }catch(e){}
       }
+      // STEP 2: THEN pull from server and merge (server now has our data, so merge is safe)
+      let pulled=false;
+      if(GAS_URL){
+        try{
+          const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'})});
+          const d=await r.json();
+          if(d&&typeof d==='object'&&(d.items||d.users)){applyCloudData(d);pulled=true;}
+        }catch(e){}
+      }
+      if(!pulled&&fu){
+        try{
+          const r=await fetch(fu);
+          if(r.ok){
+            const d=await r.json();
+            if(d&&typeof d==='object'&&(d.items||d.users)){applyCloudData(d);pulled=true;}
+          }
+        }catch(e){}
+      }
       STATE.settings.lastSync=new Date().toISOString();lsSave('vs_settings',STATE.settings);
     }catch(e){console.warn('autoSync error:',e);}
     window._syncRunning=false;
+    window._saveLock=false;
   },800);
 }
 let _tt;
@@ -439,6 +441,7 @@ setTimeout(()=>syncAPI(),3000);
 
   clearInterval(window._syncPoll);
   window._syncPoll=setInterval(async()=>{
+    if(window._saveLock||window._syncRunning)return;
     try{
       let d=null;
       // Google Sheets FIRST
@@ -462,17 +465,16 @@ setTimeout(()=>syncAPI(),3000);
         setLiveStatus('live');
       }
     }catch(e){}
-  },3000);
+  },30000);
   scheduleWAReminder();
   startFirebaseRealtime();
   try{autoDeleteOldCompletedTasks();}catch(e){}
 }
 async function syncAPI(){
+if(window._saveLock) return;
 const d=await api('getAll'); if(!d) return;
-const keys=['items','customers','brokers','suppliers','users','entries','jobWork','orders','bills','payments'];
-keys.forEach(k=>{if(d[k]) STATE[k]=d[k];});
-if(d.settings) STATE.settings={...STATE.settings,...d.settings};
-persist(); renderDash(); toast('Synced with Google Sheets','ok');
+applyCloudData(d);
+toast('Synced with Google Sheets','ok');
 }
 function setNav(tab){
 document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
@@ -1258,11 +1260,11 @@ const icons={mill:'🏭',jobwork:'⚙️',exchange:'🔄',transfer:'↩️',jwin
 const query=(q||el('inward-search')?.value||'').trim().toLowerCase();
 let ents=STATE.entries.filter(e=>['mill','jobwork','exchange','transfer'].includes(e.type)).sort((a,b)=>new Date(b.date)-new Date(a.date));
 if(query){ents=ents.filter(e=>(e.itemName||'').toLowerCase().includes(query)||(e.colourName||'').toLowerCase().includes(query)||(e.party||'').toLowerCase().includes(query)||(e.sku||'').toLowerCase().includes(query)||(e.date||'').includes(query)||(e.type||'').toLowerCase().includes(query));}
-else{ents=ents.slice(0,50);}
+else{ents=ents.slice(0,200);}
 c.innerHTML=!ents.length
 ?'<div class="emp"><div class="emj">📥</div><h3>'+(query?'No matches for "'+query+'"':'No Inward Entries')+'</h3></div>'
 :ents.map(e=>'<div class="et"><div class="ei" style="background:var(--Gl);color:var(--Gd)">'+(icons[e.type]||'📥')+'</div><div class="eb"><div class="etit">'+e.itemName+' - '+e.colourName+'</div><div class="esub">'+e.party+' - '+fmtDate(e.date)+(e.sku?' - '+e.sku:'')+'</div></div><div class="er"><div class="ev in">+'+e.taka+'T</div><div class="ed">'+fmtN(e.mtrs)+'m</div></div></div>').join('')
-+(ents.length>=50&&!query?'<div style="text-align:center;padding:12px;font-size:11px;color:var(--t3)">Showing last 50 entries. Use search to find more.</div>':'');
++(ents.length>=200&&!query?'<div style="text-align:center;padding:12px;font-size:11px;color:var(--t3)">Showing last 200 entries. Use search to find more.</div>':'');
 }
 let _jwType='s2j', _jwRows=[{}], _rjwId=null;
 function nextJWRef(){ return 'JW-'+String(STATE.jobWork.length+1).padStart(3,'0'); }
@@ -3833,7 +3835,7 @@ const c=el('rep-vsorder-body'); if(!c) return;
 const skuMap={};
 STATE.items.forEach(item=>{
 [...new Set(item.colours.map(c=>c.range))].forEach(rng=>{
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued).forEach(col=>{
 skuMap[col.sku]={itemName:item.name,rng,colName:col.name,hex:col.hex,stock:col.stock_taka||0,orderedPcs:0,orderedTaka:0};
 });
 });
@@ -7468,10 +7470,26 @@ function renderTaskReport(){
 function recalcStockFromEntries(){
   // Reset all stock to 0
   STATE.items.forEach(item=>item.colours.forEach(col=>{col.stock_taka=0;col.stock_mtrs=0;}));
+  // Build SKU lookup for fast matching
+  const skuMap={};
+  STATE.items.forEach(item=>{
+    item.colours.forEach((col,idx)=>{
+      if(col.sku) skuMap[item.id+'::'+col.sku]={item,col,idx};
+    });
+  });
   // Rebuild from ledger entries
   STATE.entries.forEach(e=>{
     const item=STATE.items.find(i=>i.id===e.itemId); if(!item) return;
-    const col=item.colours[e.colIdx]; if(!col) return;
+    // Try colIdx first, then fallback to SKU matching
+    let col=item.colours[e.colIdx];
+    // Validate colIdx matches — if SKU doesn't match, colIdx is stale
+    if(col && e.sku && col.sku && col.sku!==e.sku) col=null;
+    // Fallback: match by SKU within the same item
+    if(!col && e.sku){
+      const lookup=skuMap[e.itemId+'::'+e.sku];
+      if(lookup && lookup.item===item) col=lookup.col;
+    }
+    if(!col) return;
     if(e.direction==='in') col.stock_taka=Math.round((col.stock_taka||0)+(e.taka||0));
     else col.stock_taka=Math.round((col.stock_taka||0)-(e.taka||0));
   });
