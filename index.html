@@ -268,6 +268,7 @@ function autoSyncFirebase(){
       if(localCount<=1){window._syncRunning=false;window._saveLock=false;return;}
       const fu=fbUrl('data');
       // STEP 1: PUSH local data to servers FIRST (so server has our latest data)
+      window._lastSaveAt=Date.now();
       const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
         brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
         orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],
@@ -276,31 +277,42 @@ function autoSyncFirebase(){
         staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
         settings:{...STATE.settings,lastSync:new Date().toISOString()},
         syncedAt:new Date().toISOString()};
-      if(GAS_URL){
-        try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl})});}catch(e){}
-      }
+      // Firebase FIRST (fast, reliable)
+      let pushed=false;
       if(fu){
         try{
           const r=await fetch(fu,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl)});
-          if(r.ok)setLiveStatus('live');
+          if(r.ok){setLiveStatus('live');pushed=true;}
         }catch(e){}
       }
-      // STEP 2: THEN pull from server and merge (server now has our data, so merge is safe)
-      let pulled=false;
+      // GAS second (backup, may be slow with large data)
       if(GAS_URL){
         try{
-          const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'})});
-          const d=await r.json();
-          if(d&&typeof d==='object'&&(d.items||d.users)){applyCloudData(d);pulled=true;}
+          const ctrl=new AbortController();
+          const tid=setTimeout(()=>ctrl.abort(),15000);
+          await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl}),signal:ctrl.signal});
+          clearTimeout(tid);
         }catch(e){}
       }
-      if(!pulled&&fu){
+      // STEP 2: THEN pull from Firebase and merge (server now has our data, so merge is safe)
+      let pulled=false;
+      if(fu){
         try{
           const r=await fetch(fu);
           if(r.ok){
             const d=await r.json();
             if(d&&typeof d==='object'&&(d.items||d.users)){applyCloudData(d);pulled=true;}
           }
+        }catch(e){}
+      }
+      if(!pulled&&GAS_URL){
+        try{
+          const ctrl=new AbortController();
+          const tid=setTimeout(()=>ctrl.abort(),10000);
+          const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'}),signal:ctrl.signal});
+          clearTimeout(tid);
+          const d=await r.json();
+          if(d&&typeof d==='object'&&(d.items||d.users)){applyCloudData(d);pulled=true;}
         }catch(e){}
       }
       STATE.settings.lastSync=new Date().toISOString();lsSave('vs_settings',STATE.settings);
@@ -407,24 +419,14 @@ if(!STATE.settings.currentFY){
 setNav('dash');
 renderSettingsForm();
 renderDBSetup();
-// ALWAYS pull from server on login — Google Sheets FIRST, Firebase fallback
+// ALWAYS pull from server on login — Firebase FIRST (fast+reliable), GAS fallback
 (async function(){
   let pulled=false;
   try{
-    // Try Google Sheets first
-    if(GAS_URL){
+    // Try Firebase first (fast, reliable CORS, real-time capable)
+    const fu=fbUrl('data');
+    if(fu){
       try{
-        const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'})});
-        const d=await r.json();
-        if(d&&typeof d==='object'&&(d.items||d.users||d.customers)){
-          applyCloudData(d);setLiveStatus('live');pulled=true;
-        }
-      }catch(e){}
-    }
-    // Fallback to Firebase
-    if(!pulled){
-      const fu=fbUrl('data');
-      if(fu){
         const r=await fetch(fu);
         if(r.ok){
           const d=await r.json();
@@ -432,30 +434,43 @@ renderDBSetup();
             applyCloudData(d);setLiveStatus('live');pulled=true;
           }
         }
-      }
+      }catch(e){}
+    }
+    // Fallback to Google Sheets
+    if(!pulled&&GAS_URL){
+      try{
+        const ctrl=new AbortController();
+        const tid=setTimeout(()=>ctrl.abort(),10000);
+        const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'}),signal:ctrl.signal});
+        clearTimeout(tid);
+        const d=await r.json();
+        if(d&&typeof d==='object'&&(d.items||d.users||d.customers)){
+          applyCloudData(d);setLiveStatus('live');pulled=true;
+        }
+      }catch(e){}
     }
   }catch(e){console.warn('initApp pull:',e);}
   window._initialPullDone=true;
 })();
-setTimeout(()=>syncAPI(),3000);
 
   clearInterval(window._syncPoll);
   window._syncPoll=setInterval(async()=>{
     if(window._saveLock||window._syncRunning)return;
     try{
       let d=null;
-      // Google Sheets FIRST
-      if(GAS_URL){
+      // Firebase FIRST (fast, reliable)
+      const fu=fbUrl('data');
+      if(fu){try{const r=await fetch(fu);if(r.ok){const j=await r.json();if(j&&typeof j==='object'&&(j.items||j.users))d=j;}}catch(e){}}
+      // GAS fallback
+      if(!d&&GAS_URL){
         try{
-          const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'})});
+          const ctrl=new AbortController();
+          const tid=setTimeout(()=>ctrl.abort(),10000);
+          const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'}),signal:ctrl.signal});
+          clearTimeout(tid);
           const j=await r.json();
           if(j&&typeof j==='object'&&(j.items||j.users))d=j;
         }catch(e){}
-      }
-      // Firebase fallback
-      if(!d){
-        const fu=fbUrl('data');
-        if(fu){try{const r=await fetch(fu);if(r.ok){const j=await r.json();if(j&&typeof j==='object'&&(j.items||j.users))d=j;}}catch(e){}}
       }
       if(!d)return;
       const cloudSync=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
@@ -5319,9 +5334,10 @@ function startFirebaseRealtime(){
     window._fbES.onopen=()=>setLiveStatus('live');
     const onData=e=>{
       try{
+        if(window._saveLock||window._syncRunning)return;
         const raw=JSON.parse(e.data);const d=raw.data||raw;
         if(!d||!d.items)return;
-        if(window._lastSaveAt&&Date.now()-window._lastSaveAt<1500)return;
+        if(window._lastSaveAt&&Date.now()-window._lastSaveAt<5000)return;
         const cT=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
         const lT=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
         if(cT>lT){applyCloudData(d);setLiveStatus('live');}
@@ -7119,10 +7135,10 @@ async function hybridSaveAll(silent){
     staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
     settings:STATE.settings,syncedAt:new Date().toISOString()};
   let fb=false,gs=false;
-  // Google Sheets FIRST (primary)
-  try{const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl})});const j=await r.json();gs=j&&!j.error;}catch(e){}
-  // Firebase SECOND (backup)
+  // Firebase FIRST (fast, reliable, real-time)
   try{const fu=fbUrl('data');if(fu){const r=await fetch(fu,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl)});fb=r.ok;}}catch(e){}
+  // Google Sheets SECOND (backup, with timeout for large data)
+  try{const ctrl=new AbortController();const tid=setTimeout(()=>ctrl.abort(),15000);const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl}),signal:ctrl.signal});clearTimeout(tid);const j=await r.json();gs=j&&!j.error;}catch(e){}
   STATE.settings.lastSync=new Date().toLocaleString();lsSave('vs_settings',STATE.settings);
   if(!silent){if(gs&&fb)toast('Saved GS+Firebase','ok');else if(gs)toast('Saved Google Sheets','ok');else if(fb)toast('Saved Firebase','ok');else toast('Both failed - local only','er');}
   return{fb,gs};
@@ -7168,27 +7184,33 @@ async function manualRefresh(){
     setLiveStatus(ok?'live':'off');toast(msg,ok?'ok':'er');
   };
   try{
-    // STEP 1: Pull server data (try GS first, then Firebase)
+    window._saveLock=true;
+    // STEP 1: Push local data to servers FIRST (preserve our changes)
+    await hybridSaveAll(true);
+    // STEP 2: Pull server data (Firebase first, GAS fallback) and merge
     let serverData=null;
-    if(GAS_URL){
+    const fu=fbUrl('data');
+    if(fu){
+      try{const r=await fetch(fu);if(r.ok){const d=await r.json();if(d&&typeof d==='object'&&(d.items||d.users))serverData=d;}}catch(e){}
+    }
+    if(!serverData&&GAS_URL){
       try{
-        const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'})});
+        const ctrl=new AbortController();
+        const tid=setTimeout(()=>ctrl.abort(),10000);
+        const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'}),signal:ctrl.signal});
+        clearTimeout(tid);
         const d=await r.json();
         if(d&&typeof d==='object'&&(d.items||d.users||d.customers))serverData=d;
       }catch(e){}
     }
-    if(!serverData){
-      const fu=fbUrl('data');
-      if(fu){
-        try{const r=await fetch(fu);if(r.ok){const d=await r.json();if(d&&typeof d==='object'&&(d.items||d.users))serverData=d;}}catch(e){}
-      }
-    }
-    // STEP 2: Smart merge — keeps all changes from both local and server, newer wins per record
+    // STEP 3: Smart merge — keeps all changes from both local and server, newer wins per record
     if(serverData){applyCloudData(serverData);}
-    // STEP 3: Push merged data back to both servers
+    // STEP 4: Push merged result back
     await hybridSaveAll(true);
+    window._saveLock=false;
     done(true,'✅ Synced — all devices up to date');
   }catch(e){
+    window._saveLock=false;
     done(false,'⚠️ Sync failed: '+e.message);
   }
 }
@@ -7497,6 +7519,53 @@ function recalcStockFromEntries(){
   const avg=STATE.settings.avgMtrPerTaka||30;
   STATE.items.forEach(item=>{item.colours.forEach(col=>{col.stock_mtrs=Math.round((col.stock_taka||0)*avg);});item._ts=Date.now();});
 }
+function verifyStockIntegrity(){
+  // Build expected stock from entries
+  const expected={};
+  STATE.items.forEach(item=>{
+    item.colours.forEach((col,idx)=>{
+      if(col.sku) expected[item.id+'::'+col.sku]=0;
+    });
+  });
+  const skuMap={};
+  STATE.items.forEach(item=>{
+    item.colours.forEach((col,idx)=>{
+      if(col.sku) skuMap[item.id+'::'+col.sku]=col;
+    });
+  });
+  STATE.entries.forEach(e=>{
+    const item=STATE.items.find(i=>i.id===e.itemId); if(!item) return;
+    let col=item.colours[e.colIdx];
+    if(col && e.sku && col.sku && col.sku!==e.sku) col=null;
+    if(!col && e.sku) col=skuMap[e.itemId+'::'+e.sku];
+    if(!col) return;
+    const key=e.itemId+'::'+col.sku;
+    if(!(key in expected)) expected[key]=0;
+    if(e.direction==='in') expected[key]=Math.round(expected[key]+(e.taka||0));
+    else expected[key]=Math.round(expected[key]-(e.taka||0));
+  });
+  // Compare with actual
+  let mismatches=0;
+  STATE.items.forEach(item=>{
+    item.colours.forEach(col=>{
+      if(!col.sku) return;
+      const key=item.id+'::'+col.sku;
+      const exp=expected[key]||0;
+      const actual=col.stock_taka||0;
+      if(exp!==actual) mismatches++;
+    });
+  });
+  if(mismatches>0){
+    console.warn('Stock integrity: '+mismatches+' mismatches found, auto-correcting...');
+    recalcStockFromEntries();
+    lsSave('vs_items',STATE.items);
+    try{renderDash();}catch(e){}
+  }
+  return mismatches;
+}
+// Run integrity check 10 seconds after load, then every 2 minutes
+setTimeout(()=>{try{verifyStockIntegrity();}catch(e){}},10000);
+setInterval(()=>{if(!window._saveLock&&!window._syncRunning){try{verifyStockIntegrity();}catch(e){}}},120000);
 function applyCloudData(d){
   if(!d)return;
   const keep={firebaseUrl:STATE.settings.firebaseUrl,firebaseSecret:STATE.settings.firebaseSecret};
