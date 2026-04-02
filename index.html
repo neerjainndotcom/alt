@@ -67,8 +67,8 @@
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" capture="environment" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
 </div></div><script>
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.2.1';
-const APP_BUILD_DATE='2026-04-01';
+const APP_VERSION='1.2.2';
+const APP_BUILD_DATE='2026-04-02';
 const DATA_VERSION=2;
 // ═══════════════════════════════════════════════════════════════════════
 const GAS_URL='https://script.google.com/macros/s/AKfycbzwD4Ap7ACcJlqk-9BtTxPvJYY-yCkWn2KTLeXsqUlTVyoZFjOUQ66uVZ4zMoKIlFLp/exec';
@@ -405,11 +405,11 @@ async function logout(){
 }
 function initApp(){
 const vEl=el('d-version');if(vEl)vEl.textContent='v'+APP_VERSION+' ('+APP_BUILD_DATE+')';
-// Always recalc stock from entries on load — ensures stock matches ledger even if localStorage was stale
-if(STATE.entries&&STATE.entries.length>0&&STATE.items&&STATE.items.length>0){
-  recalcStockFromEntries();
-  lsSave('vs_items',STATE.items);
-}
+// NOTE: recalcStockFromEntries() is NOT called here on purpose.
+// The cloud pull hasn't happened yet at this point — calling recalc with
+// stale local-only entries would produce wrong stock and save to localStorage,
+// which then gets treated as "newer" during smartMerge. Recalc runs correctly
+// inside applyCloudData() AFTER all cloud data has been merged in.
 // ── LOCK IN FINANCIAL YEAR on first use ──────────────────────────
 // If currentFY is not saved yet, detect from calendar and lock it in now.
 // This prevents new entries from silently getting a different FY tag
@@ -5214,6 +5214,7 @@ c.innerHTML=
 '<div style="display:grid;gap:6px">'+
 '<button class="btn bsuc bfl" onclick="syncToCloud()">&#x2191; Push to Google Sheets</button>'+
 '<button class="btn bp bfl" onclick="syncFromCloud()">&#x2193; Pull from Google Sheets</button>'+
+'<button class="btn" onclick="forceRepairStock()" style="background:linear-gradient(135deg,#D97706,#F59E0B);color:white;font-weight:800">&#x1F527; Repair Stock from Ledger</button>'+
 '</div>'+
 '<div style="background:white;border-radius:8px;padding:10px;margin-top:10px;font-size:11px;color:var(--t2);line-height:1.8">'+
 '<div style="font-weight:800;margin-bottom:4px">How to setup Google Sheets:</div>'+
@@ -7520,9 +7521,9 @@ function recalcStockFromEntries(){
     if(e.direction==='in') col.stock_taka=Math.round((col.stock_taka||0)+(e.taka||0));
     else col.stock_taka=Math.round((col.stock_taka||0)-(e.taka||0));
   });
-  // Recalc meters
-  const avg=STATE.settings.avgMtrPerTaka||30;
-  STATE.items.forEach(item=>{item.colours.forEach(col=>{col.stock_mtrs=Math.round((col.stock_taka||0)*avg);});item._ts=Date.now();});
+  // Recalc meters — DO NOT touch item._ts here (would poison smartMerge timestamps)
+  const avg=STATE.settings.avgMtrPerTaka||90;
+  STATE.items.forEach(item=>{item.colours.forEach(col=>{col.stock_mtrs=Math.round((col.stock_taka||0)*avg);});});
 }
 function verifyStockIntegrity(){
   // Build expected stock from entries
