@@ -405,6 +405,11 @@ async function logout(){
 }
 function initApp(){
 const vEl=el('d-version');if(vEl)vEl.textContent='v'+APP_VERSION+' ('+APP_BUILD_DATE+')';
+// Always recalc stock from entries on load — ensures stock matches ledger even if localStorage was stale
+if(STATE.entries&&STATE.entries.length>0&&STATE.items&&STATE.items.length>0){
+  recalcStockFromEntries();
+  lsSave('vs_items',STATE.items);
+}
 // ── LOCK IN FINANCIAL YEAR on first use ──────────────────────────
 // If currentFY is not saved yet, detect from calendar and lock it in now.
 // This prevents new entries from silently getting a different FY tag
