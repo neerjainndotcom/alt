@@ -26,7 +26,7 @@
 </div>
 <div id="ls"><div class="lg"></div><div class="lglow"></div><div class="lcard"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p>Amrit Laxmi Textile · Surat</p></div><div id="lf"><div class="lf"><label>Username</label><input type="text" id="lu" placeholder="Enter username" autocomplete="username"/></div><div class="lf"><label>Password</label><input type="password" id="lp" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div><button class="lbtn" onclick="doLogin()">Sign In →</button><div class="lerr" id="le"></div><div style="display:flex;justify-content:space-between;margin-top:14px"><button onclick="showForgotUsername()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Username?</button><button onclick="showForgotPassword()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Password?</button></div><div style="margin-top:14px;background:rgba(255,165,0,0.15);border-radius:10px;padding:12px;border:1.5px solid rgba(255,165,0,0.4)"><div style="font-size:11px;color:rgba(255,255,255,0.9);margin-bottom:8px;text-align:center;font-weight:700">&#x1F4F1; First time on this phone / New device?</div><button onclick="loginScreenSyncFirebase()" style="width:100%;background:linear-gradient(135deg,#D97706,#F59E0B);color:white;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 15px rgba(217,119,6,.4)">&#x1F525; Load Data from Firebase</button><div id="ls-sync-status" style="font-size:12px;color:rgba(255,255,255,0.9);margin-top:8px;text-align:center;min-height:18px;font-weight:600"></div><div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:6px;text-align:center">Tap this button to load all your data before logging in</div></div><div style="text-align:center;margin-top:10px"><button onclick="showEmergencyRecovery()" style="background:none;border:none;color:rgba(255,80,80,0.7);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline">&#x1F6A8; Admin locked out?</button></div><div id="login-version" style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3)"></div></div><div id="of" class="hid"><p style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:20px;line-height:1.6">📱 New device detected!<br>OTP sent to admin WhatsApp.<br>Ask admin to share the code.</p><div class="lf"><label>One-Time Password</label><input type="number" class="otp-inp" id="oi" placeholder="000000" maxlength="6"/></div><button class="lbtn" onclick="doOTP()">Verify OTP →</button><div class="lerr" id="oe"></div><button style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit" onclick="showEl('lf');hideEl('of')">← Back</button></div></div>
 </div>
-<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:10px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bgh bsm" onclick="toggleLang()">&#x1F310; <span id="ll">हिंदी</span></button><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('out',this)">Outstanding</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div id="billst"></div></div><div class="tp" id="tp-out"><div style="padding:8px 16px"><button class="wa" style="padding:6px 14px;font-size:12px" onclick="waOutstanding()">&#x1F4F2; Share Outstanding</button></div><div id="outlst"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg"><label>Customer</label><select class="sel" id="inv-cust-sel" onchange="onInvCustSelect()" style="font-size:14px;padding:10px 12px"><option value="">Select customer...</option></select></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="showInward('exch')"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" id="inward-manual-btn" onclick="openManualStock()" style="display:none;border:1.5px solid rgba(217,119,6,.3);background:var(--Al)"><span class="qaico">✏️</span><div><div class="qalbl" style="color:var(--Ad)">Manual Entry</div><div class="qasub">Add/deduct balance</div></div></div></div></div><div class="stl" data-i18n="recent">Recent Inward</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="inward-search" placeholder="Search by item, colour, party..." oninput="renderInRec(this.value)"/></div></div><div id="inrec"></div></div></div><div id="s-jw" class="scr"><div class="shdr"><div class="hr"><div><h2>⚙️ Job Work</h2><p class="sub">Challans & Processing</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="showJWForm('s2j')">Shop → Job Work</button></div></div><div class="tb mt8"><button class="tbb on" onclick="jwTab('pnd',this)">Pending</button><button class="tbb" onclick="jwTab('rec',this)">Received</button><button class="tbb" onclick="jwTab('all',this)">All</button></div></div><div class="tp on" id="tp-pnd"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="jw-search" placeholder="Search by ref, party, item..." oninput="renderJWLists(this.value)"/></div></div><div id="jwpnd"></div></div><div class="tp" id="tp-rec"><div id="jwrec"></div></div><div class="tp" id="tp-all"><div id="jwall"></div></div></div><div id="s-masters" class="scr"><div class="shdr"><h2>🗂️ Masters</h2><div class="tb mt8"><button class="tbb on" onclick="mTab('itm',this)">Items</button><button class="tbb" onclick="mTab('cst',this)">Customers</button><button class="tbb" onclick="mTab('brk',this)">Brokers</button><button class="tbb" onclick="mTab('sup',this)">Suppliers</button><button class="tbb" onclick="mTab('prd',this)">Products</button></div></div><div class="tp on" id="tp-itm"><div class="srch"><span>🔍</span><input type="text" placeholder="Search items..." oninput="renderItems(this.value)"/></div><div id="itmlst"></div><button class="fab" onclick="openItem()">+</button></div><div class="tp" id="tp-cst"><div class="srch"><span>🔍</span><input type="text" placeholder="Search customers..." oninput="renderCusts(this.value)"/></div><div id="cstlst"></div><button class="fab" onclick="openCust()">+</button></div><div class="tp" id="tp-brk"><div id="brklst"></div><button class="fab" onclick="showMod('m-brk')">+</button></div><div class="tp" id="tp-sup"><div id="suplst"></div><button class="fab" onclick="showMod('m-sup')">+</button></div><div class="tp" id="tp-prd"><div id="prdlst"></div><button class="fab" onclick="showMod('m-prd')">+</button></div></div><div id="s-admin" class="scr"><div class="shdr"><h2>👑 Admin</h2><div class="tb mt8"><button class="tbb on" onclick="aTab('set',this)">Settings</button><button class="tbb" onclick="aTab('usr',this)">Users</button><button class="tbb" onclick="aTab('dev',this)">Devices</button><button class="tbb" onclick="aTab('led',this)">Ledger</button><button class="tbb" onclick="aTab('db',this)">Database</button><button class="tbb" onclick="aTab('fy',this)">Fin Year</button><button class="tbb" data-tab="flags" onclick="aTab('flags',this)" id="admin-flag-tab">Flags <span id="flag-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:3px">!</span></button></div></div><div class="tp on" id="tp-set" style="background:var(--bg)"><div id="setbod" class="p16" style="background:var(--bg)"></div></div><div class="tp" id="tp-usr" style="background:var(--bg)"><div id="usrlst"></div><button class="fab" onclick="openUserModal()">+</button></div><div class="tp" id="tp-dev" style="background:var(--bg)"><div id="devlst"></div></div><div class="tp" id="tp-led" style="background:var(--bg)"><div class="srch"><span>🔍</span><input type="text" placeholder="Filter ledger..." oninput="renderLedger(this.value)"/></div><div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap" id="ldflt"></div><div id="ledbod" class="p16"></div></div><div class="tp" id="tp-db" style="background:var(--bg)"><div id="dbbod" class="p16"></div></div><div class="tp" id="tp-fy" style="background:var(--bg)"><div id="fybody" class="p16"></div></div><div class="tp" id="tp-flags" style="background:var(--bg);overflow-y:auto;padding-bottom:80px"><div id="flagged-body" class="p16"></div></div></div><div id="s-reports" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CA; Reports</h2><p class="sub">Stock, Sales, SKU Analysis</p></div></div><div class="tb mt8"><button class="tbb on" onclick="repTab('stock',this)">Stock</button><button class="tbb" onclick="repTab('vsorder',this)">vs Orders</button><button class="tbb" onclick="repTab('daily',this)">Daily Sales</button><button class="tbb" onclick="repTab('topsku',this)">Top SKUs</button><button class="tbb" onclick="repTab('trends',this)">&#x1F4C8; Trends</button></div></div><div class="tp on" id="tp-rstock" style="overflow-y:auto;padding-bottom:80px"><div id="rep-stock-body" class="p16"></div></div><div class="tp" id="tp-rvsorder" style="overflow-y:auto;padding-bottom:80px"><div id="rep-vsorder-body" class="p16"></div></div><div class="tp" id="tp-rdaily" style="overflow-y:auto;padding-bottom:80px"><div style="padding:12px 16px;display:flex;gap:8px;align-items:center"><input type="date" id="rep-daily-date" class="inp" style="flex:1" value=""/><button class="btn bp bsm" onclick="renderDailyReport()">Go</button></div><div id="rep-daily-body" class="p16"></div></div><div class="tp" id="tp-rtopsku" style="overflow-y:auto;padding-bottom:80px"><div id="rep-topsku-body" class="p16"></div></div><div class="tp" id="tp-rtrends" style="overflow-y:auto;padding-bottom:80px"><div class="p16"><div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"><button class="sw on" id="trn-7" onclick="renderTrends(7,this)">7 Days</button><button class="sw" id="trn-14" onclick="renderTrends(14,this)">14 Days</button><button class="sw" id="trn-28" onclick="renderTrends(28,this)">28 Days</button><button class="sw" id="trn-90" onclick="renderTrends(90,this)">3 Months</button></div><div id="rep-trends-body"></div></div></div></div><div id="s-leads" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F3AF; Leads</h2><p class="sub">Lead Management</p></div><button class="btn bp bsm" onclick="openNewLead()">+ Lead</button></div><div class="tb mt8"><button class="tbb on" onclick="leadTab('all',this)">All</button><button class="tbb" onclick="leadTab('mine',this)">Mine</button><button class="tbb" onclick="leadTab('today',this)">Follow Up</button><button class="tbb" onclick="leadTab('won',this)">Won/Lost</button><button class="tbb" onclick="leadTab('recurring',this)" id="lead-rec-tab">Recurring <span id="lead-rec-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:2px">!</span></button></div></div><div class="tp on" id="tp-lall"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="lead-search" placeholder="Search by name, phone, status, salesman..." oninput="renderLeads('all',this.value)"/></div></div><div id="lead-lst-all"></div></div><div class="tp" id="tp-lmine"><div id="lead-lst-mine"></div></div><div class="tp" id="tp-ltoday"><div id="lead-lst-today"></div></div><div class="tp" id="tp-lwon"><div id="lead-lst-won"></div></div><div class="tp" id="tp-lrecurring"><div id="lead-rec-list" class="p16"></div></div></div></div><div id="s-tasks" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CB; Tasks</h2><p class="sub" id="task-sub">Your task list</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="openNewTaskInstance()" id="task-add-btn">+ Task</button><button class="btn bgh bsm" onclick="openNewTaskTemplate()" id="task-tpl-btn" style="display:none">+ Template</button></div></div><div class="tb mt8"><button class="tbb on" onclick="taskTab('my',this)" id="ttab-my">My Tasks</button><button class="tbb" onclick="taskTab('all',this)" id="ttab-all" style="display:none">All Tasks</button><button class="tbb" onclick="taskTab('templates',this)" id="ttab-tpl" style="display:none">Templates</button><button class="tbb" onclick="taskTab('leave',this)" id="ttab-lv" style="display:none">Leave</button><button class="tbb" onclick="taskTab('rep',this)" id="ttab-rep" style="display:none">&#x1F4CA; Report</button></div></div><div class="tp on" id="tp-tmy"><div style="padding:8px 16px 0"><div class="srch"><span>🔍</span><input type="text" id="task-search" placeholder="Search by task name, category..." oninput="renderMyTasks(this.value)"/></div></div><div id="task-lst-my" class="p16"></div></div><div class="tp" id="tp-tall"><div id="task-lst-all" class="p16"></div></div><div class="tp" id="tp-ttemplates"><div id="task-lst-tpl" class="p16"></div></div><div class="tp" id="tp-tleave"><div id="task-lst-lv" class="p16"></div></div><div class="tp" id="tp-trep"><div class="p16"><div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><input type="date" class="inp" id="trep-from" style="flex:1"/><span>to</span><input type="date" class="inp" id="trep-to" style="flex:1"/><button class="btn bp bsm" onclick="renderTaskReport()">Go</button></div><button class="btn bd bsm" onclick="openDeleteCompletedTasks()" style="margin-bottom:12px">&#x1F5D1; Delete Completed Tasks</button><div id="task-report-body"></div></div></div></div><button id="global-refresh-btn" onclick="manualRefresh()" style="position:fixed;bottom:70px;right:16px;z-index:500;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#4F46E5,#6366F1);color:white;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 15px rgba(79,70,229,.4);display:flex;align-items:center;justify-content:center" title="Refresh data">&#x1F504;</button><nav id="bn"><button class="nb on" onclick="setNav('dash')" id="nb-dash"><span class="ni">📊</span>Dash</button><button class="nb" onclick="setNav('sales')" id="nb-sales"><span class="ni">🧾</span>Sales</button><button class="nb" onclick="setNav('inward')" id="nb-inward"><span class="ni">📥</span>Inward</button><button class="nb" onclick="setNav('jw')" id="nb-jw"><span class="ni">⚙️</span>Job Work</button><button class="nb" onclick="setNav('masters')" id="nb-masters"><span class="ni">🗂️</span>Masters</button><button class="nb" onclick="setNav('reports')" id="nb-reports"><span class="ni">&#x1F4CA;</span>Reports</button><button class="nb" onclick="setNav('leads')" id="nb-leads"><span class="ni">&#x1F3AF;</span>Leads</button><button class="nb" onclick="setNav('tasks')" id="nb-tasks"><span class="ni">&#x1F4CB;</span>Tasks<span class="ndot hid" id="tdot"></span></button><button class="nb" onclick="setNav('admin')" id="nb-admin"><span class="ni">👑</span>Admin<span class="ndot hid" id="adot"></span></button></nav>
+<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:10px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bgh bsm" onclick="toggleLang()">&#x1F310; <span id="ll">हिंदी</span></button><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('pend',this)">Pending</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div id="billst"></div></div><div class="tp" id="tp-pend"><div id="pendlst"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg"><label>Customer</label><select class="sel" id="inv-cust-sel" onchange="onInvCustSelect()" style="font-size:14px;padding:10px 12px"><option value="">Select customer...</option></select></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="showInward('exch')"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" id="inward-manual-btn" onclick="openManualStock()" style="display:none;border:1.5px solid rgba(217,119,6,.3);background:var(--Al)"><span class="qaico">✏️</span><div><div class="qalbl" style="color:var(--Ad)">Manual Entry</div><div class="qasub">Add/deduct balance</div></div></div></div></div><div class="stl" data-i18n="recent">Recent Inward</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="inward-search" placeholder="Search by item, colour, party..." oninput="renderInRec(this.value)"/></div></div><div id="inrec"></div></div></div><div id="s-jw" class="scr"><div class="shdr"><div class="hr"><div><h2>⚙️ Job Work</h2><p class="sub">Challans & Processing</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="showJWForm('s2j')">Shop → Job Work</button></div></div><div class="tb mt8"><button class="tbb on" onclick="jwTab('pnd',this)">Pending</button><button class="tbb" onclick="jwTab('rec',this)">Received</button><button class="tbb" onclick="jwTab('all',this)">All</button></div></div><div class="tp on" id="tp-pnd"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="jw-search" placeholder="Search by ref, party, item..." oninput="renderJWLists(this.value)"/></div></div><div id="jwpnd"></div></div><div class="tp" id="tp-rec"><div id="jwrec"></div></div><div class="tp" id="tp-all"><div id="jwall"></div></div></div><div id="s-masters" class="scr"><div class="shdr"><h2>🗂️ Masters</h2><div class="tb mt8"><button class="tbb on" onclick="mTab('itm',this)">Items</button><button class="tbb" onclick="mTab('cst',this)">Customers</button><button class="tbb" onclick="mTab('brk',this)">Brokers</button><button class="tbb" onclick="mTab('sup',this)">Suppliers</button><button class="tbb" onclick="mTab('prd',this)">Products</button></div></div><div class="tp on" id="tp-itm"><div class="srch"><span>🔍</span><input type="text" placeholder="Search items..." oninput="renderItems(this.value)"/></div><div id="itmlst"></div><button class="fab" onclick="openItem()">+</button></div><div class="tp" id="tp-cst"><div class="srch"><span>🔍</span><input type="text" placeholder="Search customers..." oninput="renderCusts(this.value)"/></div><div id="cstlst"></div><button class="fab" onclick="openCust()">+</button></div><div class="tp" id="tp-brk"><div id="brklst"></div><button class="fab" onclick="showMod('m-brk')">+</button></div><div class="tp" id="tp-sup"><div id="suplst"></div><button class="fab" onclick="showMod('m-sup')">+</button></div><div class="tp" id="tp-prd"><div id="prdlst"></div><button class="fab" onclick="showMod('m-prd')">+</button></div></div><div id="s-admin" class="scr"><div class="shdr"><h2>👑 Admin</h2><div class="tb mt8"><button class="tbb on" onclick="aTab('set',this)">Settings</button><button class="tbb" onclick="aTab('usr',this)">Users</button><button class="tbb" onclick="aTab('dev',this)">Devices</button><button class="tbb" onclick="aTab('led',this)">Ledger</button><button class="tbb" onclick="aTab('db',this)">Database</button><button class="tbb" onclick="aTab('fy',this)">Fin Year</button><button class="tbb" data-tab="flags" onclick="aTab('flags',this)" id="admin-flag-tab">Flags <span id="flag-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:3px">!</span></button></div></div><div class="tp on" id="tp-set" style="background:var(--bg)"><div id="setbod" class="p16" style="background:var(--bg)"></div></div><div class="tp" id="tp-usr" style="background:var(--bg)"><div id="usrlst"></div><button class="fab" onclick="openUserModal()">+</button></div><div class="tp" id="tp-dev" style="background:var(--bg)"><div id="devlst"></div></div><div class="tp" id="tp-led" style="background:var(--bg)"><div class="srch"><span>🔍</span><input type="text" placeholder="Filter ledger..." oninput="renderLedger(this.value)"/></div><div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap" id="ldflt"></div><div id="ledbod" class="p16"></div></div><div class="tp" id="tp-db" style="background:var(--bg)"><div id="dbbod" class="p16"></div></div><div class="tp" id="tp-fy" style="background:var(--bg)"><div id="fybody" class="p16"></div></div><div class="tp" id="tp-flags" style="background:var(--bg);overflow-y:auto;padding-bottom:80px"><div id="flagged-body" class="p16"></div></div></div><div id="s-reports" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CA; Reports</h2><p class="sub">Stock, Sales, SKU Analysis</p></div></div><div class="tb mt8"><button class="tbb on" onclick="repTab('stock',this)">Stock</button><button class="tbb" onclick="repTab('vsorder',this)">vs Orders</button><button class="tbb" onclick="repTab('daily',this)">Daily Sales</button><button class="tbb" onclick="repTab('topsku',this)">Top SKUs</button><button class="tbb" onclick="repTab('trends',this)">&#x1F4C8; Trends</button></div></div><div class="tp on" id="tp-rstock" style="overflow-y:auto;padding-bottom:80px"><div id="rep-stock-body" class="p16"></div></div><div class="tp" id="tp-rvsorder" style="overflow-y:auto;padding-bottom:80px"><div id="rep-vsorder-body" class="p16"></div></div><div class="tp" id="tp-rdaily" style="overflow-y:auto;padding-bottom:80px"><div style="padding:12px 16px;display:flex;gap:8px;align-items:center"><input type="date" id="rep-daily-date" class="inp" style="flex:1" value=""/><button class="btn bp bsm" onclick="renderDailyReport()">Go</button></div><div id="rep-daily-body" class="p16"></div></div><div class="tp" id="tp-rtopsku" style="overflow-y:auto;padding-bottom:80px"><div id="rep-topsku-body" class="p16"></div></div><div class="tp" id="tp-rtrends" style="overflow-y:auto;padding-bottom:80px"><div class="p16"><div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"><button class="sw on" id="trn-7" onclick="renderTrends(7,this)">7 Days</button><button class="sw" id="trn-14" onclick="renderTrends(14,this)">14 Days</button><button class="sw" id="trn-28" onclick="renderTrends(28,this)">28 Days</button><button class="sw" id="trn-90" onclick="renderTrends(90,this)">3 Months</button></div><div id="rep-trends-body"></div></div></div></div><div id="s-leads" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F3AF; Leads</h2><p class="sub">Lead Management</p></div><button class="btn bp bsm" onclick="openNewLead()">+ Lead</button></div><div class="tb mt8"><button class="tbb on" onclick="leadTab('all',this)">All</button><button class="tbb" onclick="leadTab('mine',this)">Mine</button><button class="tbb" onclick="leadTab('today',this)">Follow Up</button><button class="tbb" onclick="leadTab('won',this)">Won/Lost</button><button class="tbb" onclick="leadTab('recurring',this)" id="lead-rec-tab">Recurring <span id="lead-rec-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:2px">!</span></button></div></div><div class="tp on" id="tp-lall"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="lead-search" placeholder="Search by name, phone, status, salesman..." oninput="renderLeads('all',this.value)"/></div></div><div id="lead-lst-all"></div></div><div class="tp" id="tp-lmine"><div id="lead-lst-mine"></div></div><div class="tp" id="tp-ltoday"><div id="lead-lst-today"></div></div><div class="tp" id="tp-lwon"><div id="lead-lst-won"></div></div><div class="tp" id="tp-lrecurring"><div id="lead-rec-list" class="p16"></div></div></div></div><div id="s-tasks" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CB; Tasks</h2><p class="sub" id="task-sub">Your task list</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="openNewTaskInstance()" id="task-add-btn">+ Task</button><button class="btn bgh bsm" onclick="openNewTaskTemplate()" id="task-tpl-btn" style="display:none">+ Template</button></div></div><div class="tb mt8"><button class="tbb on" onclick="taskTab('my',this)" id="ttab-my">My Tasks</button><button class="tbb" onclick="taskTab('all',this)" id="ttab-all" style="display:none">All Tasks</button><button class="tbb" onclick="taskTab('templates',this)" id="ttab-tpl" style="display:none">Templates</button><button class="tbb" onclick="taskTab('leave',this)" id="ttab-lv" style="display:none">Leave</button><button class="tbb" onclick="taskTab('rep',this)" id="ttab-rep" style="display:none">&#x1F4CA; Report</button></div></div><div class="tp on" id="tp-tmy"><div style="padding:8px 16px 0"><div class="srch"><span>🔍</span><input type="text" id="task-search" placeholder="Search by task name, category..." oninput="renderMyTasks(this.value)"/></div></div><div id="task-lst-my" class="p16"></div></div><div class="tp" id="tp-tall"><div id="task-lst-all" class="p16"></div></div><div class="tp" id="tp-ttemplates"><div id="task-lst-tpl" class="p16"></div></div><div class="tp" id="tp-tleave"><div id="task-lst-lv" class="p16"></div></div><div class="tp" id="tp-trep"><div class="p16"><div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><input type="date" class="inp" id="trep-from" style="flex:1"/><span>to</span><input type="date" class="inp" id="trep-to" style="flex:1"/><button class="btn bp bsm" onclick="renderTaskReport()">Go</button></div><button class="btn bd bsm" onclick="openDeleteCompletedTasks()" style="margin-bottom:12px">&#x1F5D1; Delete Completed Tasks</button><div id="task-report-body"></div></div></div></div><button id="global-refresh-btn" onclick="manualRefresh()" style="position:fixed;bottom:70px;right:16px;z-index:500;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#4F46E5,#6366F1);color:white;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 15px rgba(79,70,229,.4);display:flex;align-items:center;justify-content:center" title="Refresh data">&#x1F504;</button><nav id="bn"><button class="nb on" onclick="setNav('dash')" id="nb-dash"><span class="ni">📊</span>Dash</button><button class="nb" onclick="setNav('sales')" id="nb-sales"><span class="ni">🧾</span>Sales</button><button class="nb" onclick="setNav('inward')" id="nb-inward"><span class="ni">📥</span>Inward</button><button class="nb" onclick="setNav('jw')" id="nb-jw"><span class="ni">⚙️</span>Job Work</button><button class="nb" onclick="setNav('masters')" id="nb-masters"><span class="ni">🗂️</span>Masters</button><button class="nb" onclick="setNav('reports')" id="nb-reports"><span class="ni">&#x1F4CA;</span>Reports</button><button class="nb" onclick="setNav('leads')" id="nb-leads"><span class="ni">&#x1F3AF;</span>Leads</button><button class="nb" onclick="setNav('tasks')" id="nb-tasks"><span class="ni">&#x1F4CB;</span>Tasks<span class="ndot hid" id="tdot"></span></button><button class="nb" onclick="setNav('admin')" id="nb-admin"><span class="ni">👑</span>Admin<span class="ndot hid" id="adot"></span></button></nav>
 </div>
 
 <div class="ov" id="m-item" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="itmtit">New Item</h3><p class="sub">Fabric type</p></div><button class="btn bgh bsm" onclick="hideMod('m-item')">✕</button></div></div><div class="shb"><input type="hidden" id="itm-id"/><div class="fg"><label>Item Name *</label><input class="inp" id="itm-name" placeholder="e.g. FRENDY CHIFFON"/></div><div class="fg"><label>HSN Code</label><input class="inp" id="itm-hsn" placeholder="e.g. 5407"/></div><div class="dvd"></div><div class="hr" style="margin-bottom:10px"><label style="margin-bottom:0">Ranges &amp; Colours</label><button class="ai" onclick="openAddRange()">+ Add Range</button></div><div id="itmrng"></div></div><div class="shf" style="flex-wrap:wrap;gap:8px"><button class="btn bd bfl" id="itm-del-btn" style="display:none" onclick="deleteItem()">Delete Item</button><div style="display:flex;gap:8px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-item')">Cancel</button><button class="btn bp bfl" onclick="saveItem()">Save Item</button></div></div>
@@ -36,7 +36,7 @@
 <div class="ov" id="m-aclr" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="aclrtit">Add Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-aclr')">✕</button></div></div><div class="shb"><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="aclr-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('aclr-rows','aclr-cnt')"/></div><div id="aclr-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-aclr')">Cancel</button><button class="btn bp bfl" onclick="saveAddClrs()">Add Colours</button></div>
 </div></div>
 <div class="ov" id="m-edit-clr" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>✏️ Edit Colour / SKU</h3><p class="sub" id="edit-clr-range-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-edit-clr')">✕</button></div></div><div class="shb"><input type="hidden" id="ec-item-id"/><input type="hidden" id="ec-col-idx"/><div style="background:var(--Pl);border-radius:10px;padding:12px 14px;margin-bottom:16px"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Current SKU</div><div id="ec-old-sku" style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--Pd)"></div></div><div class="fg"><label>Colour Name *</label><input class="inp" id="ec-name" placeholder="e.g. DUSTY PINK" oninput="previewEditSKU()" style="text-transform:uppercase"/></div><div class="ir2"><div class="fg"><label>Colour Code *</label><input class="inp mono" id="ec-code" placeholder="e.g. DP01" oninput="previewEditSKU()" style="text-transform:uppercase"/></div><div class="fg"><label>Colour (Hex)</label><div style="display:flex;gap:8px;align-items:center"><input type="color" id="ec-hex" style="width:52px;height:44px;border-radius:8px;border:1.5px solid var(--br);cursor:pointer;padding:3px"/><span id="ec-hex-lbl" style="font-size:12px;font-weight:700;color:var(--t2)"></span></div></div></div><div style="background:var(--Gl);border-radius:10px;padding:12px 14px;margin-bottom:6px" id="ec-new-sku-wrap"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">New SKU Preview</div><div id="ec-new-sku" style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--Gd)"></div></div><div id="ec-entries-note" style="display:none;background:var(--Al);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--Ad);font-weight:600;margin-bottom:6px"></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-edit-clr')">Cancel</button><button class="btn bp bfl" onclick="saveEditClr()">Save Changes</button></div></div></div>
-<div class="ov" id="m-cst" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="csttit">New Customer</h3><button class="btn bgh bsm" onclick="hideMod('m-cst')">✕</button></div></div><div class="shb"><input type="hidden" id="cst-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="cst-name"/></div><div class="fg"><label>Phone</label><input class="inp" id="cst-ph" type="tel"/></div></div><div class="fg"><label>GSTIN</label><div class="fi"><input class="inp mono" id="cst-gst" placeholder="22AAAAA0000A1Z5" oninput="detCstState()"/><button class="ai" onclick="gstLkp()">🔍 Lookup</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px" id="cst-si">Enter GSTIN to detect state</div></div><div class="fg"><label>Address</label><textarea class="ta" id="cst-addr" rows="2"></textarea></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="cst-wa" type="tel" placeholder="91XXXXXXXXXX"/></div><div class="fg"><label>Email</label><input class="inp" id="cst-em" type="email"/></div></div><div class="fg"><label>Default Broker (auto-fills in orders)</label><div style="position:relative"><select class="sel" id="cst-brk" style="border:1.5px solid var(--br)"><option value="">— No default broker —</option></select></div><div style="font-size:11px;color:var(--t3);margin-top:4px">When selected here, broker auto-fills every time this customer is chosen in an order.</div></div><div class="dvd"></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Payment Terms (leave blank for global defaults)</div><div class="ir2"><div class="fg"><label>Discount %</label><input class="inp mono" id="cst-disc" type="number" step="0.1" placeholder="e.g. 5"/></div><div class="fg"><label>Discount Days</label><input class="inp mono" id="cst-dd" type="number" step="1" placeholder="e.g. 45"/></div></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="cst-nd" type="number" step="1" placeholder="e.g. 120"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-cst')">Cancel</button><button class="btn bp bfl" onclick="saveCust()">Save</button></div>
+<div class="ov" id="m-cst" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="csttit">New Customer</h3><button class="btn bgh bsm" onclick="hideMod('m-cst')">✕</button></div></div><div class="shb"><input type="hidden" id="cst-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="cst-name"/></div><div class="fg"><label>Phone</label><input class="inp" id="cst-ph" type="tel"/></div></div><div class="fg"><label>GSTIN</label><div class="fi"><input class="inp mono" id="cst-gst" placeholder="22AAAAA0000A1Z5" oninput="detCstState()"/><button class="ai" onclick="gstLkp()">🔍 Lookup</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px" id="cst-si">Enter GSTIN to detect state</div></div><div class="fg"><label>Address</label><textarea class="ta" id="cst-addr" rows="2"></textarea></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="cst-wa" type="tel" placeholder="91XXXXXXXXXX"/></div><div class="fg"><label>Email</label><input class="inp" id="cst-em" type="email"/></div></div><div class="fg"><label>Party Group (for cross-billing)</label><input class="inp" id="cst-grp" list="cst-grp-list" placeholder="e.g. Group A — parties that share billing" autocomplete="off"/><datalist id="cst-grp-list"></datalist></div><div class="fg"><label>Default Broker (auto-fills in orders)</label><div style="position:relative"><select class="sel" id="cst-brk" style="border:1.5px solid var(--br)"><option value="">— No default broker —</option></select></div><div style="font-size:11px;color:var(--t3);margin-top:4px">When selected here, broker auto-fills every time this customer is chosen in an order.</div></div><div class="dvd"></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Payment Terms (leave blank for global defaults)</div><div class="ir2"><div class="fg"><label>Discount %</label><input class="inp mono" id="cst-disc" type="number" step="0.1" placeholder="e.g. 5"/></div><div class="fg"><label>Discount Days</label><input class="inp mono" id="cst-dd" type="number" step="1" placeholder="e.g. 45"/></div></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="cst-nd" type="number" step="1" placeholder="e.g. 120"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-cst')">Cancel</button><button class="btn bp bfl" onclick="saveCust()">Save</button></div>
 </div></div>
 <div class="ov" id="m-brk" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Broker</h3><button class="btn bgh bsm" onclick="hideMod('m-brk')">✕</button></div></div><div class="shb"><input type="hidden" id="brk-id"/><div class="fg"><label>Name *</label><input class="inp" id="brk-name"/></div><div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="brk-ph" type="tel"/></div><div class="fg"><label>Commission %</label><input class="inp" id="brk-cm" type="number" step="0.1" placeholder="2.5"/></div></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-brk')">Cancel</button><button class="btn bp bfl" onclick="saveBrk()">Save</button></div>
 </div></div>
@@ -70,8 +70,8 @@
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" capture="environment" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
 </div></div><script>
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.2.2';
-const APP_BUILD_DATE='2026-04-02';
+const APP_VERSION='1.3.0';
+const APP_BUILD_DATE='2026-04-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -97,6 +97,61 @@ const lsSet = (k,v) => { try{ localStorage.setItem(k,v) }catch(e){} };
 const lsGet = k => { try{ return JSON.parse(localStorage.getItem(k)) }catch(e){ return null } };
 const lsSave = (k,v) => { try{ localStorage.setItem(k,JSON.stringify(v)) }catch(e){} };
 const uid = () => Date.now().toString(36)+Math.random().toString(36).substr(2,6);
+// ═══ SEARCHABLE DROPDOWN UTILITY ═══════════════════════════════════
+function makeSearchable(selectEl){
+if(!selectEl||selectEl.dataset.searchable) return;
+selectEl.dataset.searchable='1';
+const wrap=document.createElement('div');
+wrap.style.cssText='position:relative;width:100%';
+selectEl.parentNode.insertBefore(wrap,selectEl);
+const inp=document.createElement('input');
+inp.type='text'; inp.placeholder='Type to search...';
+inp.style.cssText='width:100%;padding:8px 10px;border:1.5px solid #D1D5DB;border-radius:8px;font-size:13px;font-family:inherit;background:white;box-sizing:border-box';
+inp.className='inp';
+const list=document.createElement('div');
+list.style.cssText='position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:white;border:1.5px solid #D1D5DB;border-radius:0 0 8px 8px;z-index:999;display:none;box-shadow:0 4px 12px rgba(0,0,0,.15)';
+wrap.appendChild(inp); wrap.appendChild(list); wrap.appendChild(selectEl);
+selectEl.style.display='none';
+const opts=Array.from(selectEl.options);
+function renderList(q){
+list.innerHTML='';
+const fq=q.toLowerCase();
+opts.forEach(o=>{
+if(o.value===''&&!q){const d=document.createElement('div');d.style.cssText='padding:8px 10px;font-size:12px;color:#9CA3AF;cursor:pointer';d.textContent=o.textContent;d.onclick=()=>{selectEl.value='';inp.value='';list.style.display='none';selectEl.dispatchEvent(new Event('change'));};list.appendChild(d);return;}
+if(o.value===''||(!q&&o.value)) { if(!q){const d=document.createElement('div');d.style.cssText='padding:8px 10px;font-size:12px;cursor:pointer;transition:.1s';d.textContent=o.textContent;d.onmouseenter=()=>d.style.background='#EEF2FF';d.onmouseleave=()=>d.style.background='';d.onclick=()=>{selectEl.value=o.value;inp.value=o.textContent;list.style.display='none';selectEl.dispatchEvent(new Event('change'));};list.appendChild(d);}return;}
+if(!o.textContent.toLowerCase().includes(fq)) return;
+const d=document.createElement('div');
+d.style.cssText='padding:8px 10px;font-size:12px;cursor:pointer;transition:.1s';
+d.textContent=o.textContent;
+d.onmouseenter=()=>d.style.background='#EEF2FF';
+d.onmouseleave=()=>d.style.background='';
+d.onclick=()=>{selectEl.value=o.value;inp.value=o.textContent;list.style.display='none';selectEl.dispatchEvent(new Event('change'));};
+list.appendChild(d);
+});
+if(!list.children.length){list.innerHTML='<div style="padding:8px 10px;font-size:11px;color:#9CA3AF">No matches</div>';}
+}
+inp.onfocus=()=>{renderList(inp.value);list.style.display='block';};
+inp.oninput=()=>{renderList(inp.value);list.style.display='block';};
+document.addEventListener('click',e=>{if(!wrap.contains(e.target))list.style.display='none';});
+/* Set initial display value */
+const selOpt=selectEl.options[selectEl.selectedIndex];
+if(selOpt&&selOpt.value) inp.value=selOpt.textContent;
+/* Observe select changes */
+const obs=new MutationObserver(()=>{
+const so=selectEl.options[selectEl.selectedIndex];
+if(so&&so.value) inp.value=so.textContent; else inp.value='';
+});
+obs.observe(selectEl,{attributes:true,childList:true});
+}
+function sortSelectAlpha(selectEl){
+if(!selectEl) return;
+const opts=Array.from(selectEl.options);
+const first=opts.find(o=>o.value==='');
+const rest=opts.filter(o=>o.value!=='').sort((a,b)=>a.textContent.localeCompare(b.textContent));
+selectEl.innerHTML='';
+if(first) selectEl.appendChild(first);
+rest.forEach(o=>selectEl.appendChild(o));
+}
 // ═══ GLOBAL DUPLICATE CHECK ═════════════════════════════════════════
 // ═══ SYNC UTILITIES ══════════════════════════════════════════════
 // Stamp every record with current time when created/modified
@@ -609,7 +664,7 @@ const tp=el('tp-'+tab); if(tp) tp.classList.add('on');
 }
 function salesTab(t,b){
 switchTab('sales',t,b);
-if(t==='out') renderOutstanding();
+if(t==='pend') renderPendingOrders();
 if(t==='newinv') renderNewInvTab();
 }
 function jwTab(t,b){switchTab('jw',t,b);}
@@ -737,8 +792,8 @@ rangeCols.forEach(col=>{
 const cIdx=item.colours.indexOf(col);
 const stk=col.stock_taka||0;
 const skuEntries=STATE.entries.filter(e=>e.sku===col.sku);
-if(skuEntries.length>0){toast('🚫 Cannot delete "'+col.sku+'" — '+skuEntries.length+' ledger entr'+(skuEntries.length===1?'y':'ies')+' exist for this SKU. Delete those entries first.','err');return;}
-if(stk>0){toast('🚫 Cannot delete "'+col.sku+'" — it has '+stk+'T of stock. Clear stock first.','err');return;}
+const hasLedger=skuEntries.length>0;
+const hasStock=stk>0;
 const cls=stk===0?'no':stk<5?'lo':'ok';
 const row=document.createElement('div');
 row.className='scr2';
@@ -832,7 +887,7 @@ if(ok){ addStock(itemId,cIdx,shortfall,'adjustment','Stock Adjustment','','Auto-
 return false;
 }
 function buildCascade(pfx,showStk){
-const opts=STATE.items.map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
+const opts=[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
 return '<div class="fg"><label>Item</label><div class="fi"><select class="sel" id="'+pfx+'-i" onchange="cascRng(\''+pfx+'\','+showStk+')"><option value="">Select item...</option>'+opts+'</select><button class="ai" onclick="toastMsg(\'Add items in Masters first\')">+</button></div></div><div class="fg hid" id="'+pfx+'-rg"><label>Range</label><div class="fi"><select class="sel" id="'+pfx+'-r" onchange="cascClr(\''+pfx+'\','+showStk+')"><option value="">Select range...</option></select><button class="ai" onclick="quickRng(\''+pfx+'\')">+</button></div></div><div class="fg hid" id="'+pfx+'-cg"><label>Colour</label><div class="fi"><select class="sel" id="'+pfx+'-c" onchange="onClrSel(\''+pfx+'\','+showStk+')"><option value="">Select colour...</option></select><button class="ai" onclick="quickClr(\''+pfx+'\')">+</button></div></div><div id="'+pfx+'-si"></div>';
 }
 function cascRng(pfx,showStk){
@@ -1107,7 +1162,10 @@ c.innerHTML=f.map(x=>'<div class="et" onclick="editCust(\''+x.id+'\')"><div clas
 }
 function openCust(){
 el('cst-id').value=''; el('cst-name').value=''; el('cst-ph').value='';
-el('cst-gst').value=''; el('cst-addr').value=''; el('cst-wa').value=''; el('cst-em').value='';
+el('cst-gst').value=''; el('cst-addr').value=''; el('cst-wa').value=''; el('cst-em').value=''; if(el('cst-grp'))el('cst-grp').value='';
+/* Populate group datalist with existing groups */
+const grps=[...new Set(STATE.customers.map(c=>c.group).filter(Boolean))].sort();
+const dl=el('cst-grp-list'); if(dl) dl.innerHTML=grps.map(g=>'<option value="'+g+'"/>').join('');
 el('cst-disc').value=''; el('cst-dd').value=''; el('cst-nd').value='';
 el('csttit').textContent='New Customer'; el('cst-si').textContent='Enter GSTIN to detect state';
 populateCstBrkSel('');
@@ -1118,6 +1176,9 @@ const x=STATE.customers.find(c=>c.id===id); if(!x) return;
 el('cst-id').value=id; el('cst-name').value=x.name||''; el('cst-ph').value=x.phone||'';
 el('cst-gst').value=x.gstin||''; el('cst-addr').value=x.address||'';
 el('cst-wa').value=x.whatsapp||''; el('cst-em').value=x.email||'';
+if(el('cst-grp'))el('cst-grp').value=x.group||'';
+const grps=[...new Set(STATE.customers.map(c=>c.group).filter(Boolean))].sort();
+const dl=el('cst-grp-list'); if(dl) dl.innerHTML=grps.map(g=>'<option value="'+g+'"/>').join('');
 el('cst-disc').value=x.discount!=null?x.discount:'';
 el('cst-dd').value=x.discountDays!=null?x.discountDays:'';
 el('cst-nd').value=x.nettDays!=null?x.nettDays:'';
@@ -1128,7 +1189,7 @@ showMod('m-cst');
 function populateCstBrkSel(selectedId){
 const s=el('cst-brk'); if(!s) return;
 s.innerHTML='<option value="">— No default broker —</option>'+
-active(STATE.brokers).map(b=>'<option value="'+b.id+'"'+(b.id===selectedId?' selected':'')+'>'+b.name+(b.commission?' ('+b.commission+'%)':'')+'</option>').join('');
+active(STATE.brokers).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(b=>'<option value="'+b.id+'"'+(b.id===selectedId?' selected':'')+'>'+b.name+(b.commission?' ('+b.commission+'%)':'')+'</option>').join('');
 }
 function detCstState(){
 const gstin=el('cst-gst')?.value||'';
@@ -1144,7 +1205,8 @@ if(!id&&isDuplicate(STATE.customers,'name',name)){toast('Customer "'+name+'" alr
 const cDisc=el('cst-disc')?.value.trim(); const cDd=el('cst-dd')?.value.trim(); const cNd=el('cst-nd')?.value.trim();
 const brkId=(el('cst-brk')?.value||'').trim();
 const brk=brkId?STATE.brokers.find(b=>b.id===brkId):null;
-const obj={name,gstin,state:detState(gstin),phone:el('cst-ph').value.trim(),address:el('cst-addr').value.trim(),whatsapp:el('cst-wa').value.trim(),email:el('cst-em').value.trim(),
+const grp=(el('cst-grp')?.value||'').trim();
+const obj={name,gstin,state:detState(gstin),phone:el('cst-ph').value.trim(),address:el('cst-addr').value.trim(),whatsapp:el('cst-wa').value.trim(),email:el('cst-em').value.trim(),group:grp||undefined,
 defaultBrokerId:brkId||undefined,
 defaultBrokerName:brk?.name||undefined,
 discount:cDisc!==''?parseFloat(cDisc):undefined,
@@ -1164,6 +1226,17 @@ const nc=STATE.customers[STATE.customers.length-1];
 sel.innerHTML='<option value="">Select customer...</option>'+STATE.customers.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
 sel.value=nc.id; onOrderCustChange();
 }
+}else if(window._convertingLeadId){
+const leadId=window._convertingLeadId;
+window._convertingLeadId=null;
+const lead=STATE.leads?.find(l=>l.id===leadId);
+if(lead){
+const newCust=STATE.customers[STATE.customers.length-1];
+lead.customerId=newCust?.id; lead._ts=Date.now();
+lsSave('vs_leads',STATE.leads);
+}
+hideMod('m-cst'); renderCusts(); renderLeads('all'); renderLeads('won');
+toast('Lead converted to customer!','ok');
 }else{ hideMod('m-cst'); renderCusts(); }
 }
 function renderBrks(){
@@ -1272,7 +1345,7 @@ const c=el('ex-cb'); if(c){c.classList.remove('hid');c.textContent=ru+' x 4.5m =
 function addInRow(){_inRows.push({});renderInRows();}
 function remInRow(i){_inRows.splice(i,1);renderInRows();}
 function renderInRows(){
-el('in-rows').innerHTML=_inRows.map((_,i)=>'<div class="sr su"><div class="srh"><span>SKU '+(i+1)+'</span>'+(i>0?'<button onclick="remInRow('+i+')" class="btn bd bxs">✕</button>':'')+'</div>'+buildCascade('ir'+i,false)+'<div class="fg"><label>Taka</label><input class="inp big mono" type="number" id="ir'+i+'-t" step="1" min="1" placeholder="0" oninput="updIRC('+i+')"/><div class="cb" id="ir'+i+'-c">— T x '+STATE.settings.avgMtrPerTaka+'m = — mtrs</div></div></div>').join('');
+el('in-rows').innerHTML=_inRows.map((_,i)=>'<div class="sr su"><div class="srh"><span>SKU '+(i+1)+'</span>'+(i>0?'<button onclick="remInRow('+i+')" class="btn bd bxs">✕</button>':'')+'</div>'+buildCascade('ir'+i,false)+'<div class="ir2"><div class="fg"><label>Taka</label><input class="inp big mono" type="number" id="ir'+i+'-t" step="1" min="1" placeholder="0" oninput="updIRC('+i+')"/><div class="cb" id="ir'+i+'-c">— T x '+STATE.settings.avgMtrPerTaka+'m = — mtrs</div></div><div class="fg"><label>TP (Trade Price \u20B9)</label><input class="inp big mono" type="number" id="ir'+i+'-tp" step="0.01" min="0" placeholder="0.00"/></div></div></div>').join('');
 }
 function updIRC(i){
 const t=parseInt(el('ir'+i+'-t')?.value)||0;
@@ -1287,8 +1360,10 @@ let saved=0;
 for(let i=0;i<_inRows.length;i++){
 const sel=getSel('ir'+i); if(!sel) continue;
 const taka=Math.round(parseInt(el('ir'+i+'-t')?.value)||0); if(!taka) continue;
+const tp=parseFloat(el('ir'+i+'-tp')?.value)||0;
 const entryType=_inType==='mill'?'mill':(_inType==='jwin'?'jobwork':_inType);
-addStock(sel.itemId,sel.colIdx,taka,entryType,party,ref,fullNote);
+const tpNote=tp>0?(fullNote?fullNote+' | TP: \u20B9'+tp:'TP: \u20B9'+tp):fullNote;
+addStock(sel.itemId,sel.colIdx,taka,entryType,party,ref,tpNote);
 saved++;
 }
 if(!saved){toast('Add at least one SKU with taka','er');return;}
@@ -1448,9 +1523,9 @@ u.active!==false&&(
 u.role==='admin'||(!u.staffTypeId&&!u.staffTypeName)
 )
 );
-const smOpts=salesmen.map(u=>'<option value="'+u.id+'">'+u.name+(u.orderPrefix?' ('+u.orderPrefix+')':'')+'</option>').join('');
-const co=STATE.customers.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
-const bo=STATE.brokers.map(b=>'<option value="'+b.id+'">'+b.name+'</option>').join('');
+const smOpts=salesmen.sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(u=>'<option value="'+u.id+'">'+u.name+(u.orderPrefix?' ('+u.orderPrefix+')':'')+'</option>').join('');
+const co=[...STATE.customers].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
+const bo=[...STATE.brokers].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(b=>'<option value="'+b.id+'">'+b.name+'</option>').join('');
 el('ordbod').innerHTML=
 '<div class="fg"><label>Date</label><input class="inp" type="date" id="od-d" value="'+today()+'"/></div>'+
 '<div class="fg"><label>Salesman *</label>'+
@@ -1484,6 +1559,9 @@ el('ordbod').innerHTML=
 '<div id="od-tot" class="bsum mt12" style="display:none"></div>'+
 '<div class="fg mt12"><label>Notes</label><textarea class="ta" id="od-nt" rows="2"></textarea></div>';
 renderOrdLots();
+/* Sort and make dropdowns searchable */
+sortSelectAlpha(el('od-c')); sortSelectAlpha(el('od-b')); sortSelectAlpha(el('od-sm'));
+makeSearchable(el('od-c')); makeSearchable(el('od-b'));
 }
 function editCustFromOrder(){ const cId=el('od-c')?.value; if(!cId) return; window._returnToOrder=true; editCust(cId); }
 function openBrkFromOrder(){ window._returnToBroker=true; el('brk-id').value=''; el('brk-name').value=''; el('brk-ph').value=''; el('brk-cm').value=''; showMod('m-brk'); }
@@ -1527,7 +1605,7 @@ calcOrdTot();
 function openCustFromOrder(){
 window._returnToOrder=true;
 el('cst-id').value=''; el('cst-name').value=''; el('cst-ph').value='';
-el('cst-gst').value=''; el('cst-addr').value=''; el('cst-wa').value=''; el('cst-em').value='';
+el('cst-gst').value=''; el('cst-addr').value=''; el('cst-wa').value=''; el('cst-em').value=''; if(el('cst-grp'))el('cst-grp').value='';
 if(el('cst-disc')) el('cst-disc').value='';
 if(el('cst-dd')) el('cst-dd').value='';
 if(el('cst-nd')) el('cst-nd').value='';
@@ -1615,7 +1693,7 @@ row1.innerHTML=
 '<div style="background:'+lc.border+';color:'+lc.label+';font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;letter-spacing:.5px;flex-shrink:0">LOT '+(li+1)+'</div>'+
 '<select id="od-lot-'+lot.id+'-i" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="ordLotItemChange('+lot.id+')">'+
 '<option value="">Select Item...</option>'+
-STATE.items.map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+
+[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+
 '</select>'+
 '<select id="od-lot-'+lot.id+'-r" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="ordLotRangeChange('+lot.id+')" disabled>'+
 '<option value="">Range...</option>'+
@@ -1689,7 +1767,7 @@ const defRate=el('od-def-rate')?.value||'';
 body.innerHTML='';
 const thead=document.createElement('div');
 thead.style.cssText=
-'display:grid;grid-template-columns:32px 1fr 52px 72px 78px 68px;gap:0;'+
+'display:grid;grid-template-columns:28px 1fr 48px 68px 72px 72px;gap:4px;'+
 'background:#1e1b4b;padding:7px 10px;border-bottom:2px solid #3730A3';
 thead.innerHTML=
 '<div></div>'+
@@ -1718,7 +1796,7 @@ const rowBg=ci%2===0?'#FFFFFF':'#F8F7FF';
 const row=document.createElement('div');
 row.id='od-lot-'+lid+'-row-'+idx;
 row.style.cssText=
-'display:grid;grid-template-columns:32px 1fr 52px 72px 78px 68px;gap:0;align-items:center;'+
+'display:grid;grid-template-columns:28px 1fr 48px 68px 72px 72px;gap:4px;align-items:center;'+
 'padding:7px 10px;border-bottom:1px solid #E5E4F0;background:'+rowBg+';transition:.15s';
 row.innerHTML=
 '<input type="checkbox" id="od-lot-'+lid+'-ck-'+idx+'" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer" onchange="ordLotClrToggle('+lid+','+idx+')"/>'+
@@ -1839,7 +1917,7 @@ const cust=cId?STATE.customers.find(c=>c.id===cId):null;
 const disc=cust?.discount!=null?cust.discount:STATE.settings.discount;
 const dd=cust?.discountDays!=null?cust.discountDays:STATE.settings.discountDays;
 const nd=cust?.nettDays!=null?cust.nettDays:STATE.settings.nettDays;
-let grandTotal=0;
+let grandTotal=0; let totalSarees=0; let totalMtrs=0;
 _ordLots.forEach(lot=>{
 const iid=el('od-lot-'+lot.id+'-i')?.value;
 const rng=el('od-lot-'+lot.id+'-r')?.value;
@@ -1850,13 +1928,17 @@ const idx=item.colours.indexOf(col);
 const chk=el('od-lot-'+lot.id+'-ck-'+idx); if(!chk?.checked) return;
 const pcs=parseInt(el('od-lot-'+lot.id+'-p-'+idx)?.value)||0;
 const rate=parseFloat(el('od-lot-'+lot.id+'-rt-'+idx)?.value)||0;
+totalSarees+=pcs;
+totalMtrs+=Math.round(pcs*cut*10)/10;
 grandTotal+=Math.round(pcs*cut*rate);
 });
 });
 const t=el('od-tot');
-if(grandTotal>0){
+if(grandTotal>0||totalSarees>0){
 t.style.display='block';
 t.innerHTML=
+'<div class="brow" style="margin-bottom:6px"><span class="fw7">Total Sarees</span><span class="mono fw7" style="font-size:16px;color:#4F46E5">'+fmtN(totalSarees)+' pcs</span></div>'+
+'<div class="brow" style="margin-bottom:6px"><span class="fw7">Total Meters</span><span class="mono fw7" style="font-size:14px;color:#0891B2">'+fmtN(totalMtrs)+' m</span></div>'+
 '<div class="brow"><span class="fw7">Taxable Amount</span><span class="mono fw7" style="font-size:16px">\u20B9'+fmtN(grandTotal)+'</span></div>'+
 '<div style="margin-top:8px;padding:8px;background:var(--Pl);border-radius:8px">'+
 '<div class="xs fw7" style="color:var(--Pd);margin-bottom:4px">Payment Terms'+(cust&&(cust.discount!=null||cust.discountDays!=null)?' (Customer-specific)':' (Default)')+'</div>'+
@@ -1890,12 +1972,13 @@ items.push({itemId:iid,colIdx:idx,sku:col.sku,itemName:item.name,colourName:col.
 });
 });
 if(!items.length){toast('Select at least one colour with sarees','er');return;}
+const existingOrd=_ordId?STATE.orders.find(o=>o.id===_ordId):null;
 const pfx=smUser?.orderPrefix||STATE.settings.orderPrefix||'B/';
-const ordNo=nextOrdNo(pfx);
-const ordObj={id:_ordId||uid(),orderNo:ordNo,salesmanId:smId,salesmanName:smUser?.name||'',date:el('od-d')?.value,custId:cId,custName:cust?.name||'',brkId:bId,brkName:brk?.name||'',items,total:items.reduce((s,i)=>s+i.amount,0),notes:el('od-nt')?.value,status:'pending',by:STATE.user?.name||'',fy:STATE.settings.currentFY||getCurrentFY()};
+const ordNo=existingOrd?existingOrd.orderNo:nextOrdNo(pfx);
+const ordObj={id:_ordId||uid(),orderNo:ordNo,salesmanId:smId,salesmanName:smUser?.name||'',date:el('od-d')?.value,custId:cId,custName:cust?.name||'',brkId:bId,brkName:brk?.name||'',items,total:items.reduce((s,i)=>s+i.amount,0),notes:el('od-nt')?.value,status:existingOrd?existingOrd.status:'pending',bills:existingOrd?existingOrd.bills:undefined,by:STATE.user?.name||'',fy:existingOrd?.fy||STATE.settings.currentFY||getCurrentFY()};
 if(_ordId){
 const idx=STATE.orders.findIndex(o=>o.id===_ordId);
-if(idx>=0) STATE.orders[idx]=stamp(ordObj); else STATE.orders.push(stamp(ordObj));
+if(idx>=0) STATE.orders[idx]={...STATE.orders[idx],...stamp(ordObj)}; else STATE.orders.push(stamp(ordObj));
 }else{ STATE.orders.push(stamp(ordObj)); }
 lsSave('vs_orders',STATE.orders); hideMod('m-ord'); renderOrders();
 toast('Order '+ordNo+' saved','ok'); api('saveOrder',{orders:STATE.orders});
@@ -1905,7 +1988,7 @@ const c=el('ordlst'); if(!c) return;
 const f=STATE.orders.filter(o=>!q||o.orderNo.includes(q)||o.custName.toLowerCase().includes(q.toLowerCase()));
 if(!f.length){c.innerHTML='<div class="emp"><div class="emj">&#x1F9FE;</div><h3>No Orders</h3><p>Tap + Order to create one</p></div>';return;}
 c.innerHTML='';
-f.sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(o=>{
+f.sort((a,b)=>{ const d=new Date(b.date)-new Date(a.date); if(d!==0) return d; const aNum=parseInt((a.orderNo||'').replace(/[^0-9]/g,''))||0; const bNum=parseInt((b.orderNo||'').replace(/[^0-9]/g,''))||0; return bNum-aNum; }).forEach(o=>{
 const row=document.createElement('div');
 row.className='et'; row.style.flexWrap='wrap'; row.style.cursor='pointer';
 row.onclick=(e)=>{ if(e.target.tagName==='BUTTON') return; showOrderDetail(o.id); };
@@ -1969,8 +2052,8 @@ if(invTab) salesTab('newinv', invTab);
 }, 80);
 }
 function buildBillBody(pre){
-const co=STATE.customers.map(c=>'<option value="'+c.id+'" '+(pre?.custId===c.id?'selected':'')+'>'+c.name+'</option>').join('');
-const bo=STATE.brokers.map(b=>'<option value="'+b.id+'" '+(pre?.brkId===b.id?'selected':'')+'>'+b.name+'</option>').join('');
+const co=[...STATE.customers].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(c=>'<option value="'+c.id+'" '+(pre?.custId===c.id?'selected':'')+'>'+c.name+'</option>').join('');
+const bo=[...STATE.brokers].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(b=>'<option value="'+b.id+'" '+(pre?.brkId===b.id?'selected':'')+'>'+b.name+'</option>').join('');
 const bno=nextBillNo();
 el('billbod').innerHTML=
 '<div style="background:var(--Pl);border-radius:12px;padding:12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center"><div><div class="mono fw8 cP">'+bno+'</div><div class="xs ct3">Tax Invoice</div></div>'+(pre?'<span class="bdg bg-p">Ord: '+pre.orderNo+'</span>':'')+'</div>'+
@@ -2051,7 +2134,9 @@ if(!f.length){c.innerHTML='<div class="emp"><div class="emj">&#x1F9FE;</div><h3>
 c.innerHTML='';
 f.sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(b=>{
 const row=document.createElement('div');
-row.className='et';
+row.className='et'; row.style.cursor='pointer';
+row.onclick=e=>{if(e.target.tagName==='BUTTON')return; showBillDetailView(b.id);};
+const payBadge=b.payStatus==='paid'?'<span class="bdg bg-g">Paid</span>':b.payStatus==='partial'?'<span class="bdg bg-a">Partial</span>':'<span class="bdg bg-r">Unpaid</span>';
 row.innerHTML=
 '<div class="ei" style="background:var(--Rl);color:var(--Rd)">&#x1F9FE;</div>'+
 '<div class="eb">'+
@@ -2061,6 +2146,7 @@ row.innerHTML=
 '</div>'+
 '<div class="er">'+
 '<div class="mono fw7">'+fmtRs(b.grandTotal)+'</div>'+
+payBadge+
 '</div>';
 const waBtn=document.createElement('button');
 waBtn.className='wa';
@@ -2132,6 +2218,53 @@ const f=STATE.payments.filter(p=>!q||p.custName.toLowerCase().includes(q.toLower
 if(!f.length){c.innerHTML='<div class="emp"><div class="emj">💰</div><h3>No Payments</h3><p>Record payments against bills</p></div>';return;}
 c.innerHTML=f.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=>'<div class="et"><div class="ei" style="background:var(--Gl);color:var(--Gd)">💰</div><div class="eb"><div class="etit">'+p.custName+'</div><div class="esub">'+p.billNo+' - '+p.mode+(p.ref?' - '+p.ref:'')+'</div><div class="esub">'+fmtDate(p.date)+'</div></div><div class="er"><div class="mono fw7 cG">'+fmtRs(p.amount)+'</div></div></div>').join('');
 }
+function renderPendingOrders(){
+const c=el('pendlst'); if(!c) return;
+const pending=STATE.orders.filter(o=>o.status==='pending'||o.status==='billed');
+const partlyPaid=STATE.bills.filter(b=>b.status!=='cancelled'&&b.payStatus==='partial');
+const totalPendAmt=pending.reduce((s,o)=>s+(o.total||0),0);
+const totalPartlyBal=partlyPaid.reduce((s,b)=>s+((b.grandTotal||0)-(b.amtPaid||0)),0);
+let html='<div style="padding:8px 16px">';
+html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'+
+'<div class="card" style="margin:0;background:#FEF3C7"><div class="slbl ct2">Pending Orders</div><div class="sval" style="color:#D97706">'+pending.length+'</div><div class="xs ct2">Total: '+fmtRs(totalPendAmt)+'</div></div>'+
+'<div class="card" style="margin:0;background:#DBEAFE"><div class="slbl ct2">Partly Paid</div><div class="sval" style="color:#2563EB">'+partlyPaid.length+'</div><div class="xs ct2">Balance: '+fmtRs(Math.round(totalPartlyBal))+'</div></div>'+
+'</div>';
+if(!pending.length&&!partlyPaid.length){
+html+='<div class="emp"><div class="emj">&#x2705;</div><h3>All Clear!</h3><p>No pending orders or partial payments</p></div>';
+c.innerHTML=html+'</div>'; return;
+}
+/* Pending orders list */
+if(pending.length){
+html+='<div style="font-size:12px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Pending Orders</div>';
+pending.sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(o=>{
+const totalPcs=(o.items||[]).reduce((s,i)=>s+(i.pcs||0),0);
+const dispatched=(o.bills||[]).filter(b=>b.status!=='cancelled').reduce((s,b)=>s+(b.items||[]).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
+html+='<div class="et" style="cursor:pointer" onclick="showOrderDetail(\''+o.id+'\')">'+
+'<div class="ei" style="background:#FEF3C7;color:#D97706">&#x1F9FE;</div>'+
+'<div class="eb"><div class="etit mono cP">'+o.orderNo+'</div>'+
+'<div class="esub">'+o.custName+' &bull; '+fmtDate(o.date)+'</div>'+
+'<div class="esub">'+totalPcs+' pcs ordered'+(dispatched>0?' &bull; '+dispatched+' dispatched':'')+'</div></div>'+
+'<div class="er"><div class="mono fw7">'+fmtRs(o.total)+'</div>'+
+'<span class="bdg bg-a">'+o.status+'</span></div></div>';
+});
+}
+/* Partly paid bills */
+if(partlyPaid.length){
+html+='<div style="font-size:12px;font-weight:800;color:#1D4ED8;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 8px">Partly Paid Bills</div>';
+partlyPaid.forEach(b=>{
+const bal=(b.grandTotal||0)-(b.amtPaid||0);
+html+='<div class="et" style="cursor:pointer" onclick="showBillDetail(\''+b.id+'\')">'+
+'<div class="ei" style="background:#DBEAFE;color:#2563EB">&#x1F9FE;</div>'+
+'<div class="eb"><div class="etit mono cP">'+b.billNo+'</div>'+
+'<div class="esub">'+b.custName+' &bull; '+fmtDate(b.date)+'</div>'+
+'<div class="esub">Paid: '+fmtRs(b.amtPaid||0)+' of '+fmtRs(b.grandTotal)+'</div></div>'+
+'<div class="er"><div class="mono fw7 cR">'+fmtRs(Math.round(bal))+'</div>'+
+'<span class="bdg bg-a">balance</span></div></div>';
+});
+}
+html+='</div>';
+c.innerHTML=html;
+}
 function renderOutstanding(){
 const c=el('outlst'); if(!c) return;
 const unpaid=STATE.bills.filter(b=>b.status!=='cancelled'&&b.payStatus!=='paid');
@@ -2170,7 +2303,7 @@ c.appendChild(row);
 function openOpening(){
 const sel=el('op-itm');
 if(sel){
-sel.innerHTML='<option value="">Select item...</option>'+STATE.items.filter(i=>!i._deleted).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
+sel.innerHTML='<option value="">Select item...</option>'+STATE.items.filter(i=>!i._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
 sel.selectedIndex=0; // always force-reset so onchange fires reliably on re-select
 }
 el('op-rows').innerHTML=''; showMod('m-open');
@@ -2180,7 +2313,7 @@ const iid=el('op-itm')?.value, item=STATE.items.find(i=>i.id===iid);
 const c=el('op-rows'); if(!c) return;
 if(!item){c.innerHTML='';return;}
 if(!item.colours||!item.colours.length){c.innerHTML='<div style="padding:20px;text-align:center;color:var(--t3);font-size:13px">⚠️ No colours found for this item. Please edit the item and add colours first.</div>';return;}
-c.innerHTML=item.colours.filter(col=>!col.discontinued).map((col,idx)=>'<div class="oprow"><div class="opi"><span class="cdot" style="background:'+(col.hex||'#ccc')+'"></span><div><div class="sm fw7">'+col.name+'</div><span class="sku">'+col.sku+'</span></div></div><input type="number" id="op-col-'+col.sku.replace(/[^a-z0-9]/gi,'_')+'" data-colidx="'+item.colours.indexOf(col)+'" step="1" min="0" value="'+(col.stock_taka||0)+'"/><span class="xs ct3">T</span></div>').join('');
+c.innerHTML=item.colours.filter(col=>!col.discontinued).map((col,idx)=>'<div class="oprow"><div class="opi"><span class="cdot" style="background:'+(col.hex||'#ccc')+'"></span><div><div class="sm fw7">'+col.name+'</div><span class="sku">'+col.sku+'</span></div></div><div style="display:flex;align-items:center;gap:6px"><input type="number" id="op-col-'+col.sku.replace(/[^a-z0-9]/gi,'_')+'" data-colidx="'+item.colours.indexOf(col)+'" step="1" min="0" value="'+(col.stock_taka||0)+'" style="width:70px"/><span class="xs ct3">T</span><input type="number" id="op-tp-'+col.sku.replace(/[^a-z0-9]/gi,'_')+'" data-colidx="'+item.colours.indexOf(col)+'" step="0.01" min="0" placeholder="TP" style="width:70px" title="Trade Price"/><span class="xs ct3">\u20B9/TP</span></div></div>').join('');
 }
 function saveOpening(){
 const iid=el('op-itm')?.value, item=STATE.items.find(i=>i.id===iid);
@@ -2191,7 +2324,10 @@ inputs.forEach(inp=>{
   const idx=parseInt(inp.dataset.colidx);
   const col=item.colours[idx]; if(!col)return;
   const t=Math.round(parseInt(inp.value)||0), diff=t-(col.stock_taka||0);
-  if(diff!==0) addStock(iid,idx,diff,'opening','Opening Balance','','Opening stock');
+  const tpInp=el('op-tp-'+col.sku.replace(/[^a-z0-9]/gi,'_'));
+  const tp=parseFloat(tpInp?.value)||0;
+  const note=tp>0?'Opening stock | TP: \u20B9'+tp:'Opening stock';
+  if(diff!==0) addStock(iid,idx,diff,'opening','Opening Balance','',note);
 });
 persist(); hideMod('m-open'); renderDash(); toast('Opening stock saved','ok');
 }
@@ -2584,7 +2720,7 @@ async function saveMoveTaka(){
 }
 function openAdjust(){
 const sel=el('adj-itm');
-if(sel) sel.innerHTML='<option value="">Select item...</option>'+STATE.items.map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
+if(sel) sel.innerHTML='<option value="">Select item...</option>'+[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
 el('adj-rows').innerHTML=''; el('adj-rsn').value=''; showMod('m-adj');
 }
 function renderAdjRows(){
@@ -2879,7 +3015,7 @@ c.code === (code||'').trim()
 }
 function openQuickRange(){
 const sel=el('qrng-itm');
-sel.innerHTML='<option value="">Select item...</option>'+STATE.items.map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
+sel.innerHTML='<option value="">Select item...</option>'+[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
 hideEl('qrng-form'); hideEl('qrng-empty');
 el('qrng-n').value=''; el('qrng-cnt').value=1; el('qrng-rows').innerHTML='';
 el('qrng-save-btn').style.display='none';
@@ -2927,7 +3063,7 @@ api('saveItem',{items:STATE.items});
 }
 function openQuickColour(){
 const iSel=el('qclr-itm');
-iSel.innerHTML='<option value="">Select item...</option>'+STATE.items.map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
+iSel.innerHTML='<option value="">Select item...</option>'+[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
 hideEl('qclr-rg'); hideEl('qclr-form');
 el('qclr-rows').innerHTML=''; el('qclr-save-btn').style.display='none';
 showMod('m-qclr');
@@ -3164,6 +3300,18 @@ _ordId=id; _ordRows=[{}];
 window._ordPfx=(o.orderNo||'').replace(/[0-9]+$/,'');
 el('ordno').textContent=o.orderNo;
 el('ordtit').textContent='Edit Order';
+/* Group existing items by itemId+range to rebuild lots */
+const lotGroups={};
+(o.items||[]).forEach(it=>{
+const key=it.itemId+'|'+it.range;
+if(!lotGroups[key]) lotGroups[key]={itemId:it.itemId,range:it.range,items:[]};
+lotGroups[key].items.push(it);
+});
+const groups=Object.values(lotGroups);
+_ordLots=[]; _lotId=0;
+if(groups.length){
+groups.forEach(()=>{ _ordLots.push({id:_lotId}); _lotId++; });
+} else { _ordLots=[{id:0}]; _lotId=1; }
 buildOrdBody();
 setTimeout(()=>{
 if(o.salesmanId&&el('od-sm')) el('od-sm').value=o.salesmanId;
@@ -3171,10 +3319,26 @@ if(o.custId&&el('od-c')){ el('od-c').value=o.custId; onOrderCustChange(); }
 if(o.brkId&&el('od-b')) el('od-b').value=o.brkId;
 if(o.date&&el('od-d')) el('od-d').value=o.date;
 if(o.notes&&el('od-nt')) el('od-nt').value=o.notes||'';
-const infoDiv=document.createElement('div');
-infoDiv.style.cssText='margin:8px 0;padding:10px;background:var(--Al);border-radius:8px;font-size:12px;color:var(--Ad)';
-infoDiv.innerHTML='<strong>Previous items:</strong> '+o.items.map(i=>i.itemName+' '+i.colourName+' ('+i.pcs+'pcs)').join(', ')+'. Re-select items above.';
-const odLots=el('od-lots'); if(odLots) odLots.insertAdjacentElement('beforebegin', infoDiv);
+/* Repopulate each lot with existing item data */
+groups.forEach((grp,gi)=>{
+const lid=_ordLots[gi].id;
+const iSel=el('od-lot-'+lid+'-i'); if(iSel){ iSel.value=grp.itemId; ordLotItemChange(lid); }
+setTimeout(()=>{
+const rSel=el('od-lot-'+lid+'-r'); if(rSel){ rSel.value=grp.range; ordLotRangeChange(lid); }
+setTimeout(()=>{
+/* Set cut from first item */
+const firstItem=grp.items[0];
+if(firstItem?.cut){ const cutFld=el('od-lot-'+lid+'-cut'); if(cutFld) cutFld.value=firstItem.cut; }
+/* Check colours and fill pcs/rate */
+grp.items.forEach(it=>{
+const chk=el('od-lot-'+lid+'-ck-'+it.colIdx); if(chk){ chk.checked=true; ordLotClrToggle(lid,it.colIdx); }
+const pcsFld=el('od-lot-'+lid+'-p-'+it.colIdx); if(pcsFld) pcsFld.value=it.pcs||'';
+const rateFld=el('od-lot-'+lid+'-rt-'+it.colIdx); if(rateFld) rateFld.value=it.rate||'';
+});
+calcOrdLot(lid);
+},60);
+},60);
+});
 },80);
 showMod('m-ord');
 }
@@ -3447,7 +3611,7 @@ if(!iSel) return;
 if(ctx.mode==='item'){
 const newItem=STATE.items[STATE.items.length-1];
 if(!newItem) return;
-iSel.innerHTML='<option value="">Select Item...</option>'+STATE.items.map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('');
+iSel.innerHTML='<option value="">Select Item...</option>'+[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('');
 iSel.value=newItem.id;
 ordLotItemChange(lid);
 toast('Item "'+newItem.name+'" added and selected','ok');
@@ -3492,6 +3656,16 @@ const gstT=gstType(cust?.gstin||'');
 const disc=cust?.discount!=null?cust.discount:STATE.settings.discount;
 const dd=cust?.discountDays!=null?cust.discountDays:STATE.settings.discountDays;
 const info=el('disp-cust-info');
+/* Show "Bill To" dropdown if customer has a party group */
+const billToSel=el('disp-bill-to');
+if(billToSel&&cust?.group){
+const groupMembers=STATE.customers.filter(c=>c.group===cust.group).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+if(groupMembers.length>1){
+billToSel.innerHTML='<option value="'+custId+'">'+cust.name+' (original)</option>'+
+groupMembers.filter(c=>c.id!==custId).map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
+billToSel.parentElement.style.display='';
+}else{ billToSel.parentElement.style.display='none'; }
+}else if(billToSel){ billToSel.parentElement.style.display='none'; }
 if(info) info.innerHTML=
 '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">'+
 '<span class="fw7 sm">'+( cust?.name||'Unknown')+'</span>'+
@@ -3618,7 +3792,9 @@ t.innerHTML=
 async function saveDispatchBill(){
 const billNo=(el('disp-billno')?.value||'').trim(); if(!billNo){toast('Enter bill number','er');return;}
 const o=STATE.orders.find(x=>x.id===_dispOrdId); if(!o) return;
-const cust=STATE.customers.find(c=>c.id===o.custId);
+/* Support billing to a different party from same group */
+const billToCustId=el('disp-bill-to')?.value||o.custId;
+const cust=STATE.customers.find(c=>c.id===billToCustId)||STATE.customers.find(c=>c.id===o.custId);
 const gstT=gstType(cust?.gstin||'');
 const dispItems=[];
 let sub=0;
@@ -4310,6 +4486,7 @@ row.innerHTML=
 '</div>'+
 (lead.progress?'<div style="font-size:11px;margin-top:6px;padding:6px 8px;background:#FEF3C7;border-left:3px solid #D97706;border-radius:0 6px 6px 0;line-height:1.4"><span style="font-weight:800;color:#92400E;font-size:10px">Progress:</span> <span style="color:#78350F">'+lead.progress+'</span></div>':'')+
 (lead.lastNote&&lead.lastNote!==lead.progress?'<div style="font-size:11px;color:#6B7280;margin-top:4px;padding:5px 8px;background:#F9FAFB;border-radius:6px;line-height:1.4">'+lead.lastNote+'</div>':'')+
+(function(){const lc=lead.notes?.length?lead.notes[lead.notes.length-1]:null;if(!lc)return '';const da=Math.floor((Date.now()-new Date(lc.date).getTime())/86400000);return '<div style="font-size:10px;margin-top:4px;color:#6366F1;font-weight:700">Last contact: '+fmtDate(lc.date)+' ('+da+'d ago)'+(lc.by?' by '+lc.by:'')+'</div>';})()+
 '</div>'+
 '<div style="display:flex;border-top:1px solid #F3F4F6">'+
 (function(){
@@ -4343,6 +4520,9 @@ el('lead-convert-btn').style.display='none';
 buildLeadStatusBtns('Received');
 refreshLeadSalesmanDropdown();
 refreshLeadBrokerDropdown();
+/* Populate customer name datalist for party name autocomplete */
+const dl=el('lead-name-list');
+if(dl) dl.innerHTML=[...STATE.customers].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(c=>'<option value="'+c.name+'"/>').join('');
 showMod('m-lead');
 }
 function editLead(id){
@@ -4365,6 +4545,9 @@ el('lead-title').textContent='Edit Lead'; el('lead-sub').textContent=lead.status
 buildLeadStatusBtns(lead.status||'New');
 refreshLeadSalesmanDropdown(lead.assignedId);
 refreshLeadBrokerDropdown(lead.brokerId);
+const dl=el('lead-name-list');
+if(dl) dl.innerHTML=[...STATE.customers].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(c=>'<option value="'+c.name+'"/>').join('');
+if(lead.status==='Won'||lead.status==='Interested'||lead.status==='Negotiation') el('lead-convert-btn').style.display='';
 showMod('m-lead');
 }
 function buildLeadStatusBtns(active){
@@ -4395,7 +4578,7 @@ function saveLead(){
 const name=(el('lead-name')?.value||'').trim(); if(!name){toast('Enter lead name','er');return;}
 const phone=(el('lead-ph')?.value||'').trim();
 const id=el('lead-id')?.value;
-if(!id&&isDuplicate(STATE.leads||[],'name',name)){toast('Lead "'+name+'" already exists','er');return;}
+/* Allow multiple leads for same customer - no duplicate check */
 const smId=el('lead-sm')?.value||'';
 const smName=STATE.users.find(u=>u.id===smId)?.name||'';
 const note=(el('lead-note')?.value||'').trim();
@@ -4489,13 +4672,20 @@ openWA(lead.whatsapp||lead.phone,msg);
 }
 async function convertLead(id){
 const lead=STATE.leads?.find(l=>l.id===id); if(!lead) return;
-const ok=await appConfirm('Convert to Customer?',lead.name+' will be added as a customer.','?','Convert','ok');
+const ok=await appConfirm('Convert to Customer?',lead.name+' will be opened in Add Customer form with pre-filled details.','?','Convert','ok');
 if(!ok) return;
-const cust={id:uid(),name:lead.name,phone:lead.phone,whatsapp:lead.whatsapp||'',address:lead.city||''};
-STATE.customers.push(cust); lsSave('vs_customers',STATE.customers);
-lead.status='Won'; lead.customerId=cust.id; lsSave('vs_leads',STATE.leads);
+lead.status='Won'; lead._ts=Date.now(); lsSave('vs_leads',STATE.leads);
+hideMod('m-lead'); hideMod('m-lead-det');
+/* Open customer form pre-filled with lead data */
+openCust();
+el('cst-name').value=lead.name||'';
+el('cst-ph').value=lead.phone||'';
+el('cst-wa').value=lead.whatsapp||'';
+el('cst-addr').value=lead.market||lead.address||'';
+if(lead.brokerId) populateCstBrkSel(lead.brokerId);
+window._convertingLeadId=id;
 renderLeads('all'); renderLeads('won');
-toast(lead.name+' converted to customer!','ok');
+toast('Fill remaining details and save customer','ok');
 }
 function showLeadDetail(id){
 const lead=STATE.leads?.find(l=>l.id===id); if(!lead) return;
@@ -4515,15 +4705,30 @@ let html=
 (lead.source?'<div class="brow"><span>Source</span><span>'+lead.source+'</span></div>':'')+
 (lead.interest?'<div class="brow"><span>Interest</span><span>'+lead.interest+'</span></div>':'')+
 (lead.followupDate?'<div class="brow"><span>Follow-up</span><span>'+fmtDate(lead.followupDate)+'</span></div>':'')+
+(lead.createdAt?'<div class="brow"><span>Created</span><span>'+fmtDate(lead.createdAt)+'</span></div>':'')+
 '</div>';
+/* Last Contact Info */
+const lastContact=lead.notes?.length?lead.notes[lead.notes.length-1]:null;
+if(lastContact){
+const daysAgo=Math.floor((Date.now()-new Date(lastContact.date).getTime())/(86400000));
+html+='<div style="background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border-radius:10px;padding:12px;margin-bottom:12px;border:1.5px solid #818CF8">'+
+'<div style="font-size:10px;font-weight:800;color:#4F46E5;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Last Contacted</div>'+
+'<div style="font-size:14px;font-weight:800;color:#1e1b4b">'+fmtDate(lastContact.date)+' <span style="font-size:11px;color:#6366F1;font-weight:600">('+daysAgo+(daysAgo===1?' day':' days')+' ago)</span></div>'+
+'<div style="font-size:12px;color:#3730A3;margin-top:4px">'+(lastContact.by?'By: '+lastContact.by+' &bull; ':'')+lastContact.status+'</div>'+
+(lastContact.note?'<div style="font-size:12px;color:#4338CA;margin-top:4px;font-style:italic">"'+lastContact.note+'"</div>':'')+
+'</div>';
+}
 if(lead.notes?.length){
-html+='<div class="fw7 sm" style="margin-bottom:8px">Activity Log</div>';
-lead.notes.slice().reverse().forEach(n=>{
-html+='<div style="padding:8px;background:#F9FAFB;border-radius:8px;margin-bottom:6px;border-left:3px solid '+sc+'">'+
-'<div style="font-size:10px;color:var(--t3);margin-bottom:3px">'+fmtDate(n.date)+(n.by?' - '+n.by:'')+(n.status?' - '+n.status:'')+'</div>'+
+html+='<div class="fw7 sm" style="margin-bottom:8px">Follow-up History ('+lead.notes.length+' entries)</div>';
+lead.notes.slice().reverse().forEach((n,ni)=>{
+const isLatest=ni===0;
+html+='<div style="padding:8px;background:'+(isLatest?'#EEF2FF':'#F9FAFB')+';border-radius:8px;margin-bottom:6px;border-left:3px solid '+(isLatest?'#4F46E5':sc)+'">'+
+'<div style="font-size:10px;color:var(--t3);margin-bottom:3px">'+fmtDate(n.date)+(n.by?' &bull; '+n.by:'')+(n.status?' &bull; <b>'+n.status+'</b>':'')+'</div>'+
 '<div style="font-size:12px;color:var(--t2)">'+n.note+'</div>'+
 '</div>';
 });
+} else {
+html+='<div style="padding:12px;background:#FEF3C7;border-radius:8px;text-align:center;font-size:12px;color:#92400E;font-weight:600">No follow-up history yet. Edit lead to add notes.</div>';
 }
 el('lead-det-body').innerHTML=html;
 const foot=el('lead-det-foot'); foot.innerHTML='';
@@ -4862,6 +5067,36 @@ if(STATE.user.role==='admin') return true;
 const perms=STATE.user.permissions||{};
 return !!perms[permId];
 }
+function showBillDetailView(id){
+const b=STATE.bills.find(x=>x.id===id); if(!b) return;
+const bal=(b.grandTotal||0)-(b.amtPaid||0);
+let html='<div style="padding:4px 0">'+
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'+
+'<div><div class="xs ct3">Bill No</div><div class="fw7 mono">'+b.billNo+'</div></div>'+
+'<div><div class="xs ct3">Date</div><div class="fw7">'+fmtDate(b.date)+'</div></div>'+
+'<div><div class="xs ct3">Customer</div><div class="fw7">'+b.custName+'</div></div>'+
+'<div><div class="xs ct3">Status</div><div class="fw7">'+(b.status==='cancelled'?'<span style="color:#DC2626">Cancelled</span>':(b.payStatus==='paid'?'<span style="color:#10B981">Paid</span>':b.payStatus==='partial'?'<span style="color:#D97706">Partial</span>':'<span style="color:#DC2626">Unpaid</span>'))+'</div></div>'+
+'</div>';
+html+='<div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;margin-bottom:6px">Items</div>';
+(b.items||[]).forEach(it=>{
+html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #F3F4F6;font-size:12px">'+
+'<div>'+it.itemName+' - '+it.colourName+'<br><span class="xs ct3">'+(it.dispQty||it.pcs)+' pcs x '+(it.cut||6)+'m x \u20B9'+it.rate+'</span></div>'+
+'<div class="mono fw7">'+fmtRs(it.amount)+'</div></div>';
+});
+html+='<div style="margin-top:10px;padding:10px;background:var(--Pl);border-radius:8px">'+
+'<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>Subtotal</span><span class="mono">'+fmtRs(b.subtotal||b.grandTotal)+'</span></div>'+
+(b.discountAmt?'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--Gd)"><span>Discount ('+b.discountPct+'%)</span><span class="mono">-'+fmtRs(b.discountAmt)+'</span></div>':'')+
+(b.gstAmt?'<div style="display:flex;justify-content:space-between;font-size:12px"><span>GST</span><span class="mono">+'+fmtRs(b.gstAmt)+'</span></div>':'')+
+'<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:900;margin-top:4px;padding-top:4px;border-top:1px solid var(--br)"><span>Grand Total</span><span class="mono">'+fmtRs(b.grandTotal)+'</span></div>'+
+(b.amtPaid?'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--Gd);margin-top:4px"><span>Paid</span><span class="mono">'+fmtRs(b.amtPaid)+'</span></div>':'')+
+(bal>0?'<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:#DC2626;margin-top:2px"><span>Balance Due</span><span class="mono">'+fmtRs(Math.round(bal))+'</span></div>':'')+
+'</div></div>';
+/* Show in a modal overlay */
+const ov=document.createElement('div');
+ov.className='ov'; ov.id='m-bill-view'; ov.onclick=e=>{if(e.target===ov)ov.remove();};
+ov.innerHTML='<div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Bill '+b.billNo+'</h3><p class="sub">'+b.custName+'</p></div><button class="btn bgh bsm" onclick="document.getElementById(\'m-bill-view\').remove()">&#x2715;</button></div></div><div class="shb">'+html+'</div><div class="shf"><button class="wa" style="flex:1;padding:10px;font-size:13px;border-radius:10px" onclick="waBillMsg(STATE.bills.find(x=>x.id===\''+b.id+'\'));document.getElementById(\'m-bill-view\').remove()">&#x1F4F2; Share via WA</button><button class="btn bgh bfl" onclick="document.getElementById(\'m-bill-view\').remove()">Close</button></div></div>';
+document.body.appendChild(ov);
+}
 function renderNewInvTab(){
 const sel=el('inv-cust-sel'); if(!sel) return;
 setTimeout(()=>{ const s=el('inv-cust-sel'); if(s&&!s.value) s.focus(); }, 200);
@@ -4999,7 +5234,7 @@ html+=
 '<span style="font-size:16px">&#x1F534;</span>'+
 '<span style="font-size:13px;font-weight:900;color:white">OUT OF STOCK ('+outStock.length+')</span>'+
 '</div>'+
-'<button onclick="setNav(\'reports\');setTimeout(()=>repTab(\'stock\',el(\'s-reports\').querySelector(\'.tbb\')),100)" style="background:rgba(255,255,255,.2);color:white;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:800;cursor:pointer">View All</button>'+
+'<button onclick="showStockAlertDialog(\'out\')" style="background:rgba(255,255,255,.2);color:white;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:800;cursor:pointer">View All</button>'+
 '</div>'+
 outStock.slice(0,5).map((r,ci)=>{
 const bg=ci%2===0?'#FFF':'#FEF2F2';
@@ -5012,7 +5247,7 @@ return '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;ba
 '<span style="font-size:12px;font-weight:900;color:#DC2626;background:#FEE2E2;padding:2px 8px;border-radius:5px">0T</span>'+
 '</div>';
 }).join('')+
-(outStock.length>5?'<div style="padding:7px 14px;text-align:center;font-size:11px;color:#DC2626;font-weight:700;border-top:1px solid #FECACA">+'+(outStock.length-5)+' more out of stock</div>':'')+
+(outStock.length>5?'<div style="padding:7px 14px;text-align:center;font-size:11px;color:#DC2626;font-weight:700;border-top:1px solid #FECACA;cursor:pointer" onclick="showStockAlertDialog(\'out\')">+'+(outStock.length-5)+' more — tap to view all</div>':'')+
 '</div>';
 }
 if(lowStock.length){
@@ -5023,7 +5258,7 @@ html+=
 '<span style="font-size:16px">&#x1F7E1;</span>'+
 '<span style="font-size:13px;font-weight:900;color:white">LOW STOCK ('+lowStock.length+')</span>'+
 '</div>'+
-'<button onclick="setNav(\'reports\')" style="background:rgba(255,255,255,.2);color:white;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:800;cursor:pointer">View All</button>'+
+'<button onclick="showStockAlertDialog(\'low\')" style="background:rgba(255,255,255,.2);color:white;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:800;cursor:pointer">View All</button>'+
 '</div>'+
 lowStock.slice(0,5).map((r,ci)=>{
 const bg=ci%2===0?'#FFF':'#FFFBEB';
@@ -5036,7 +5271,7 @@ return '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;ba
 '<span style="font-size:12px;font-weight:900;color:#D97706;background:#FEF3C7;padding:2px 8px;border-radius:5px">'+r.stk+'T</span>'+
 '</div>';
 }).join('')+
-(lowStock.length>5?'<div style="padding:7px 14px;text-align:center;font-size:11px;color:#D97706;font-weight:700;border-top:1px solid #FCD34D">+'+(lowStock.length-5)+' more low stock</div>':'')+
+(lowStock.length>5?'<div style="padding:7px 14px;text-align:center;font-size:11px;color:#D97706;font-weight:700;border-top:1px solid #FCD34D;cursor:pointer" onclick="showStockAlertDialog(\'low\')">+'+(lowStock.length-5)+' more — tap to view all</div>':'')+
 '</div>';
 }
 if(shortStock.length){
@@ -5080,6 +5315,68 @@ html+=
 }
 if(!html) html='';
 c.innerHTML=fyAlertHtml+html;
+}
+function showStockAlertDialog(type){
+const isOut=type==='out';
+const title=isOut?'Out of Stock':'Low Stock';
+const color=isOut?'#DC2626':'#D97706';
+const lowThresh=STATE.settings.lowStockThreshold||5;
+/* Collect all OOS/Low items */
+const allItems=[];
+STATE.items.forEach(item=>{
+item.colours.forEach(col=>{
+const stk=col.stock_taka||0;
+if(isOut&&stk===0) allItems.push({itemName:item.name,itemId:item.id,range:col.range||'',colName:col.name,sku:col.sku,hex:col.hex,stk});
+else if(!isOut&&stk>0&&stk<lowThresh) allItems.push({itemName:item.name,itemId:item.id,range:col.range||'',colName:col.name,sku:col.sku,hex:col.hex,stk});
+});
+});
+/* Get unique item names for filter */
+const itemNames=[...new Set(allItems.map(r=>r.itemName))].sort();
+/* Build modal content */
+const ov=document.createElement('div');
+ov.className='ov';ov.id='m-stock-alert';ov.onclick=e=>{if(e.target===ov)ov.remove();};
+ov.innerHTML=
+'<div class="sh" style="max-height:96vh"><div class="hdl"></div>'+
+'<div class="shh"><div class="hr"><div><h3 style="color:'+color+'">'+title+' ('+allItems.length+')</h3><p class="sub">Filter by item, grouped by range</p></div><button class="btn bgh bsm" onclick="document.getElementById(\'m-stock-alert\').remove()">&#x2715;</button></div></div>'+
+'<div style="padding:8px 16px"><select class="sel" id="sa-item-filter" onchange="filterStockAlert(\''+type+'\')"><option value="">All Items</option>'+itemNames.map(n=>'<option value="'+n+'">'+n+'</option>').join('')+'</select></div>'+
+'<div class="shb" id="sa-body" style="max-height:70vh;overflow-y:auto"></div>'+
+'<div class="shf"><button class="btn bgh bfl" onclick="document.getElementById(\'m-stock-alert\').remove()">Close</button></div>'+
+'</div>';
+document.body.appendChild(ov);
+window._stockAlertData=allItems;
+filterStockAlert(type);
+}
+function filterStockAlert(type){
+const filter=(el('sa-item-filter')?.value||'');
+const data=(window._stockAlertData||[]).filter(r=>!filter||r.itemName===filter);
+const isOut=type==='out';
+const body=el('sa-body'); if(!body) return;
+if(!data.length){body.innerHTML='<div style="padding:20px;text-align:center;color:var(--t3)">No items match filter</div>';return;}
+/* Group by item → range */
+const grouped={};
+data.forEach(r=>{
+const key=r.itemName;
+if(!grouped[key]) grouped[key]={};
+if(!grouped[key][r.range]) grouped[key][r.range]=[];
+grouped[key][r.range].push(r);
+});
+let html='';
+Object.keys(grouped).sort().forEach(itemName=>{
+html+='<div style="margin-bottom:12px"><div style="font-size:14px;font-weight:900;color:#1e1b4b;padding:6px 0;border-bottom:2px solid #4F46E5">'+itemName+'</div>';
+Object.keys(grouped[itemName]).sort().forEach(range=>{
+html+='<div style="font-size:11px;font-weight:800;color:#4F46E5;padding:4px 0;margin-top:4px">Range: '+range+'</div>';
+grouped[itemName][range].forEach(r=>{
+html+='<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #F3F4F6">'+
+'<span style="width:10px;height:10px;border-radius:50%;background:'+(r.hex||'#ccc')+';flex-shrink:0;border:1px solid rgba(0,0,0,.1)"></span>'+
+'<div style="flex:1;font-size:12px;font-weight:600">'+r.colName+'</div>'+
+'<span style="font-size:10px;color:#9CA3AF;font-family:monospace">'+r.sku+'</span>'+
+'<span style="font-size:12px;font-weight:800;color:'+(isOut?'#DC2626':'#D97706')+';min-width:35px;text-align:right">'+r.stk+'T</span>'+
+'</div>';
+});
+});
+html+='</div>';
+});
+body.innerHTML=html;
 }
 async function flagEntryFromModal(){
 if(!_entryRef) return;
@@ -5847,6 +6144,16 @@ res.innerHTML='<span style="color:var(--Rd)">Username not found. Check spelling 
 return;
 }
 const admin=STATE.users.find(u=>u.role==='admin');
+if(user.role==='admin'){
+res.innerHTML=
+'<div style="background:var(--Gl);border-radius:8px;padding:10px;color:var(--Gd)">'+
+'<div class="fw7 sm" style="margin-bottom:6px">&#x2705; Admin account found: '+user.name+'</div>'+
+'<div style="font-size:11px;line-height:1.8;margin-bottom:8px">You can reset your password directly:</div>'+
+'<div class="fg" style="margin-bottom:8px"><label style="font-size:11px;font-weight:700">New Password</label><input class="inp" id="fpwd-new" type="password" placeholder="Enter new password" style="font-size:13px"/></div>'+
+'<div class="fg" style="margin-bottom:8px"><label style="font-size:11px;font-weight:700">Confirm Password</label><input class="inp" id="fpwd-confirm" type="password" placeholder="Confirm new password" style="font-size:13px"/></div>'+
+'<button class="btn bp bfl" onclick="doAdminPasswordReset(\''+user.id+'\')">Set New Password</button>'+
+'</div>';
+} else {
 res.innerHTML=
 '<div style="background:var(--Gl);border-radius:8px;padding:10px;color:var(--Gd)">'+
 '<div class="fw7 sm" style="margin-bottom:6px">&#x2705; User found: '+user.name+'</div>'+
@@ -5856,6 +6163,7 @@ res.innerHTML=
 (STATE.settings.adminWhatsApp?'<br><button onclick="openWA(\''+STATE.settings.adminWhatsApp+'\',\'Hi, I forgot my password for ALT Stock. My username is: '+uname+'\')" class="wa" style="margin-top:6px;padding:4px 10px;font-size:11px;border-radius:6px">&#x1F4F2; WA Admin</button>':''):'No admin found')+
 '</div>'+
 '</div>';
+}
 }
 async function findUsername(){
 const name=(el('funame-name')?.value||'').trim().toLowerCase();
@@ -6050,6 +6358,22 @@ opt5.innerHTML=
 '<button class="btn" style="background:#EA580C;color:white;width:100%;font-weight:800;padding:10px" onclick="createEmergencyAdmin()">&#x1F6A8; Create Emergency Admin</button>';
 c.appendChild(opt5);
 }
+async function doAdminPasswordReset(userId){
+const np=(el('fpwd-new')?.value||''),cp=(el('fpwd-confirm')?.value||'');
+const res=el('fpwd-result');
+if(!np||np.length<4){if(res)res.innerHTML+='<div style="color:var(--Rd);font-size:11px;margin-top:6px">Password must be at least 4 characters</div>';return;}
+if(np!==cp){if(res)res.innerHTML+='<div style="color:var(--Rd);font-size:11px;margin-top:6px">Passwords do not match</div>';return;}
+const user=STATE.users?.find(u=>u.id===userId);
+if(!user){toast('User not found','er');return;}
+const h=await sha256(np);
+user.password=h;
+lsSave('vs_users',STATE.users);
+hideMod('m-fpwd');
+el('lu').value=user.username||'';
+el('lp').value='';
+toast('Password reset successful! Login with your new password.','ok');
+try{await syncToFirebase(true);}catch(e){}
+}
 async function resetAdminPassword(){
 let admin=STATE.users?.find(u=>u.role==='admin');
 if(!admin){
@@ -6159,8 +6483,10 @@ async function loginScreenSyncFirebase(){
 }
 function refreshLeadBrokerDropdown(selId){
 const sel=el('lead-broker'); if(!sel) return;
+const sorted=[...STATE.brokers].sort((a,b)=>(a.name||'').localeCompare(b.name||''));
 sel.innerHTML='<option value="">No Broker</option>'+
-STATE.brokers.map(b=>'<option value="'+b.id+'"'+(b.id===selId?' selected':'')+'>'+b.name+(b.phone?' ('+b.phone+')':'')+'</option>').join('');
+sorted.map(b=>'<option value="'+b.id+'"'+(b.id===selId?' selected':'')+'>'+b.name+(b.phone?' ('+b.phone+')':'')+'</option>').join('');
+sortSelectAlpha(sel);
 }
 function openBrkFromLead(){
 window._returnToBrokerLead=true;
@@ -6582,19 +6908,21 @@ renderMyTasks();
 updateTaskDot();
 }catch(e){ console.error('initTasksScreen error:',e); }
 }
-function taskTab(t,b){if(t==='rep'){switchTab('tasks','trep',b);renderTaskReport();return;}
+function taskTab(t,b){
 document.querySelectorAll('#s-tasks .tp').forEach(p=>{
 p.classList.remove('on'); p.style.display='none';
 });
 document.querySelectorAll('#s-tasks .tbb').forEach(x=>x.classList.remove('on'));
 b.classList.add('on');
-const tp=document.getElementById('tp-t'+t);
+const paneId=t==='rep'?'tp-trep':'tp-t'+t;
+const tp=document.getElementById(paneId);
 if(tp){ tp.classList.add('on'); tp.style.display='block'; }
 requestAnimationFrame(()=>{
 if(t==='my') renderMyTasks();
 else if(t==='all') renderAllTasks();
 else if(t==='templates') renderTaskTemplates();
 else if(t==='leave') renderLeaveList();
+else if(t==='rep') renderTaskReport();
 });
 }
 function generateTaskInstances(dateStr){
@@ -7754,9 +8082,9 @@ const lv=el('login-version');if(lv)lv.textContent='ALT Stock v'+APP_VERSION+' | 
 </div></div>
 <div class="ov" id="m-ord-det" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="ord-det-title">Order Detail</h3><p class="sub mono cP" id="ord-det-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-ord-det')">&#x2715;</button></div></div><div class="shb" id="ord-det-body"></div><div class="shf" id="ord-det-foot" style="flex-wrap:wrap;gap:6px"></div>
 </div></div>
-<div class="ov" id="m-dispatch" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Tax Invoice</p><div style="font-size:22px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace" id="disp-ordno">—</div></div><button class="btn bgh bsm" onclick="hideMod('m-dispatch')">&#x2715;</button></div></div><div class="shb"><div style="background:var(--Pl);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12px" id="disp-cust-info"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div class="fg"><label>Invoice No *</label><input class="inp mono" id="disp-billno" style="font-size:16px;font-weight:800;color:var(--P)"/></div><div class="fg"><label>Invoice Date</label><input class="inp" type="date" id="disp-date"/></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div class="fg"><label>Due Date</label><input class="inp" type="date" id="disp-due"/></div><div class="fg"><label>Order Ref (Pending)</label><select class="sel" id="disp-ord-sel" onchange="onDispOrderChange()"><option value="">Select pending order...</option></select></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div class="fg"><label>Goods Received By</label><input class="inp" id="disp-recv" placeholder="Name of person / khatawala"/></div><div class="fg"><label>Receiver Contact</label><input class="inp" id="disp-recv-ph" type="tel" placeholder="Phone number"/></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px"><div class="fg"><label>Party Challan No</label><input class="inp mono" id="disp-challan" placeholder="Challan / DC number"/></div><div class="fg"><label>Transport / LR No</label><input class="inp mono" id="disp-lr" placeholder="LR / transport number"/></div></div><div id="disp-table"></div><div id="disp-total" class="bsum mt12" style="display:none"></div><div class="fg mt8"><label>Notes</label><textarea class="ta" id="disp-notes" rows="2" placeholder="Special instructions, delivery notes..."></textarea></div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><div style="width:100%;display:flex;gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-dispatch')">Cancel</button><button class="btn bp bfl" onclick="saveDispatchBill()">&#x1F9FE; Save Invoice</button></div></div>
+<div class="ov" id="m-dispatch" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Tax Invoice</p><div style="font-size:22px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace" id="disp-ordno">—</div></div><button class="btn bgh bsm" onclick="hideMod('m-dispatch')">&#x2715;</button></div></div><div class="shb"><div style="background:var(--Pl);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12px" id="disp-cust-info"></div><div class="fg" style="display:none"><label>Bill To (Party Group)</label><select class="sel" id="disp-bill-to"></select><div class="xs ct3 mt4">Select a different party from the same group for billing</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div class="fg"><label>Invoice No *</label><input class="inp mono" id="disp-billno" style="font-size:16px;font-weight:800;color:var(--P)"/></div><div class="fg"><label>Invoice Date</label><input class="inp" type="date" id="disp-date"/></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div class="fg"><label>Due Date</label><input class="inp" type="date" id="disp-due"/></div><div class="fg"><label>Order Ref (Pending)</label><select class="sel" id="disp-ord-sel" onchange="onDispOrderChange()"><option value="">Select pending order...</option></select></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div class="fg"><label>Goods Received By</label><input class="inp" id="disp-recv" placeholder="Name of person / khatawala"/></div><div class="fg"><label>Receiver Contact</label><input class="inp" id="disp-recv-ph" type="tel" placeholder="Phone number"/></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px"><div class="fg"><label>Party Challan No</label><input class="inp mono" id="disp-challan" placeholder="Challan / DC number"/></div><div class="fg"><label>Transport / LR No</label><input class="inp mono" id="disp-lr" placeholder="LR / transport number"/></div></div><div id="disp-table"></div><div id="disp-total" class="bsum mt12" style="display:none"></div><div class="fg mt8"><label>Notes</label><textarea class="ta" id="disp-notes" rows="2" placeholder="Special instructions, delivery notes..."></textarea></div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><div style="width:100%;display:flex;gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-dispatch')">Cancel</button><button class="btn bp bfl" onclick="saveDispatchBill()">&#x1F9FE; Save Invoice</button></div></div>
 </div></div>
-<div class="ov" id="m-lead" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="lead-title">New Lead</h3><p class="sub" id="lead-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-lead')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="lead-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="lead-name" placeholder="Party / Contact name"/></div><div class="fg"><label>Phone</label><input class="inp" id="lead-ph" type="tel" placeholder="Mobile number (optional)"/></div></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="lead-wa" type="tel" placeholder="91XXXXXXXXXX"/></div><div class="fg"><label>Market / Area / Address</label><input class="inp" id="lead-market" placeholder="e.g. Surat, Ring Road, Shop name"/></div></div><input type="hidden" id="lead-address"/><div class="ir2"><div class="fg"><label>Broker</label><div class="fi"><select class="sel" id="lead-broker"><option value="">No Broker</option></select><button class="ai" onclick="openBrkFromLead()">+</button></div></div><div class="fg"><label>Source</label><select class="sel" id="lead-src"><option>Walk-in</option><option>Broker Reference</option><option>Old Customer</option><option>Exhibition</option><option>WhatsApp</option><option>Cold Call</option><option>Social Media</option><option>Other</option></select></div></div><div class="ir2"><div class="fg"><label>Assign to Salesman</label><select class="sel" id="lead-sm"><option value="">Unassigned</option></select></div><div class="fg"><label>Rate Given (&#x20B9;/mtr)</label><input class="inp mono" id="lead-rate" type="number" step="0.01" placeholder="e.g. 125.00"/></div></div><div class="fg"><label>Interested In (Notes)</label><textarea class="ta" id="lead-interest" rows="2" placeholder="e.g. FRENDY CHIFFON Range A, 6m cut, need 50 pcs..."></textarea></div><div class="fg"><label>Status</label><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:4px" id="lead-status-btns"></div></div><div class="fg"><label>Next Follow-up Date</label><input class="inp" type="date" id="lead-followup"/></div><div class="fg"><label>Latest Conversation / Update</label><textarea class="ta" id="lead-note" rows="3" placeholder="What was discussed? Any specific requirement, objection, or commitment..."></textarea></div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><button class="btn bsuc bfl" id="lead-convert-btn" onclick="convertLeadToCustomer()" style="display:none">&#x2714; Convert to Customer</button><div style="display:flex;gap:6px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-lead')">Cancel</button><button class="wa" style="flex:1;padding:10px;font-size:13px;font-weight:800;border-radius:10px" onclick="saveLeadAndWA()">&#x1F4F2; Save &amp; WA Salesman</button><button class="btn bp bfl" onclick="saveLead()">Save</button></div></div>
+<div class="ov" id="m-lead" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="lead-title">New Lead</h3><p class="sub" id="lead-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-lead')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="lead-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="lead-name" list="lead-name-list" placeholder="Type or select customer..." autocomplete="off"/><datalist id="lead-name-list"></datalist></div><div class="fg"><label>Phone</label><input class="inp" id="lead-ph" type="tel" placeholder="Mobile number (optional)"/></div></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="lead-wa" type="tel" placeholder="91XXXXXXXXXX"/></div><div class="fg"><label>Market / Area / Address</label><input class="inp" id="lead-market" placeholder="e.g. Surat, Ring Road, Shop name"/></div></div><input type="hidden" id="lead-address"/><div class="ir2"><div class="fg"><label>Broker</label><div class="fi"><select class="sel" id="lead-broker"><option value="">No Broker</option></select><button class="ai" onclick="openBrkFromLead()">+</button></div></div><div class="fg"><label>Source</label><select class="sel" id="lead-src"><option>Walk-in</option><option>Broker Reference</option><option>Old Customer</option><option>Exhibition</option><option>WhatsApp</option><option>Cold Call</option><option>Social Media</option><option>Other</option></select></div></div><div class="ir2"><div class="fg"><label>Assign to Salesman</label><select class="sel" id="lead-sm"><option value="">Unassigned</option></select></div><div class="fg"><label>Rate Given (&#x20B9;/mtr)</label><input class="inp mono" id="lead-rate" type="number" step="0.01" placeholder="e.g. 125.00"/></div></div><div class="fg"><label>Interested In (Notes)</label><textarea class="ta" id="lead-interest" rows="2" placeholder="e.g. FRENDY CHIFFON Range A, 6m cut, need 50 pcs..."></textarea></div><div class="fg"><label>Status</label><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:4px" id="lead-status-btns"></div></div><div class="fg"><label>Next Follow-up Date</label><input class="inp" type="date" id="lead-followup"/></div><div class="fg"><label>Latest Conversation / Update</label><textarea class="ta" id="lead-note" rows="3" placeholder="What was discussed? Any specific requirement, objection, or commitment..."></textarea></div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><button class="btn bsuc bfl" id="lead-convert-btn" onclick="convertLeadToCustomer()" style="display:none">&#x2714; Convert to Customer</button><div style="display:flex;gap:6px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-lead')">Cancel</button><button class="wa" style="flex:1;padding:10px;font-size:13px;font-weight:800;border-radius:10px" onclick="saveLeadAndWA()">&#x1F4F2; Save &amp; WA Salesman</button><button class="btn bp bfl" onclick="saveLead()">Save</button></div></div>
 </div></div>
 <div class="ov" id="m-lead-det" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="lead-det-name">Lead</h3><p class="sub" id="lead-det-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-lead-det')">&#x2715;</button></div></div><div class="shb" id="lead-det-body"></div><div class="shf" id="lead-det-foot" style="flex-wrap:wrap;gap:6px"></div>
 </div></div>
