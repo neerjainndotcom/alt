@@ -3482,7 +3482,7 @@ buildPermUI('usr-perms', window._usrPerms, p=>{ window._usrPerms=p; });
 showMod('m-usr');
 }
 /* ===== DISPATCH PROGRAMME FUNCTIONS ===== */
-let _dispOrdId=null,_dispLots=[{id:0}],_dispLotId=1;
+let _dispOrdId=null,_dispLots=[{id:0}],_dispLotId=1,_dispCustId=null;
 function openProgrammeDispatch(ordId){
 _dispOrdId=ordId;_dispLots=[{id:0}];_dispLotId=1;
 const o=STATE.orders.find(x=>x.id===ordId);if(!o)return;
@@ -3643,7 +3643,7 @@ return '<div style="margin-top:8px;padding:8px;background:white;border-radius:8p
 '<span style="font-size:11px;font-weight:800;color:#3730A3">Dispatch #'+(di+1)+' — '+fmtDate(d.date)+'</span>'+
 '<div style="display:flex;gap:4px;align-items:center">'+
 '<span style="font-size:11px;font-weight:700;color:#065F46;background:#D1FAE5;padding:2px 7px;border-radius:5px">'+d.totalPcs+' pcs</span>'+
-'<button onclick="deleteDispatch(''+o.id+'','+di+')" style="font-size:10px;padding:1px 5px;border-radius:4px;border:none;background:#FEE2E2;color:#DC2626;cursor:pointer;font-weight:800">&#x2715;</button>'+
+'<button onclick="deleteDispatch(\''+o.id+\','+di+')" style="font-size:10px;padding:1px 5px;border-radius:4px;border:none;background:#FEE2E2;color:#DC2626;cursor:pointer;font-weight:800">&#x2715;</button>'+
 '</div></div>'+
 (d.items||[]).map(it=>'<div style="font-size:11px;color:#374151">• '+it.colourName+' ('+it.itemName+') — '+it.pcs+' pcs</div>').join('')+
 (d.notes?'<div style="font-size:10px;color:#6B7280;margin-top:2px">&#x1F4DD; '+d.notes+'</div>':'')+
@@ -3737,8 +3737,7 @@ ordLotRangeChange(lid);
 toast('Colour(s) added','ok');
 }
 }
-let _dispOrdId=null;
-let _dispCustId=null;
+// _dispOrdId and _dispCustId declared above
 function openDispatchForCustomer(custId){
 _dispOrdId=null; _dispCustId=custId;
 setupDispatchModal(custId, null);
