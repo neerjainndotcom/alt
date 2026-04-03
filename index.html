@@ -48,7 +48,6 @@
 </div></div>
 <div class="ov" id="m-stafftype" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Staff Types</h3><p class="sub">Define roles &amp; permissions</p></div><button class="btn bgh bsm" onclick="hideMod('m-stafftype')">&#x2715;</button></div></div><div class="shb"><div id="stafftype-list"></div><div class="dvd"></div><div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:10px">&#x2795; New Staff Type</div><div class="ir2"><div class="fg"><label>Type Name *</label><input class="inp" id="st-name" placeholder="e.g. Store Keeper"/></div><div class="fg"><label>Colour</label><input type="color" id="st-color" value="#4F46E5" style="width:100%;height:42px;border-radius:10px;border:1.5px solid var(--br);cursor:pointer;padding:3px"/></div></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;margin-top:4px">Default Permissions for this Type</div><div id="st-perms" style="background:var(--bg);border-radius:12px;padding:12px;border:1px solid var(--br)"></div><button class="btn bp bfl mt12" onclick="addStaffType()">Add Staff Type</button></div>
 </div></div>
-<div class="ov" id="m-disp" onclick="ovc(event,this)"><div class="sh" style="max-height:90vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>&#x1F4E6; Add Dispatch</h3><p class="sub">Record partial shipment against programme</p></div><button class="btn bgh bsm" onclick="hideMod('m-disp')">&#x2715;</button></div></div><div class="shb"><div id="disp-ord-info"></div><div class="ir2"><div class="fg"><label>Dispatch Date</label><input class="inp" type="date" id="disp-date"/></div><div class="fg"><label>Notes</label><input class="inp" id="disp-notes" placeholder="e.g. Vastu Dusty lot 1"/></div></div><div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 4px"><span style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase">LOTS TO DISPATCH</span><button class="btn bs bxs" onclick="addDispLot()">+ Add Lot</button></div><div id="disp-lots"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-disp')">Cancel</button><button class="btn bp bfl" onclick="saveDispatch()">&#x1F4BE; Save Dispatch</button></div></div></div>
 <div class="ov" id="m-inw" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="inwtit">Inward</h3><p class="sub" id="inwsub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-inw')">✕</button></div></div><div class="shb" id="inwbod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-inw')">Cancel</button><button class="btn bp bfl" onclick="saveInward()">Save Entry</button></div>
 </div></div>
 <div class="ov" id="m-jw" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="jwtit">Job Work Challan</h3><p class="sub" id="jwsub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-jw')">✕</button></div></div><div class="shb" id="jwbod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-jw')">Cancel</button><button class="btn bp bfl" onclick="saveJW()">Save Challan</button></div>
@@ -221,7 +220,7 @@ settings:{
 companyName:'AMRIT LAXMI TEXTILE', gstin:'24AAXPJ5150B1ZU',
 address:'B-3 3022, REGENT TEXTILE MARKET, RING ROAD, SURAT-395002',
 phone:'9913866366', email:'amritlaxmitextiles@gmail.com',
-orderPrefix:'B/', inwPrefix:'GP/', inwSeq:0, discount:5, discountDays:45, nettDays:120,
+orderPrefix:'B/', discount:5, discountDays:45, nettDays:120,
 avgMtrPerTaka:90, avgMtrPerTP:45, adminWhatsApp:'919913866366', gasUrl:'https://script.google.com/macros/s/AKfycbzwD4Ap7ACcJlqk-9BtTxPvJYY-yCkWn2KTLeXsqUlTVyoZFjOUQ66uVZ4zMoKIlFLp/exec',
 staffTypes:[
 {id:'salesman', name:'Salesman', color:'#4F46E5'},
@@ -659,9 +658,9 @@ applyLang();
 function switchTab(scr,tab,btn){
 const ctx=btn.closest('.scr')||btn.closest('.sh')||document;
 ctx.querySelectorAll('.tbb').forEach(b=>b.classList.remove('on'));
-ctx.querySelectorAll('.tp').forEach(p=>{p.classList.remove('on');p.style.display='none';});
+ctx.querySelectorAll('.tp').forEach(p=>p.classList.remove('on'));
 btn.classList.add('on');
-const tp=el('tp-'+tab);if(tp){tp.classList.add('on');tp.style.display='block';}
+const tp=el('tp-'+tab); if(tp) tp.classList.add('on');
 }
 function salesTab(t,b){
 switchTab('sales',t,b);
@@ -1312,13 +1311,6 @@ else STATE.products.push({id:uid(),...obj});
 lsSave('vs_products',STATE.products); hideMod('m-prd'); renderPrds(); toast('Product saved','ok');
 }
 let _inType='mill', _inRows=[{}];
-function nextInwRef(){
-const pfx=STATE.settings.inwPrefix||'GP/';
-const existing=(STATE.entries||[]).filter(e=>['mill','jobwork','exchange','transfer'].includes(e.type)&&(e.ref||'').startsWith(pfx));
-const nums=existing.map(e=>parseInt((e.ref||'').replace(pfx,''))||0);
-const next=(nums.length?Math.max(...nums):0)+1;
-return pfx+String(next).padStart(3,'0');
-}
 function showInward(type){
 _inType=type; _inRows=[{}];
 const T={mill:'Mill G.P',jwin:'Job Work Inward',exch:'Exchange Inward'};
@@ -1327,26 +1319,19 @@ buildInward(); showMod('m-inw');
 }
 function buildInward(){
 const supOpts=STATE.suppliers.map(s=>'<option value="'+s.id+'" data-g="'+s.group+'">'+s.name+' ('+s.group+')</option>').join('');
-const exchSec=_inType==='exch'?'<div class="ir2"><div class="fg"><label>Total Sarees</label><input class="inp big mono" type="number" id="ex-tot" step="1" oninput="calcEx()"/></div><div class="fg"><label>Reusable Sarees</label><input class="inp big mono" type="number" id="ex-ru" step="1" oninput="calcEx()"/></div></div><div class="cb hid" id="ex-cb"></div>':'';
-const gpSec=_inType==='jwin'?'<div class="fg"><label>Mill G.P Number</label><input class="inp" id="in-gpno" placeholder="Which GP\'s goods received from JW?"/></div>':'';
-const autoRef=nextInwRef();
-el('inwbod').innerHTML='<div class="ir2"><div class="fg"><label>Date</label><input class="inp" type="date" id="in-date" value="'+today()+'"/></div><div class="fg"><label>Ref No. <span style="font-size:9px;color:var(--t3)">(auto)</span></label><div id="inw-refno" onclick="inwEditRef()" style="background:var(--Pl);color:var(--Pd);font-weight:800;font-family:monospace;font-size:15px;padding:10px 14px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border:2px solid var(--P)"><span id="inw-refno-txt">'+autoRef+'</span><span style="font-size:10px;opacity:.6;font-weight:500">&#x270F; edit</span></div></div></div><div class="fg"><label>Party / Supplier</label><select class="sel" id="in-pty"><option value="">Select supplier...</option>'+supOpts+'</select></div>'+gpSec+exchSec+'<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 4px"><span class="stl" style="padding:0;font-size:10px;font-weight:800">SKU LOTS</span><button class="btn bs bxs" onclick="addInwLot()">+ Add Lot</button></div><div id="inw-lots"></div><div class="fg mt12"><label>Notes</label><input class="inp" id="in-notes" placeholder="Optional"/></div>';
-_inwLots=[{id:0}];_inwLotId=1;renderInwLots();
+const exchSec=_inType==='exch'?
+'<div class="ir2"><div class="fg"><label>Total Sarees</label><input class="inp big mono" type="number" id="ex-tot" step="1" oninput="calcEx()"/></div><div class="fg"><label>Reusable Sarees</label><input class="inp big mono" type="number" id="ex-ru" step="1" oninput="calcEx()"/></div></div><div class="cb hid" id="ex-cb"></div>':'';
+const gpSec=_inType==='jwin'?
+'<div class="fg"><label>Mill G.P Number</label><input class="inp" id="in-gpno" placeholder="Which GP\'s goods received from JW?"/></div>':'';
+el('inwbod').innerHTML=
+'<div class="ir2"><div class="fg"><label>Date</label><input class="inp" type="date" id="in-date" value="'+today()+'"/></div><div class="fg"><label>Ref No.</label><input class="inp" id="in-ref" placeholder="Bill/DC no."/></div></div>'+
+'<div class="fg"><label>Party / Supplier</label><select class="sel" id="in-pty"><option value="">Select supplier...</option>'+supOpts+'</select></div>'+
+gpSec+exchSec+
+'<div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs</div><div id="in-rows"></div>'+
+'<button class="btn bs bfl mt8" onclick="addInRow()">+ Add SKU</button>'+
+'<div class="fg mt12"><label>Notes</label><input class="inp" id="in-notes" placeholder="Optional"/></div>';
+renderInRows();
 }
-function inwEditRef(){const cur=el('inw-refno-txt')?.textContent||nextInwRef();const n=prompt('Edit ref:',cur);if(n&&n.trim()){const t=el('inw-refno-txt');if(t)t.textContent=n.trim();}}
-let _inwLots=[{id:0}],_inwLotId=1;
-function addInwLot(){_inwLots.push({id:_inwLotId++});renderInwLots();}
-function remInwLot(lid){_inwLots=_inwLots.filter(l=>l.id!==lid);renderInwLots();}
-function renderInwLots(){
-const c=el('inw-lots');if(!c)return;
-const itemOpts='<option value="">Item...</option>'+STATE.items.map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
-c.innerHTML=_inwLots.map((lot,idx)=>{const lid=lot.id;return '<div class="sr su" id="inw-lot-'+lid+'" style="margin-bottom:10px;border:2px solid #059669;border-radius:12px;overflow:hidden"><div style="background:#059669;padding:7px 12px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;font-weight:900;color:white;letter-spacing:.5px">LOT '+(idx+1)+'</span>'+(_inwLots.length>1?'<button onclick="remInwLot('+lid+')" class="btn bd bxs" style="font-size:10px;padding:2px 7px;background:rgba(255,255,255,.15);color:white;border:none">✕ Remove</button>':'')+'</div><div style="padding:10px 12px 6px"><div class="ir2" style="margin-bottom:6px"><div class="fg"><label style="font-size:10px">Item</label><select class="sel" id="inw-lot-'+lid+'-i" onchange="inwLotItemChange('+lid+')" style="font-size:13px">'+itemOpts+'</select></div><div class="fg"><label style="font-size:10px">Range</label><select class="sel" id="inw-lot-'+lid+'-r" onchange="inwLotRangeChange('+lid+')" disabled style="font-size:13px"><option value="">Range...</option></select></div></div></div><div id="inw-lot-'+lid+'-body" style="min-height:40px"><div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range above</div></div></div>';}).join('');
-}
-function inwLotItemChange(lid){const iid=el('inw-lot-'+lid+'-i')?.value;const rSel=el('inw-lot-'+lid+'-r');const body=el('inw-lot-'+lid+'-body');if(!iid||!rSel){if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range</div>';return;}const item=STATE.items.find(x=>x.id===iid);if(!item)return;const rngs=[...new Set(item.colours.map(c=>c.range))];rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+r+'">'+r+'</option>').join('');rSel.disabled=false;if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select a range</div>';}
-function inwLotRangeChange(lid){const iid=el('inw-lot-'+lid+'-i')?.value;const rng=el('inw-lot-'+lid+'-r')?.value;const item=STATE.items.find(x=>x.id===iid);const body=el('inw-lot-'+lid+'-body');if(!item||!rng||!body)return;const cols=item.colours.filter(c=>c.range===rng);body.innerHTML='';const thead=document.createElement('div');thead.style.cssText='display:grid;grid-template-columns:28px 1fr 72px 80px;gap:4px;background:#064E3B;padding:7px 10px;border-bottom:2px solid #059669';thead.innerHTML='<div></div><div style="font-size:9px;font-weight:800;color:#6EE7B7;text-transform:uppercase">Colour/SKU</div><div style="font-size:9px;font-weight:800;color:#6EE7B7;text-transform:uppercase;text-align:center">Taka</div><div style="font-size:9px;font-weight:800;color:#A7F3D0;text-transform:uppercase;text-align:center">TP ₹</div>';body.appendChild(thead);const selAll=document.createElement('div');selAll.style.cssText='display:flex;align-items:center;gap:10px;padding:7px 10px;background:#ECFDF5;border-bottom:1px solid #A7F3D0;cursor:pointer';selAll.innerHTML='<input type="checkbox" id="inw-lot-'+lid+'-all" style="width:16px;height:16px;accent-color:#059669;cursor:pointer" onclick="inwLotToggleAll('+lid+')"/><span style="font-size:11px;font-weight:700;color:#065F46;flex:1">✔ All ('+cols.length+')</span>';selAll.onclick=e=>{if(e.target.tagName!=='INPUT'){const c=el('inw-lot-'+lid+'-all');c.checked=!c.checked;inwLotToggleAll(lid);}};body.appendChild(selAll);cols.forEach((col,ci)=>{const idx=item.colours.indexOf(col);const rowBg=ci%2===0?'#FFFFFF':'#F0FDF4';const row=document.createElement('div');row.id='inw-lot-'+lid+'-row-'+idx;row.style.cssText='display:grid;grid-template-columns:28px 1fr 72px 80px;gap:4px;align-items:center;padding:7px 10px;border-bottom:1px solid #D1FAE5;background:'+rowBg+';cursor:pointer;transition:.15s';row.innerHTML='<input type="checkbox" id="inw-lot-'+lid+'-ck-'+idx+'" style="width:16px;height:16px;accent-color:#059669" onchange="inwLotClrToggle('+lid+','+idx+')">'+'<div style="min-width:0"><div style="font-size:12px;font-weight:700;color:#0F172A">'+col.name+'</div><div style="font-size:9px;color:#9CA3AF;font-family:monospace">'+col.sku+'</div></div>'+'<input type="number" id="inw-lot-'+lid+'-t-'+idx+'" step="1" min="1" placeholder="T" disabled oninput="inwLotUpdCalc('+lid+')" style="width:100%;text-align:center;border:1.5px solid #D1D5DB;border-radius:7px;padding:5px 3px;font-size:14px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;transition:.15s">'+'<input type="number" id="inw-lot-'+lid+'-tp-'+idx+'" step="0.01" min="0" placeholder="TP" disabled style="width:100%;text-align:center;border:1.5px solid #D1D5DB;border-radius:7px;padding:5px 3px;font-size:14px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;transition:.15s">';row.addEventListener('click',e=>{if(e.target.tagName==='INPUT')return;const chk=el('inw-lot-'+lid+'-ck-'+idx);if(chk){chk.checked=!chk.checked;inwLotClrToggle(lid,idx);}});body.appendChild(row);});const totalRow=document.createElement('div');totalRow.id='inw-lot-'+lid+'-total';totalRow.style.cssText='padding:7px 10px;background:#ECFDF5;border-top:2px solid #059669;font-size:12px;font-weight:800;color:#065F46;text-align:right';totalRow.textContent='';body.appendChild(totalRow);}
-function inwLotToggleAll(lid){const allChk=el('inw-lot-'+lid+'-all');const iid=el('inw-lot-'+lid+'-i')?.value;const rng=el('inw-lot-'+lid+'-r')?.value;const item=STATE.items.find(x=>x.id===iid);if(!item||!rng)return;item.colours.filter(c=>c.range===rng).forEach(col=>{const idx=item.colours.indexOf(col);const chk=el('inw-lot-'+lid+'-ck-'+idx);if(!chk)return;chk.checked=allChk.checked;inwLotClrToggle(lid,idx,true);});inwLotUpdCalc(lid);}
-function inwLotClrToggle(lid,idx,skipCalc){const chk=el('inw-lot-'+lid+'-ck-'+idx);const takFld=el('inw-lot-'+lid+'-t-'+idx);const tpFld=el('inw-lot-'+lid+'-tp-'+idx);const row=el('inw-lot-'+lid+'-row-'+idx);const on=chk?.checked;if(takFld){takFld.disabled=!on;takFld.style.background=on?'#ECFDF5':'#F3F4F6';takFld.style.color=on?'#065F46':'#9CA3AF';takFld.style.border=on?'2px solid #059669':'1.5px solid #D1D5DB';}if(tpFld){tpFld.disabled=!on;tpFld.style.background=on?'#EFF6FF':'#F3F4F6';tpFld.style.color=on?'#1E40AF':'#9CA3AF';tpFld.style.border=on?'2px solid #3B82F6':'1.5px solid #D1D5DB';}if(row)row.style.background=on?'#D1FAE5':'';if(!skipCalc)inwLotUpdCalc(lid);}
-function inwLotUpdCalc(lid){const iid=el('inw-lot-'+lid+'-i')?.value;const rng=el('inw-lot-'+lid+'-r')?.value;const item=STATE.items.find(x=>x.id===iid);if(!item||!rng)return;let tot=0;item.colours.filter(c=>c.range===rng).forEach(col=>{const idx=item.colours.indexOf(col);const chk=el('inw-lot-'+lid+'-ck-'+idx);if(!chk?.checked)return;tot+=parseInt(el('inw-lot-'+lid+'-t-'+idx)?.value)||0;});const totEl=el('inw-lot-'+lid+'-total');if(totEl)totEl.textContent=tot>0?'Total: '+tot+' T = '+Math.round(tot*(STATE.settings.avgMtrPerTaka||90))+' mtrs':'';}
 let _inDest='stk';
 function setDest(d,btn){
 _inDest=d;
@@ -1367,22 +1352,23 @@ const t=parseInt(el('ir'+i+'-t')?.value)||0;
 const c=el('ir'+i+'-c'); if(c) c.textContent=t+'T x '+STATE.settings.avgMtrPerTaka+'m = '+Math.round(t*STATE.settings.avgMtrPerTaka)+' mtrs';
 }
 async function saveInward(){
-const date=el('in-date')?.value;
-const ref=(el('inw-refno-txt')?.textContent||'').trim();
-const notes=el('in-notes')?.value.trim();
-const pId=el('in-pty')?.value,party=STATE.suppliers.find(s=>s.id===pId)?.name||'';
+const date=el('in-date')?.value, ref=el('in-ref')?.value.trim(), notes=el('in-notes')?.value.trim();
+const pId=el('in-pty')?.value, party=STATE.suppliers.find(s=>s.id===pId)?.name||'';
 const gpNo=el('in-gpno')?.value?.trim()||'';
 const fullNote=gpNo?('GP: '+gpNo+(notes?' | '+notes:'')):notes;
-const entryType=_inType==='mill'?'mill':(_inType==='jwin'?'jobwork':(_inType==='exch'?'exchange':_inType));
 let saved=0;
-for(const lot of (_inwLots||[])){
-const lid=lot.id;const iid=el('inw-lot-'+lid+'-i')?.value;if(!iid)continue;const rng=el('inw-lot-'+lid+'-r')?.value;if(!rng)continue;const item=STATE.items.find(x=>x.id===iid);if(!item)continue;
-item.colours.filter(c=>c.range===rng).forEach(col=>{const idx=item.colours.indexOf(col);const chk=el('inw-lot-'+lid+'-ck-'+idx);if(!chk?.checked)return;const taka=Math.round(parseInt(el('inw-lot-'+lid+'-t-'+idx)?.value)||0);if(!taka)return;const tp=parseFloat(el('inw-lot-'+lid+'-tp-'+idx)?.value)||0;const tpNote=tp>0?(fullNote?fullNote+' | TP: ₹'+tp:'TP: ₹'+tp):fullNote;addStock(item.id,idx,taka,entryType,party,ref,tpNote,date);saved++;});
+for(let i=0;i<_inRows.length;i++){
+const sel=getSel('ir'+i); if(!sel) continue;
+const taka=Math.round(parseInt(el('ir'+i+'-t')?.value)||0); if(!taka) continue;
+const tp=parseFloat(el('ir'+i+'-tp')?.value)||0;
+const entryType=_inType==='mill'?'mill':(_inType==='jwin'?'jobwork':_inType);
+const tpNote=tp>0?(fullNote?fullNote+' | TP: \u20B9'+tp:'TP: \u20B9'+tp):fullNote;
+addStock(sel.itemId,sel.colIdx,taka,entryType,party,ref,tpNote);
+saved++;
 }
-if(!saved){toast('Select at least one colour with taka quantity','er');return;}
-const pfx=STATE.settings.inwPrefix||'GP/';if(ref.startsWith(pfx)){STATE.settings.inwSeq=(parseInt(STATE.settings.inwSeq)||0)+1;lsSave('vs_settings',STATE.settings);}
-persist();hideMod('m-inw');renderDash();renderInRec();
-toast('Inward saved — '+saved+' SKU(s) • Ref: '+ref,'ok');
+if(!saved){toast('Add at least one SKU with taka','er');return;}
+persist(); hideMod('m-inw'); renderDash(); renderInRec();
+toast('Entry saved - '+saved+' SKU(s)','ok');
 api('saveEntry',{entries:STATE.entries,items:STATE.items});
 }
 function renderInRec(q){
@@ -1394,7 +1380,7 @@ if(query){ents=ents.filter(e=>(e.itemName||'').toLowerCase().includes(query)||(e
 else{ents=ents.slice(0,200);}
 c.innerHTML=!ents.length
 ?'<div class="emp"><div class="emj">📥</div><h3>'+(query?'No matches for "'+query+'"':'No Inward Entries')+'</h3></div>'
-:ents.map(e=>'<div class="et"><div class="ei" style="background:var(--Gl);color:var(--Gd)">'+(icons[e.type]||'📥')+'</div><div class="eb"><div class="etit">'+e.itemName+' - '+e.colourName+'</div><div class="esub">'+e.party+' - '+fmtDate(e.date)+(e.ref?' · <span class="mono fw7" style="color:var(--Gd)">'+e.ref+'</span>':'')+'</div></div><div class="er"><div class="ev in">+'+e.taka+'T</div><div class="ed">'+fmtN(e.mtrs)+'m</div></div></div>').join('')
+:ents.map(e=>'<div class="et"><div class="ei" style="background:var(--Gl);color:var(--Gd)">'+(icons[e.type]||'📥')+'</div><div class="eb"><div class="etit">'+e.itemName+' - '+e.colourName+'</div><div class="esub">'+e.party+' - '+fmtDate(e.date)+(e.sku?' - '+e.sku:'')+'</div></div><div class="er"><div class="ev in">+'+e.taka+'T</div><div class="ed">'+fmtN(e.mtrs)+'m</div></div></div>').join('')
 +(ents.length>=200&&!query?'<div style="text-align:center;padding:12px;font-size:11px;color:var(--t3)">Showing last 200 entries. Use search to find more.</div>':'');
 }
 let _jwType='s2j', _jwRows=[{}], _rjwId=null;
@@ -1514,16 +1500,14 @@ function onSalesmanChange(){
 const uid=el('od-sm')?.value;
 const user=STATE.users.find(u=>u.id===uid);
 const pfx=user?.orderPrefix||STATE.settings.orderPrefix||'B/';
-if(!_ordId){const newNo=nextOrdNo(pfx);const disp=el('ordno');if(disp) disp.textContent=newNo;}
+const newNo=nextOrdNo(pfx);
+const disp=el('ordno'); if(disp) disp.textContent=newNo;
 window._ordPfx=pfx;
 }
 function openNewOrder(){
 _ordId=null; _ordRows=[{}]; _ordLots=[{id:0}]; _lotId=0;
 window._ordPfx=STATE.user?.orderPrefix||STATE.settings.orderPrefix||'B/';
 el('ordno').textContent=nextOrdNo(window._ordPfx);
-el('ordno').style.cssText='cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
-el('ordno').title='Click to edit order number';
-el('ordno').onclick=function(){const c=this.textContent;const n=prompt('Edit order number:',c);if(n&&n.trim()){this.textContent=n.trim();}};
 buildOrdBody();
 setTimeout(()=>{
 const sm=el('od-sm');
@@ -1573,7 +1557,7 @@ el('ordbod').innerHTML=
 '<div id="od-lots"></div>'+
 '<button class="btn bs bfl mt8" onclick="addOrdLot()">+ Add LOT / Item</button>'+
 '<div id="od-tot" class="bsum mt12" style="display:none"></div>'+
-'<div class="ir2" style="margin-top:12px"><div class="fg"><label>Notes</label><textarea class="ta" id="od-nt" rows="2"></textarea></div><div class="fg"><label>Programme Qty <span style="font-size:9px;color:var(--t3)">optional total pcs</span></label><input class="inp mono" type="number" id="od-prog" min="1" step="1" placeholder="e.g. 10000"/></div></div>';
+'<div class="fg mt12"><label>Notes</label><textarea class="ta" id="od-nt" rows="2"></textarea></div>';
 renderOrdLots();
 /* Sort and make dropdowns searchable */
 sortSelectAlpha(el('od-c')); sortSelectAlpha(el('od-b')); sortSelectAlpha(el('od-sm'));
@@ -1991,8 +1975,7 @@ if(!items.length){toast('Select at least one colour with sarees','er');return;}
 const existingOrd=_ordId?STATE.orders.find(o=>o.id===_ordId):null;
 const pfx=smUser?.orderPrefix||STATE.settings.orderPrefix||'B/';
 const ordNo=existingOrd?existingOrd.orderNo:nextOrdNo(pfx);
-const progTotal=parseInt(el('od-prog')?.value)||0;
-const ordObj={id:_ordId||uid(),orderNo:ordNo,salesmanId:smId,salesmanName:smUser?.name||'',date:el('od-d')?.value,custId:cId,custName:cust?.name||'',brkId:bId,brkName:brk?.name||'',items,total:items.reduce((s,i)=>s+i.amount,0),notes:el('od-nt')?.value,programmeTotal:progTotal||undefined,dispatches:existingOrd?.dispatches||[],status:existingOrd?existingOrd.status:'pending',bills:existingOrd?existingOrd.bills:undefined,by:STATE.user?.name||'',fy:existingOrd?.fy||STATE.settings.currentFY||getCurrentFY()};
+const ordObj={id:_ordId||uid(),orderNo:ordNo,salesmanId:smId,salesmanName:smUser?.name||'',date:el('od-d')?.value,custId:cId,custName:cust?.name||'',brkId:bId,brkName:brk?.name||'',items,total:items.reduce((s,i)=>s+i.amount,0),notes:el('od-nt')?.value,status:existingOrd?existingOrd.status:'pending',bills:existingOrd?existingOrd.bills:undefined,by:STATE.user?.name||'',fy:existingOrd?.fy||STATE.settings.currentFY||getCurrentFY()};
 if(_ordId){
 const idx=STATE.orders.findIndex(o=>o.id===_ordId);
 if(idx>=0) STATE.orders[idx]={...STATE.orders[idx],...stamp(ordObj)}; else STATE.orders.push(stamp(ordObj));
@@ -2941,7 +2924,7 @@ c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Compa
 '<div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="s-ph" value="'+(s.phone||'')+'"/></div><div class="fg"><label>Email</label><input class="inp" id="s-em" type="email" value="'+(s.email||'')+'"/></div></div>'+
 '<div class="fg"><label>Admin WhatsApp</label><input class="inp" id="s-wa" value="'+(s.adminWhatsApp||'')+'"/></div></div>'+
 '<div class="card mt12"><div class="fw8" style="margin-bottom:14px">Order &amp; Payment</div>'+
-'<div class="ir2"><div class="fg"><label>Default Order Prefix</label><input class="inp mono" id="s-pfx" value="'+(s.orderPrefix||'B/')+'"/></div><div class="fg"><label>Inward Ref Prefix</label><input class="inp mono" id="s-inwpfx" placeholder="GP/" value="'+(s.inwPrefix||'GP/')+'"/></div></div>'+'<div class="ir2"><div class="fg"><label>Discount %</label><input class="inp mono" id="s-disc" type="number" step="0.1" value="'+(s.discount||5)+'"/></div><div class="fg"><label></label><div class="xs ct3" style="padding-top:22px">Inward ref auto-numbers from prefix (e.g. GP/001)</div></div></div>'+
+'<div class="ir2"><div class="fg"><label>Default Order Prefix</label><input class="inp mono" id="s-pfx" value="'+(s.orderPrefix||'B/')+'"/></div><div class="fg"><label>Discount %</label><input class="inp mono" id="s-disc" type="number" step="0.1" value="'+(s.discount||5)+'"/></div></div>'+
 '<div class="ir2"><div class="fg"><label>Discount Days</label><input class="inp mono" id="s-dd" type="number" step="1" value="'+(s.discountDays||45)+'"/></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="s-nd" type="number" step="1" value="'+(s.nettDays||120)+'"/></div></div></div>'+
 '<div class="card mt12"><div class="fw8" style="margin-bottom:14px">Stock Settings</div>'+
 '<div class="ir2"><div class="fg"><label>Avg Meters / Taka</label><input class="inp mono" id="s-avg" type="number" step="0.5" value="'+(s.avgMtrPerTaka||90)+'"/></div><div class="fg"><label>Avg Meters / TP</label><input class="inp mono" id="s-avgtp" type="number" step="0.5" value="'+(s.avgMtrPerTP||45)+'"/></div></div>'+
@@ -2979,7 +2962,6 @@ phone:sn('s-ph',STATE.settings.phone),
 email:sn('s-em',STATE.settings.email),
 adminWhatsApp:sn('s-wa',STATE.settings.adminWhatsApp),
 orderPrefix:sn('s-pfx',STATE.settings.orderPrefix||'B/'),
-inwPrefix:sn('s-inwpfx',STATE.settings.inwPrefix||'GP/'),
 billPrefix:sn('s-bpfx',STATE.settings.billPrefix||'INV-'),
 billStartNo:si('s-bsno',STATE.settings.billStartNo||1),
 billPadLen:si('s-bpad',STATE.settings.billPadLen||4),
@@ -3317,9 +3299,6 @@ const o=STATE.orders.find(x=>x.id===id); if(!o) return;
 _ordId=id; _ordRows=[{}];
 window._ordPfx=(o.orderNo||'').replace(/[0-9]+$/,'');
 el('ordno').textContent=o.orderNo;
-el('ordno').style.cssText='cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px';
-el('ordno').title='Click to edit order number';
-el('ordno').onclick=function(){const c=this.textContent;const n=prompt('Edit order number:',c);if(n&&n.trim()){this.textContent=n.trim();}};
 el('ordtit').textContent='Edit Order';
 /* Group existing items by itemId+range to rebuild lots */
 const lotGroups={};
@@ -3340,7 +3319,6 @@ if(o.custId&&el('od-c')){ el('od-c').value=o.custId; onOrderCustChange(); }
 if(o.brkId&&el('od-b')) el('od-b').value=o.brkId;
 if(o.date&&el('od-d')) el('od-d').value=o.date;
 if(o.notes&&el('od-nt')) el('od-nt').value=o.notes||'';
-if(o.programmeTotal&&el('od-prog')) el('od-prog').value=o.programmeTotal||'';
 /* Repopulate each lot with existing item data */
 groups.forEach((grp,gi)=>{
 const lid=_ordLots[gi].id;
@@ -3481,53 +3459,6 @@ window._usrPerms={...DEFAULT_PERMS};
 buildPermUI('usr-perms', window._usrPerms, p=>{ window._usrPerms=p; });
 showMod('m-usr');
 }
-/* ===== DISPATCH PROGRAMME FUNCTIONS ===== */
-let _dispOrdId=null,_dispLots=[{id:0}],_dispLotId=1,_dispCustId=null;
-function openProgrammeDispatch(ordId){
-_dispOrdId=ordId;_dispLots=[{id:0}];_dispLotId=1;
-const o=STATE.orders.find(x=>x.id===ordId);if(!o)return;
-const dispatched=(o.dispatches||[]).reduce((s,d)=>s+(d.totalPcs||0),0);
-const remaining=(o.programmeTotal||0)-dispatched;
-el('disp-ord-info').innerHTML='<div style="background:#EEF2FF;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap"><span class="mono fw7 cP">'+o.orderNo+'</span><span>Committed: <b>'+o.programmeTotal+'</b></span><span>Dispatched: <b style="color:#10B981">'+dispatched+'</b></span><span>Remaining: <b style="color:'+(remaining<=0?'#10B981':'#EF4444')+'">'+remaining+'</b></span></div>';
-el('disp-date').value=today();el('disp-notes').value='';
-buildDispLots();showMod('m-disp');
-}
-function buildDispLots(){
-const c=el('disp-lots');if(!c)return;
-const itemOpts='<option value="">Item...</option>'+STATE.items.map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
-c.innerHTML=_dispLots.map((lot,idx)=>{const lid=lot.id;return '<div class="sr su" style="margin-bottom:10px;border:2px solid #4F46E5;border-radius:12px;overflow:hidden"><div style="background:#4F46E5;padding:7px 12px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;font-weight:900;color:white">LOT '+(idx+1)+'</span>'+(_dispLots.length>1?'<button onclick="remDispLot('+lid+')" style="font-size:10px;background:rgba(255,255,255,.15);color:white;border:none;padding:2px 7px;border-radius:4px;cursor:pointer">✕</button>':'')+'</div><div style="padding:10px 12px 6px"><div class="ir2"><div class="fg"><label style="font-size:10px">Item</label><select class="sel" id="disp-lot-'+lid+'-i" onchange="dispLotItemChange('+lid+')" style="font-size:13px">'+itemOpts+'</select></div><div class="fg"><label style="font-size:10px">Range</label><select class="sel" id="disp-lot-'+lid+'-r" onchange="dispLotRangeChange('+lid+')" disabled style="font-size:13px"><option>Range...</option></select></div></div></div><div id="disp-lot-'+lid+'-body" style="min-height:40px"><div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item + range</div></div></div>';}).join('');
-}
-function addDispLot(){_dispLots.push({id:_dispLotId++});buildDispLots();}
-function remDispLot(lid){_dispLots=_dispLots.filter(l=>l.id!==lid);buildDispLots();}
-function dispLotItemChange(lid){
-const iid=el('disp-lot-'+lid+'-i')?.value;const rSel=el('disp-lot-'+lid+'-r');if(!iid||!rSel)return;
-const item=STATE.items.find(x=>x.id===iid);if(!item)return;
-const rngs=[...new Set(item.colours.map(c=>c.range))];
-rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+r+'">'+r+'</option>').join('');
-rSel.disabled=false;const body=el('disp-lot-'+lid+'-body');if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select a range</div>';
-}
-function dispLotRangeChange(lid){
-const iid=el('disp-lot-'+lid+'-i')?.value;const rng=el('disp-lot-'+lid+'-r')?.value;const item=STATE.items.find(x=>x.id===iid);const body=el('disp-lot-'+lid+'-body');if(!item||!rng||!body)return;
-const cols=item.colours.filter(c=>c.range===rng);body.innerHTML='';
-const thead=document.createElement('div');thead.style.cssText='display:grid;grid-template-columns:28px 1fr 72px;gap:4px;background:#1e1b4b;padding:7px 10px';thead.innerHTML='<div></div><div style="font-size:9px;font-weight:800;color:#A5B4FC;text-transform:uppercase">Colour</div><div style="font-size:9px;font-weight:800;color:#FBBF24;text-transform:uppercase;text-align:center">Pcs</div>';body.appendChild(thead);
-const selAll=document.createElement('div');selAll.style.cssText='display:flex;align-items:center;gap:10px;padding:7px 10px;background:#EEF2FF;cursor:pointer';selAll.innerHTML='<input type="checkbox" id="disp-lot-'+lid+'-all" style="width:16px;height:16px;accent-color:#4F46E5" onclick="dispLotToggleAll('+lid+')"/><span style="font-size:11px;font-weight:700;color:#3730A3;flex:1">✔ Select All ('+cols.length+')</span>';selAll.onclick=e=>{if(e.target.tagName!=='INPUT'){const c=el('disp-lot-'+lid+'-all');c.checked=!c.checked;dispLotToggleAll(lid);}};body.appendChild(selAll);
-cols.forEach((col,ci)=>{const idx=item.colours.indexOf(col);const row=document.createElement('div');row.id='disp-lot-'+lid+'-row-'+idx;row.style.cssText='display:grid;grid-template-columns:28px 1fr 72px;gap:4px;align-items:center;padding:7px 10px;border-bottom:1px solid #E5E4F0;background:'+(ci%2===0?'#fff':'#F8F7FF')+';cursor:pointer';row.innerHTML='<input type="checkbox" id="disp-lot-'+lid+'-ck-'+idx+'" style="width:16px;height:16px;accent-color:#4F46E5" onchange="dispLotClrToggle('+lid+','+idx+')">'+'<div><div style="font-size:12px;font-weight:700">'+col.name+'</div><div style="font-size:9px;color:#9CA3AF;font-family:monospace">'+col.sku+'</div></div>'+'<input type="number" id="disp-lot-'+lid+'-p-'+idx+'" step="1" min="1" placeholder="pcs" disabled style="width:100%;text-align:center;border:1.5px solid #D1D5DB;border-radius:7px;padding:5px 3px;font-size:13px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF">';row.addEventListener('click',e=>{if(e.target.tagName==='INPUT')return;const chk=el('disp-lot-'+lid+'-ck-'+idx);if(chk){chk.checked=!chk.checked;dispLotClrToggle(lid,idx);}});body.appendChild(row);});
-}
-function dispLotToggleAll(lid){const allChk=el('disp-lot-'+lid+'-all');const iid=el('disp-lot-'+lid+'-i')?.value;const rng=el('disp-lot-'+lid+'-r')?.value;const item=STATE.items.find(x=>x.id===iid);if(!item||!rng)return;item.colours.filter(c=>c.range===rng).forEach(col=>{const idx=item.colours.indexOf(col);const chk=el('disp-lot-'+lid+'-ck-'+idx);if(!chk)return;chk.checked=allChk.checked;dispLotClrToggle(lid,idx,true);});}
-function dispLotClrToggle(lid,idx,skipCalc){const chk=el('disp-lot-'+lid+'-ck-'+idx);const pcsFld=el('disp-lot-'+lid+'-p-'+idx);const row=el('disp-lot-'+lid+'-row-'+idx);const on=chk?.checked;if(pcsFld){pcsFld.disabled=!on;pcsFld.style.background=on?'#FFFBEB':'#F3F4F6';pcsFld.style.color=on?'#92400E':'#9CA3AF';pcsFld.style.border=on?'2px solid #F59E0B':'1.5px solid #D1D5DB';}if(row)row.style.background=on?'#FEFCE8':'';}
-function saveDispatch(){
-const ordId=_dispOrdId;const o=STATE.orders.find(x=>x.id===ordId);if(!o)return;
-const date=el('disp-date')?.value||today();const notes=el('disp-notes')?.value||'';const items=[];
-for(const lot of _dispLots){const lid=lot.id;const iid=el('disp-lot-'+lid+'-i')?.value;if(!iid)continue;const rng=el('disp-lot-'+lid+'-r')?.value;if(!rng)continue;const item=STATE.items.find(x=>x.id===iid);if(!item)continue;item.colours.filter(c=>c.range===rng).forEach(col=>{const idx=item.colours.indexOf(col);const chk=el('disp-lot-'+lid+'-ck-'+idx);if(!chk?.checked)return;const pcs=parseInt(el('disp-lot-'+lid+'-p-'+idx)?.value)||0;if(!pcs)return;items.push({itemId:item.id,itemName:item.name,colIdx:idx,sku:col.sku,colourName:col.name,range:rng,pcs});});}
-if(!items.length){toast('Select at least one colour with pieces','er');return;}
-const totalPcs=items.reduce((s,i)=>s+(i.pcs||0),0);
-if(!o.dispatches)o.dispatches=[];
-o.dispatches.push({id:uid(),date,items,totalPcs,notes,by:STATE.user?.name||''});
-lsSave('vs_orders',STATE.orders);hideMod('m-disp');showOrderDetail(ordId);
-toast('Dispatch recorded — '+totalPcs+' pcs','ok');api('saveOrder',{orders:STATE.orders});
-}
-function deleteDispatch(ordId,dispIdx){const o=STATE.orders.find(x=>x.id===ordId);if(!o||!o.dispatches)return;if(!confirm('Delete dispatch #'+(dispIdx+1)+'?'))return;o.dispatches.splice(dispIdx,1);lsSave('vs_orders',STATE.orders);showOrderDetail(ordId);toast('Dispatch removed','ok');}
-/* ======================================== */
 function showOrderDetail(id){
 const o=STATE.orders.find(x=>x.id===id); if(!o) return;
 const stBadge=o.status==='fulfilled'?'bg-g':o.status==='cancelled'?'bg-r':o.status==='billed'?'bg-t':'bg-a';
@@ -3578,7 +3509,7 @@ html+=
 (lot.remark?'<div style="margin-top:4px;font-size:11px;font-weight:600;color:'+label+'">&#x1F4AC; '+lot.remark+'</div>':'')+
 '</div>';
 html+=
-'<div style="display:grid;grid-template-columns:1fr 52px 62px 88px;background:#1e1b4b;padding:5px 10px">'+
+'<div style="display:grid;grid-template-columns:1fr 44px 50px 64px;background:#1e1b4b;padding:5px 10px">'+
 '<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-transform:uppercase">Colour / SKU</div>'+
 '<div style="font-size:9px;font-weight:800;color:#FBBF24;text-transform:uppercase;text-align:center">Sarees</div>'+
 '<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-transform:uppercase;text-align:right">Mtrs</div>'+
@@ -3587,7 +3518,7 @@ html+=
 lot.items.forEach((item,ci)=>{
 const bg=ci%2===0?'#fff':lc;
 html+=
-'<div style="display:grid;grid-template-columns:1fr 52px 62px 88px;padding:8px 10px;background:'+bg+';border-top:1px solid #E5E4F0">'+
+'<div style="display:grid;grid-template-columns:1fr 44px 50px 64px;padding:8px 10px;background:'+bg+';border-top:1px solid #E5E4F0">'+
 '<div>'+
 '<div style="font-size:13px;font-weight:700;color:#0F0E1A">'+item.colourName+'</div>'+
 '<div style="font-size:9px;color:#9897B0;font-family:monospace;margin-top:1px">'+item.sku+'</div>'+
@@ -3601,7 +3532,7 @@ const lotTotal=lot.items.reduce((s,i)=>s+(i.amount||0),0);
 const lotPcs=lot.items.reduce((s,i)=>s+(i.pcs||0),0);
 const lotMtrs=lot.items.reduce((s,i)=>s+(i.mtrs||0),0);
 html+=
-'<div style="display:grid;grid-template-columns:1fr 52px 62px 88px;padding:7px 10px;background:'+lc+';border-top:2px solid '+border+'">'+
+'<div style="display:grid;grid-template-columns:1fr 44px 50px 64px;padding:7px 10px;background:'+lc+';border-top:2px solid '+border+'">'+
 '<div style="font-size:11px;font-weight:800;color:'+label+'">LOT '+lot.lotNum+' Subtotal</div>'+
 '<div style="text-align:center;font-size:12px;font-weight:800;color:'+label+'">'+lotPcs+'</div>'+
 '<div style="text-align:right;font-size:11px;font-weight:700;color:'+label+'">'+lotMtrs+'m</div>'+
@@ -3618,49 +3549,11 @@ html+=
 '<div style="color:var(--t2)">'+disc+'% discount within '+dd+' days  |  Nett '+nd+' days</div>'+
 '</div>';
 if(o.notes) html+='<div style="margin-top:10px;padding:10px;background:var(--Al);border-radius:8px"><span style="font-size:10px;font-weight:700;color:var(--Ad)">NOTES</span><div style="font-size:13px;color:var(--Ad);margin-top:2px">'+o.notes+'</div></div>';
-if(o.programmeTotal){
-const totalPcs=o.programmeTotal;
-const dispatched=(o.dispatches||[]).reduce((s,d)=>s+(d.totalPcs||0),0);
-const remaining=totalPcs-dispatched;
-const pct=totalPcs>0?Math.min(100,Math.round(dispatched/totalPcs*100)):0;
-const barColor=remaining<=0?'#10B981':remaining<totalPcs*0.3?'#F59E0B':'#4F46E5';
-html+='<div style="margin-top:14px;border:2px solid #4F46E5;border-radius:12px;overflow:hidden">'+
-'<div style="background:#4F46E5;padding:8px 14px;display:flex;align-items:center;justify-content:space-between">'+
-'<span style="font-size:12px;font-weight:900;color:white;letter-spacing:.5px">&#x1F4E6; DISPATCH PROGRAMME</span>'+
-'<span style="font-size:11px;font-weight:700;color:#C7D2FE">'+pct+'% dispatched</span></div>'+
-'<div style="padding:10px 14px;background:#EEF2FF">'+
-'<div style="background:#e2e8f0;border-radius:99px;height:8px;margin-bottom:8px;overflow:hidden"><div style="background:'+barColor+';height:100%;border-radius:99px;width:'+pct+'%;transition:.4s"></div></div>'+
-'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">'+
-'<div style="background:white;border-radius:8px;padding:8px 4px"><div style="font-size:18px;font-weight:900;color:#4F46E5">'+totalPcs+'</div><div style="font-size:9px;font-weight:700;color:#6B7280;text-transform:uppercase">Committed</div></div>'+
-'<div style="background:white;border-radius:8px;padding:8px 4px"><div style="font-size:18px;font-weight:900;color:#10B981">'+dispatched+'</div><div style="font-size:9px;font-weight:700;color:#6B7280;text-transform:uppercase">Dispatched</div></div>'+
-'<div style="background:white;border-radius:8px;padding:8px 4px"><div style="font-size:18px;font-weight:900;color:'+(remaining<=0?'#10B981':'#EF4444')+'">'+remaining+'</div><div style="font-size:9px;font-weight:700;color:#6B7280;text-transform:uppercase">Remaining</div></div>'+
-'</div></div>'+
-((o.dispatches||[]).length?
-'<div style="padding:0 14px 10px">'+(o.dispatches||[]).map((d,di)=>{
-const dc=(o.dispatches||[]).slice(0,di+1).reduce((s,x)=>s+(x.totalPcs||0),0);
-return '<div style="margin-top:8px;padding:8px;background:white;border-radius:8px;border:1px solid #C7D2FE">'+
-'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
-'<span style="font-size:11px;font-weight:800;color:#3730A3">Dispatch #'+(di+1)+' — '+fmtDate(d.date)+'</span>'+
-'<div style="display:flex;gap:4px;align-items:center">'+
-'<span style="font-size:11px;font-weight:700;color:#065F46;background:#D1FAE5;padding:2px 7px;border-radius:5px">'+d.totalPcs+' pcs</span>'+
-'<button onclick="deleteDispatch(\''+o.id+\','+di+')" style="font-size:10px;padding:1px 5px;border-radius:4px;border:none;background:#FEE2E2;color:#DC2626;cursor:pointer;font-weight:800">&#x2715;</button>'+
-'</div></div>'+
-(d.items||[]).map(it=>'<div style="font-size:11px;color:#374151">• '+it.colourName+' ('+it.itemName+') — '+it.pcs+' pcs</div>').join('')+
-(d.notes?'<div style="font-size:10px;color:#6B7280;margin-top:2px">&#x1F4DD; '+d.notes+'</div>':'')+
-'<div style="font-size:9px;color:#9CA3AF;margin-top:2px">Running total: '+dc+' / '+totalPcs+'</div>'+
-'</div>';
-}).join('')+'</div>'
-:'<div style="padding:10px 14px 14px;text-align:center;font-size:12px;color:#6B7280">No dispatches yet. Use “+ Add Dispatch” below.</div>')+
-'</div>';
-}
 el('ord-det-body').innerHTML=html;
 const foot=el('ord-det-foot');
 foot.innerHTML='';
 const mk=(cls,txt,fn)=>{const b=document.createElement('button');b.className='btn '+cls;b.innerHTML=txt;b.onclick=fn;return b;};
 foot.appendChild(mk('wa','&#x1F4F2; WhatsApp',()=>waOrd(o.id)));
-if(o.programmeTotal){
-foot.appendChild(mk('bs','&#x1F4E6; Add Dispatch',()=>openProgrammeDispatch(o.id)));
-}
 if(o.status!=='fulfilled'&&o.status!=='cancelled'){
 foot.appendChild(mk('bp bfl','&#x1F9FE; Dispatch Bill',()=>{hideMod('m-ord-det');openDispatch(o.id);}));
 }
@@ -3737,7 +3630,8 @@ ordLotRangeChange(lid);
 toast('Colour(s) added','ok');
 }
 }
-// _dispOrdId and _dispCustId declared above
+let _dispOrdId=null;
+let _dispCustId=null;
 function openDispatchForCustomer(custId){
 _dispOrdId=null; _dispCustId=custId;
 setupDispatchModal(custId, null);
