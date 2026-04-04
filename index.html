@@ -364,6 +364,7 @@ function autoSyncFirebase(){
       if(!window._initialPullDone&&!window._dataPulledFromServer){window._syncRunning=false;window._saveLock=false;return;}
       const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;
       if(localCount<=1){window._syncRunning=false;window._saveLock=false;return;}
+      if(!(STATE.users||[]).length){window._syncRunning=false;window._saveLock=false;return;}
       const fu=fbUrl('data');
       const nowTs=new Date().toISOString();
       // PUSH local data to Firebase
@@ -445,9 +446,19 @@ found={id:uid(),name:'Admin',username:'admin',password:'admin123',role:'admin',a
 STATE.users=[found]; lsSave('vs_users',STATE.users);
 }
 if(!found){
-const r=await api('login',{username:user,password:pass,deviceId:devId()});
-if(r&&r.user){loginOK(r.user);return;}
-el('le').textContent='User not found. Default: admin / admin123'; return;
+// If users list is empty, try pulling from Firebase first, then retry
+if(STATE.users.length===0){
+  el('le').textContent='';
+  const s=el('ls-sync-status');
+  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading accounts from cloud...</span>';
+  await loginScreenSyncFirebase();
+  found=STATE.users.find(u=>u.username===user);
+}
+if(!found){
+  const r=await api('login',{username:user,password:pass,deviceId:devId()});
+  if(r&&r.user){loginOK(r.user);return;}
+  el('le').textContent='User not found. Try "🔥 Load Data from Firebase" button above.'; return;
+}
 }
 if(!found.active){el('le').textContent='Account disabled';return;}
 const h=await sha256(pass);
@@ -7102,7 +7113,7 @@ async function loginScreenSyncFirebase(){
     }
     const d=await r.json();
     if(d&&typeof d==='object'&&(d.items||d.users||d.customers)){
-      ['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork','leads','flaggedEntries','taskTemplates','taskInstances','staffLeave','recurringLeads'].forEach(k=>{if(d[k])STATE[k]=d[k];});
+      ['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork','leads','flaggedEntries','taskTemplates','taskInstances','staffLeave','recurringLeads'].forEach(k=>{if(d[k]&&(!Array.isArray(d[k])||d[k].length>0))STATE[k]=d[k];});
       if(d.settings)STATE.settings={...STATE.settings,...d.settings,firebaseUrl:url,firebaseSecret:sec};
       window._dataPulledFromServer=true;
       lsSave('vs_items',STATE.items);lsSave('vs_entries',STATE.entries);lsSave('vs_customers',STATE.customers);
@@ -8709,7 +8720,8 @@ lsSave('vs_task_templates',STATE.taskTemplates);
 }
 if(STATE.settings.firebaseUrl&&STATE.settings.firebaseSecret){
 const localCount=(STATE.users||[]).length+(STATE.items||[]).length+(STATE.customers||[]).length;
-if(localCount<=1){
+const noUsers=(STATE.users||[]).length===0;
+if(localCount<=1||noUsers){
 setTimeout(()=>{
 const s=el('ls-sync-status');
 if(s) s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading your data from cloud...</span>';
