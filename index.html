@@ -3714,11 +3714,15 @@ el('entry-body').innerHTML=
 (e.itemName?'<div class="brow"><span>Item</span><span>'+e.itemName+'</span></div>':'')+
 (e.colourName?'<div class="brow"><span>Colour</span><span>'+e.colourName+'</span></div>':'')+
 (e.sku?'<div class="brow"><span>SKU</span><span class="sku" style="font-size:10px">'+e.sku+'</span></div>':'')+
+(e.voucherNo?'<div class="brow"><span>Voucher No.</span><span class="mono fw8 cP">'+e.voucherNo+'</span></div>':'')+
 (e.party?'<div class="brow"><span>Party</span><span>'+e.party+'</span></div>':'')+
 (e.ref?'<div class="brow"><span>Ref No.</span><span class="mono">'+e.ref+'</span></div>':'')+
 (e.note||e.notes?'<div class="brow"><span>Notes</span><span>'+(e.note||e.notes)+'</span></div>':'')+
 (e.by?'<div class="brow"><span>By</span><span>'+e.by+'</span></div>':'')+
 '</div>';
+const isInward=['mill','jobwork','exchange'].includes(e.type);
+const foot=el('entry-foot');
+if(foot) foot.innerHTML='<button class="btn bd" onclick="deleteEntryFromModal()">Delete</button>'+(isInward&&hasPerm('inward')?'<button class="btn bp bfl" onclick="editEntryMode()">✏️ Edit</button>':'')+'<button class="btn bgh" onclick="hideMod(\'m-entry\')">Close</button>';
 showMod('m-entry');
 }
 async function deleteEntryFromModal(){
@@ -3731,6 +3735,41 @@ lsSave('vs_entries',STATE.entries);
 hideMod('m-entry');
 renderRecentAct();
 toast('Entry deleted','ok');
+}
+function editEntryMode(){
+const e=_entryRef; if(!e) return;
+const supOpts='<option value="">-- Select --</option>'+STATE.suppliers.map(s=>'<option value="'+s.name+'"'+(s.name===e.party?' selected':'')+'>'+s.name+'</option>').join('');
+el('entry-body').innerHTML=
+'<div class="fg"><label>Voucher No.</label><input class="inp mono fw8" id="ee-vno" value="'+(e.voucherNo||'')+'"/></div>'+
+'<div class="fg"><label>Date</label><input class="inp" type="date" id="ee-date" value="'+(e.date||today())+'"/></div>'+
+'<div class="fg"><label>Party / Supplier</label><select class="sel" id="ee-pty">'+supOpts+'</select></div>'+
+'<div class="fg"><label>Ref No.</label><input class="inp" id="ee-ref" value="'+(e.ref||'')+'"/></div>'+
+'<div class="fg"><label>Taka</label><input class="inp mono big" type="number" id="ee-taka" min="1" value="'+(e.taka||0)+'"/></div>'+
+'<div class="fg"><label>Notes</label><input class="inp" id="ee-note" value="'+(e.note||e.notes||'')+'"/></div>'+
+'<div class="xs ct3" style="margin-top:4px">Changing Taka will adjust the current stock level automatically.</div>';
+const foot=el('entry-foot');
+if(foot) foot.innerHTML='<button class="btn bgh bfl" onclick="showEntryDetail(_entryRef)">Cancel</button><button class="btn bp bfl" onclick="saveEntryEdit()">💾 Save Changes</button>';
+}
+function saveEntryEdit(){
+const e=_entryRef; if(!e) return;
+const newTaka=Math.round(parseInt(el('ee-taka')?.value)||0);
+if(newTaka<1){toast('Taka must be at least 1','er');return;}
+const item=STATE.items.find(i=>i.id===e.itemId);
+if(item&&item.colours[e.colIdx]){
+  const diff=newTaka-e.taka;
+  item.colours[e.colIdx].stock_taka=Math.round((item.colours[e.colIdx].stock_taka||0)+diff);
+  item.colours[e.colIdx].stock_mtrs=Math.round(item.colours[e.colIdx].stock_taka*STATE.settings.avgMtrPerTaka);
+  item._ts=Date.now();
+}
+e.date=el('ee-date')?.value||e.date;
+e.voucherNo=(el('ee-vno')?.value||'').trim()||e.voucherNo;
+e.party=(el('ee-pty')?.value||'').trim();
+e.ref=(el('ee-ref')?.value||'').trim();
+e.note=(el('ee-note')?.value||'').trim();
+e.taka=newTaka;
+e.mtrs=Math.round(newTaka*STATE.settings.avgMtrPerTaka);
+persist(); hideMod('m-entry'); renderDash(); renderInRec();
+toast('Entry updated','ok');
 }
 async function deleteOrder(id){
 if(!hasPerm('delete_entry')){toast('No permission to delete orders','er');return;}
@@ -5786,7 +5825,8 @@ else if(stk>0&&stk<lowThresh) lowStock.push({itemName:item.name,range:col.range|
 });
 const shortStock=[];
 const skuStk={};
-STATE.items.forEach(item=>item.colours.forEach(col=>{
+STATE.items.filter(item=>!item._deleted).forEach(item=>item.colours.forEach(col=>{
+if(col.discontinued) return;
 skuStk[col.sku]={stock:col.stock_taka||0,itemName:item.name,range:col.range||'',colName:col.name,hex:col.hex};
 }));
 const orderedMap={};
@@ -5922,15 +5962,16 @@ else if(!isOut&&stk>0&&stk<lowThresh) allItems.push({itemName:item.name,itemId:i
 const itemNames=[...new Set(allItems.map(r=>r.itemName))].sort();
 /* Build modal content */
 const ov=document.createElement('div');
-ov.className='ov';ov.id='m-stock-alert';ov.onclick=e=>{if(e.target===ov)ov.remove();};
+ov.className='ov';ov.id='m-stock-alert';ov.onclick=e=>{if(e.target===ov){ov.classList.remove('on');setTimeout(()=>ov.remove(),220);}};
 ov.innerHTML=
 '<div class="sh" style="max-height:96vh"><div class="hdl"></div>'+
-'<div class="shh"><div class="hr"><div><h3 style="color:'+color+'">'+(isOut?'🔴':'🟡')+' '+title+'</h3><p class="sub" id="sa-count">'+allItems.length+' SKUs</p></div><button class="btn bgh bsm" onclick="document.getElementById(\'m-stock-alert\').remove()">&#x2715;</button></div></div>'+
+'<div class="shh"><div class="hr"><div><h3 style="color:'+color+'">'+(isOut?'🔴':'🟡')+' '+title+'</h3><p class="sub" id="sa-count">'+allItems.length+' SKUs</p></div><button class="btn bgh bsm" onclick="(function(){const m=document.getElementById(\'m-stock-alert\');m.classList.remove(\'on\');setTimeout(()=>m.remove(),220);})()">&#x2715;</button></div></div>'+
 '<div style="padding:8px 16px 4px"><select class="sel" id="sa-item-filter" onchange="filterStockAlert(\''+type+'\')"><option value="">All Items ('+allItems.length+')</option>'+itemNames.map(n=>{const cnt=allItems.filter(x=>x.itemName===n).length;return '<option value="'+n+'">'+n+' ('+cnt+')</option>';}).join('')+'</select></div>'+
 '<div class="shb" id="sa-body" style="padding:0 16px 8px"></div>'+
-'<div class="shf"><button class="btn bgh bfl" onclick="document.getElementById(\'m-stock-alert\').remove()">Close</button></div>'+
+'<div class="shf"><button class="btn bgh bfl" onclick="(function(){const m=document.getElementById(\'m-stock-alert\');m.classList.remove(\'on\');setTimeout(()=>m.remove(),220);})()">Close</button></div>'+
 '</div>';
 document.body.appendChild(ov);
+requestAnimationFrame(()=>{ov.classList.add('on');document.body.style.overflow='hidden';});
 window._stockAlertData=allItems;
 filterStockAlert(type);
 }
@@ -8685,7 +8726,7 @@ const lv=el('login-version');if(lv)lv.textContent='ALT Stock v'+APP_VERSION+' | 
 </div></div>
 <div class="ov" id="m-sku" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="sku-title">SKU Detail</h3><p class="sub" id="sku-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-sku')">&#x2715;</button></div></div><div class="shb" id="sku-body"></div><div class="shf"><button class="btn bd bfl" onclick="deleteSKUFromModal()">&#x1F5D1; Delete SKU</button><button class="btn bp bfl" onclick="hideMod('m-sku')">Close</button></div>
 </div></div>
-<div class="ov" id="m-entry" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="entry-title">Entry Detail</h3><p class="sub" id="entry-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-entry')">&#x2715;</button></div></div><div class="shb" id="entry-body"></div><div class="shf"><button class="btn bd bfl" onclick="deleteEntryFromModal()">Delete Entry</button><button class="btn bgh bfl" onclick="hideMod('m-entry')">Close</button></div>
+<div class="ov" id="m-entry" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="entry-title">Entry Detail</h3><p class="sub" id="entry-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-entry')">&#x2715;</button></div></div><div class="shb" id="entry-body"></div><div class="shf" id="entry-foot"><button class="btn bd bfl" onclick="deleteEntryFromModal()">Delete Entry</button><button class="btn bgh bfl" onclick="hideMod('m-entry')">Close</button></div>
 </div></div>
 <div class="ov" id="m-ord-det" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="ord-det-title">Order Detail</h3><p class="sub mono cP" id="ord-det-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-ord-det')">&#x2715;</button></div></div><div class="shb" id="ord-det-body"></div><div class="shf" id="ord-det-foot" style="flex-wrap:wrap;gap:6px"></div>
 </div></div>
