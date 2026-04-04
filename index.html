@@ -432,37 +432,59 @@ if(!document.querySelector('.ov.on')) document.body.style.overflow='';
 }
 function ovc(e,o){ if(e.target===o){o.classList.remove('on');document.body.style.overflow='';} }
 function devId(){ let d=ls('vs_did'); if(!d){d=uid();lsSet('vs_did',d);} return d; }
+function _sha256pure(s){
+/* Pure-JS SHA-256 — runs when crypto.subtle is unavailable (e.g. file:// in some browsers) */
+function rr(v,n){return(v>>>n)|(v<<(32-n));}
+var m=Math,mP=m.pow,mW=mP(2,32),h=[],k=[],pc=0,comp={};
+for(var c=2;pc<64;c++){if(!comp[c]){for(var q=0;q<313;q+=c)comp[q+c]=c;h[pc]=(mP(c,.5)*mW)|0;k[pc++]=(mP(c,1/3)*mW)|0;}}
+var msg=s+'\x80';
+while(msg.length%64-56)msg+='\x00';
+var w=[];
+for(var i=0;i<msg.length;i++){if(msg.charCodeAt(i)>255)return null;w[i>>2]|=msg.charCodeAt(i)<<((3-i%4)*8);}
+w[w.length]=(s.length*8/mW)|0;w[w.length]=(s.length*8);
+var hash=h.slice(0,8);
+for(var j=0;j<w.length;){var W=w.slice(j,j+=16),oh=hash.slice();
+for(var t=0;t<64;t++){var w15=W[t-15]||0,w2=W[t-2]||0;
+W[t]=t<16?W[t]:(W[t-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+W[t-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0;
+var t1=(hash[7]+(rr(hash[4],6)^rr(hash[4],11)^rr(hash[4],25))+((hash[4]&hash[5])^(~hash[4]&hash[6]))+k[t]+W[t])|0;
+var t2=((rr(hash[0],2)^rr(hash[0],13)^rr(hash[0],22))+((hash[0]&hash[1])^(hash[0]&hash[2])^(hash[1]&hash[2])))|0;
+hash=[((t1+t2)|0),hash[0],hash[1],hash[2],(hash[3]+t1)|0,hash[4],hash[5],hash[6]];}
+hash=hash.map(function(x,i){return(x+oh[i])|0;});}
+return hash.map(function(x){return('0000000'+((x>>>0).toString(16))).slice(-8);}).join('');
+}
 async function sha256(s){
-try{ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); }
-catch(e){ return s; }
+try{
+  if(window?.crypto?.subtle){
+    const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+    return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+  }
+}catch(e){}
+return _sha256pure(s)||s;
 }
 async function doLogin(){
 const user=el('lu').value.trim(), pass=el('lp').value;
 el('le').textContent='';
 if(!user||!pass){el('le').textContent='Enter username and password';return;}
-let found=STATE.users.find(u=>u.username===user);
-if(!found&&STATE.users.length===0&&user==='admin'&&pass==='admin123'){
+const findUser=()=>STATE.users.find(u=>(u.username||'').toLowerCase()===user.toLowerCase());
+let found=findUser();
+if(!found&&STATE.users.length===0&&user.toLowerCase()==='admin'&&pass==='admin123'){
 found={id:uid(),name:'Admin',username:'admin',password:'admin123',role:'admin',active:true,whatsapp:STATE.settings.adminWhatsApp,orderPrefix:'B/'};
 STATE.users=[found]; lsSave('vs_users',STATE.users);
 }
 if(!found){
-// If users list is empty, try pulling from Firebase first, then retry
-if(STATE.users.length===0){
-  el('le').textContent='';
   const s=el('ls-sync-status');
   if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading accounts from cloud...</span>';
   await loginScreenSyncFirebase();
-  found=STATE.users.find(u=>u.username===user);
+  found=findUser();
 }
 if(!found){
   const r=await api('login',{username:user,password:pass,deviceId:devId()});
   if(r&&r.user){loginOK(r.user);return;}
-  el('le').textContent='User not found. Try "🔥 Load Data from Firebase" button above.'; return;
+  el('le').textContent='Username "'+user+'" not found. Check spelling or use 🔥 Load Data first.'; return;
 }
-}
-if(!found.active){el('le').textContent='Account disabled';return;}
+if(found.active===false){el('le').textContent='Account is disabled. Contact admin.';return;}
 const h=await sha256(pass);
-if(found.password!==pass&&found.password!==h){el('le').textContent='Wrong password';return;}
+if(found.password!==pass&&found.password!==h){el('le').textContent='Wrong password for "'+found.username+'".';return;}
 loginOK(found);
 }
 function loginOK(user){
