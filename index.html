@@ -2538,7 +2538,7 @@ buildBillBody(o); showMod('m-bill');
 function newBill(){
 setNav('sales');
 setTimeout(()=>{
-const invTab=document.querySelector('#s-sales .tbb:last-child');
+const invTab=document.querySelectorAll('#s-sales .tbb')[3];
 if(invTab) salesTab('newinv', invTab);
 }, 80);
 }
