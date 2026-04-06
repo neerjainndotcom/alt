@@ -100,6 +100,8 @@ const lsSet = (k,v) => { try{ localStorage.setItem(k,v) }catch(e){} };
 const lsGet = k => { try{ return JSON.parse(localStorage.getItem(k)) }catch(e){ return null } };
 const lsSave = (k,v) => { try{ localStorage.setItem(k,JSON.stringify(v)) }catch(e){} };
 const uid = () => Date.now().toString(36)+Math.random().toString(36).substr(2,6);
+/* Helper: get active (non-deleted) bills */
+const liveBills = () => STATE.bills.filter(b=>!b._deleted&&b.status!=='deleted');
 // ═══ SEARCHABLE DROPDOWN UTILITY ═══════════════════════════════════
 function makeSearchable(selectEl){
 if(!selectEl||selectEl.dataset.searchable) return;
@@ -356,10 +358,11 @@ autoSyncFirebase();
 }
 function autoSyncFirebase(){
   clearTimeout(window._autoSyncTimer);
+  /* Lock immediately so sync poll can't pull stale data before push completes */
+  window._saveLock=true;
   window._autoSyncTimer=setTimeout(async()=>{
-    if(window._syncRunning)return;
+    if(window._syncRunning){window._saveLock=false;return;}
     window._syncRunning=true;
-    window._saveLock=true;
     try{
       if(!window._initialPullDone&&!window._dataPulledFromServer){window._syncRunning=false;window._saveLock=false;return;}
       const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;
@@ -2518,10 +2521,11 @@ return pfx+String(maxNum+1).padStart(padLen,'0');
 function createBill(ordId){
 _billOrdId=ordId;
 const o=STATE.orders.find(x=>x.id===ordId); if(!o) return;
-/* Calculate already-billed quantities per SKU across all active bills for this order */
+/* Calculate already-billed quantities per SKU across all active bills for this order.
+   Use dispQty if available (dispatch bills), fall back to pcs (old-style bills) */
 const prevBilled={};
-STATE.bills.filter(b=>b.ordId===ordId&&b.status!=='cancelled').forEach(b=>{
-  (b.items||[]).forEach(i=>{ prevBilled[i.sku]=(prevBilled[i.sku]||0)+i.pcs; });
+liveBills().filter(b=>b.ordId===ordId&&b.status!=='cancelled').forEach(b=>{
+  (b.items||[]).forEach(i=>{ prevBilled[i.sku]=(prevBilled[i.sku]||0)+(i.dispQty||i.pcs||0); });
 });
 _billRows=o.items.map(i=>{
   const alreadyBilled=prevBilled[i.sku]||0;
@@ -2636,12 +2640,10 @@ const o=STATE.orders.find(x=>x.id===_billOrdId);
 if(o){if(!o.bills)o.bills=[];o.bills.push(newBill);}
 if(o){
 const ordTotal=o.items.reduce((s,i)=>s+i.pcs,0);
-/* Count cumulative pcs billed across ALL bills for this order (including current) */
-const prevBilledTotal=STATE.bills
+/* Count cumulative pcs billed — newBill is already in STATE.bills, so just count all active bills */
+const totalBilled=liveBills()
   .filter(b=>b.ordId===_billOrdId&&b.status!=='cancelled')
   .reduce((s,b)=>s+b.items.reduce((ss,i)=>ss+i.pcs,0),0);
-const newBilledTotal=items.reduce((s,i)=>s+i.pcs,0);
-const totalBilled=prevBilledTotal+newBilledTotal;
 o.status=totalBilled>=ordTotal?'fulfilled':'billed';
 }
 /* Mark programme as billed if this bill came from a programme lot */
@@ -2660,7 +2662,7 @@ toast('Bill '+bno+' created','ok'); api('saveBill',{bills:STATE.bills,entries:ST
 }
 function renderBills(q=''){
 const c=el('billst')||el('billlst'); if(!c) return;
-const f=STATE.bills.filter(b=>!q||b.billNo.includes(q)||b.custName.toLowerCase().includes(q.toLowerCase()));
+const f=liveBills().filter(b=>!q||b.billNo.includes(q)||b.custName.toLowerCase().includes(q.toLowerCase()));
 if(!f.length){c.innerHTML='<div class="emp"><div class="emj">&#x1F9FE;</div><h3>No Bills</h3><p>Create bills from orders</p></div>';return;}
 c.innerHTML='';
 f.sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(b=>{
@@ -4244,7 +4246,7 @@ foot.appendChild(mk('wa','&#x1F4F2; WhatsApp',()=>waOrd(o.id)));
 if(o.status!=='fulfilled'&&o.status!=='cancelled'){
 foot.appendChild(mk('bp bfl','&#x1F9FE; Dispatch Bill',()=>{hideMod('m-ord-det');openDispatch(o.id);}));
 }
-const ordBills=STATE.bills.filter(b=>b.ordId===o.id);
+const ordBills=liveBills().filter(b=>b.ordId===o.id);
 if(ordBills.length){
 let billHtml='<div class="fw7 sm" style="margin-top:14px;margin-bottom:8px">Bills on this Order</div>';
 ordBills.forEach(b=>{
@@ -4397,8 +4399,9 @@ lots.push(obj); lotMap[key]=obj;
 }
 lotMap[key].items.push(item);
 });
+/* Use liveBills() (canonical source) — o.bills can be stale after sync or delete */
 const dispatched={};
-(o.bills||[]).filter(b=>b.status!=='cancelled').forEach(bill=>{
+liveBills().filter(b=>b.ordId===ordId&&b.status!=='cancelled').forEach(bill=>{
 (bill.items||[]).forEach(bi=>{ dispatched[bi.sku]=(dispatched[bi.sku]||0)+(bi.dispQty||bi.pcs||0); });
 });
 const lotColors=['#EEF2FF','#F0FDF4','#FFF7ED','#FDF4FF','#FEFCE8','#F0F9FF'];
@@ -4548,17 +4551,21 @@ bill.items.forEach(item=>{
 addStock(item.itemId,item.colIdx,item.taka,'adjustment','Bill Deleted - Return',bill.billNo,'Deleted bill '+bill.billNo);
 });
 }
-STATE.bills=STATE.bills.filter(b=>b.id!==billId);
+/* Soft-delete: mark _deleted so smartMerge won't resurrect from cloud */
+bill._deleted=true; bill._ts=Date.now(); bill.status='deleted';
 const o=STATE.orders.find(x=>x.id===bill.ordId);
-if(o&&o.bills){
-o.bills=o.bills.filter(b=>b.id!==billId);
-const active=o.bills.filter(b=>b.status!=='cancelled');
-if(active.length===0) o.status='pending';
+if(o){
+o.bills=(o.bills||[]).filter(b=>b.id!==billId);
+/* Recalculate status from STATE.bills (canonical source), excluding deleted */
+const activeBills=STATE.bills.filter(b=>b.ordId===bill.ordId&&!b._deleted&&b.status!=='cancelled'&&b.status!=='deleted');
+if(activeBills.length===0) o.status='pending';
 else {
 const totalOrdered=o.items.reduce((s,i)=>s+(i.pcs||0),0);
-const totalDispatched=active.reduce((s,b)=>s+(b.items||[]).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
+const totalDispatched=activeBills.reduce((s,b)=>s+(b.items||[]).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
 o.status=totalDispatched>=totalOrdered?'fulfilled':'billed';
 }
+/* Update _ts so cloud sync doesn't revert this change */
+o._ts=Date.now();
 }
 persist(); renderBills(); renderOrders(); renderDash();
 toast('Bill '+bill.billNo+' deleted'+(v?' - stock returned':''),'ok');
@@ -4596,14 +4603,17 @@ toast('Bill cancelled - no stock return','ok');
 }
 bill.status='cancelled';
 const o=STATE.orders.find(x=>x.id===bill.ordId);
-if(o&&o.bills&&o.status!=='cleared'){
-const active=o.bills.filter(b=>b.status!=='cancelled');
-if(active.length===0) o.status='pending';
+if(o&&o.status!=='cleared'){
+/* Recalculate status from STATE.bills (canonical source) */
+const activeBills=liveBills().filter(b=>b.ordId===bill.ordId&&b.status!=='cancelled');
+if(activeBills.length===0) o.status='pending';
 else {
 const totalOrdered=o.items.reduce((s,i)=>s+(i.pcs||0),0);
-const totalDispatched=active.reduce((s,b)=>s+(b.items||[]).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
+const totalDispatched=activeBills.reduce((s,b)=>s+(b.items||[]).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
 o.status=totalDispatched>=totalOrdered?'fulfilled':'billed';
 }
+/* Update _ts so cloud sync doesn't revert this change */
+o._ts=Date.now();
 }
 persist(); renderBills(); renderOrders(); renderDash(); res();
 };
@@ -5893,8 +5903,9 @@ c.innerHTML=html; return;
 }
 html+='<div style="font-size:11px;font-weight:700;color:var(--Pd);margin-bottom:10px">'+pendOrds.length+' pending order(s) — tap to create invoice</div>';
 pendOrds.forEach(o=>{
+/* Use liveBills() (canonical source) — o.bills can be stale after sync or delete */
 const dispatched={};
-(o.bills||[]).filter(b=>b.status!=='cancelled').forEach(bill=>{
+liveBills().filter(b=>b.ordId===o.id&&b.status!=='cancelled').forEach(bill=>{
 (bill.items||[]).forEach(bi=>{ dispatched[bi.sku]=(dispatched[bi.sku]||0)+(bi.dispQty||bi.pcs||0); });
 });
 const totalPcs=o.items.reduce((s,i)=>s+(i.pcs||0),0);
