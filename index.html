@@ -7996,7 +7996,8 @@ html+='<button onclick="renderAllTasks(\''+uid+'\')" style="padding:5px 14px;bor
 });
 html+='</div></div>';
 // ── Task list ──
-const filtered=activeFilter==='all'?todayInst:todayInst.filter(t=>t.assignedUserId===activeFilter);
+const _filterName=(staffMap[activeFilter]?.name||'').toLowerCase();
+const filtered=activeFilter==='all'?todayInst:todayInst.filter(t=>t.assignedUserId===activeFilter||(!!_filterName&&(t.assignedUserName||'').toLowerCase()===_filterName));
 const overdue2=filtered.filter(t=>t.status==='Pending'&&new Date()>new Date(t.deadline));
 const pending2=filtered.filter(t=>t.status==='Pending'&&!(new Date()>new Date(t.deadline)));
 const done2=filtered.filter(t=>t.status==='Done');
