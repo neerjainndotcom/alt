@@ -7932,8 +7932,10 @@ const todayInst=(STATE.taskInstances||[]).filter(t=>!t._deleted&&(t.generatedDat
 const staffColors=['#4F46E5','#0891B2','#D97706','#059669','#DC2626','#7C3AED','#B45309','#0F766E'];
 const staffMap={};const staffOrder=[];
 todayInst.forEach(t=>{
-if(!staffMap[t.assignedUserId]){staffMap[t.assignedUserId]={id:t.assignedUserId,name:t.assignedUserName,total:0,done:0,onTime:0,late:0,pending:0};staffOrder.push(t.assignedUserId);}
-const s=staffMap[t.assignedUserId];s.total++;
+const uid=t.assignedUserId||(t.assignedUserName?'~n:'+t.assignedUserName:'~unassigned');
+const uname=t.assignedUserName||t.assignedUserId||'Unassigned';
+if(!staffMap[uid]){staffMap[uid]={id:uid,name:uname,total:0,done:0,onTime:0,late:0,pending:0};staffOrder.push(uid);}
+const s=staffMap[uid];s.total++;
 if(t.status==='Done'){s.done++;t.isOnTime?s.onTime++:s.late++;}else s.pending++;
 });
 const total=todayInst.length;
@@ -7996,8 +7998,10 @@ html+='<button onclick="renderAllTasks(\''+uid+'\')" style="padding:5px 14px;bor
 });
 html+='</div></div>';
 // ── Task list ──
-const _filterName=(staffMap[activeFilter]?.name||'').toLowerCase();
-const filtered=activeFilter==='all'?todayInst:todayInst.filter(t=>t.assignedUserId===activeFilter||(!!_filterName&&(t.assignedUserName||'').toLowerCase()===_filterName));
+const filtered=activeFilter==='all'?todayInst:todayInst.filter(t=>{
+const uid=t.assignedUserId||(t.assignedUserName?'~n:'+t.assignedUserName:'~unassigned');
+return uid===activeFilter;
+});
 const overdue2=filtered.filter(t=>t.status==='Pending'&&new Date()>new Date(t.deadline));
 const pending2=filtered.filter(t=>t.status==='Pending'&&!(new Date()>new Date(t.deadline)));
 const done2=filtered.filter(t=>t.status==='Done');
@@ -8452,31 +8456,81 @@ function setLeadStatus(id,status){
 // ═══ DASHBOARD TASK WIDGET ═══════════════════════════════════════
 function renderDashTaskWidget(){
   const c=el('dash-task-widget');if(!c)return;
-  const td=today(),myId=STATE.user?.id;
-  const mine=(STATE.taskInstances||[]).filter(t=>t.generatedDate===td&&t.assignedUserId===myId);
-  const pending=mine.filter(t=>t.status==='Pending'),done2=mine.filter(t=>t.status==='Done');
-  const ov=pending.filter(t=>new Date()>new Date(t.deadline));
-  if(!mine.length){c.innerHTML='';return;}
-  let h='<div onclick="setNav(\'tasks\')" style="background:linear-gradient(135deg,#1e1b4b,#4F46E5);border-radius:14px;padding:14px 16px;margin:0 16px 10px;cursor:pointer">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
-    +'<div style="font-size:15px;font-weight:900;color:white">📋 My Tasks Today</div>'
-    +'<div style="font-size:12px;color:rgba(255,255,255,.7)">Tap to view ›</div></div>'
-    +'<div style="display:flex;gap:16px">'
-    +'<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#FBBF24">'+pending.length+'</div><div style="font-size:12px;color:rgba(255,255,255,.7)">Pending</div></div>'
-    +'<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#4ADE80">'+done2.length+'</div><div style="font-size:12px;color:rgba(255,255,255,.7)">Done</div></div>'
-    +(ov.length?'<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#F87171">'+ov.length+'</div><div style="font-size:12px;color:rgba(255,255,255,.7)">Overdue</div></div>':'')
-    +'</div>';
-  if(pending.length){
-    h+='<div style="margin-top:10px;border-top:1px solid rgba(255,255,255,.15);padding-top:10px">';
-    pending.slice(0,3).forEach(t=>{
-      const o=new Date()>new Date(t.deadline);
-      h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
-        +'<div style="width:8px;height:8px;border-radius:50%;background:'+(o?'#F87171':'#FBBF24')+';flex-shrink:0"></div>'
-        +'<div style="flex:1;font-size:14px;font-weight:700;color:white;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.taskName+'</div>'
-        +'<div style="font-size:12px;color:rgba(255,255,255,.6)">'+new Date(t.deadline).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div></div>';});
+  const td=today(),myId=STATE.user?.id,isAdmin=STATE.user?.role==='admin';
+  const allInst=(STATE.taskInstances||[]).filter(t=>!t._deleted&&(t.generatedDate===td||(t.status==='Pending'&&t.generatedDate<td)));
+  const mine=allInst.filter(t=>t.assignedUserId===myId||(t.assignedUserName&&STATE.user?.name&&t.assignedUserName.toLowerCase()===STATE.user.name.toLowerCase()));
+  const staffColors=['#4F46E5','#0891B2','#D97706','#059669','#DC2626','#7C3AED','#B45309','#0F766E'];
+  let h='';
+  // ── Admin: all-staff breakdown ──
+  if(isAdmin&&allInst.length){
+    const sm={};const so=[];
+    allInst.forEach(t=>{
+      const uid=t.assignedUserId||(t.assignedUserName?'~n:'+t.assignedUserName:'~unassigned');
+      const uname=t.assignedUserName||t.assignedUserId||'Unassigned';
+      if(!sm[uid]){sm[uid]={name:uname,pending:0,done:0,overdue:0};so.push(uid);}
+      if(t.status==='Done')sm[uid].done++;
+      else{sm[uid].pending++;if(new Date()>new Date(t.deadline))sm[uid].overdue++;}
+    });
+    const totP=allInst.filter(t=>t.status==='Pending').length;
+    const totD=allInst.filter(t=>t.status==='Done').length;
+    const totOv=allInst.filter(t=>t.status==='Pending'&&new Date()>new Date(t.deadline)).length;
+    h+='<div style="margin:0 16px 10px;background:linear-gradient(135deg,#1e1b4b,#4F46E5);border-radius:14px;padding:14px 16px;cursor:pointer" onclick="setNav(\'tasks\')">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+      +'<div style="font-size:15px;font-weight:900;color:white">📋 All Staff Tasks</div>'
+      +'<div style="font-size:12px;color:rgba(255,255,255,.7)">Tap for details ›</div></div>'
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">'
+      +'<div style="background:rgba(251,191,36,.2);border-radius:10px;padding:8px;text-align:center"><div style="font-size:22px;font-weight:900;color:#FBBF24">'+totP+'</div><div style="font-size:10px;color:rgba(255,255,255,.7)">Pending</div></div>'
+      +'<div style="background:rgba(74,222,128,.2);border-radius:10px;padding:8px;text-align:center"><div style="font-size:22px;font-weight:900;color:#4ADE80">'+totD+'</div><div style="font-size:10px;color:rgba(255,255,255,.7)">Done</div></div>'
+      +'<div style="background:rgba(248,113,113,.2);border-radius:10px;padding:8px;text-align:center"><div style="font-size:22px;font-weight:900;color:#F87171">'+totOv+'</div><div style="font-size:10px;color:rgba(255,255,255,.7)">Overdue</div></div>'
+      +'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px">';
+    so.forEach((uid,idx)=>{
+      const s=sm[uid];const clr=staffColors[idx%staffColors.length];
+      const pct=((s.done+s.pending)?Math.round(s.done/(s.done+s.pending)*100):0);
+      h+='<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:8px 12px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'
+        +'<div style="font-size:13px;font-weight:800;color:white">'+s.name+'</div>'
+        +'<div style="display:flex;gap:6px">'
+        +(s.overdue?'<span style="font-size:10px;font-weight:700;color:#F87171;background:rgba(248,113,113,.2);padding:1px 7px;border-radius:20px">'+s.overdue+' overdue</span>':'')
+        +'<span style="font-size:10px;font-weight:700;color:#FBBF24;background:rgba(251,191,36,.15);padding:1px 7px;border-radius:20px">'+s.pending+' pending</span>'
+        +'<span style="font-size:10px;font-weight:700;color:#4ADE80;background:rgba(74,222,128,.15);padding:1px 7px;border-radius:20px">'+s.done+' done</span>'
+        +'</div></div>'
+        +'<div style="background:rgba(255,255,255,.15);border-radius:4px;height:4px;overflow:hidden">'
+        +'<div style="background:'+clr+';height:100%;width:'+pct+'%;transition:.5s"></div>'
+        +'</div></div>';
+    });
+    h+='</div></div>';
+  }
+  // ── Staff / non-admin: my tasks (always show) ──
+  if(!isAdmin){
+    const pending=mine.filter(t=>t.status==='Pending'),done2=mine.filter(t=>t.status==='Done');
+    const ov=pending.filter(t=>new Date()>new Date(t.deadline));
+    h+='<div onclick="setNav(\'tasks\')" style="background:linear-gradient(135deg,#1e1b4b,#4F46E5);border-radius:14px;padding:14px 16px;margin:0 16px 10px;cursor:pointer">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+      +'<div style="font-size:15px;font-weight:900;color:white">📋 My Tasks Today</div>'
+      +'<div style="font-size:12px;color:rgba(255,255,255,.7)">Tap to view ›</div></div>';
+    if(!mine.length){
+      h+='<div style="font-size:13px;color:rgba(255,255,255,.6);text-align:center;padding:8px 0">✅ No tasks assigned for today</div>';
+    } else {
+      h+='<div style="display:flex;gap:16px">'
+        +'<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#FBBF24">'+pending.length+'</div><div style="font-size:12px;color:rgba(255,255,255,.7)">Pending</div></div>'
+        +'<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#4ADE80">'+done2.length+'</div><div style="font-size:12px;color:rgba(255,255,255,.7)">Done</div></div>'
+        +(ov.length?'<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#F87171">'+ov.length+'</div><div style="font-size:12px;color:rgba(255,255,255,.7)">Overdue</div></div>':'')
+        +'</div>';
+      if(pending.length){
+        h+='<div style="margin-top:10px;border-top:1px solid rgba(255,255,255,.15);padding-top:10px">';
+        pending.slice(0,3).forEach(t=>{
+          const o=new Date()>new Date(t.deadline);
+          h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
+            +'<div style="width:8px;height:8px;border-radius:50%;background:'+(o?'#F87171':'#FBBF24')+';flex-shrink:0"></div>'
+            +'<div style="flex:1;font-size:14px;font-weight:700;color:white;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+t.taskName+'</div>'
+            +'<div style="font-size:12px;color:rgba(255,255,255,.6)">'+new Date(t.deadline).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div></div>';});
+        h+='</div>';
+      }
+    }
     h+='</div>';
   }
-  c.innerHTML=h+'</div>';
+  c.innerHTML=h;
 }
 
 // ═══ EDIT TASK INSTANCE ══════════════════════════════════════════
