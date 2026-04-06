@@ -195,7 +195,7 @@ function cleanupDeleted(arr){
 // Smart merge: compare each record by _ts timestamp, newer wins
 function smartMerge(local,remote,uniqueKey){
   if(!remote||!remote.length)return local||[];
-  if(!local||!local.length)return remote;
+  if(!local||!local.length)return remote.slice();
   const map=new Map();
   const getKey=(item)=>{
     if(uniqueKey&&item[uniqueKey])return item[uniqueKey].toString().toLowerCase();
@@ -960,7 +960,7 @@ showEl(pfx+'-rg');hideEl(pfx+'-cg');el(pfx+'-si').innerHTML='';
 function cascClr(pfx,showStk){
 const iid=el(pfx+'-i')?.value, rng=el(pfx+'-r')?.value;
 const item=STATE.items.find(i=>i.id===iid); if(!item||!rng){hideEl(pfx+'-cg');return;}
-const cols=item.colours.filter(c=>c.range===rng);
+const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued);
 el(pfx+'-c').innerHTML='<option value="">Select colour...</option>'+cols.map(c=>{
 const idx=item.colours.indexOf(c);
 return '<option value="'+idx+'">'+c.name+(c.code?' ('+c.code+')':'')+'</option>';
@@ -1998,7 +1998,7 @@ const rng=el('od-lot-'+lid+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid);
 const body=el('od-lot-'+lid+'-body');
 if(!item||!rng||!body) return;
-const cols=item.colours.filter(c=>c.range===rng);
+const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued);
 /* Per-lot defaults take priority over global defaults */
 const defCut=parseFloat(el('od-lot-'+lid+'-qcut')?.value||el('od-def-cut')?.value)||6;
 const defPcs=el('od-lot-'+lid+'-qpcs')?.value||el('od-def-pcs')?.value||'';
@@ -7713,7 +7713,7 @@ if(!STATE.taskTemplates||!STATE.taskTemplates.length) return;
 const existing=(STATE.taskInstances||[]).filter(t=>t.generatedDate===dateStr);
 const existingTplIds=new Set(existing.map(t=>t.templateId));
 const newInst=[];
-STATE.taskTemplates.filter(t=>t.active).forEach(tmpl=>{
+STATE.taskTemplates.filter(t=>t.active&&!t._deleted).forEach(tmpl=>{
 if(existingTplIds.has(tmpl.id)) return;
 try{ if(!isTaskScheduledOn(tmpl,dateStr)) return; }catch(e){ return; }
 const leave=getActiveLeave(tmpl.assignedUserId,dateStr);
@@ -7758,7 +7758,7 @@ const c=el('task-lst-my'); if(!c) return;
 const today_s=today();
 const myId=STATE.user?.id;
 const query=(q||el('task-search')?.value||'').trim().toLowerCase();
-let tasks=(STATE.taskInstances||[]).filter(t=>t.assignedUserId===myId&&t.generatedDate===today_s);
+let tasks=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.assignedUserId===myId&&t.generatedDate===today_s);
 if(query){tasks=tasks.filter(t=>(t.taskName||'').toLowerCase().includes(query)||(t.category||'').toLowerCase().includes(query)||(t.priority||'').toLowerCase().includes(query)||(t.note||'').toLowerCase().includes(query));}
 if(!tasks.length){
 c.innerHTML='<div class="emp"><div class="emj">\u2705</div><h3>No Tasks Today</h3><p>You have no tasks assigned for today</p></div>';
@@ -7907,7 +7907,8 @@ delBtn.innerHTML='Delete';
 delBtn.onclick=async()=>{
 const ok=await appConfirm('Delete task instance?','This removes the task from today\'s list.','?','Delete','dr');
 if(!ok) return;
-STATE.taskInstances=STATE.taskInstances.filter(t=>t.id!==id);
+const _ti=STATE.taskInstances.find(t=>t.id===id);
+if(_ti){_ti._deleted=true;_ti._ts=Date.now();}
 lsSave('vs_task_instances',STATE.taskInstances);
 hideMod('m-task-inst'); renderAllTasks(); renderMyTasks();
 toast('Task deleted','ok');autoSyncFirebase();
@@ -7924,7 +7925,7 @@ showMod('m-task-inst');
 function renderAllTasks(){
 const c=el('task-lst-all'); if(!c) return;
 const today_s=today();
-const todayInst=(STATE.taskInstances||[]).filter(t=>t.generatedDate===today_s||(t.status==='Pending'&&t.generatedDate<today_s));
+const todayInst=(STATE.taskInstances||[]).filter(t=>!t._deleted&&(t.generatedDate===today_s||(t.status==='Pending'&&t.generatedDate<today_s)));
 const staffMap={};
 todayInst.forEach(t=>{
 if(!staffMap[t.assignedUserId]) staffMap[t.assignedUserId]={name:t.assignedUserName,total:0,done:0,onTime:0,late:0,pending:0};
@@ -7987,7 +7988,7 @@ c.innerHTML=html;
 }
 function renderTaskTemplates(){
 const c=el('task-lst-tpl'); if(!c) return;
-const tpls=STATE.taskTemplates||[];
+const tpls=active(STATE.taskTemplates||[]);
 let html=
 '<button class="btn bp bfl" style="margin-bottom:14px" onclick="openNewTaskTemplate()">+ New Task Template</button>';
 if(!tpls.length){
@@ -8107,7 +8108,8 @@ autoSyncFirebase();
 async function deleteTaskTemplate(id){
 const ok=await appConfirm('Delete Template?','This removes the task template. Existing instances remain.','?','Delete','dr');
 if(!ok) return;
-STATE.taskTemplates=STATE.taskTemplates.filter(x=>x.id!==id);
+const t=STATE.taskTemplates.find(x=>x.id===id);
+if(t){t._deleted=true;t._ts=Date.now();}
 lsSave('vs_task_templates',STATE.taskTemplates);
 renderTaskTemplates();
 toast('Template deleted','ok');
