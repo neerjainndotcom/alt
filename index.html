@@ -2022,7 +2022,8 @@ if(chk){chk.checked=!chk.checked; ordLotClrToggle(lid,idx);}
 });
 body.appendChild(row);
 });
-el('od-lot-'+lid+'-cut').value=defCut;
+/* Don't reset cut — it was already set when the lot card was created,
+   and during edit-restore the saved cut is applied separately */
 calcOrdLot(lid);
 }
 function ordLotToggleAll(lid){
@@ -3893,7 +3894,6 @@ _ordId=id; _ordRows=[{}];
 /* Detect order type */
 _ordType=(o.type==='open')?'open':'fixed';
 if(_ordType==='open'){
-  /* For open orders, restore openItems and re-open programme modal */
   _openItems=(o.openItems||[{id:0}]).map((oi,i)=>({...oi,id:i}));
   _openItemId=_openItems.length;
 }
@@ -3912,7 +3912,10 @@ _ordLots=[]; _lotId=0;
 if(groups.length){
 groups.forEach(()=>{ _ordLots.push({id:_lotId}); _lotId++; });
 } else { _ordLots=[{id:0}]; _lotId=1; }
+/* Store saved data per lot so we can restore AFTER DOM is built */
+window._editLotData=groups.map((grp,gi)=>({lid:_ordLots[gi].id,grp}));
 buildOrdBody();
+/* Use a sequential restore approach to avoid timeout race conditions */
 setTimeout(()=>{
 if(o.salesmanId&&el('od-sm')) el('od-sm').value=o.salesmanId;
 if(o.custId&&el('od-c')){ el('od-c').value=o.custId; onOrderCustChange(); }
@@ -3928,34 +3931,54 @@ if(_ordType==='open'){
     const rFld=el('od-oi-'+i+'-rate'); if(rFld) rFld.value=oi.rate||'';
   });
 }
-/* Repopulate each lot with existing item data */
-groups.forEach((grp,gi)=>{
-const lid=_ordLots[gi].id;
-const iSel=el('od-lot-'+lid+'-i'); if(iSel){ iSel.value=grp.itemId; ordLotItemChange(lid); }
-setTimeout(()=>{
-const rSel=el('od-lot-'+lid+'-r'); if(rSel){ rSel.value=grp.range; ordLotRangeChange(lid); }
-setTimeout(()=>{
-/* Set cut from first item */
-const firstItem=grp.items[0];
-if(firstItem?.cut){ const cutFld=el('od-lot-'+lid+'-cut'); if(cutFld) cutFld.value=firstItem.cut; }
-/* Check colours and fill pcs/rate — look up by SKU so index shifts don't break editing */
-const lotItem=STATE.items.find(x=>x.id===grp.itemId);
-grp.items.forEach(it=>{
-let actualIdx=it.colIdx;
-if(lotItem&&it.sku){
-  const matched=lotItem.colours.findIndex(c=>c.sku===it.sku);
-  if(matched>=0) actualIdx=matched;
-}
-const chk=el('od-lot-'+lid+'-ck-'+actualIdx); if(chk){ chk.checked=true; ordLotClrToggle(lid,actualIdx); }
-const pcsFld=el('od-lot-'+lid+'-p-'+actualIdx); if(pcsFld) pcsFld.value=it.pcs||'';
-const rateFld=el('od-lot-'+lid+'-rt-'+actualIdx); if(rateFld) rateFld.value=it.rate||'';
-});
-calcOrdLot(lid);
-},60);
-},60);
-});
+/* Restore lots sequentially using promises to avoid race conditions */
+_restoreEditLots(window._editLotData||[]);
 },80);
 showMod('m-ord');
+}
+function _restoreEditLots(lotDataArr){
+/* Restore each lot one at a time so DOM updates fully before next lot */
+let chain=Promise.resolve();
+lotDataArr.forEach(({lid,grp})=>{
+chain=chain.then(()=>new Promise(resolve=>{
+/* Step 1: Set item and trigger item change (populates range dropdown) */
+const iSel=el('od-lot-'+lid+'-i'); if(iSel){ iSel.value=grp.itemId; ordLotItemChange(lid); }
+setTimeout(()=>{
+/* Step 2: Set range and trigger range change (builds colour rows) */
+const rSel=el('od-lot-'+lid+'-r'); if(rSel){ rSel.value=grp.range; ordLotRangeChange(lid); }
+setTimeout(()=>{
+/* Step 3: Restore saved cut, pcs, rate AFTER range change has built the rows */
+const firstItem=grp.items[0];
+if(firstItem?.cut){ const cutFld=el('od-lot-'+lid+'-cut'); if(cutFld) cutFld.value=firstItem.cut; }
+const lotItem=STATE.items.find(x=>x.id===grp.itemId);
+grp.items.forEach(it=>{
+  let actualIdx=it.colIdx;
+  if(lotItem&&it.sku){
+    const matched=lotItem.colours.findIndex(c=>c.sku===it.sku);
+    if(matched>=0) actualIdx=matched;
+  }
+  /* Check the colour checkbox and enable its fields */
+  const chk=el('od-lot-'+lid+'-ck-'+actualIdx);
+  if(chk){
+    chk.checked=true;
+    /* Enable fields WITHOUT applying defaults — we set values ourselves */
+    const pcsFld=el('od-lot-'+lid+'-p-'+actualIdx);
+    const rateFld=el('od-lot-'+lid+'-rt-'+actualIdx);
+    const row=el('od-lot-'+lid+'-row-'+actualIdx);
+    if(pcsFld){pcsFld.disabled=false;pcsFld.style.background='#FFFBEB';pcsFld.style.color='#92400E';pcsFld.style.border='2px solid #F59E0B';}
+    if(rateFld){rateFld.disabled=false;rateFld.style.background='#EFF6FF';rateFld.style.color='#1E40AF';rateFld.style.border='2px solid #3B82F6';}
+    if(row) row.style.background='#FEFCE8';
+  }
+  /* Now set the SAVED values — this is the key fix */
+  const pcsFld=el('od-lot-'+lid+'-p-'+actualIdx); if(pcsFld) pcsFld.value=it.pcs||'';
+  const rateFld=el('od-lot-'+lid+'-rt-'+actualIdx); if(rateFld) rateFld.value=it.rate||'';
+});
+calcOrdLot(lid);
+resolve();
+},80);
+},80);
+}));
+});
 }
 const PERM_DEFS=[
 {id:'dash',        grp:'Dashboard', lbl:'View Dashboard',    desc:'See dashboard, stats, alerts, shortcuts'},
