@@ -8336,9 +8336,7 @@ async function manualRefresh(){
   };
   try{
     window._saveLock=true;
-    // STEP 1: Push local data to servers FIRST (preserve our changes)
-    await hybridSaveAll(true);
-    // STEP 2: Pull server data (Firebase first, GAS fallback) and merge
+    // STEP 1: Pull server data FIRST so we don't overwrite other devices' changes
     let serverData=null;
     const fu=fbUrl('data');
     if(fu){
@@ -8354,9 +8352,9 @@ async function manualRefresh(){
         if(d&&typeof d==='object'&&(d.items||d.users||d.customers))serverData=d;
       }catch(e){}
     }
-    // STEP 3: Smart merge — keeps all changes from both local and server, newer wins per record
-    if(serverData){applyCloudData(serverData);}
-    // STEP 4: Push merged result back
+    // STEP 2: Smart merge — force apply so timestamp skew never blocks a manual sync
+    if(serverData){applyCloudData(serverData,true);}
+    // STEP 3: Push merged result back so all devices see the combined data
     await hybridSaveAll(true);
     window._saveLock=false;
     done(true,'✅ Synced — all devices up to date');
@@ -8717,12 +8715,14 @@ function verifyStockIntegrity(){
 // Run integrity check 10 seconds after load, then every 2 minutes
 setTimeout(()=>{try{verifyStockIntegrity();}catch(e){}},10000);
 setInterval(()=>{if(!window._saveLock&&!window._syncRunning){try{verifyStockIntegrity();}catch(e){}}},120000);
-function applyCloudData(d){
+function applyCloudData(d,force=false){
   if(!d)return;
-  // Skip if cloud data is not newer than what we already have
-  const cloudTs=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
-  const localTs=STATE.settings?.lastSync?new Date(STATE.settings.lastSync):new Date(0);
-  if(cloudTs<=localTs&&localTs.getTime()>0)return;
+  // Skip if cloud data is not newer than what we already have (unless forced)
+  if(!force){
+    const cloudTs=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
+    const localTs=STATE.settings?.lastSync?new Date(STATE.settings.lastSync):new Date(0);
+    if(cloudTs<=localTs&&localTs.getTime()>0)return;
+  }
   const keep={firebaseUrl:STATE.settings.firebaseUrl,firebaseSecret:STATE.settings.firebaseSecret};
   const keys=['items','entries','customers','brokers','suppliers','users','orders','bills',
    'payments','jobWork','leads','flaggedEntries',
