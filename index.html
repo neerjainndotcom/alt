@@ -1663,6 +1663,7 @@ if(!_ordId){
 function openNewOrder(){
 _ordId=null; _ordRows=[{}]; _ordLots=[{id:0}]; _lotId=0;
 _ordType='fixed'; _openItems=[{id:0}]; _openItemId=0;
+window._editOrdNo=null;
 window._ordPfx=STATE.user?.orderPrefix||STATE.settings.orderPrefix||'B/';
 el('ordno').textContent=nextOrdNo(window._ordPfx);
 if(el('ordtit')) el('ordtit').textContent='New Sale Order';
@@ -1859,6 +1860,32 @@ if(rateFld&&rateFld.value==='') rateFld.value=defRate;
 calcOrdLot(lot.id);
 });
 }
+function applyLotDefaults(lid){
+const qcut=el('od-lot-'+lid+'-qcut')?.value;
+const qpcs=el('od-lot-'+lid+'-qpcs')?.value;
+const qrate=el('od-lot-'+lid+'-qrate')?.value;
+const item=STATE.items.find(x=>x.id===el('od-lot-'+lid+'-i')?.value);
+const rng=el('od-lot-'+lid+'-r')?.value;
+if(!item||!rng){toast('Select item & range first','er');return;}
+/* Apply cut */
+if(qcut){ const cutFld=el('od-lot-'+lid+'-cut'); if(cutFld) cutFld.value=qcut; }
+/* Apply pcs and rate to all checked (or all if none checked) colours */
+const cols=item.colours.filter(c=>c.range===rng);
+let anyChecked=cols.some(col=>{const idx=item.colours.indexOf(col);return el('od-lot-'+lid+'-ck-'+idx)?.checked;});
+cols.forEach(col=>{
+  const idx=item.colours.indexOf(col);
+  const chk=el('od-lot-'+lid+'-ck-'+idx);
+  /* If none are checked, check all first */
+  if(!anyChecked&&chk){chk.checked=true;ordLotClrToggle(lid,idx,true);}
+  if(!chk?.checked) return;
+  const pcsFld=el('od-lot-'+lid+'-p-'+idx);
+  const rateFld=el('od-lot-'+lid+'-rt-'+idx);
+  if(qpcs&&pcsFld) pcsFld.value=qpcs;
+  if(qrate&&rateFld) rateFld.value=qrate;
+});
+calcOrdLot(lid);
+toast('Lot filled','ok');
+}
 function renderOrdLots(){
 const c=el('od-lots'); if(!c) return;
 c.innerHTML='';
@@ -1916,8 +1943,21 @@ btn2.style.cssText='flex-shrink:0;width:26px;height:26px;border-radius:7px;borde
 btn2.onclick=()=>ordLotNewRange(lot.id);
 rSel.insertAdjacentElement('afterend', btn2);
 }
+/* Per-lot quick-fill: Cut, Sarees/Colour, Rate — applies only to this lot */
+const qfill=document.createElement('div');
+qfill.id='od-lot-'+lot.id+'-qfill';
+qfill.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;align-items:end;margin-top:6px;padding:6px 8px;background:rgba(0,0,0,.06);border-radius:8px';
+qfill.innerHTML=
+'<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">CUT (m)</div>'+
+'<input class="inp mono" type="number" step="0.25" id="od-lot-'+lot.id+'-qcut" placeholder="6" style="text-align:center;padding:5px 4px;font-size:13px;font-weight:800;border:1.5px solid '+lc.border+';border-radius:7px"/></div>'+
+'<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">SAREES/CLR</div>'+
+'<input class="inp mono" type="number" step="1" id="od-lot-'+lot.id+'-qpcs" placeholder="—" style="text-align:center;padding:5px 4px;font-size:13px;font-weight:800;border:1.5px solid '+lc.border+';border-radius:7px"/></div>'+
+'<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">RATE \u20B9/m</div>'+
+'<input class="inp mono" type="number" step="0.01" id="od-lot-'+lot.id+'-qrate" placeholder="—" style="text-align:center;padding:5px 4px;font-size:13px;font-weight:800;border:1.5px solid '+lc.border+';border-radius:7px"/></div>'+
+'<button onclick="applyLotDefaults('+lot.id+')" style="padding:5px 10px;border-radius:7px;border:none;background:'+lc.border+';color:white;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap" title="Fill all checked colours in this lot">&#x2B50; Fill</button>';
+hdr.appendChild(qfill);
 const row2=document.createElement('div');
-row2.style.cssText='display:flex;align-items:center;gap:6px';
+row2.style.cssText='display:flex;align-items:center;gap:6px;margin-top:6px';
 row2.innerHTML=
 '<span style="font-size:10px;font-weight:700;color:'+lc.label+';flex-shrink:0">Remark:</span>'+
 '<input type="text" id="od-lot-'+lot.id+'-rem" placeholder="e.g. Urgent, special packing, hold for approval..." style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:7px;background:white;font-family:inherit;color:#1a1a2e;min-width:0"/>';
@@ -1956,9 +1996,10 @@ const item=STATE.items.find(x=>x.id===iid);
 const body=el('od-lot-'+lid+'-body');
 if(!item||!rng||!body) return;
 const cols=item.colours.filter(c=>c.range===rng);
-const defCut=parseFloat(el('od-def-cut')?.value)||6;
-const defPcs=el('od-def-pcs')?.value||'';
-const defRate=el('od-def-rate')?.value||'';
+/* Per-lot defaults take priority over global defaults */
+const defCut=parseFloat(el('od-lot-'+lid+'-qcut')?.value||el('od-def-cut')?.value)||6;
+const defPcs=el('od-lot-'+lid+'-qpcs')?.value||el('od-def-pcs')?.value||'';
+const defRate=el('od-lot-'+lid+'-qrate')?.value||el('od-def-rate')?.value||'';
 body.innerHTML='';
 const thead=document.createElement('div');
 thead.style.cssText=
@@ -2059,8 +2100,9 @@ rateFld.style.border=on?'2px solid #3B82F6':'1.5px solid #D1D5DB';
 }
 if(row) row.style.background=on?'#FEFCE8':'';
 if(on){
-const defPcs=el('od-def-pcs')?.value||'';
-const defRate=el('od-def-rate')?.value||'';
+/* Per-lot defaults take priority over global defaults */
+const defPcs=el('od-lot-'+lid+'-qpcs')?.value||el('od-def-pcs')?.value||'';
+const defRate=el('od-lot-'+lid+'-qrate')?.value||el('od-def-rate')?.value||'';
 if(pcsFld&&pcsFld.value==='') pcsFld.value=defPcs;
 if(rateFld&&rateFld.value==='') rateFld.value=defRate;
 }
@@ -2161,7 +2203,8 @@ if(!smId){toast('Select a salesman','er');return;}
 const existingOrd=_ordId?STATE.orders.find(o=>o.id===_ordId):null;
 const pfx=smUser?.orderPrefix||STATE.settings.orderPrefix||'B/';
 const editedOrdNo=(el('od-ordno-edit')?.value||'').trim();
-const ordNo=existingOrd?(editedOrdNo||existingOrd.orderNo):nextOrdNo(pfx);
+/* CRITICAL: During edit, ALWAYS preserve order number — never generate a new one */
+const ordNo=_ordId?(editedOrdNo||existingOrd?.orderNo||window._editOrdNo||el('ordno')?.textContent||''):nextOrdNo(pfx);
 const commonFields={orderNo:ordNo,salesmanId:smId,salesmanName:smUser?.name||'',date:el('od-d')?.value,custId:cId,custName:cust?.name||'',brkId:bId,brkName:brk?.name||'',notes:el('od-nt')?.value,by:STATE.user?.name||'',fy:existingOrd?.fy||STATE.settings.currentFY||getCurrentFY()};
 
 /* ── OPEN / PROGRAMME ORDER ── */
@@ -2202,7 +2245,7 @@ const rate=parseFloat(el('od-lot-'+lot.id+'-rt-'+idx)?.value)||0;
 const mtrs=Math.round(pcs*cut*10)/10;
 const taka=Math.floor(mtrs/STATE.settings.avgMtrPerTaka);
 const rem=el('od-lot-'+lot.id+'-rem')?.value||'';
-items.push({itemId:iid,colIdx:idx,sku:col.sku,itemName:item.name,colourName:col.name,range:rng,pcs,cut,rate,mtrs,taka,amount:Math.round(mtrs*rate),remark:rem});
+items.push({itemId:iid,colIdx:idx,sku:col.sku,itemName:item.name,colourName:col.name,range:rng,pcs,cut,rate,mtrs,taka,amount:Math.round(mtrs*rate),remark:rem,lotIndex:_ordLots.indexOf(lot)});
 });
 });
 if(!items.length){toast('Select at least one colour with sarees','er');return;}
@@ -3898,16 +3941,22 @@ if(_ordType==='open'){
   _openItemId=_openItems.length;
 }
 window._ordPfx=(o.orderNo||'').replace(/[0-9]+$/,'');
+window._editOrdNo=o.orderNo; /* Preserve original order number for save */
 el('ordno').textContent=o.orderNo;
 el('ordtit').textContent='Edit Order';
-/* Group existing items by itemId+range to rebuild lots */
+/* Group existing items into lots — use lotIndex if available (new orders),
+   fall back to itemId+range grouping for older orders without lotIndex */
 const lotGroups={};
+const hasLotIndex=(o.items||[]).some(it=>it.lotIndex!=null);
 (o.items||[]).forEach(it=>{
-const key=it.itemId+'|'+it.range;
+const key=hasLotIndex?String(it.lotIndex):(it.itemId+'|'+it.range);
 if(!lotGroups[key]) lotGroups[key]={itemId:it.itemId,range:it.range,items:[]};
 lotGroups[key].items.push(it);
 });
-const groups=Object.values(lotGroups);
+/* Sort by lotIndex to preserve original lot order */
+const groups=Object.entries(lotGroups)
+  .sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0))
+  .map(e=>e[1]);
 _ordLots=[]; _lotId=0;
 if(groups.length){
 groups.forEach(()=>{ _ordLots.push({id:_lotId}); _lotId++; });
