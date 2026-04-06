@@ -471,11 +471,24 @@ if(!found&&STATE.users.length===0&&user.toLowerCase()==='admin'&&pass==='admin12
 found={id:uid(),name:'Admin',username:'admin',password:'admin123',role:'admin',active:true,whatsapp:STATE.settings.adminWhatsApp,orderPrefix:'B/'};
 STATE.users=[found]; lsSave('vs_users',STATE.users);
 }
+const s=el('ls-sync-status');
 if(!found){
-  const s=el('ls-sync-status');
   if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading accounts from cloud...</span>';
   await loginScreenSyncFirebase();
   found=findUser();
+}
+if(!found){
+  // Pull all data from Google Sheets so user accounts are available
+  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading accounts from Google Sheets...</span>';
+  try{
+    const gd=await api('getAll');
+    if(gd&&typeof gd==='object'&&(gd.items||gd.users||gd.customers)){
+      ['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork','leads','flaggedEntries','taskTemplates','taskInstances','staffLeave','recurringLeads'].forEach(k=>{if(gd[k]&&(!Array.isArray(gd[k])||gd[k].length>0))STATE[k]=gd[k];});
+      if(gd.settings)STATE.settings={...STATE.settings,...gd.settings};
+      lsSave('vs_users',STATE.users);
+      found=findUser();
+    }
+  }catch(e){}
 }
 if(!found){
   const r=await api('login',{username:user,password:pass,deviceId:devId()});
@@ -2219,7 +2232,7 @@ if(isOpen){
     ' &bull; Total: '+fmtN(stat.total)+
     ' &bull; Dispatched: <span style="color:var(--Gd);font-weight:700">'+fmtN(stat.dispatched)+'</span>'+
     ' &bull; Remaining: <span style="color:'+(stat.remaining>0?'var(--Rd)':'var(--Gd)')+';font-weight:700">'+fmtN(stat.remaining)+'</span>'+
-    (stat.total>0?' ('+pct+'%)')+'</div>';
+    (stat.total>0?' ('+pct+'%)':'')+'</div>';
 } else {
   subLine2='<div class="esub">'+o.items.length+' item(s)'+(o.salesmanName?' - '+o.salesmanName:'')+(o.brkName?' - '+o.brkName:'')+'</div>';
 }
