@@ -7923,68 +7923,96 @@ closeBtn.onclick=()=>hideMod('m-task-inst');
 foot.appendChild(closeBtn);
 showMod('m-task-inst');
 }
-function renderAllTasks(){
+function renderAllTasks(staffFilter){
 const c=el('task-lst-all'); if(!c) return;
+if(staffFilter!==undefined) window._taskStaffFilter=staffFilter;
+const activeFilter=window._taskStaffFilter||'all';
 const today_s=today();
 const todayInst=(STATE.taskInstances||[]).filter(t=>!t._deleted&&(t.generatedDate===today_s||(t.status==='Pending'&&t.generatedDate<today_s)));
-const staffMap={};
+const staffColors=['#4F46E5','#0891B2','#D97706','#059669','#DC2626','#7C3AED','#B45309','#0F766E'];
+const staffMap={};const staffOrder=[];
 todayInst.forEach(t=>{
-if(!staffMap[t.assignedUserId]) staffMap[t.assignedUserId]={name:t.assignedUserName,total:0,done:0,onTime:0,late:0,pending:0};
-const s=staffMap[t.assignedUserId];
-s.total++;
-if(t.status==='Done'){s.done++;t.isOnTime?s.onTime++:s.late++;}
-else s.pending++;
+if(!staffMap[t.assignedUserId]){staffMap[t.assignedUserId]={id:t.assignedUserId,name:t.assignedUserName,total:0,done:0,onTime:0,late:0,pending:0};staffOrder.push(t.assignedUserId);}
+const s=staffMap[t.assignedUserId];s.total++;
+if(t.status==='Done'){s.done++;t.isOnTime?s.onTime++:s.late++;}else s.pending++;
 });
 const total=todayInst.length;
 const done=todayInst.filter(t=>t.status==='Done').length;
 const overdueTasks=todayInst.filter(t=>t.status==='Pending'&&new Date()>new Date(t.deadline));
-let html=
-'<div style="background:linear-gradient(135deg,#1e1b4b,#4F46E5);border-radius:14px;padding:16px;margin-bottom:14px;color:white">'+
-'<div style="font-size:13px;opacity:.8;margin-bottom:4px">Task Overview (Today + Overdue)</div>'+
-'<div style="display:flex;gap:16px">'+
-'<div><div style="font-size:28px;font-weight:900">'+total+'</div><div style="font-size:10px;opacity:.7">Total</div></div>'+
-'<div><div style="font-size:28px;font-weight:900;color:#4ADE80">'+done+'</div><div style="font-size:10px;opacity:.7">Done</div></div>'+
-'<div><div style="font-size:28px;font-weight:900;color:#FBBF24">'+(total-done)+'</div><div style="font-size:10px;opacity:.7">Pending</div></div>'+
-'<div><div style="font-size:28px;font-weight:900;color:#F87171">'+overdueTasks.length+'</div><div style="font-size:10px;opacity:.7">Overdue</div></div>'+
+const pct=total?Math.round(done/total*100):0;
+// ── Header summary card ──
+let html='<div style="background:linear-gradient(135deg,#1e1b4b,#4F46E5);border-radius:16px;padding:18px;margin-bottom:14px;color:white">'+
+'<div style="font-size:11px;font-weight:700;opacity:.7;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">Task Overview — Today + Overdue</div>'+
+'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">'+
+'<div style="background:rgba(255,255,255,.12);border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px;font-weight:900">'+total+'</div><div style="font-size:10px;opacity:.7">Total</div></div>'+
+'<div style="background:rgba(74,222,128,.2);border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px;font-weight:900;color:#4ADE80">'+done+'</div><div style="font-size:10px;opacity:.7">Done</div></div>'+
+'<div style="background:rgba(251,191,36,.2);border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px;font-weight:900;color:#FBBF24">'+(total-done)+'</div><div style="font-size:10px;opacity:.7">Pending</div></div>'+
+'<div style="background:rgba(248,113,113,.2);border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px;font-weight:900;color:#F87171">'+overdueTasks.length+'</div><div style="font-size:10px;opacity:.7">Overdue</div></div>'+
 '</div>'+
-'<div style="margin-top:10px;background:rgba(255,255,255,.1);border-radius:6px;height:8px;overflow:hidden">'+
-'<div style="background:#4ADE80;height:100%;width:'+(total?Math.round(done/total*100):0)+'%;transition:.5s"></div>'+
+'<div style="background:rgba(255,255,255,.15);border-radius:6px;height:8px;overflow:hidden">'+
+'<div style="background:linear-gradient(90deg,#4ADE80,#22C55E);height:100%;width:'+pct+'%;transition:.6s"></div>'+
 '</div>'+
-'<div style="font-size:10px;opacity:.7;margin-top:4px">'+(total?Math.round(done/total*100):0)+'% completion</div>'+
-'</div>'+
-'<button class="wa" style="width:100%;padding:10px;border-radius:10px;font-size:12px;font-weight:800;margin-bottom:14px" onclick="waPendingTaskReminders()">'+
-'\uD83D\uDCF2 Send WA Reminders to All Staff</button>'+
-'<div style="font-size:13px;font-weight:800;margin-bottom:8px">Staff Breakdown</div>';
+'<div style="font-size:10px;opacity:.7;margin-top:5px">'+pct+'% complete</div>'+
+'</div>';
 if(!Object.keys(staffMap).length){
 html+='<div class="emp"><div class="emj">📋</div><h3>No Tasks Today or Overdue</h3></div>';
 c.innerHTML=html; return;
 }
-Object.values(staffMap).sort((a,b)=>b.pending-a.pending).forEach(s=>{
-const pct=s.total?Math.round(s.done/s.total*100):0;
-html+=
-'<div style="border:1.5px solid #E5E7EB;border-radius:12px;padding:12px;margin-bottom:8px;background:white">'+
-'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'+
-'<div style="font-size:13px;font-weight:800">'+s.name+'</div>'+
-'<div style="font-size:11px;color:var(--t3)">'+s.done+'/'+s.total+' tasks</div>'+
+// ── WA button ──
+html+='<button class="wa" style="width:100%;padding:10px;border-radius:10px;font-size:12px;font-weight:800;margin-bottom:16px" onclick="waPendingTaskReminders()">\uD83D\uDCF2 Send WA Reminders to All Staff</button>';
+// ── Staff breakdown cards ──
+html+='<div style="font-size:11px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Staff Breakdown</div>'+
+'<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">';
+staffOrder.forEach((uid,idx)=>{
+const s=staffMap[uid]; const clr=staffColors[idx%staffColors.length];
+const p=s.total?Math.round(s.done/s.total*100):0;
+html+='<div style="border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)">'+
+'<div style="background:'+clr+';padding:10px 14px;display:flex;justify-content:space-between;align-items:center">'+
+'<div style="color:white;font-size:13px;font-weight:800">'+s.name+'</div>'+
+'<div style="color:white;font-size:11px;opacity:.85">'+s.done+'/'+s.total+' done</div>'+
 '</div>'+
-'<div style="background:#F3F4F6;border-radius:5px;height:6px;overflow:hidden;margin-bottom:6px">'+
-'<div style="background:'+(pct===100?'#059669':'#4F46E5')+';height:100%;width:'+pct+'%;transition:.5s"></div>'+
+'<div style="background:white;padding:10px 14px">'+
+'<div style="background:#F3F4F6;border-radius:5px;height:5px;overflow:hidden;margin-bottom:8px">'+
+'<div style="background:'+clr+';height:100%;width:'+p+'%;transition:.5s"></div>'+
 '</div>'+
-'<div style="display:flex;gap:10px;font-size:11px">'+
-'<span style="color:#059669">\u2705 OnTime: '+s.onTime+'</span>'+
-'<span style="color:#D97706">\u26A0 Late: '+s.late+'</span>'+
-'<span style="color:#DC2626">\u23F3 Pending: '+s.pending+'</span>'+
+'<div style="display:flex;gap:12px;font-size:11px;font-weight:700">'+
+'<span style="color:#059669;background:#D1FAE5;padding:2px 8px;border-radius:20px">\u2705 '+s.onTime+' on time</span>'+
+'<span style="color:#D97706;background:#FEF3C7;padding:2px 8px;border-radius:20px">\u26A0 '+s.late+' late</span>'+
+'<span style="color:#DC2626;background:#FEE2E2;padding:2px 8px;border-radius:20px">\u23F3 '+s.pending+' pending</span>'+
+'</div>'+
 '</div>'+
 '</div>';
 });
-html+='<div style="font-size:13px;font-weight:800;margin:14px 0 8px">All Task Instances (Today + Overdue)</div>';
-todayInst.sort((a,b)=>{
-const priOrd={High:0,Medium:1,Low:2};
-if(a.status!==b.status) return a.status==='Pending'?-1:1;
-return (priOrd[a.priority]||1)-(priOrd[b.priority]||1);
-}).forEach(task=>{
-html+=taskCard(task);
+html+='</div>';
+// ── Staff filter tabs ──
+html+='<div style="background:#F8FAFC;border-radius:12px;padding:12px;margin-bottom:4px">'+
+'<div style="font-size:11px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Filter by Staff</div>'+
+'<div style="display:flex;flex-wrap:wrap;gap:6px">';
+html+='<button onclick="renderAllTasks(\'all\')" style="padding:5px 14px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:'+(activeFilter==='all'?'#4F46E5':'#E5E7EB')+';color:'+(activeFilter==='all'?'white':'#374151')+'">All</button>';
+staffOrder.forEach((uid,idx)=>{
+const s=staffMap[uid]; const clr=staffColors[idx%staffColors.length];
+const active2=activeFilter===uid;
+html+='<button onclick="renderAllTasks(\''+uid+'\')" style="padding:5px 14px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:'+(active2?clr:'#E5E7EB')+';color:'+(active2?'white':'#374151')+'">'+s.name+(s.pending>0?' ('+s.pending+')':'')+'</button>';
 });
+html+='</div></div>';
+// ── Task list ──
+const filtered=activeFilter==='all'?todayInst:todayInst.filter(t=>t.assignedUserId===activeFilter);
+const overdue2=filtered.filter(t=>t.status==='Pending'&&new Date()>new Date(t.deadline));
+const pending2=filtered.filter(t=>t.status==='Pending'&&!(new Date()>new Date(t.deadline)));
+const done2=filtered.filter(t=>t.status==='Done');
+if(overdue2.length){
+html+='<div style="background:#FFF1F1;border-left:4px solid #EF4444;border-radius:0 10px 10px 0;padding:8px 12px;margin:12px 0 6px;font-size:11px;font-weight:800;color:#DC2626;text-transform:uppercase;letter-spacing:.4px">\uD83D\uDD34 Overdue ('+overdue2.length+')</div>';
+overdue2.forEach(t=>{html+=taskCard(t);});
+}
+if(pending2.length){
+html+='<div style="background:#FFFBEB;border-left:4px solid #F59E0B;border-radius:0 10px 10px 0;padding:8px 12px;margin:12px 0 6px;font-size:11px;font-weight:800;color:#D97706;text-transform:uppercase;letter-spacing:.4px">\u23F3 Pending ('+pending2.length+')</div>';
+pending2.sort((a,b)=>{const p={High:0,Medium:1,Low:2};return (p[a.priority]||1)-(p[b.priority]||1);}).forEach(t=>{html+=taskCard(t);});
+}
+if(done2.length){
+html+='<div style="background:#F0FDF4;border-left:4px solid #22C55E;border-radius:0 10px 10px 0;padding:8px 12px;margin:12px 0 6px;font-size:11px;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.4px">\u2705 Completed ('+done2.length+')</div>';
+done2.forEach(t=>{html+=taskCard(t);});
+}
+if(!filtered.length) html+='<div class="emp"><div class="emj">📋</div><h3>No tasks</h3></div>';
 c.innerHTML=html;
 }
 function renderTaskTemplates(){
