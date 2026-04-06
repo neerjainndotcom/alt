@@ -473,27 +473,37 @@ STATE.users=[found]; lsSave('vs_users',STATE.users);
 }
 const s=el('ls-sync-status');
 if(!found){
-  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading accounts from cloud...</span>';
+  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Step 1: Loading from Firebase...</span>';
   await loginScreenSyncFirebase();
   found=findUser();
+  if(found){console.log('LOGIN: Found user in Firebase');}
+  else{console.log('LOGIN: User NOT in Firebase. Users loaded:',STATE.users.length);}
 }
 if(!found){
-  // Pull all data from Google Sheets so user accounts are available
-  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading accounts from Google Sheets...</span>';
+  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Step 2: Loading from Google Sheets...</span>';
   try{
     const gd=await api('getAll');
+    console.log('LOGIN: GAS getAll response:',gd?'got data':'null/empty',gd?'users:'+(gd.users||[]).length:'');
     if(gd&&typeof gd==='object'&&(gd.items||gd.users||gd.customers)){
       ['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork','leads','flaggedEntries','taskTemplates','taskInstances','staffLeave','recurringLeads'].forEach(k=>{if(gd[k]&&(!Array.isArray(gd[k])||gd[k].length>0))STATE[k]=gd[k];});
       if(gd.settings)STATE.settings={...STATE.settings,...gd.settings};
       lsSave('vs_users',STATE.users);
       found=findUser();
+      if(found){console.log('LOGIN: Found user in Google Sheets');}
+      else{console.log('LOGIN: User NOT in Sheets. Usernames:',STATE.users.map(u=>u.username));}
     }
-  }catch(e){}
+  }catch(e){console.log('LOGIN: GAS error:',e.message);}
 }
 if(!found){
+  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Step 3: Direct API login...</span>';
   const r=await api('login',{username:user,password:pass,deviceId:devId()});
+  console.log('LOGIN: Direct API response:',r);
   if(r&&r.user){loginOK(r.user);return;}
-  el('le').textContent='Username "'+user+'" not found. Check spelling or use 🔥 Load Data first.'; return;
+  // Show detailed error with what we found
+  const names=STATE.users.map(u=>u.username).filter(Boolean);
+  el('le').textContent='Username "'+user+'" not found. Available accounts: '+(names.length?names.join(', '):'NONE loaded');
+  if(s)s.innerHTML='<span style="color:#F87171">❌ Could not find account. Firebase users: '+STATE.users.length+'</span>';
+  return;
 }
 if(found.active===false){el('le').textContent='Account is disabled. Contact admin.';return;}
 const h=await sha256(pass);
