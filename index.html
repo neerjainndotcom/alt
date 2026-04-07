@@ -2611,7 +2611,7 @@ el('billbod').innerHTML=
 grpBillHtml+
 (custGrp?'':'<div class="fg"><label>Customer *</label><select class="sel" id="bl-c" onchange="detBillGST()"><option value="">Select...</option>'+co+'</select></div>')+
 '<div id="bl-gi" class="xs ct3" style="margin:-8px 0 10px;padding-left:2px"></div>'+
-'<div class="fg"><label>Broker</label><select class="sel" id="bl-b"><option value="">No broker</option>'+bo+'</select></div>'+
+'<div class="ir2"><div class="fg"><label>Broker</label><select class="sel" id="bl-b"><option value="">No broker</option>'+bo+'</select></div><div class="fg"><label>Discount %</label><input class="inp mono" type="number" id="bl-disc" step="0.1" min="0" max="100" placeholder="0" value="'+(STATE.settings.discount||0)+'" oninput="'+(pre?.ordId?'calcBillTot()':'calcBillLotTotal()')+'"/></div></div>'+
 '<div class="stl" style="padding:8px 0;font-size:10px">Bill Items</div>'+(pre?.ordId?'<div id="bl-rows"></div><button class="btn bs bfl mt8" onclick="addBillRow()">+ Add Item</button>':'<div id="bl-lots"></div><button class="btn bp bfl mt8" onclick="addBillLot()">+ Add Item / LOT</button>')+
 '<div id="bl-sum" class="bsum mt12"></div>'+
 '<div class="fg mt12"><label>Notes</label><textarea class="ta" id="bl-nt" rows="2" placeholder="Payment terms, delivery notes..."></textarea></div>';
@@ -2627,6 +2627,8 @@ const info=el('bl-gi'); if(!info) return;
 if(!cust?.gstin) info.textContent='No GSTIN — no GST';
 else {const t=gstType(cust.gstin);info.textContent=t==='same'?'Gujarat \u2192 SGST 2.5% + CGST 2.5%':'Inter-state \u2192 IGST 5%';}
 if(cust?.defaultBrokerId){const bs=el('bl-b');if(bs)bs.value=cust.defaultBrokerId;}
+const discFld=el('bl-disc');
+if(discFld){const d=cust?.discount!=null?cust.discount:STATE.settings.discount||0;discFld.value=d;}
 if(_billOrdId) calcBillTot(); else calcBillLotTotal();
 }
 function addBillRow(){_billRows.push({});renderBillRows();}
@@ -2831,9 +2833,12 @@ const cut=parseFloat(el('bl-lot-'+lot.id+'-cut')?.value)||6;
 sub+=(parseInt(el('bl-lot-'+lot.id+'-p-'+idx)?.value)||0)*cut*(parseFloat(el('bl-lot-'+lot.id+'-r-'+idx)?.value)||0);
 });
 });
-let gH='',grand=sub;
-if(cust?.gstin){const t=gstType(cust.gstin),gA=sub*0.05;grand=sub+gA;gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
-const s=el('bl-sum');if(s)s.innerHTML='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>'+gH+'<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div><div class="xs ct3 mt4">'+STATE.settings.discount+'% disc within '+STATE.settings.discountDays+'d - Nett '+STATE.settings.nettDays+'d</div>';
+const disc=parseFloat(el('bl-disc')?.value)||0;
+const discAmt=disc>0?Math.round(sub*disc/100):0;
+const afterDisc=sub-discAmt;
+let gH='',grand=afterDisc;
+if(cust?.gstin){const t=gstType(cust.gstin),gA=Math.round(afterDisc*0.05);grand=afterDisc+gA;gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
+const s=el('bl-sum');if(s)s.innerHTML='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>'+(discAmt>0?'<div class="brow" style="color:#059669"><span>Discount ('+disc+'%)</span><span class="mono">- '+fmtRs(discAmt)+'</span></div><div class="brow"><span>After Discount</span><span class="mono">'+fmtRs(afterDisc)+'</span></div>':'')+gH+'<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div>';
 }
 async function saveBill(){
 const cId=el('bl-c')?.value; if(!cId){toast('Select customer','er');return;}
@@ -2875,13 +2880,18 @@ items.push({itemId:iid,colIdx:cIdx,sku,itemName:iName,colourName:cName,pcs:p,rat
 }
 }
 if(!items.length){toast('Add at least one item','er');return;}
-const sub=items.reduce((s,i)=>s+i.amount,0), gt=gstType(cust.gstin||''), gA=cust.gstin?sub*0.05:0;
+const sub=items.reduce((s,i)=>s+i.amount,0);
+const discPct=parseFloat(el('bl-disc')?.value)||0;
+const discAmt=Math.round(sub*discPct/100);
+const afterDisc=sub-discAmt;
+const gt=gstType(cust.gstin||''), gA=cust.gstin?Math.round(afterDisc*0.05):0;
+const grandTotal=afterDisc+gA;
 /* Capture order party if bill-to is a different group member */
 const ordParty=_billOrdId?STATE.orders.find(x=>x.id===_billOrdId):null;
 const ordCustId=ordParty?.custId||'';
 const ordCustName=ordParty?.custName||'';
 const isCrossGroupBill=(ordCustId&&ordCustId!==cId);
-const newBill={id:uid(),billNo:bno,date:el('bl-d')?.value,dueDate:el('bl-due')?.value,custId:cId,custName:cust.name,custGstin:cust.gstin||'',brkId,brkName:brk?.name||'',ordId:_billOrdId||'',ordCustId:isCrossGroupBill?ordCustId:'',ordCustName:isCrossGroupBill?ordCustName:'',items,subtotal:sub,gstAmt:gA,gstType:gt,grandTotal:sub+gA,notes:el('bl-nt')?.value,payStatus:'unpaid',amtPaid:0,by:STATE.user?.name||'',fy:STATE.settings.currentFY||getCurrentFY()};
+const newBill={id:uid(),billNo:bno,date:el('bl-d')?.value,dueDate:el('bl-due')?.value,custId:cId,custName:cust.name,custGstin:cust.gstin||'',brkId,brkName:brk?.name||'',ordId:_billOrdId||'',ordCustId:isCrossGroupBill?ordCustId:'',ordCustName:isCrossGroupBill?ordCustName:'',items,subtotal:sub,discountPct:discPct,discountAmt:discAmt,afterDiscount:afterDisc,gstAmt:gA,gstType:gt,grandTotal,notes:el('bl-nt')?.value,payStatus:'unpaid',amtPaid:0,by:STATE.user?.name||'',fy:STATE.settings.currentFY||getCurrentFY()};
 STATE.bills.push(newBill);
 if(_billOrdId){
 const o=STATE.orders.find(x=>x.id===_billOrdId);
