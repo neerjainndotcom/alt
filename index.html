@@ -1496,14 +1496,33 @@ function calcEx(){
 const ru=parseInt(el('ex-ru')?.value)||0, mtrs=ru*4.5, taka=Math.round(mtrs/STATE.settings.avgMtrPerTaka);
 const c=el('ex-cb'); if(c){c.classList.remove('hid');c.textContent=ru+' x 4.5m = '+mtrs+'m / '+STATE.settings.avgMtrPerTaka+' = '+taka+'T to add back';}
 }
-function addInRow(){_inRows.push({});renderInRows();}
-function remInRow(i){_inRows.splice(i,1);renderInRows();}
+function captureInRows(){
+_inRows.forEach((row,i)=>{
+  row._iid=el('ir'+i+'-i')?.value||row._iid||'';
+  row._rng=el('ir'+i+'-r')?.value||row._rng||'';
+  row._cIdx=el('ir'+i+'-c')?.value||row._cIdx||'';
+  row._taka=el('ir'+i+'-t')?.value||row._taka||'';
+  row._tp=el('ir'+i+'-tp')?.value||row._tp||'';
+});
+}
+function addInRow(){captureInRows();_inRows.push({});renderInRows();}
+function remInRow(i){captureInRows();_inRows.splice(i,1);renderInRows();}
 function renderInRows(){
-el('in-rows').innerHTML=_inRows.map((_,i)=>'<div class="sr su"><div class="srh"><span>SKU '+(i+1)+'</span>'+(i>0?'<button onclick="remInRow('+i+')" class="btn bd bxs">✕</button>':'')+'</div>'+buildCascade('ir'+i,false)+'<div class="ir2"><div class="fg"><label>Taka</label><input class="inp big mono" type="number" id="ir'+i+'-t" step="1" min="1" placeholder="0" oninput="updIRC('+i+')"/><div class="cb" id="ir'+i+'-c">— T x '+STATE.settings.avgMtrPerTaka+'m = — mtrs</div></div><div class="fg"><label>TP (Trade Price \u20B9)</label><input class="inp big mono" type="number" id="ir'+i+'-tp" step="0.01" min="0" placeholder="0.00"/></div></div></div>').join('');
+el('in-rows').innerHTML=_inRows.map((_,i)=>'<div class="sr su"><div class="srh"><span>SKU '+(i+1)+'</span>'+(i>0?'<button onclick="remInRow('+i+')" class="btn bd bxs">✕</button>':'')+'</div>'+buildCascade('ir'+i,false)+'<div class="ir2"><div class="fg"><label>Taka</label><input class="inp big mono" type="number" id="ir'+i+'-t" step="1" min="1" placeholder="0" oninput="updIRC('+i+')"/><div class="cb" id="ir'+i+'-calc">— T x '+STATE.settings.avgMtrPerTaka+'m = — mtrs</div></div><div class="fg"><label>TP (Trade Price \u20B9)</label><input class="inp big mono" type="number" id="ir'+i+'-tp" step="0.01" min="0" placeholder="0.00"/></div></div></div>').join('');
+_inRows.forEach((row,i)=>{
+  if(row._iid){
+    const iSel=el('ir'+i+'-i'); if(iSel) iSel.value=row._iid;
+    cascRng('ir'+i,false);
+    if(row._rng){ const rSel=el('ir'+i+'-r'); if(rSel) rSel.value=row._rng; cascClr('ir'+i,false); }
+    if(row._cIdx){ const cSel=el('ir'+i+'-c'); if(cSel) cSel.value=row._cIdx; onClrSel('ir'+i,false); }
+  }
+  if(row._taka){ const t=el('ir'+i+'-t'); if(t) t.value=row._taka; updIRC(i); }
+  if(row._tp){ const tp=el('ir'+i+'-tp'); if(tp) tp.value=row._tp; }
+});
 }
 function updIRC(i){
 const t=parseInt(el('ir'+i+'-t')?.value)||0;
-const c=el('ir'+i+'-c'); if(c) c.textContent=t+'T x '+STATE.settings.avgMtrPerTaka+'m = '+Math.round(t*STATE.settings.avgMtrPerTaka)+' mtrs';
+const c=el('ir'+i+'-calc'); if(c) c.textContent=t+'T x '+STATE.settings.avgMtrPerTaka+'m = '+Math.round(t*STATE.settings.avgMtrPerTaka)+' mtrs';
 }
 async function saveInward(){
 const date=el('in-date')?.value, ref=el('in-ref')?.value.trim(), notes=el('in-notes')?.value.trim();
@@ -6027,6 +6046,9 @@ html+=
 '</button>'+
 '</div>';
 });
+html+='<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--br)">'+
+'<button class="btn bgh bfl" onclick="_dispCustId=\''+custId+'\'; _dispOrdId=null; setupDispatchModal(\''+custId+'\',null); showMod(\'m-dispatch\')">+ Create Invoice without Order</button>'+
+'</div>';
 c.innerHTML=html;
 }
 function renderDashAlerts(){
