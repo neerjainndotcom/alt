@@ -2692,11 +2692,13 @@ row1.innerHTML=
 (li>0?'<button onclick="remBillLot('+lot.id+')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(220,38,38,.15);color:#DC2626;font-size:13px;cursor:pointer;flex-shrink:0;font-weight:700">&#x2715;</button>':'');
 hdr.appendChild(row1);
 const qf=document.createElement('div');
-qf.style.cssText='display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:end;margin-top:8px;padding:6px 8px;background:rgba(0,0,0,.06);border-radius:8px';
+qf.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;align-items:end;margin-top:8px;padding:6px 8px;background:rgba(0,0,0,.06);border-radius:8px';
 qf.innerHTML=
+'<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">CUT (m/Saree)</div>'+
+'<input class="inp mono" type="number" step="0.25" min="0.5" id="bl-lot-'+lot.id+'-cut" value="6" oninput="calcBillLot('+lot.id+')" style="text-align:center;padding:5px 4px;font-size:13px;font-weight:800;border:1.5px solid '+lc.border+';border-radius:7px"/></div>'+
 '<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">PCS / COLOUR</div>'+
 '<input class="inp mono" type="number" step="1" id="bl-lot-'+lot.id+'-qpcs" placeholder="\u2014" style="text-align:center;padding:5px 4px;font-size:13px;font-weight:800;border:1.5px solid '+lc.border+';border-radius:7px"/></div>'+
-'<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">RATE \u20B9/SAREE</div>'+
+'<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">RATE \u20B9/MTR</div>'+
 '<input class="inp mono" type="number" step="0.01" id="bl-lot-'+lot.id+'-qrate" placeholder="\u2014" style="text-align:center;padding:5px 4px;font-size:13px;font-weight:800;border:1.5px solid '+lc.border+';border-radius:7px"/></div>'+
 '<button onclick="applyBillLotDefaults('+lot.id+')" style="padding:5px 10px;border-radius:7px;border:none;background:'+lc.border+';color:white;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap" title="Fill all checked colours">\u2b50 Fill</button>';
 hdr.appendChild(qf);
@@ -2736,7 +2738,7 @@ thead.innerHTML='<div></div>'+
 '<div style="font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.8px">Colour</div>'+
 '<div style="font-size:8px;font-weight:800;color:#A5B4FC;text-align:center;text-transform:uppercase">Stock</div>'+
 '<div style="font-size:8px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Pcs</div>'+
-'<div style="font-size:8px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Rate/Saree</div>'+
+'<div style="font-size:8px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Rate \u20B9/m</div>'+
 '<div style="font-size:8px;font-weight:800;color:#6EE7B7;text-align:right;text-transform:uppercase">Amount</div>';
 body.appendChild(thead);
 const selAll=document.createElement('div');
@@ -2809,7 +2811,8 @@ const idx=item.colours.indexOf(col);
 const chk=el('bl-lot-'+lid+'-ck-'+idx);if(!chk?.checked)return;
 const p=parseInt(el('bl-lot-'+lid+'-p-'+idx)?.value)||0;
 const r=parseFloat(el('bl-lot-'+lid+'-r-'+idx)?.value)||0;
-const amt=p*r;
+const cut=parseFloat(el('bl-lot-'+lid+'-cut')?.value)||6;
+const amt=p*cut*r;
 const amtEl=el('bl-lot-'+lid+'-amt-'+idx);
 if(amtEl){amtEl.textContent=amt>0?('\u20B9'+fmtN(Math.round(amt))):'\u2014';amtEl.style.color=amt>0?'var(--P)':'#9897B0';}
 });
@@ -2824,7 +2827,8 @@ const item=STATE.items.find(x=>x.id===iid);if(!item||!rng)return;
 item.colours.filter(c=>c.range===rng&&!c.discontinued).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('bl-lot-'+lot.id+'-ck-'+idx);if(!chk?.checked)return;
-sub+=(parseInt(el('bl-lot-'+lot.id+'-p-'+idx)?.value)||0)*(parseFloat(el('bl-lot-'+lot.id+'-r-'+idx)?.value)||0);
+const cut=parseFloat(el('bl-lot-'+lot.id+'-cut')?.value)||6;
+sub+=(parseInt(el('bl-lot-'+lot.id+'-p-'+idx)?.value)||0)*cut*(parseFloat(el('bl-lot-'+lot.id+'-r-'+idx)?.value)||0);
 });
 });
 let gH='',grand=sub;
@@ -2847,11 +2851,13 @@ const idx=item.colours.indexOf(col);
 const chk=el('bl-lot-'+lot.id+'-ck-'+idx);if(!chk?.checked)continue;
 const p=parseInt(el('bl-lot-'+lot.id+'-p-'+idx)?.value)||0;
 const r=parseFloat(el('bl-lot-'+lot.id+'-r-'+idx)?.value)||0;
+const cut=parseFloat(el('bl-lot-'+lot.id+'-cut')?.value)||6;
 if(!p)continue;
-const taka=Math.round(p*4.5/STATE.settings.avgMtrPerTaka);
+const mtrs=Math.round(p*cut*10)/10;
+const taka=Math.round(p*cut/STATE.settings.avgMtrPerTaka);
 const ok=await checkAdj(iid,idx,taka);if(!ok)continue;
 deductStock(iid,idx,taka,'sale',cust.name,bno);
-items.push({itemId:iid,colIdx:idx,sku:col.sku,itemName:item.name,colourName:col.name,pcs:p,rate:r,amount:Math.round(p*r),mtrs:Math.round(p*4.5),taka,range:col.range});
+items.push({itemId:iid,colIdx:idx,sku:col.sku,itemName:item.name,colourName:col.name,pcs:p,cut,rate:r,amount:Math.round(p*cut*r),mtrs,taka,range:col.range});
 }
 }
 }else{
@@ -6226,6 +6232,7 @@ html+=
 '</div>';
 c.innerHTML=html; return;
 }
+html+='<div style="margin-bottom:12px"><button class="btn bp bfl" onclick="createStandaloneBill(\''+custId+'\')">+ Create Invoice without Order</button></div>';
 html+='<div style="font-size:11px;font-weight:700;color:var(--Pd);margin-bottom:10px">'+pendOrds.length+' pending order(s) — tap to create invoice</div>';
 pendOrds.forEach(o=>{
 /* Use liveBills() (canonical source) — o.bills can be stale after sync or delete */
@@ -6258,9 +6265,6 @@ html+=
 '</button>'+
 '</div>';
 });
-html+='<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--br)">'+
-'<button class="btn bgh bfl" onclick="createStandaloneBill(\''+custId+'\')">+ Create Invoice without Order</button>'+
-'</div>';
 c.innerHTML=html;
 }
 function renderDashAlerts(){
