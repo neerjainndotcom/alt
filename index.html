@@ -36,7 +36,7 @@
 <div class="ov" id="m-aclr" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="aclrtit">Add Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-aclr')">✕</button></div></div><div class="shb"><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="aclr-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('aclr-rows','aclr-cnt')"/></div><div id="aclr-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-aclr')">Cancel</button><button class="btn bp bfl" onclick="saveAddClrs()">Add Colours</button></div>
 </div></div>
 <div class="ov" id="m-edit-clr" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>✏️ Edit Colour / SKU</h3><p class="sub" id="edit-clr-range-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-edit-clr')">✕</button></div></div><div class="shb"><input type="hidden" id="ec-item-id"/><input type="hidden" id="ec-col-idx"/><div style="background:var(--Pl);border-radius:10px;padding:12px 14px;margin-bottom:16px"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Current SKU</div><div id="ec-old-sku" style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--Pd)"></div></div><div class="fg"><label>Colour Name *</label><input class="inp" id="ec-name" placeholder="e.g. DUSTY PINK" oninput="previewEditSKU()" style="text-transform:uppercase"/></div><div class="ir2"><div class="fg"><label>Colour Code *</label><input class="inp mono" id="ec-code" placeholder="e.g. DP01" oninput="previewEditSKU()" style="text-transform:uppercase"/></div><div class="fg"><label>Colour (Hex)</label><div style="display:flex;gap:8px;align-items:center"><input type="color" id="ec-hex" style="width:52px;height:44px;border-radius:8px;border:1.5px solid var(--br);cursor:pointer;padding:3px"/><span id="ec-hex-lbl" style="font-size:12px;font-weight:700;color:var(--t2)"></span></div></div></div><div style="background:var(--Gl);border-radius:10px;padding:12px 14px;margin-bottom:6px" id="ec-new-sku-wrap"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">New SKU Preview</div><div id="ec-new-sku" style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--Gd)"></div></div><div id="ec-entries-note" style="display:none;background:var(--Al);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--Ad);font-weight:600;margin-bottom:6px"></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-edit-clr')">Cancel</button><button class="btn bp bfl" onclick="saveEditClr()">Save Changes</button></div></div></div>
-<div class="ov" id="m-cst" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="csttit">New Customer</h3><button class="btn bgh bsm" onclick="hideMod('m-cst')">✕</button></div></div><div class="shb"><input type="hidden" id="cst-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="cst-name"/></div><div class="fg"><label>Phone</label><input class="inp" id="cst-ph" type="tel"/></div></div><div class="fg"><label>GSTIN</label><div class="fi"><input class="inp mono" id="cst-gst" placeholder="22AAAAA0000A1Z5" oninput="detCstState()"/><button class="ai" onclick="gstLkp()">🔍 Lookup</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px" id="cst-si">Enter GSTIN to detect state</div></div><div class="fg"><label>Address</label><textarea class="ta" id="cst-addr" rows="2"></textarea></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="cst-wa" type="tel" placeholder="91XXXXXXXXXX"/></div><div class="fg"><label>Email</label><input class="inp" id="cst-em" type="email"/></div></div><div class="fg"><label>Party Group (for cross-billing)</label><input class="inp" id="cst-grp" list="cst-grp-list" placeholder="e.g. Group A — parties that share billing" autocomplete="off"/><datalist id="cst-grp-list"></datalist></div><div class="fg"><label>Default Broker (auto-fills in orders)</label><div class="fi"><select class="sel" id="cst-brk" style="border:1.5px solid var(--br)"><option value="">— No default broker —</option></select><button class="ai" onclick="openBrkFromCust()">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px">When selected here, broker auto-fills every time this customer is chosen in an order.</div></div><div class="dvd"></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Payment Terms (leave blank for global defaults)</div><div class="ir2"><div class="fg"><label>Discount %</label><input class="inp mono" id="cst-disc" type="number" step="0.1" placeholder="e.g. 5"/></div><div class="fg"><label>Discount Days</label><input class="inp mono" id="cst-dd" type="number" step="1" placeholder="e.g. 45"/></div></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="cst-nd" type="number" step="1" placeholder="e.g. 120"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-cst')">Cancel</button><button class="btn bp bfl" onclick="saveCust()">Save</button></div>
+<div class="ov" id="m-cst" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="csttit">New Customer</h3><button class="btn bgh bsm" onclick="hideMod('m-cst')">✕</button></div></div><div class="shb"><input type="hidden" id="cst-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="cst-name"/></div><div class="fg"><label>Phone</label><input class="inp" id="cst-ph" type="tel"/></div></div><div class="fg"><label>GSTIN</label><div class="fi"><input class="inp mono" id="cst-gst" placeholder="22AAAAA0000A1Z5" oninput="detCstState()"/><button class="ai" onclick="gstLkp()">🔍 Lookup</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px" id="cst-si">Enter GSTIN to detect state</div></div><div class="fg"><label>Address</label><textarea class="ta" id="cst-addr" rows="2"></textarea></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="cst-wa" type="tel" placeholder="91XXXXXXXXXX"/></div><div class="fg"><label>Email</label><input class="inp" id="cst-em" type="email"/></div></div><div class="fg"><label>Party Group (for cross-billing)</label><div class="fi"><select class="sel" id="cst-grp-sel"><option value="">— No group —</option></select><button class="ai" onclick="createGroupFromCust()">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px">Customer will be added to this group for cross-billing.</div></div><div class="fg"><label>Default Broker (auto-fills in orders)</label><div class="fi"><select class="sel" id="cst-brk" style="border:1.5px solid var(--br)"><option value="">— No default broker —</option></select><button class="ai" onclick="openBrkFromCust()">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px">When selected here, broker auto-fills every time this customer is chosen in an order.</div></div><div class="dvd"></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Payment Terms (leave blank for global defaults)</div><div class="ir2"><div class="fg"><label>Discount %</label><input class="inp mono" id="cst-disc" type="number" step="0.1" placeholder="e.g. 5"/></div><div class="fg"><label>Discount Days</label><input class="inp mono" id="cst-dd" type="number" step="1" placeholder="e.g. 45"/></div></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="cst-nd" type="number" step="1" placeholder="e.g. 120"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-cst')">Cancel</button><button class="btn bp bfl" onclick="saveCust()">Save</button></div>
 </div></div>
 <div class="ov" id="m-brk" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Broker</h3><button class="btn bgh bsm" onclick="hideMod('m-brk')">✕</button></div></div><div class="shb"><input type="hidden" id="brk-id"/><div class="fg"><label>Name *</label><input class="inp" id="brk-name"/></div><div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="brk-ph" type="tel"/></div><div class="fg"><label>Commission %</label><input class="inp" id="brk-cm" type="number" step="0.1" placeholder="2.5"/></div></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-brk')">Cancel</button><button class="btn bp bfl" onclick="saveBrk()">Save</button></div>
 </div></div>
@@ -1312,15 +1312,30 @@ toast('Group deleted','ok');
 hideMod('m-cust-group');
 renderCustGroups();
 }
+function createGroupFromCust(){
+const name=prompt('New party group name:');
+if(!name||!name.trim())return;
+const n=name.trim();
+if(STATE.custGroups.find(g=>g.name.toLowerCase()===n.toLowerCase())){toast('Group "'+n+'" already exists','er');return;}
+const grp={id:uid(),name:n,memberIds:[],_ts:Date.now()};
+STATE.custGroups.push(grp);lsSave('vs_cust_groups',STATE.custGroups);
+populateCstGrpSel(grp.id);toast('Group "'+n+'" created','ok');
+}
+function openCustFromGroup(){
+/* Remember current group ID so saveCust auto-adds after save */
+window._addToCustGrpId=el('cg-id').value||null;
+hideMod('m-cust-group');openCust();
+}
+function populateCstGrpSel(selectedGrpId){
+const s=el('cst-grp-sel');if(!s)return;
+s.innerHTML='<option value="">— No group —</option>'+(STATE.custGroups||[]).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(g=>'<option value="'+g.id+'"'+(g.id===selectedGrpId?' selected':'')+'>'+g.name+'</option>').join('');
+}
 function openCust(){
 el('cst-id').value=''; el('cst-name').value=''; el('cst-ph').value='';
-el('cst-gst').value=''; el('cst-addr').value=''; el('cst-wa').value=''; el('cst-em').value=''; if(el('cst-grp'))el('cst-grp').value='';
-/* Populate group datalist with existing groups */
-const grps=[...new Set(STATE.customers.map(c=>c.group).filter(Boolean))].sort();
-const dl=el('cst-grp-list'); if(dl) dl.innerHTML=grps.map(g=>'<option value="'+g+'"/>').join('');
+el('cst-gst').value=''; el('cst-addr').value=''; el('cst-wa').value=''; el('cst-em').value='';
 el('cst-disc').value=''; el('cst-dd').value=''; el('cst-nd').value='';
 el('csttit').textContent='New Customer'; el('cst-si').textContent='Enter GSTIN to detect state';
-populateCstBrkSel('');
+populateCstBrkSel(''); populateCstGrpSel('');
 showMod('m-cst');
 }
 function editCust(id){
@@ -1328,9 +1343,8 @@ const x=STATE.customers.find(c=>c.id===id); if(!x) return;
 el('cst-id').value=id; el('cst-name').value=x.name||''; el('cst-ph').value=x.phone||'';
 el('cst-gst').value=x.gstin||''; el('cst-addr').value=x.address||'';
 el('cst-wa').value=x.whatsapp||''; el('cst-em').value=x.email||'';
-if(el('cst-grp'))el('cst-grp').value=x.group||'';
-const grps=[...new Set(STATE.customers.map(c=>c.group).filter(Boolean))].sort();
-const dl=el('cst-grp-list'); if(dl) dl.innerHTML=grps.map(g=>'<option value="'+g+'"/>').join('');
+const existingGrp=(STATE.custGroups||[]).find(g=>g.memberIds&&g.memberIds.includes(id));
+populateCstGrpSel(existingGrp?existingGrp.id:'');
 el('cst-disc').value=x.discount!=null?x.discount:'';
 el('cst-dd').value=x.discountDays!=null?x.discountDays:'';
 el('cst-nd').value=x.nettDays!=null?x.nettDays:'';
@@ -1364,11 +1378,20 @@ defaultBrokerName:brk?.name||undefined,
 discount:cDisc!==''?parseFloat(cDisc):undefined,
 discountDays:cDd!==''?parseInt(cDd):undefined,
 nettDays:cNd!==''?parseInt(cNd):undefined};
+const savedId=id||uid();
 if(id){const i=STATE.customers.findIndex(c=>c.id===id);if(i>=0) STATE.customers[i]={...STATE.customers[i],...obj};}
-else STATE.customers.push(stamp({id:uid(),...obj}));
-lsSave('vs_customers',STATE.customers);
+else STATE.customers.push(stamp({id:savedId,...obj}));
+/* Handle party group membership */
+const selGrpId=(el('cst-grp-sel')?.value||'').trim();
+(STATE.custGroups||[]).forEach(g=>{
+  const was=g.memberIds&&g.memberIds.includes(savedId);
+  if(selGrpId===g.id&&!was){if(!g.memberIds)g.memberIds=[];g.memberIds.push(savedId);g._ts=Date.now();}
+  else if(selGrpId!==g.id&&was){g.memberIds=g.memberIds.filter(x=>x!==savedId);g._ts=Date.now();}
+});
+lsSave('vs_customers',STATE.customers);lsSave('vs_cust_groups',STATE.custGroups);
 toast('Customer saved','ok');
 api('saveCustomer',{customers:STATE.customers});
+autoSyncFirebase();
 if(window._returnToOrder){
 window._returnToOrder=false;
 hideMod('m-cst');
@@ -1389,6 +1412,12 @@ lsSave('vs_leads',STATE.leads);
 }
 hideMod('m-cst'); renderCusts(); renderLeads('all'); renderLeads('won');
 toast('Lead converted to customer!','ok');
+}else if(window._addToCustGrpId){
+const grpId=window._addToCustGrpId;window._addToCustGrpId=null;
+const grp=STATE.custGroups.find(g=>g.id===grpId);
+if(grp){if(!grp.memberIds.includes(savedId))grp.memberIds.push(savedId);grp._ts=Date.now();lsSave('vs_cust_groups',STATE.custGroups);}
+hideMod('m-cst'); renderCusts();
+openCustGroup(grpId);
 }else{ hideMod('m-cst'); renderCusts(); }
 }
 function renderBrks(){
@@ -2606,7 +2635,7 @@ const grpBillHtml=custGrp?(()=>{
     '</div>';
 })():'';
 el('billbod').innerHTML=
-'<div style="background:var(--Pl);border-radius:12px;padding:12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center"><div><div class="mono fw8 cP">'+bno+'</div><div class="xs ct3">Tax Invoice</div></div>'+(pre?'<span class="bdg bg-p">Ord: '+pre.orderNo+'</span>':'')+'</div>'+
+'<div style="background:var(--Pl);border-radius:12px;padding:12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center"><div style="flex:1;margin-right:10px"><div class="xs ct3" style="margin-bottom:3px">Invoice No</div><input class="inp mono" id="bl-bno" value="'+bno+'" style="font-size:16px;font-weight:800;color:var(--P);padding:4px 8px"/></div>'+(pre?.orderNo?'<span class="bdg bg-p">Ord: '+pre.orderNo+'</span>':'')+'</div>'+
 '<div class="ir2"><div class="fg"><label>Date</label><input class="inp" type="date" id="bl-d" value="'+today()+'"/></div><div class="fg"><label>Due Date</label><input class="inp" type="date" id="bl-due"/></div></div>'+
 grpBillHtml+
 (custGrp?'':'<div class="fg"><label>Customer *</label><select class="sel" id="bl-c" onchange="detBillGST()"><option value="">Select...</option>'+co+'</select></div>')+
@@ -2844,7 +2873,8 @@ async function saveBill(){
 const cId=el('bl-c')?.value; if(!cId){toast('Select customer','er');return;}
 const cust=STATE.customers.find(c=>c.id===cId);
 const brkId=el('bl-b')?.value, brk=STATE.brokers.find(b=>b.id===brkId);
-const items=[]; const bno=nextBillNo();
+const items=[]; const bno=(el('bl-bno')?.value||'').trim()||nextBillNo();
+if(!bno){toast('Enter invoice number','er');return;}
 if(!_billOrdId){
 /* Standalone bill — read from lot cards */
 for(const lot of _billLots){
@@ -6229,12 +6259,21 @@ html+='<span style="font-size:10px;color:var(--Pd);font-weight:700">'+disc+'% di
 html+='</div>';
 if(cust?.address) html+='<div class="xs ct3 mt4">'+cust.address+'</div>';
 html+='</div>';
-const pendOrds=STATE.orders.filter(o=>o.custId===custId&&(o.status==='pending'||o.status==='billed'));
+/* Party group: find all members in the same group as this customer */
+const custGroup=(STATE.custGroups||[]).find(g=>g.memberIds&&g.memberIds.includes(custId));
+const groupMemberIds=custGroup?custGroup.memberIds:[custId];
+const pendOrds=STATE.orders.filter(o=>groupMemberIds.includes(o.custId)&&(o.status==='pending'||o.status==='billed'));
+/* Party group banner */
+if(custGroup&&custGroup.memberIds.length>1){
+const memberNames=custGroup.memberIds.map(mid=>{const m=STATE.customers.find(c=>c.id===mid);return m?m.name:'?';}).join(', ');
+html+='<div style="background:var(--Al);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:var(--Ad)">'+
+'<span style="font-weight:700">&#x1F465; Party Group: '+custGroup.name+'</span> — showing orders for all group members: '+memberNames+'</div>';
+}
 if(!pendOrds.length){
 html+=
 '<div style="text-align:center;padding:20px;background:var(--Gl);border-radius:12px;color:var(--Gd)">'+
 '<div style="font-size:20px;margin-bottom:6px">&#x2714;</div>'+
-'<div class="fw7">No pending orders for '+cust.name+'</div>'+
+'<div class="fw7">No pending orders for '+(custGroup?'this group':cust.name)+'</div>'+
 '<div class="xs ct3 mt4">All orders are cleared or fulfilled</div>'+
 '</div>'+
 '<div style="margin-top:12px">'+
@@ -6255,8 +6294,11 @@ const sentPcs=o.items.reduce((s,i)=>s+(dispatched[i.sku]||0),0);
 const remPcs=totalPcs-sentPcs;
 const billCount=(o.bills||[]).filter(b=>b.status!=='cancelled').length;
 const stBadge=o.status==='billed'?'bg-t':'bg-a';
+/* Show which party the order belongs to if it's a group order from a different member */
+const ordCust=o.custId!==custId?STATE.customers.find(c=>c.id===o.custId):null;
 html+=
 '<div style="border:1.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:8px;background:white">'+
+(ordCust?'<div style="background:var(--Al);padding:4px 14px;font-size:10px;font-weight:700;color:var(--Ad)">Order of: '+ordCust.name+'</div>':'')+
 '<div style="padding:10px 14px">'+
 '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
 '<span class="mono fw7 cP" style="font-size:14px">'+o.orderNo+'</span>'+
@@ -9195,7 +9237,7 @@ function applyCloudData(d,force=false){
   try{renderOrders();}catch(e){}
   try{renderBills();}catch(e){}
   try{renderLeads('all');renderLeads('mine');renderLeads('today');renderLeads('won');}catch(e){}
-  try{renderTasks();}catch(e){}
+  try{renderMyTasks();renderAllTasks();}catch(e){}
   try{renderItems();}catch(e){}
   try{renderCustomers();}catch(e){}
   try{applyRoleUI();}catch(e){}
@@ -9373,5 +9415,5 @@ const lv=el('login-version');if(lv)lv.textContent='ALT Stock v'+APP_VERSION+' | 
 <div class="ov" id="m-task-inst" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="tinst-title">Task</h3><p class="sub" id="tinst-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-task-inst')">&#x2715;</button></div></div><div class="shb" id="tinst-body"></div><div class="shf" style="gap:6px" id="tinst-foot"></div>
 </div></div>
 <div class="ov" id="m-leave" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>&#x1F3D6; Staff Leave</h3></div><button class="btn bgh bsm" onclick="hideMod('m-leave')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="lv-id"/><div class="fg"><label>Staff Member *</label><select class="sel" id="lv-user"><option value="">Select staff</option></select></div><div class="fg"><label>Substitute (tasks route to this person)</label><select class="sel" id="lv-sub"><option value="">No substitute</option></select></div><div class="ir2"><div class="fg"><label>From Date *</label><input class="inp" type="date" id="lv-from"/></div><div class="fg"><label>To Date *</label><input class="inp" type="date" id="lv-to"/></div></div><div class="fg"><label>Reason</label><select class="sel" id="lv-reason"><option>Personal</option><option>Medical</option><option>Festival</option><option>Emergency</option><option>Other</option></select></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-leave')">Cancel</button><button class="btn bp bfl" onclick="saveLeave()">Save Leave</button></div>
-</div></div><div class="ov" id="m-cust-group" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="cgtit">New Party Group</h3><p class="sub">Link firms for cross-billing</p></div><button class="btn bgh bsm" onclick="hideMod('m-cust-group')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="cg-id"/><div class="fg"><label>Group Name *</label><input class="inp" id="cg-name" placeholder="e.g. Sharma Group, ABC Textiles"/></div><div class="dvd"></div><div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Member Firms</div><div id="cg-members" style="margin-bottom:12px"></div><div style="display:flex;gap:8px;align-items:center"><select class="sel" id="cg-add-member" style="flex:1"><option value="">— Select customer to add —</option></select><button class="btn bp bsm" onclick="addGroupMemberUI()">Add</button></div><div style="font-size:11px;color:var(--t3);margin-top:8px;line-height:1.6">Save the group name first if adding new members to a new group.</div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><button class="btn bd bfl" id="cg-del-btn" style="display:none" onclick="deleteCustGroup(el('cg-id').value)">&#x1F5D1; Delete Group</button><div style="display:flex;gap:6px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-cust-group')">Cancel</button><button class="btn bp bfl" onclick="saveCustGroup()">Save Group</button></div></div></div></div><div class="ov" id="m-prog" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Programme Lot</p><div style="font-size:22px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace;line-height:1" id="prog-ord-no">—</div><div style="font-size:12px;color:var(--t2);margin-top:2px" id="prog-cust"></div></div><button class="btn bgh bsm" onclick="hideMod('m-prog')">&#x2715;</button></div></div><div class="shb" id="prog-bod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-prog')">Cancel</button><button class="btn bp bfl" onclick="saveProgramme()">&#x2714; Add Programme</button></div></div></div><div class="ov" id="m-testing" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>🧪 Testing Checklist</h3><p class="sub">Verify every change</p></div><button class="btn bgh bsm" onclick="hideMod('m-testing')">✕</button></div></div><div class="shb" style="padding:16px;font-size:15px;line-height:2"><b style="color:var(--P)">1. Font Size</b><br>All text larger — body 16px, nav 12px.<br><br><b style="color:var(--P)">2. Dashboard Task Widget</b><br>Login as staff → Dashboard shows "My Tasks Today" card.<br><br><b style="color:var(--P)">3. Edit Task</b><br>Tasks → tap task → "✏️ Edit Task" → change → Save.<br><br><b style="color:var(--P)">4. Future Task Schedule</b><br>Tasks → Templates → New → set Start Date to future.<br><br><b style="color:var(--P)">5. Task Report</b><br>Tasks → 📊 Report → set dates → Go → see staff chart.<br><br><b style="color:var(--P)">6. Delete Completed</b><br>Tasks → Report → "🗑 Delete Completed" → Range/Month/Year/All → Delete.<br><br><b style="color:var(--P)">7. Delete Lead</b><br>Leads → tap lead → "🗑 Delete Lead" (admin only).<br><br><b style="color:var(--P)">8. Lead Status Saves Instantly</b><br>Open lead → tap Won → saves + moves to Won tab.<br><br><b style="color:var(--P)">9. Forgot Password</b><br>Login → "Forgot Password?" → enter username → resets to admin123.<br><br><b style="color:var(--P)">10. Forgot Username</b><br>Login → "Forgot Username?" → shows all usernames.<br><br><b style="color:var(--P)">11. Admin Locked Out</b><br>"Admin locked out?" → 3 working recovery options.<br><br><b style="color:var(--P)">12. Auto-Sync 30s</b><br>Change on PC → wait 30s on Android → auto-refreshes.<br><br><b style="color:var(--P)">13. 🔄 Refresh</b><br>Dashboard → tap 🔄 → instant pull from server.<br><br><b style="color:var(--P)">14. Logout Saves</b><br>Logout → "Save & sync?" → syncs GS+Firebase → logs out.<br><br><b style="color:var(--P)">15. GS + Firebase Hybrid</b><br>Every save: GS first, Firebase backup.<br><br><b style="color:var(--P)">16. GST Lookup</b><br>Customers → GSTIN → GST Lookup → opens gstin.in.<br><br><b style="color:var(--P)">17. Supplier GSTIN</b><br>Suppliers → Add → GSTIN field present → saves.<br><br><b style="color:var(--P)">18. WA Reminders</b><br>Tasks → All → "📲 Send WA Reminders Now" → WA per staff.</div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-testing')">Got it!</button></div></div></div></body>
+</div></div><div class="ov" id="m-cust-group" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="cgtit">New Party Group</h3><p class="sub">Link firms for cross-billing</p></div><button class="btn bgh bsm" onclick="hideMod('m-cust-group')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="cg-id"/><div class="fg"><label>Group Name *</label><input class="inp" id="cg-name" placeholder="e.g. Sharma Group, ABC Textiles"/></div><div class="dvd"></div><div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Member Firms</div><div id="cg-members" style="margin-bottom:12px"></div><div style="display:flex;gap:8px;align-items:center"><select class="sel" id="cg-add-member" style="flex:1"><option value="">— Select customer to add —</option></select><button class="btn bp bsm" onclick="addGroupMemberUI()">Add</button><button class="btn bs bsm" onclick="openCustFromGroup()" title="Create new customer and add to this group">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:8px;line-height:1.6">Save the group name first if adding new members to a new group.</div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><button class="btn bd bfl" id="cg-del-btn" style="display:none" onclick="deleteCustGroup(el('cg-id').value)">&#x1F5D1; Delete Group</button><div style="display:flex;gap:6px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-cust-group')">Cancel</button><button class="btn bp bfl" onclick="saveCustGroup()">Save Group</button></div></div></div></div><div class="ov" id="m-prog" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Programme Lot</p><div style="font-size:22px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace;line-height:1" id="prog-ord-no">—</div><div style="font-size:12px;color:var(--t2);margin-top:2px" id="prog-cust"></div></div><button class="btn bgh bsm" onclick="hideMod('m-prog')">&#x2715;</button></div></div><div class="shb" id="prog-bod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-prog')">Cancel</button><button class="btn bp bfl" onclick="saveProgramme()">&#x2714; Add Programme</button></div></div></div><div class="ov" id="m-testing" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>🧪 Testing Checklist</h3><p class="sub">Verify every change</p></div><button class="btn bgh bsm" onclick="hideMod('m-testing')">✕</button></div></div><div class="shb" style="padding:16px;font-size:15px;line-height:2"><b style="color:var(--P)">1. Font Size</b><br>All text larger — body 16px, nav 12px.<br><br><b style="color:var(--P)">2. Dashboard Task Widget</b><br>Login as staff → Dashboard shows "My Tasks Today" card.<br><br><b style="color:var(--P)">3. Edit Task</b><br>Tasks → tap task → "✏️ Edit Task" → change → Save.<br><br><b style="color:var(--P)">4. Future Task Schedule</b><br>Tasks → Templates → New → set Start Date to future.<br><br><b style="color:var(--P)">5. Task Report</b><br>Tasks → 📊 Report → set dates → Go → see staff chart.<br><br><b style="color:var(--P)">6. Delete Completed</b><br>Tasks → Report → "🗑 Delete Completed" → Range/Month/Year/All → Delete.<br><br><b style="color:var(--P)">7. Delete Lead</b><br>Leads → tap lead → "🗑 Delete Lead" (admin only).<br><br><b style="color:var(--P)">8. Lead Status Saves Instantly</b><br>Open lead → tap Won → saves + moves to Won tab.<br><br><b style="color:var(--P)">9. Forgot Password</b><br>Login → "Forgot Password?" → enter username → resets to admin123.<br><br><b style="color:var(--P)">10. Forgot Username</b><br>Login → "Forgot Username?" → shows all usernames.<br><br><b style="color:var(--P)">11. Admin Locked Out</b><br>"Admin locked out?" → 3 working recovery options.<br><br><b style="color:var(--P)">12. Auto-Sync 30s</b><br>Change on PC → wait 30s on Android → auto-refreshes.<br><br><b style="color:var(--P)">13. 🔄 Refresh</b><br>Dashboard → tap 🔄 → instant pull from server.<br><br><b style="color:var(--P)">14. Logout Saves</b><br>Logout → "Save & sync?" → syncs GS+Firebase → logs out.<br><br><b style="color:var(--P)">15. GS + Firebase Hybrid</b><br>Every save: GS first, Firebase backup.<br><br><b style="color:var(--P)">16. GST Lookup</b><br>Customers → GSTIN → GST Lookup → opens gstin.in.<br><br><b style="color:var(--P)">17. Supplier GSTIN</b><br>Suppliers → Add → GSTIN field present → saves.<br><br><b style="color:var(--P)">18. WA Reminders</b><br>Tasks → All → "📲 Send WA Reminders Now" → WA per staff.</div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-testing')">Got it!</button></div></div></div></body>
 </html>
