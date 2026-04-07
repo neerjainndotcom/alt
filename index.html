@@ -2559,7 +2559,7 @@ const maxNum=nums.length?Math.max(...nums):startNo-1;
 return pfx+String(maxNum+1).padStart(padLen,'0');
 }
 function createStandaloneBill(custId){
-_billOrdId=null; _billRows=[{}];
+_billOrdId=null; _billRows=[]; _billLots=[]; _billLotId=0;
 const cust=STATE.customers.find(c=>c.id===custId);
 buildBillBody(cust?{custId,custName:cust.name}:null);
 showMod('m-bill');
@@ -2612,22 +2612,21 @@ grpBillHtml+
 (custGrp?'':'<div class="fg"><label>Customer *</label><select class="sel" id="bl-c" onchange="detBillGST()"><option value="">Select...</option>'+co+'</select></div>')+
 '<div id="bl-gi" class="xs ct3" style="margin:-8px 0 10px;padding-left:2px"></div>'+
 '<div class="fg"><label>Broker</label><select class="sel" id="bl-b"><option value="">No broker</option>'+bo+'</select></div>'+
-'<div class="stl" style="padding:8px 0;font-size:10px">Bill Items</div><div id="bl-rows"></div>'+
-'<button class="btn bs bfl mt8" onclick="addBillRow()">+ Add Item</button>'+
+'<div class="stl" style="padding:8px 0;font-size:10px">Bill Items</div>'+(pre?.ordId?'<div id="bl-rows"></div><button class="btn bs bfl mt8" onclick="addBillRow()">+ Add Item</button>':'<div id="bl-lots"></div><button class="btn bp bfl mt8" onclick="addBillLot()">+ Add Item / LOT</button>')+
 '<div id="bl-sum" class="bsum mt12"></div>'+
 '<div class="fg mt12"><label>Notes</label><textarea class="ta" id="bl-nt" rows="2" placeholder="Payment terms, delivery notes..."></textarea></div>';
 if(pre?.custId) setTimeout(()=>{
   if(!custGrp&&el('bl-c')) el('bl-c').value=pre.custId;
   detBillGST();
 },50);
-renderBillRows();
+if(pre?.ordId){renderBillRows();}else{_billLots=[];_billLotId=0;setTimeout(()=>addBillLot(),50);}
 }
 function detBillGST(){
 const cust=STATE.customers.find(c=>c.id===el('bl-c')?.value);
 const info=el('bl-gi'); if(!info) return;
 if(!cust?.gstin) info.textContent='No GSTIN — no GST';
 else {const t=gstType(cust.gstin);info.textContent=t==='same'?'Gujarat \u2192 SGST 2.5% + CGST 2.5%':'Inter-state \u2192 IGST 5%';}
-calcBillTot();
+if(_billOrdId) calcBillTot(); else calcBillLotTotal();
 }
 function addBillRow(){_billRows.push({});renderBillRows();}
 function remBillRow(i){_billRows.splice(i,1);renderBillRows();}
@@ -2655,11 +2654,206 @@ let gH='', grand=sub;
 if(cust?.gstin){const t=gstType(cust.gstin),gA=sub*0.05; grand=sub+gA; gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
 const s=el('bl-sum'); if(s) s.innerHTML='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>'+gH+'<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div><div class="xs ct3 mt4">'+STATE.settings.discount+'% disc within '+STATE.settings.discountDays+'d - Nett '+STATE.settings.nettDays+'d</div>';
 }
+/* ── BILL LOT CARD SYSTEM (standalone bills without an order) ── */
+let _billLots=[],_billLotId=0;
+function addBillLot(){
+_billLotId++;const lot={id:_billLotId};_billLots.push(lot);
+appendBillLotCard(lot,_billLots.length-1);
+setTimeout(()=>{const c=el('bl-lot-'+_billLotId);if(c)c.scrollIntoView({behavior:'smooth',block:'nearest'});},100);
+}
+function remBillLot(id){
+_billLots=_billLots.filter(l=>l.id!==id);const card=el('bl-lot-'+id);if(card)card.remove();calcBillLotTotal();
+}
+function appendBillLotCard(lot,li){
+const lotColors=[
+{bg:'#EEF2FF',border:'#818CF8',label:'#3730A3',hdr:'#C7D2FE'},
+{bg:'#F0FDF4',border:'#4ADE80',label:'#166534',hdr:'#BBF7D0'},
+{bg:'#FFF7ED',border:'#FB923C',label:'#7C2D12',hdr:'#FED7AA'},
+{bg:'#FDF4FF',border:'#C084FC',label:'#581C87',hdr:'#E9D5FF'},
+{bg:'#FEFCE8',border:'#FACC15',label:'#713F12',hdr:'#FEF08A'},
+{bg:'#F0F9FF',border:'#38BDF8',label:'#0C4A6E',hdr:'#BAE6FD'},
+];
+const lc=lotColors[li%lotColors.length];
+const c=el('bl-lots');if(!c)return;
+const card=document.createElement('div');
+card.id='bl-lot-'+lot.id;
+card.style.cssText='border:2px solid '+lc.border+';border-radius:14px;overflow:hidden;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)';
+const hdr=document.createElement('div');hdr.style.cssText='background:'+lc.hdr+';padding:8px 12px';
+const row1=document.createElement('div');row1.style.cssText='display:flex;align-items:center;gap:8px';
+row1.innerHTML=
+'<div style="background:'+lc.border+';color:'+lc.label+';font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;letter-spacing:.5px;flex-shrink:0">LOT '+(li+1)+'</div>'+
+'<select id="bl-lot-'+lot.id+'-i" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="billLotItemChange('+lot.id+')">'+
+'<option value="">Select Item...</option>'+
+[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+
+'</select>'+
+'<select id="bl-lot-'+lot.id+'-r" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="billLotRangeChange('+lot.id+')" disabled>'+
+'<option value="">Range...</option></select>'+
+(li>0?'<button onclick="remBillLot('+lot.id+')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(220,38,38,.15);color:#DC2626;font-size:13px;cursor:pointer;flex-shrink:0;font-weight:700">&#x2715;</button>':'');
+hdr.appendChild(row1);
+const qf=document.createElement('div');
+qf.style.cssText='display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:end;margin-top:8px;padding:6px 8px;background:rgba(0,0,0,.06);border-radius:8px';
+qf.innerHTML=
+'<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">PCS / COLOUR</div>'+
+'<input class="inp mono" type="number" step="1" id="bl-lot-'+lot.id+'-qpcs" placeholder="\u2014" style="text-align:center;padding:5px 4px;font-size:13px;font-weight:800;border:1.5px solid '+lc.border+';border-radius:7px"/></div>'+
+'<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">RATE \u20B9/SAREE</div>'+
+'<input class="inp mono" type="number" step="0.01" id="bl-lot-'+lot.id+'-qrate" placeholder="\u2014" style="text-align:center;padding:5px 4px;font-size:13px;font-weight:800;border:1.5px solid '+lc.border+';border-radius:7px"/></div>'+
+'<button onclick="applyBillLotDefaults('+lot.id+')" style="padding:5px 10px;border-radius:7px;border:none;background:'+lc.border+';color:white;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap" title="Fill all checked colours">\u2b50 Fill</button>';
+hdr.appendChild(qf);
+card.appendChild(hdr);
+const body=document.createElement('div');body.id='bl-lot-'+lot.id+'-body';body.style.cssText='background:white';
+body.innerHTML='<div style="padding:14px;text-align:center;color:#9897B0;font-size:12px">\u2191 Select item and range above</div>';
+card.appendChild(body);c.appendChild(card);
+}
+function billLotItemChange(lid){
+const iid=el('bl-lot-'+lid+'-i')?.value,rSel=el('bl-lot-'+lid+'-r'),body=el('bl-lot-'+lid+'-body');
+if(!iid||!rSel){if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range above</div>';return;}
+const item=STATE.items.find(x=>x.id===iid);if(!item)return;
+const rngs=[...new Set(item.colours.map(c=>c.range))];
+rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+r+'">'+r+'</option>').join('');
+rSel.disabled=false;
+if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Now select a range</div>';
+}
+function billLotRangeChange(lid){
+const iid=el('bl-lot-'+lid+'-i')?.value,rng=el('bl-lot-'+lid+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid),body=el('bl-lot-'+lid+'-body');
+if(!item||!rng||!body)return;
+const li=_billLots.findIndex(l=>l.id===lid);
+const lotColors=[
+{bg:'#EEF2FF',border:'#818CF8',label:'#3730A3',hdr:'#C7D2FE'},
+{bg:'#F0FDF4',border:'#4ADE80',label:'#166534',hdr:'#BBF7D0'},
+{bg:'#FFF7ED',border:'#FB923C',label:'#7C2D12',hdr:'#FED7AA'},
+{bg:'#FDF4FF',border:'#C084FC',label:'#581C87',hdr:'#E9D5FF'},
+{bg:'#FEFCE8',border:'#FACC15',label:'#713F12',hdr:'#FEF08A'},
+{bg:'#F0F9FF',border:'#38BDF8',label:'#0C4A6E',hdr:'#BAE6FD'},
+];
+const lc=lotColors[(li<0?0:li)%lotColors.length];
+const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued);
+body.innerHTML='';
+const thead=document.createElement('div');
+thead.style.cssText='display:grid;grid-template-columns:26px 1fr 48px 64px 80px 80px;gap:4px;background:linear-gradient(135deg,#1e1b4b,#312e81);padding:8px 10px';
+thead.innerHTML='<div></div>'+
+'<div style="font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.8px">Colour</div>'+
+'<div style="font-size:8px;font-weight:800;color:#A5B4FC;text-align:center;text-transform:uppercase">Stock</div>'+
+'<div style="font-size:8px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Pcs</div>'+
+'<div style="font-size:8px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Rate/Saree</div>'+
+'<div style="font-size:8px;font-weight:800;color:#6EE7B7;text-align:right;text-transform:uppercase">Amount</div>';
+body.appendChild(thead);
+const selAll=document.createElement('div');
+selAll.style.cssText='display:flex;align-items:center;gap:10px;padding:7px 10px;background:#EEF2FF;border-bottom:1px solid #C7D2FE;cursor:pointer';
+selAll.innerHTML='<input type="checkbox" id="bl-lot-'+lid+'-all" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer" onclick="billLotToggleAll('+lid+')"/>'+
+'<span style="font-size:11px;font-weight:700;color:#3730A3;flex:1">\u2714 Select All ('+cols.length+' colours)</span>';
+selAll.onclick=e=>{if(e.target.tagName!=='INPUT'){const chk=el('bl-lot-'+lid+'-all');chk.checked=!chk.checked;billLotToggleAll(lid);}};
+body.appendChild(selAll);
+cols.forEach((col,ci)=>{
+const idx=item.colours.indexOf(col);
+const stk=col.stock_taka||0;
+const stkColor=stk===0?'#EF4444':stk<5?'#F59E0B':'#10B981';
+const stkBg=stk===0?'#FEE2E2':stk<5?'#FEF3C7':'#D1FAE5';
+const rowBg=ci%2===0?'#FFFFFF':'#F8F7FF';
+const row=document.createElement('div');
+row.style.cssText='display:grid;grid-template-columns:26px 1fr 48px 64px 80px 80px;gap:4px;align-items:center;padding:8px 10px;border-bottom:1px solid #E5E4F0;background:'+rowBg;
+row.innerHTML=
+'<input type="checkbox" id="bl-lot-'+lid+'-ck-'+idx+'" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer" onchange="billLotClrToggle('+lid+','+idx+')"/>'+
+'<div style="min-width:0"><div style="display:flex;align-items:center;gap:4px">'+
+'<span style="width:12px;height:12px;border-radius:50%;background:'+(col.hex||'#ccc')+';display:inline-block;flex-shrink:0;border:1.5px solid rgba(0,0,0,.1)"></span>'+
+'<span style="font-size:11px;font-weight:700;color:#0F0E1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+col.name+'</span></div>'+
+'<div style="font-size:8px;color:#9897B0;font-family:monospace;margin-top:1px">'+col.sku+'</div></div>'+
+'<div style="text-align:center"><span style="font-size:9px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:2px 4px;border-radius:5px">'+stk+'T</span></div>'+
+'<input type="number" id="bl-lot-'+lid+'-p-'+idx+'" step="1" min="1" value="" oninput="calcBillLot('+lid+')" disabled style="width:100%;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;transition:.15s;box-sizing:border-box"/>'+
+'<input type="number" id="bl-lot-'+lid+'-r-'+idx+'" step="0.01" min="0" value="" oninput="calcBillLot('+lid+')" disabled style="width:100%;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;transition:.15s;box-sizing:border-box"/>'+
+'<div id="bl-lot-'+lid+'-amt-'+idx+'" style="text-align:right;font-size:11px;font-weight:800;color:#9897B0;white-space:nowrap">\u2014</div>';
+row.addEventListener('click',e=>{if(e.target.tagName==='INPUT')return;const chk=el('bl-lot-'+lid+'-ck-'+idx);if(chk){chk.checked=!chk.checked;billLotClrToggle(lid,idx);}});
+body.appendChild(row);
+});
+}
+function billLotToggleAll(lid){
+const allChk=el('bl-lot-'+lid+'-all');
+const iid=el('bl-lot-'+lid+'-i')?.value,rng=el('bl-lot-'+lid+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid);if(!item||!rng)return;
+item.colours.filter(c=>c.range===rng&&!c.discontinued).forEach(col=>{
+const idx=item.colours.indexOf(col);
+const chk=el('bl-lot-'+lid+'-ck-'+idx);if(!chk)return;
+chk.checked=allChk.checked;billLotClrToggle(lid,idx,true);
+});
+calcBillLot(lid);
+}
+function billLotClrToggle(lid,idx,skipCalc=false){
+const chk=el('bl-lot-'+lid+'-ck-'+idx);
+const pI=el('bl-lot-'+lid+'-p-'+idx),rI=el('bl-lot-'+lid+'-r-'+idx);
+if(!pI||!rI)return;
+const on=chk?.checked;
+pI.disabled=!on;pI.style.background=on?'#FFFBEB':'#F3F4F6';pI.style.color=on?'#92400E':'#9CA3AF';pI.style.borderColor=on?'#F59E0B':'#D1D5DB';
+rI.disabled=!on;rI.style.background=on?'#FFFBEB':'#F3F4F6';rI.style.color=on?'#92400E':'#9CA3AF';rI.style.borderColor=on?'#F59E0B':'#D1D5DB';
+if(on&&!pI.value){const qp=el('bl-lot-'+lid+'-qpcs')?.value;if(qp)pI.value=qp;}
+if(on&&!rI.value){const qr=el('bl-lot-'+lid+'-qrate')?.value;if(qr)rI.value=qr;}
+if(!skipCalc)calcBillLot(lid);
+}
+function applyBillLotDefaults(lid){
+const qp=el('bl-lot-'+lid+'-qpcs')?.value,qr=el('bl-lot-'+lid+'-qrate')?.value;
+const iid=el('bl-lot-'+lid+'-i')?.value,rng=el('bl-lot-'+lid+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid);if(!item||!rng)return;
+item.colours.filter(c=>c.range===rng&&!c.discontinued).forEach(col=>{
+const idx=item.colours.indexOf(col);
+const chk=el('bl-lot-'+lid+'-ck-'+idx);if(!chk?.checked)return;
+if(qp){const p=el('bl-lot-'+lid+'-p-'+idx);if(p)p.value=qp;}
+if(qr){const r=el('bl-lot-'+lid+'-r-'+idx);if(r)r.value=qr;}
+});
+calcBillLot(lid);
+}
+function calcBillLot(lid){
+const iid=el('bl-lot-'+lid+'-i')?.value,rng=el('bl-lot-'+lid+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid);if(!item||!rng)return;
+item.colours.filter(c=>c.range===rng&&!c.discontinued).forEach(col=>{
+const idx=item.colours.indexOf(col);
+const chk=el('bl-lot-'+lid+'-ck-'+idx);if(!chk?.checked)return;
+const p=parseInt(el('bl-lot-'+lid+'-p-'+idx)?.value)||0;
+const r=parseFloat(el('bl-lot-'+lid+'-r-'+idx)?.value)||0;
+const amt=p*r;
+const amtEl=el('bl-lot-'+lid+'-amt-'+idx);
+if(amtEl){amtEl.textContent=amt>0?('\u20B9'+fmtN(Math.round(amt))):'\u2014';amtEl.style.color=amt>0?'var(--P)':'#9897B0';}
+});
+calcBillLotTotal();
+}
+function calcBillLotTotal(){
+const cust=STATE.customers.find(c=>c.id===el('bl-c')?.value);
+let sub=0;
+_billLots.forEach(lot=>{
+const iid=el('bl-lot-'+lot.id+'-i')?.value,rng=el('bl-lot-'+lot.id+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid);if(!item||!rng)return;
+item.colours.filter(c=>c.range===rng&&!c.discontinued).forEach(col=>{
+const idx=item.colours.indexOf(col);
+const chk=el('bl-lot-'+lot.id+'-ck-'+idx);if(!chk?.checked)return;
+sub+=(parseInt(el('bl-lot-'+lot.id+'-p-'+idx)?.value)||0)*(parseFloat(el('bl-lot-'+lot.id+'-r-'+idx)?.value)||0);
+});
+});
+let gH='',grand=sub;
+if(cust?.gstin){const t=gstType(cust.gstin),gA=sub*0.05;grand=sub+gA;gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
+const s=el('bl-sum');if(s)s.innerHTML='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>'+gH+'<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div><div class="xs ct3 mt4">'+STATE.settings.discount+'% disc within '+STATE.settings.discountDays+'d - Nett '+STATE.settings.nettDays+'d</div>';
+}
 async function saveBill(){
 const cId=el('bl-c')?.value; if(!cId){toast('Select customer','er');return;}
 const cust=STATE.customers.find(c=>c.id===cId);
 const brkId=el('bl-b')?.value, brk=STATE.brokers.find(b=>b.id===brkId);
 const items=[]; const bno=nextBillNo();
+if(!_billOrdId){
+/* Standalone bill — read from lot cards */
+for(const lot of _billLots){
+const iid=el('bl-lot-'+lot.id+'-i')?.value;
+const item=STATE.items.find(x=>x.id===iid);if(!item)continue;
+const rng=el('bl-lot-'+lot.id+'-r')?.value;if(!rng)continue;
+for(const col of item.colours.filter(c=>c.range===rng&&!c.discontinued)){
+const idx=item.colours.indexOf(col);
+const chk=el('bl-lot-'+lot.id+'-ck-'+idx);if(!chk?.checked)continue;
+const p=parseInt(el('bl-lot-'+lot.id+'-p-'+idx)?.value)||0;
+const r=parseFloat(el('bl-lot-'+lot.id+'-r-'+idx)?.value)||0;
+if(!p)continue;
+const taka=Math.round(p*4.5/STATE.settings.avgMtrPerTaka);
+const ok=await checkAdj(iid,idx,taka);if(!ok)continue;
+deductStock(iid,idx,taka,'sale',cust.name,bno);
+items.push({itemId:iid,colIdx:idx,sku:col.sku,itemName:item.name,colourName:col.name,pcs:p,rate:r,amount:Math.round(p*r),mtrs:Math.round(p*4.5),taka,range:col.range});
+}
+}
+}else{
 for(let i=0;i<_billRows.length;i++){
 const row=_billRows[i];
 let iid,cIdx,sku,iName,cName;
@@ -2671,6 +2865,7 @@ const taka=Math.round(p*4.5/STATE.settings.avgMtrPerTaka);
 const ok=await checkAdj(iid,cIdx,taka); if(!ok) continue;
 deductStock(iid,cIdx,taka,'sale',cust.name,bno);
 items.push({itemId:iid,colIdx:cIdx,sku,itemName:iName,colourName:cName,pcs:p,rate:r,amount:p*r,mtrs:Math.round(p*4.5),taka});
+}
 }
 if(!items.length){toast('Add at least one item','er');return;}
 const sub=items.reduce((s,i)=>s+i.amount,0), gt=gstType(cust.gstin||''), gA=cust.gstin?sub*0.05:0;
