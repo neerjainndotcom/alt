@@ -1508,7 +1508,7 @@ _inRows.forEach((row,i)=>{
 function addInRow(){captureInRows();_inRows.push({});renderInRows();}
 function remInRow(i){captureInRows();_inRows.splice(i,1);renderInRows();}
 function renderInRows(){
-el('in-rows').innerHTML=_inRows.map((_,i)=>'<div class="sr su"><div class="srh"><span>SKU '+(i+1)+'</span>'+(i>0?'<button onclick="remInRow('+i+')" class="btn bd bxs">✕</button>':'')+'</div>'+buildCascade('ir'+i,false)+'<div class="ir2"><div class="fg"><label>Taka</label><input class="inp big mono" type="number" id="ir'+i+'-t" step="1" min="1" placeholder="0" oninput="updIRC('+i+')"/><div class="cb" id="ir'+i+'-calc">— T x '+STATE.settings.avgMtrPerTaka+'m = — mtrs</div></div><div class="fg"><label>TP (Trade Price \u20B9)</label><input class="inp big mono" type="number" id="ir'+i+'-tp" step="0.01" min="0" placeholder="0.00"/></div></div></div>').join('');
+el('in-rows').innerHTML=_inRows.map((_,i)=>'<div class="sr su"><div class="srh"><span>SKU '+(i+1)+'</span>'+(i>0?'<button onclick="remInRow('+i+')" class="btn bd bxs">✕</button>':'')+'</div>'+buildCascade('ir'+i,false)+'<div class="ir2"><div class="fg"><label>Taka</label><input class="inp big mono" type="number" id="ir'+i+'-t" step="1" min="0" placeholder="0" oninput="updIRC('+i+')"/><div class="cb" id="ir'+i+'-calc">\u2014 T \xd7 '+STATE.settings.avgMtrPerTaka+'m = \u2014 mtrs</div></div><div class="fg"><label>TP (small taka)</label><input class="inp big mono" type="number" id="ir'+i+'-tp" step="1" min="0" placeholder="0" oninput="updIRC('+i+')"/><div class="cb" id="ir'+i+'-tpcalc">\u2014 TP \xd7 '+(STATE.settings.avgMtrPerTP||45)+'m = \u2014 mtrs</div></div></div></div>').join('');
 _inRows.forEach((row,i)=>{
   if(row._iid){
     const iSel=el('ir'+i+'-i'); if(iSel) iSel.value=row._iid;
@@ -1516,13 +1516,18 @@ _inRows.forEach((row,i)=>{
     if(row._rng){ const rSel=el('ir'+i+'-r'); if(rSel) rSel.value=row._rng; cascClr('ir'+i,false); }
     if(row._cIdx){ const cSel=el('ir'+i+'-c'); if(cSel) cSel.value=row._cIdx; onClrSel('ir'+i,false); }
   }
-  if(row._taka){ const t=el('ir'+i+'-t'); if(t) t.value=row._taka; updIRC(i); }
+  if(row._taka){ const t=el('ir'+i+'-t'); if(t) t.value=row._taka; }
   if(row._tp){ const tp=el('ir'+i+'-tp'); if(tp) tp.value=row._tp; }
+  if(row._taka||row._tp) updIRC(i);
 });
 }
 function updIRC(i){
 const t=parseInt(el('ir'+i+'-t')?.value)||0;
-const c=el('ir'+i+'-calc'); if(c) c.textContent=t+'T x '+STATE.settings.avgMtrPerTaka+'m = '+Math.round(t*STATE.settings.avgMtrPerTaka)+' mtrs';
+const tp=parseInt(el('ir'+i+'-tp')?.value)||0;
+const avgT=STATE.settings.avgMtrPerTaka||90;
+const avgTP=STATE.settings.avgMtrPerTP||45;
+const c=el('ir'+i+'-calc'); if(c) c.textContent=t+'T \xd7 '+avgT+'m = '+Math.round(t*avgT)+' mtrs';
+const tpc=el('ir'+i+'-tpcalc'); if(tpc) tpc.textContent=tp?tp+' TP \xd7 '+avgTP+'m = '+Math.round(tp*avgTP)+' mtrs':'\u2014 TP \xd7 '+avgTP+'m = \u2014 mtrs';
 }
 async function saveInward(){
 const date=el('in-date')?.value, ref=el('in-ref')?.value.trim(), notes=el('in-notes')?.value.trim();
@@ -1533,11 +1538,16 @@ const fullNote=gpNo?('GP: '+gpNo+(notes?' | '+notes:'')):notes;
 let saved=0;
 for(let i=0;i<_inRows.length;i++){
 const sel=getSel('ir'+i); if(!sel) continue;
-const taka=Math.round(parseInt(el('ir'+i+'-t')?.value)||0); if(!taka) continue;
-const tp=parseFloat(el('ir'+i+'-tp')?.value)||0;
+const taka=parseInt(el('ir'+i+'-t')?.value)||0;
+const tpCount=parseInt(el('ir'+i+'-tp')?.value)||0;
+const avgT=STATE.settings.avgMtrPerTaka||90;
+const avgTP=STATE.settings.avgMtrPerTP||45;
+const tpAsTaka=Math.round(tpCount*avgTP/avgT);
+const totalTaka=Math.round(taka+tpAsTaka);
+if(!totalTaka) continue;
 const entryType=_inType==='mill'?'mill':(_inType==='jwin'?'jobwork':_inType);
-const tpNote=tp>0?(fullNote?fullNote+' | TP: \u20B9'+tp:'TP: \u20B9'+tp):fullNote;
-addStock(sel.itemId,sel.colIdx,taka,entryType,party,ref,tpNote);
+const tpNote=tpCount>0?(fullNote?fullNote+' | TP: '+tpCount:'TP: '+tpCount):fullNote;
+addStock(sel.itemId,sel.colIdx,totalTaka,entryType,party,ref,tpNote);
 STATE.entries[STATE.entries.length-1].voucherNo=vno;
 saved++;
 }
