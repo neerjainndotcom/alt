@@ -618,7 +618,7 @@ renderDBSetup();
         setLiveStatus('live');
       }
     }catch(e){}
-  },15000);
+  },5000);
   scheduleWAReminder();
   startFirebaseRealtime();
   try{autoDeleteOldCompletedTasks();}catch(e){}
@@ -2557,6 +2557,12 @@ const nums=activeBills.map(b=>{
 }).filter(n=>n>0);
 const maxNum=nums.length?Math.max(...nums):startNo-1;
 return pfx+String(maxNum+1).padStart(padLen,'0');
+}
+function createStandaloneBill(custId){
+_billOrdId=null; _billRows=[{}];
+const cust=STATE.customers.find(c=>c.id===custId);
+buildBillBody(cust?{custId,custName:cust.name}:null);
+showMod('m-bill');
 }
 function createBill(ordId){
 _billOrdId=ordId;
@@ -6020,7 +6026,7 @@ html+=
 '<div class="xs ct3 mt4">All orders are cleared or fulfilled</div>'+
 '</div>'+
 '<div style="margin-top:12px">'+
-'<button class="btn bp bfl" onclick="_dispCustId=\''+custId+'\'; _dispOrdId=null; setupDispatchModal(\''+custId+'\',null); showMod(\'m-dispatch\')">+ Create Invoice without Order</button>'+
+'<button class="btn bp bfl" onclick="createStandaloneBill(\''+custId+'\')">+ Create Invoice without Order</button>'+
 '</div>';
 c.innerHTML=html; return;
 }
@@ -6057,7 +6063,7 @@ html+=
 '</div>';
 });
 html+='<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--br)">'+
-'<button class="btn bgh bfl" onclick="_dispCustId=\''+custId+'\'; _dispOrdId=null; setupDispatchModal(\''+custId+'\',null); showMod(\'m-dispatch\')">+ Create Invoice without Order</button>'+
+'<button class="btn bgh bfl" onclick="createStandaloneBill(\''+custId+'\')">+ Create Invoice without Order</button>'+
 '</div>';
 c.innerHTML=html;
 }
@@ -6577,12 +6583,21 @@ function startFirebaseRealtime(){
     const onData=e=>{
       try{
         if(window._saveLock||window._syncRunning)return;
-        const raw=JSON.parse(e.data);const d=raw.data||raw;
-        if(!d||!d.items)return;
         if(window._lastSaveAt&&Date.now()-window._lastSaveAt<2000)return;
-        const cT=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
-        const lT=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
-        if(cT>lT){applyCloudData(d);setLiveStatus('live');}
+        /* Firebase sends partial patch events — don't rely on patch payload.
+           Instead fetch the full dataset so nothing gets dropped. */
+        clearTimeout(window._fbPullTimer);
+        window._fbPullTimer=setTimeout(async()=>{
+          if(window._saveLock||window._syncRunning)return;
+          try{
+            const fu=fbUrl('data');if(!fu)return;
+            const r=await fetch(fu);if(!r.ok)return;
+            const d=await r.json();if(!d||!d.items)return;
+            const cT=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
+            const lT=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
+            if(cT>lT){applyCloudData(d);setLiveStatus('live');}
+          }catch(x){}
+        },300);
       }catch(x){}
     };
     window._fbES.addEventListener('put',onData);window._fbES.addEventListener('patch',onData);
