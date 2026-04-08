@@ -26,7 +26,7 @@
 </div>
 <div id="ls"><div class="lg"></div><div class="lglow"></div><div class="lcard"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p>Amrit Laxmi Textile · Surat</p></div><div id="lf"><div class="lf"><label>Username</label><input type="text" id="lu" placeholder="Enter username" autocomplete="username"/></div><div class="lf"><label>Password</label><input type="password" id="lp" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div><button class="lbtn" onclick="doLogin()">Sign In →</button><div class="lerr" id="le"></div><div style="display:flex;justify-content:space-between;margin-top:14px"><button onclick="showForgotUsername()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Username?</button><button onclick="showForgotPassword()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Password?</button></div><div style="margin-top:14px;background:rgba(255,165,0,0.15);border-radius:10px;padding:12px;border:1.5px solid rgba(255,165,0,0.4)"><div style="font-size:11px;color:rgba(255,255,255,0.9);margin-bottom:8px;text-align:center;font-weight:700">&#x1F4F1; First time on this phone / New device?</div><button onclick="loginScreenSyncFirebase()" style="width:100%;background:linear-gradient(135deg,#D97706,#F59E0B);color:white;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 15px rgba(217,119,6,.4)">&#x1F525; Load Data from Firebase</button><div id="ls-sync-status" style="font-size:12px;color:rgba(255,255,255,0.9);margin-top:8px;text-align:center;min-height:18px;font-weight:600"></div><div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:6px;text-align:center">Tap this button to load all your data before logging in</div></div><div style="text-align:center;margin-top:10px"><button onclick="showEmergencyRecovery()" style="background:none;border:none;color:rgba(255,80,80,0.7);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline">&#x1F6A8; Admin locked out?</button></div><div id="login-version" style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3)"></div></div><div id="of" class="hid"><p style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:20px;line-height:1.6">📱 New device detected!<br>OTP sent to admin WhatsApp.<br>Ask admin to share the code.</p><div class="lf"><label>One-Time Password</label><input type="number" class="otp-inp" id="oi" placeholder="000000" maxlength="6"/></div><button class="lbtn" onclick="doOTP()">Verify OTP →</button><div class="lerr" id="oe"></div><button style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit" onclick="showEl('lf');hideEl('of')">← Back</button></div></div>
 </div>
-<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:10px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bgh bsm" onclick="toggleLang()">&#x1F310; <span id="ll">हिंदी</span></button><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('pend',this)">Pending</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button><button class="tbb" onclick="salesTab('pay',this)">Payments</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div id="billst"></div></div><div class="tp" id="tp-pend"><div style="display:flex;gap:0;padding:8px 16px 0;border-bottom:1.5px solid #E5E4F0"><button class="sw on" id="pend-sub-pend" onclick="pendSubTab('pend')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Pending</button><button class="sw" id="pend-sub-done" onclick="pendSubTab('done')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Completed</button></div><div id="pendlst"></div><div id="donelst" style="display:none"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg" style="position:relative"><label>Customer</label><input type="text" class="inp" id="inv-cust-search" placeholder="Type customer name to search..." oninput="filterInvCusts()" onfocus="filterInvCusts()" autocomplete="off" style="font-size:14px;padding:10px 12px"/><input type="hidden" id="inv-cust-sel"/><div id="inv-cust-dd" style="display:none;position:absolute;left:0;right:0;top:100%;background:white;border:1.5px solid var(--br);border-radius:0 0 10px 10px;z-index:200;max-height:230px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.13)"></div></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div><div class="tp" id="tp-pay"><div class="srch"><span>🔍</span><input type="text" placeholder="Search payments by customer or bill no..." oninput="renderPayments(this.value)"/></div><div id="paylst"></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="showInward('exch')"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" id="inward-manual-btn" onclick="openManualStock()" style="display:none;border:1.5px solid rgba(217,119,6,.3);background:var(--Al)"><span class="qaico">✏️</span><div><div class="qalbl" style="color:var(--Ad)">Manual Entry</div><div class="qasub">Add/deduct balance</div></div></div></div></div><div class="stl" data-i18n="recent">Recent Inward</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="inward-search" placeholder="Search by item, colour, party..." oninput="renderInRec(this.value)"/></div></div><div id="inrec"></div></div></div><div id="s-jw" class="scr"><div class="shdr"><div class="hr"><div><h2>⚙️ Job Work</h2><p class="sub">Challans & Processing</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="showJWForm('s2j')">Shop → Job Work</button></div></div><div class="tb mt8"><button class="tbb on" onclick="jwTab('pnd',this)">Pending</button><button class="tbb" onclick="jwTab('rec',this)">Received</button><button class="tbb" onclick="jwTab('all',this)">All</button></div></div><div class="tp on" id="tp-pnd"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="jw-search" placeholder="Search by ref, party, item..." oninput="renderJWLists(this.value)"/></div></div><div id="jwpnd"></div></div><div class="tp" id="tp-rec"><div id="jwrec"></div></div><div class="tp" id="tp-all"><div id="jwall"></div></div></div><div id="s-masters" class="scr"><div class="shdr"><h2>🗂️ Masters</h2><div class="tb mt8"><button class="tbb on" onclick="mTab('itm',this)">Items</button><button class="tbb" onclick="mTab('cst',this)">Customers</button><button class="tbb" onclick="mTab('brk',this)">Brokers</button><button class="tbb" onclick="mTab('sup',this)">Suppliers</button><button class="tbb" onclick="mTab('prd',this)">Products</button><button class="tbb" onclick="mTab('grp',this)">Party Groups</button></div></div><div class="tp on" id="tp-itm"><div class="srch"><span>🔍</span><input type="text" placeholder="Search items..." oninput="renderItems(this.value)"/></div><div id="itmlst"></div><button class="fab" onclick="openItem()">+</button></div><div class="tp" id="tp-cst"><div class="srch"><span>🔍</span><input type="text" placeholder="Search customers..." oninput="renderCusts(this.value)"/></div><div id="cstlst"></div><button class="fab" onclick="openCust()">+</button></div><div class="tp" id="tp-grp"><div style="padding:12px 16px 4px"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Party Groups — Link firms for cross-billing</div><div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Create a group when multiple firms belong to one party. Orders saved under Firm A can then be billed to Firm B or Firm C.</div></div><div id="grplst"></div><button class="fab" onclick="openCustGroup()">+</button></div><div class="tp" id="tp-brk"><div id="brklst"></div><button class="fab" onclick="showMod('m-brk')">+</button></div><div class="tp" id="tp-sup"><div id="suplst"></div><button class="fab" onclick="showMod('m-sup')">+</button></div><div class="tp" id="tp-prd"><div id="prdlst"></div><button class="fab" onclick="showMod('m-prd')">+</button></div></div><div id="s-admin" class="scr"><div class="shdr"><h2>👑 Admin</h2><div class="tb mt8"><button class="tbb on" onclick="aTab('set',this)">Settings</button><button class="tbb" onclick="aTab('usr',this)">Users</button><button class="tbb" onclick="aTab('dev',this)">Devices</button><button class="tbb" onclick="aTab('led',this)">Ledger</button><button class="tbb" onclick="aTab('db',this)">Database</button><button class="tbb" onclick="aTab('fy',this)">Fin Year</button><button class="tbb" data-tab="flags" onclick="aTab('flags',this)" id="admin-flag-tab">Flags <span id="flag-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:3px">!</span></button></div></div><div class="tp on" id="tp-set" style="background:var(--bg)"><div id="setbod" class="p16" style="background:var(--bg)"></div></div><div class="tp" id="tp-usr" style="background:var(--bg)"><div id="usrlst"></div><button class="fab" onclick="openUserModal()">+</button></div><div class="tp" id="tp-dev" style="background:var(--bg)"><div id="devlst"></div></div><div class="tp" id="tp-led" style="background:var(--bg)"><div class="srch"><span>🔍</span><input type="text" placeholder="Filter ledger..." oninput="renderLedger(this.value)"/></div><div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap" id="ldflt"></div><div id="ledbod" class="p16"></div></div><div class="tp" id="tp-db" style="background:var(--bg)"><div id="dbbod" class="p16"></div></div><div class="tp" id="tp-fy" style="background:var(--bg)"><div id="fybody" class="p16"></div></div><div class="tp" id="tp-flags" style="background:var(--bg);overflow-y:auto;padding-bottom:80px"><div id="flagged-body" class="p16"></div></div></div><div id="s-reports" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CA; Reports</h2><p class="sub">Stock, Sales, SKU Analysis</p></div></div><div class="tb mt8"><button class="tbb on" onclick="repTab('stock',this)">Stock</button><button class="tbb" onclick="repTab('vsorder',this)">vs Orders</button><button class="tbb" onclick="repTab('daily',this)">Daily Sales</button><button class="tbb" onclick="repTab('topsku',this)">Top SKUs</button><button class="tbb" onclick="repTab('trends',this)">&#x1F4C8; Trends</button></div></div><div class="tp on" id="tp-rstock" style="overflow-y:auto;padding-bottom:80px"><div id="rep-stock-body" class="p16"></div></div><div class="tp" id="tp-rvsorder" style="overflow-y:auto;padding-bottom:80px"><div id="rep-vsorder-body" class="p16"></div></div><div class="tp" id="tp-rdaily" style="overflow-y:auto;padding-bottom:80px"><div style="padding:12px 16px;display:flex;gap:8px;align-items:center"><input type="date" id="rep-daily-date" class="inp" style="flex:1" value=""/><button class="btn bp bsm" onclick="renderDailyReport()">Go</button></div><div id="rep-daily-body" class="p16"></div></div><div class="tp" id="tp-rtopsku" style="overflow-y:auto;padding-bottom:80px"><div id="rep-topsku-body" class="p16"></div></div><div class="tp" id="tp-rtrends" style="overflow-y:auto;padding-bottom:80px"><div class="p16"><div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"><button class="sw on" id="trn-7" onclick="renderTrends(7,this)">7 Days</button><button class="sw" id="trn-14" onclick="renderTrends(14,this)">14 Days</button><button class="sw" id="trn-28" onclick="renderTrends(28,this)">28 Days</button><button class="sw" id="trn-90" onclick="renderTrends(90,this)">3 Months</button></div><div id="rep-trends-body"></div></div></div></div><div id="s-leads" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F3AF; Leads</h2><p class="sub">Lead Management</p></div><button class="btn bp bsm" onclick="openNewLead()">+ Lead</button></div><div class="tb mt8"><button class="tbb on" onclick="leadTab('all',this)">All</button><button class="tbb" onclick="leadTab('mine',this)">Mine</button><button class="tbb" onclick="leadTab('today',this)">Follow Up</button><button class="tbb" onclick="leadTab('won',this)">Won/Lost</button><button class="tbb" onclick="leadTab('recurring',this)" id="lead-rec-tab">Recurring <span id="lead-rec-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:2px">!</span></button></div></div><div class="tp on" id="tp-lall"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="lead-search" placeholder="Search by name, phone, status, salesman..." oninput="renderLeads('all',this.value)"/></div></div><div id="lead-lst-all"></div></div><div class="tp" id="tp-lmine"><div id="lead-lst-mine"></div></div><div class="tp" id="tp-ltoday"><div id="lead-lst-today"></div></div><div class="tp" id="tp-lwon"><div id="lead-lst-won"></div></div><div class="tp" id="tp-lrecurring"><div id="lead-rec-list" class="p16"></div></div></div></div><div id="s-tasks" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CB; Tasks</h2><p class="sub" id="task-sub">Your task list</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="openNewTaskInstance()" id="task-add-btn">+ Task</button><button class="btn bgh bsm" onclick="openNewTaskTemplate()" id="task-tpl-btn" style="display:none">+ Template</button></div></div><div class="tb mt8"><button class="tbb on" onclick="taskTab('my',this)" id="ttab-my">My Tasks</button><button class="tbb" onclick="taskTab('all',this)" id="ttab-all" style="display:none">All Tasks</button><button class="tbb" onclick="taskTab('templates',this)" id="ttab-tpl" style="display:none">Templates</button><button class="tbb" onclick="taskTab('leave',this)" id="ttab-lv" style="display:none">Leave</button><button class="tbb" onclick="taskTab('rep',this)" id="ttab-rep" style="display:none">&#x1F4CA; Report</button></div></div><div class="tp on" id="tp-tmy"><div style="padding:8px 16px 0"><div class="srch"><span>🔍</span><input type="text" id="task-search" placeholder="Search by task name, category..." oninput="renderMyTasks(this.value)"/></div></div><div id="task-lst-my" class="p16"></div></div><div class="tp" id="tp-tall"><div id="task-lst-all" class="p16"></div></div><div class="tp" id="tp-ttemplates"><div id="task-lst-tpl" class="p16"></div></div><div class="tp" id="tp-tleave"><div id="task-lst-lv" class="p16"></div></div><div class="tp" id="tp-trep"><div class="p16"><div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><input type="date" class="inp" id="trep-from" style="flex:1"/><span>to</span><input type="date" class="inp" id="trep-to" style="flex:1"/><button class="btn bp bsm" onclick="renderTaskReport()">Go</button></div><button class="btn bd bsm" onclick="openDeleteCompletedTasks()" style="margin-bottom:12px">&#x1F5D1; Delete Completed Tasks</button><div id="task-report-body"></div></div></div></div><button id="global-refresh-btn" onclick="manualRefresh()" style="position:fixed;bottom:70px;right:16px;z-index:500;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#4F46E5,#6366F1);color:white;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 15px rgba(79,70,229,.4);display:flex;align-items:center;justify-content:center" title="Refresh data">&#x1F504;</button><nav id="bn"><button class="nb on" onclick="setNav('dash')" id="nb-dash"><span class="ni">📊</span>Dash</button><button class="nb" onclick="setNav('sales')" id="nb-sales"><span class="ni">🧾</span>Sales</button><button class="nb" onclick="setNav('inward')" id="nb-inward"><span class="ni">📥</span>Inward</button><button class="nb" onclick="setNav('jw')" id="nb-jw"><span class="ni">⚙️</span>Job Work</button><button class="nb" onclick="setNav('masters')" id="nb-masters"><span class="ni">🗂️</span>Masters</button><button class="nb" onclick="setNav('reports')" id="nb-reports"><span class="ni">&#x1F4CA;</span>Reports</button><button class="nb" onclick="setNav('leads')" id="nb-leads"><span class="ni">&#x1F3AF;</span>Leads</button><button class="nb" onclick="setNav('tasks')" id="nb-tasks"><span class="ni">&#x1F4CB;</span>Tasks<span class="ndot hid" id="tdot"></span></button><button class="nb" onclick="setNav('admin')" id="nb-admin"><span class="ni">👑</span>Admin<span class="ndot hid" id="adot"></span></button></nav>
+<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:10px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bgh bsm" onclick="toggleLang()">&#x1F310; <span id="ll">हिंदी</span></button><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-recurring-visits"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('pend',this)">Pending</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button><button class="tbb" onclick="salesTab('pay',this)">Payments</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div id="billst"></div></div><div class="tp" id="tp-pend"><div style="display:flex;gap:0;padding:8px 16px 0;border-bottom:1.5px solid #E5E4F0"><button class="sw on" id="pend-sub-pend" onclick="pendSubTab('pend')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Pending</button><button class="sw" id="pend-sub-done" onclick="pendSubTab('done')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Completed</button></div><div id="pendlst"></div><div id="donelst" style="display:none"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg" style="position:relative"><label>Customer</label><input type="text" class="inp" id="inv-cust-search" placeholder="Type customer name to search..." oninput="filterInvCusts()" onfocus="filterInvCusts()" autocomplete="off" style="font-size:14px;padding:10px 12px"/><input type="hidden" id="inv-cust-sel"/><div id="inv-cust-dd" style="display:none;position:absolute;left:0;right:0;top:100%;background:white;border:1.5px solid var(--br);border-radius:0 0 10px 10px;z-index:200;max-height:230px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.13)"></div></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div><div class="tp" id="tp-pay"><div class="srch"><span>🔍</span><input type="text" placeholder="Search payments by customer or bill no..." oninput="renderPayments(this.value)"/></div><div id="paylst"></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="showInward('exch')"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" id="inward-manual-btn" onclick="openManualStock()" style="display:none;border:1.5px solid rgba(217,119,6,.3);background:var(--Al)"><span class="qaico">✏️</span><div><div class="qalbl" style="color:var(--Ad)">Manual Entry</div><div class="qasub">Add/deduct balance</div></div></div></div></div><div class="stl" data-i18n="recent">Recent Inward</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="inward-search" placeholder="Search by item, colour, party..." oninput="renderInRec(this.value)"/></div></div><div id="inrec"></div></div></div><div id="s-jw" class="scr"><div class="shdr"><div class="hr"><div><h2>⚙️ Job Work</h2><p class="sub">Challans & Processing</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="showJWForm('s2j')">Shop → Job Work</button></div></div><div class="tb mt8"><button class="tbb on" onclick="jwTab('pnd',this)">Pending</button><button class="tbb" onclick="jwTab('rec',this)">Received</button><button class="tbb" onclick="jwTab('all',this)">All</button></div></div><div class="tp on" id="tp-pnd"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="jw-search" placeholder="Search by ref, party, item..." oninput="renderJWLists(this.value)"/></div></div><div id="jwpnd"></div></div><div class="tp" id="tp-rec"><div id="jwrec"></div></div><div class="tp" id="tp-all"><div id="jwall"></div></div></div><div id="s-masters" class="scr"><div class="shdr"><h2>🗂️ Masters</h2><div class="tb mt8"><button class="tbb on" onclick="mTab('itm',this)">Items</button><button class="tbb" onclick="mTab('cst',this)">Customers</button><button class="tbb" onclick="mTab('brk',this)">Brokers</button><button class="tbb" onclick="mTab('sup',this)">Suppliers</button><button class="tbb" onclick="mTab('prd',this)">Products</button><button class="tbb" onclick="mTab('grp',this)">Party Groups</button></div></div><div class="tp on" id="tp-itm"><div class="srch"><span>🔍</span><input type="text" placeholder="Search items..." oninput="renderItems(this.value)"/></div><div id="itmlst"></div><button class="fab" onclick="openItem()">+</button></div><div class="tp" id="tp-cst"><div class="srch"><span>🔍</span><input type="text" placeholder="Search customers..." oninput="renderCusts(this.value)"/></div><div id="cstlst"></div><button class="fab" onclick="openCust()">+</button></div><div class="tp" id="tp-grp"><div style="padding:12px 16px 4px"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Party Groups — Link firms for cross-billing</div><div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Create a group when multiple firms belong to one party. Orders saved under Firm A can then be billed to Firm B or Firm C.</div></div><div id="grplst"></div><button class="fab" onclick="openCustGroup()">+</button></div><div class="tp" id="tp-brk"><div id="brklst"></div><button class="fab" onclick="showMod('m-brk')">+</button></div><div class="tp" id="tp-sup"><div id="suplst"></div><button class="fab" onclick="showMod('m-sup')">+</button></div><div class="tp" id="tp-prd"><div id="prdlst"></div><button class="fab" onclick="showMod('m-prd')">+</button></div></div><div id="s-admin" class="scr"><div class="shdr"><h2>👑 Admin</h2><div class="tb mt8"><button class="tbb on" onclick="aTab('set',this)">Settings</button><button class="tbb" onclick="aTab('usr',this)">Users</button><button class="tbb" onclick="aTab('dev',this)">Devices</button><button class="tbb" onclick="aTab('led',this)">Ledger</button><button class="tbb" onclick="aTab('db',this)">Database</button><button class="tbb" onclick="aTab('fy',this)">Fin Year</button><button class="tbb" data-tab="flags" onclick="aTab('flags',this)" id="admin-flag-tab">Flags <span id="flag-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:3px">!</span></button></div></div><div class="tp on" id="tp-set" style="background:var(--bg)"><div id="setbod" class="p16" style="background:var(--bg)"></div></div><div class="tp" id="tp-usr" style="background:var(--bg)"><div id="usrlst"></div><button class="fab" onclick="openUserModal()">+</button></div><div class="tp" id="tp-dev" style="background:var(--bg)"><div id="devlst"></div></div><div class="tp" id="tp-led" style="background:var(--bg)"><div class="srch"><span>🔍</span><input type="text" placeholder="Filter ledger..." oninput="renderLedger(this.value)"/></div><div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap" id="ldflt"></div><div id="ledbod" class="p16"></div></div><div class="tp" id="tp-db" style="background:var(--bg)"><div id="dbbod" class="p16"></div></div><div class="tp" id="tp-fy" style="background:var(--bg)"><div id="fybody" class="p16"></div></div><div class="tp" id="tp-flags" style="background:var(--bg);overflow-y:auto;padding-bottom:80px"><div id="flagged-body" class="p16"></div></div></div><div id="s-reports" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CA; Reports</h2><p class="sub">Stock, Sales, SKU Analysis</p></div></div><div class="tb mt8"><button class="tbb on" onclick="repTab('stock',this)">Stock</button><button class="tbb" onclick="repTab('vsorder',this)">vs Orders</button><button class="tbb" onclick="repTab('daily',this)">Daily Sales</button><button class="tbb" onclick="repTab('topsku',this)">Top SKUs</button><button class="tbb" onclick="repTab('trends',this)">&#x1F4C8; Trends</button></div></div><div class="tp on" id="tp-rstock" style="overflow-y:auto;padding-bottom:80px"><div id="rep-stock-body" class="p16"></div></div><div class="tp" id="tp-rvsorder" style="overflow-y:auto;padding-bottom:80px"><div id="rep-vsorder-body" class="p16"></div></div><div class="tp" id="tp-rdaily" style="overflow-y:auto;padding-bottom:80px"><div style="padding:12px 16px;display:flex;gap:8px;align-items:center"><input type="date" id="rep-daily-date" class="inp" style="flex:1" value=""/><button class="btn bp bsm" onclick="renderDailyReport()">Go</button></div><div id="rep-daily-body" class="p16"></div></div><div class="tp" id="tp-rtopsku" style="overflow-y:auto;padding-bottom:80px"><div id="rep-topsku-body" class="p16"></div></div><div class="tp" id="tp-rtrends" style="overflow-y:auto;padding-bottom:80px"><div class="p16"><div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"><button class="sw on" id="trn-7" onclick="renderTrends(7,this)">7 Days</button><button class="sw" id="trn-14" onclick="renderTrends(14,this)">14 Days</button><button class="sw" id="trn-28" onclick="renderTrends(28,this)">28 Days</button><button class="sw" id="trn-90" onclick="renderTrends(90,this)">3 Months</button></div><div id="rep-trends-body"></div></div></div></div><div id="s-leads" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F3AF; Leads</h2><p class="sub">Lead Management</p></div><button class="btn bp bsm" onclick="openNewLead()">+ Lead</button></div><div class="tb mt8"><button class="tbb on" onclick="leadTab('all',this)">All</button><button class="tbb" onclick="leadTab('mine',this)">Mine</button><button class="tbb" onclick="leadTab('today',this)">Follow Up</button><button class="tbb" onclick="leadTab('won',this)">Won/Lost</button><button class="tbb" onclick="leadTab('recurring',this)" id="lead-rec-tab">Recurring <span id="lead-rec-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:2px">!</span></button><button class="tbb" onclick="leadTab('report',this)" id="lead-rep-tab">&#x1F4CA; Report</button></div></div><div class="tp on" id="tp-lall"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="lead-search" placeholder="Search by name, phone, status, salesman..." oninput="renderLeads('all',this.value)"/></div></div><div id="lead-lst-all"></div></div><div class="tp" id="tp-lmine"><div id="lead-lst-mine"></div></div><div class="tp" id="tp-ltoday"><div id="lead-lst-today"></div></div><div class="tp" id="tp-lwon"><div id="lead-lst-won"></div></div><div class="tp" id="tp-lrecurring"><div id="lead-rec-list" class="p16"></div></div><div class="tp" id="tp-lreport"><div id="lead-rep-body" class="p16"></div></div></div></div><div id="s-tasks" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CB; Tasks</h2><p class="sub" id="task-sub">Your task list</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="openNewTaskInstance()" id="task-add-btn">+ Task</button><button class="btn bgh bsm" onclick="openNewTaskTemplate()" id="task-tpl-btn" style="display:none">+ Template</button></div></div><div class="tb mt8"><button class="tbb on" onclick="taskTab('my',this)" id="ttab-my">My Tasks</button><button class="tbb" onclick="taskTab('all',this)" id="ttab-all" style="display:none">All Tasks</button><button class="tbb" onclick="taskTab('templates',this)" id="ttab-tpl" style="display:none">Templates</button><button class="tbb" onclick="taskTab('leave',this)" id="ttab-lv" style="display:none">Leave</button><button class="tbb" onclick="taskTab('rep',this)" id="ttab-rep" style="display:none">&#x1F4CA; Report</button></div></div><div class="tp on" id="tp-tmy"><div style="padding:8px 16px 0"><div class="srch"><span>🔍</span><input type="text" id="task-search" placeholder="Search by task name, category..." oninput="renderMyTasks(this.value)"/></div></div><div id="task-lst-my" class="p16"></div></div><div class="tp" id="tp-tall"><div id="task-lst-all" class="p16"></div></div><div class="tp" id="tp-ttemplates"><div id="task-lst-tpl" class="p16"></div></div><div class="tp" id="tp-tleave"><div id="task-lst-lv" class="p16"></div></div><div class="tp" id="tp-trep"><div class="p16"><div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><input type="date" class="inp" id="trep-from" style="flex:1"/><span>to</span><input type="date" class="inp" id="trep-to" style="flex:1"/><button class="btn bp bsm" onclick="renderTaskReport()">Go</button></div><button class="btn bd bsm" onclick="openDeleteCompletedTasks()" style="margin-bottom:12px">&#x1F5D1; Delete Completed Tasks</button><div id="task-report-body"></div></div></div></div><button id="global-refresh-btn" onclick="manualRefresh()" style="position:fixed;bottom:70px;right:16px;z-index:500;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#4F46E5,#6366F1);color:white;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 15px rgba(79,70,229,.4);display:flex;align-items:center;justify-content:center" title="Refresh data">&#x1F504;</button><nav id="bn"><button class="nb on" onclick="setNav('dash')" id="nb-dash"><span class="ni">📊</span>Dash</button><button class="nb" onclick="setNav('sales')" id="nb-sales"><span class="ni">🧾</span>Sales</button><button class="nb" onclick="setNav('inward')" id="nb-inward"><span class="ni">📥</span>Inward</button><button class="nb" onclick="setNav('jw')" id="nb-jw"><span class="ni">⚙️</span>Job Work</button><button class="nb" onclick="setNav('masters')" id="nb-masters"><span class="ni">🗂️</span>Masters</button><button class="nb" onclick="setNav('reports')" id="nb-reports"><span class="ni">&#x1F4CA;</span>Reports</button><button class="nb" onclick="setNav('leads')" id="nb-leads"><span class="ni">&#x1F3AF;</span>Leads</button><button class="nb" onclick="setNav('tasks')" id="nb-tasks"><span class="ni">&#x1F4CB;</span>Tasks<span class="ndot hid" id="tdot"></span></button><button class="nb" onclick="setNav('admin')" id="nb-admin"><span class="ni">👑</span>Admin<span class="ndot hid" id="adot"></span></button></nav>
 </div>
 
 <div class="ov" id="m-item" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="itmtit">New Item</h3><p class="sub">Fabric type</p></div><button class="btn bgh bsm" onclick="hideMod('m-item')">✕</button></div></div><div class="shb"><input type="hidden" id="itm-id"/><div class="fg"><label>Item Name *</label><input class="inp" id="itm-name" placeholder="e.g. FRENDY CHIFFON"/></div><div class="fg"><label>HSN Code</label><input class="inp" id="itm-hsn" placeholder="e.g. 5407"/></div><div class="dvd"></div><div class="hr" style="margin-bottom:10px"><label style="margin-bottom:0">Ranges &amp; Colours</label><button class="ai" onclick="openAddRange()">+ Add Range</button></div><div id="itmrng"></div></div><div class="shf" style="flex-wrap:wrap;gap:8px"><button class="btn bd bfl" id="itm-del-btn" style="display:none" onclick="deleteItem()">Delete Item</button><div style="display:flex;gap:8px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-item')">Cancel</button><button class="btn bp bfl" onclick="saveItem()">Save Item</button></div></div>
@@ -378,6 +378,7 @@ function autoSyncFirebase(){
         jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],
         taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],
         staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
+        custGroups:STATE.custGroups||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],
         settings:{...STATE.settings,lastSync:nowTs},
         syncedAt:nowTs};
       if(fu){
@@ -591,15 +592,16 @@ renderDBSetup();
   window._initialPullDone=true;
 })();
 
+  /* Polling fallback — only runs when SSE is disconnected or as a slow safety net.
+     When SSE is live, poll every 30s (safety net). When offline, poll every 5s (reconnect faster). */
   clearInterval(window._syncPoll);
   window._syncPoll=setInterval(async()=>{
     if(window._saveLock||window._syncRunning)return;
+    if(window._lastSaveAt&&Date.now()-window._lastSaveAt<4000)return;
     try{
       let d=null;
-      // Firebase FIRST (fast, reliable)
       const fu=fbUrl('data');
       if(fu){try{const r=await fetch(fu);if(r.ok){const j=await r.json();if(j&&typeof j==='object'&&(j.items||j.users))d=j;}}catch(e){}}
-      // GAS fallback
       if(!d&&GAS_URL){
         try{
           const ctrl=new AbortController();
@@ -616,9 +618,10 @@ renderDBSetup();
       if(cloudSync>localSync){
         applyCloudData(d);
         setLiveStatus('live');
+        showSyncToast();
       }
     }catch(e){}
-  },5000);
+  },15000);/* Poll every 15s as safety net — SSE handles real-time, this catches anything SSE misses */
   scheduleWAReminder();
   startFirebaseRealtime();
   try{autoDeleteOldCompletedTasks();}catch(e){}
@@ -772,6 +775,40 @@ const btnsHtml=g.btns.map(b=>'<button class="sc-btn '+b.cl+'" onclick="'+b.fn+'"
 return '<div class="sc-grp"><div class="sc-grp-title">'+g.title+'</div><div class="sc-row col'+g.cols+'">'+btnsHtml+'</div></div>';
 }).join('');
 }
+/* ═══ DASHBOARD WIDGET SYSTEM ═══════════════════════════════════ */
+const DASH_WIDGETS=[
+  {id:'stats',     label:'Stats Cards',        icon:'📊', desc:'Items, Stock, Meters, Pending'},
+  {id:'alerts',    label:'Alerts',             icon:'🔔', desc:'Low stock & system alerts'},
+  {id:'tasks',     label:'My Tasks',           icon:'📋', desc:'Today\'s task summary'},
+  {id:'followups', label:'Lead Follow-ups',    icon:'📞', desc:'Due follow-up reminders'},
+  {id:'recurring', label:'Recurring Visits',   icon:'🔁', desc:'Scheduled visit reminders'},
+  {id:'shortcuts', label:'Quick Actions',      icon:'⚡', desc:'Shortcut buttons'},
+  {id:'stock',     label:'Stock Overview',     icon:'📦', desc:'Current stock levels'},
+  {id:'recent',    label:'Recent Activity',    icon:'🕐', desc:'Latest ledger entries'}
+];
+const DEFAULT_DASH_ORDER=['stats','alerts','tasks','followups','recurring','shortcuts','stock','recent'];
+
+function getDashConfig(){
+  /* Per-user config takes priority, then fall back to admin global config, then defaults */
+  const userId=STATE.user?.id;
+  const userCfg=userId&&STATE.settings.dashConfigPerUser?STATE.settings.dashConfigPerUser[userId]:null;
+  const globalCfg=STATE.settings.dashConfig||null;
+  const cfg=userCfg||globalCfg||{};
+  return {
+    order:cfg.order||DEFAULT_DASH_ORDER,
+    hidden:cfg.hidden||[]
+  };
+}
+function saveDashConfig(cfg,isGlobal){
+  if(isGlobal){
+    STATE.settings.dashConfig=cfg;
+  }else{
+    if(!STATE.settings.dashConfigPerUser) STATE.settings.dashConfigPerUser={};
+    STATE.settings.dashConfigPerUser[STATE.user.id]=cfg;
+  }
+  persist(); renderDash(); toast('Dashboard layout saved','ok');
+}
+
 function renderDash(){
 applyRoleUI();
 renderShortcuts();
@@ -780,19 +817,76 @@ el('dg').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+
 const chip=el('d-user-chip');
 if(chip) chip.textContent=STATE.user?.staffTypeName?'Logged in as '+STATE.user.name+' ('+STATE.user.staffTypeName+')':'';
 el('ds').textContent=fmtDate(new Date());
+/* Build stats data (always needed for alerts etc.) */
 let totT=0,totSKU=0;
-STATE.items.forEach(i=>i.colours.filter(c=>!c.discontinued).forEach(c=>{totSKU++;totT+=(c.stock_taka||0);}));
-el('dstats').innerHTML=
-'<div class="sc cp"><div class="slbl">Items</div><div class="sval">'+STATE.items.length+'</div><div class="ssub">'+totSKU+' SKUs</div></div>'+
-'<div class="sc ct"><div class="slbl">Total Stock</div><div class="sval">'+fmtN(totT)+'<span style="font-size:14px;font-weight:600">T</span></div><div class="ssub">TAKA</div></div>'+
-'<div class="sc ca"><div class="slbl">Meters</div><div class="sval">'+fmtN(totT*STATE.settings.avgMtrPerTaka)+'</div><div class="ssub">approx</div></div>'+
-'<div class="sc cg"><div class="slbl">Pending</div><div class="sval">'+STATE.orders.filter(o=>o.status==='pending').length+'</div><div class="ssub">'+STATE.bills.filter(b=>b.payStatus!=='paid').length+' unpaid bills</div></div>';
-renderDashAlerts();
-try{renderFollowupAlert();}catch(e){}
-try{renderDashRecurringVisits();}catch(e){}
-renderDashTaskWidget();
-renderStock();
-renderRecentAct();
+const activeItems=STATE.items.filter(i=>!i._deleted);
+activeItems.forEach(i=>i.colours.filter(c=>!c.discontinued&&!c._deleted).forEach(c=>{totSKU++;totT+=(c.stock_taka||0);}));
+const activeOrders=STATE.orders.filter(o=>!o._deleted&&o.status!=='deleted');
+const activeBillsDash=liveBills();
+
+/* Dashboard layout config */
+const dashCfg=getDashConfig();
+const hiddenSet=new Set(dashCfg.hidden);
+const orderedWidgets=dashCfg.order.filter(id=>!hiddenSet.has(id));
+
+/* Container references */
+const statsEl=el('dstats');
+const alertsEl=el('dash-alerts');
+const taskEl=el('dash-task-widget');
+const followupEl=el('dash-followup-alert');
+const recurringEl=document.getElementById('dash-recurring-visits');
+const shortcutsEl=el('dash-shortcuts');
+const stockHdr=document.querySelector('#s-dash .stl[data-i18n="stock_ov"]');
+const stockSearch=stockHdr?stockHdr.nextElementSibling:null;
+const stockEl=el('stkov');
+const recentHdr=document.querySelector('#s-dash .stl[data-i18n="recent"]');
+const recentEl=el('ract');
+
+/* Map widget IDs to their DOM elements + render functions */
+const widgetMap={
+  stats:{els:[statsEl], render:()=>{
+    statsEl.innerHTML=
+    '<div class="sc cp"><div class="slbl">Items</div><div class="sval">'+activeItems.length+'</div><div class="ssub">'+totSKU+' SKUs</div></div>'+
+    '<div class="sc ct"><div class="slbl">Total Stock</div><div class="sval">'+fmtN(totT)+'<span style="font-size:14px;font-weight:600">T</span></div><div class="ssub">TAKA</div></div>'+
+    '<div class="sc ca"><div class="slbl">Meters</div><div class="sval">'+fmtN(totT*STATE.settings.avgMtrPerTaka)+'</div><div class="ssub">approx</div></div>'+
+    '<div class="sc cg"><div class="slbl">Pending</div><div class="sval">'+activeOrders.filter(o=>o.status==='pending').length+'</div><div class="ssub">'+activeBillsDash.filter(b=>b.payStatus!=='paid').length+' unpaid bills</div></div>';
+  }},
+  alerts:{els:[alertsEl], render:()=>renderDashAlerts()},
+  tasks:{els:[taskEl], render:()=>renderDashTaskWidget()},
+  followups:{els:[followupEl], render:()=>{try{renderFollowupAlert();}catch(e){}}},
+  recurring:{els:[recurringEl], render:()=>{try{renderDashRecurringVisits();}catch(e){}}},
+  shortcuts:{els:[shortcutsEl], render:()=>{}/* already rendered above */},
+  stock:{els:[stockHdr,stockSearch,stockEl], render:()=>renderStock()},
+  recent:{els:[recentHdr,recentEl], render:()=>renderRecentAct()}
+};
+
+/* Hide all widget elements first */
+Object.values(widgetMap).forEach(w=>w.els.forEach(e=>{if(e)e.style.display='none';}));
+
+/* Show & reorder visible widgets */
+const scrBody=document.querySelector('#s-dash .scr-body');
+if(scrBody){
+  orderedWidgets.forEach(wid=>{
+    const w=widgetMap[wid]; if(!w) return;
+    w.els.forEach(e=>{if(e){e.style.display='';scrBody.appendChild(e);}});
+    w.render();
+  });
+}
+
+/* Gear icon for dashboard config */
+let gearBtn=document.getElementById('dash-gear-btn');
+if(!gearBtn){
+  gearBtn=document.createElement('button');
+  gearBtn.id='dash-gear-btn';
+  gearBtn.style.cssText='position:absolute;top:12px;right:120px;background:rgba(0,0,0,.06);border:none;border-radius:8px;padding:5px 10px;font-size:16px;cursor:pointer;z-index:10';
+  gearBtn.title='Customize Dashboard';
+  gearBtn.textContent='\u2699\uFE0F';
+  gearBtn.onclick=()=>openDashConfig();
+  const hdr=document.querySelector('#s-dash .shdr .hr');
+  if(hdr){hdr.style.position='relative';hdr.appendChild(gearBtn);}
+}
+
+/* Non-widget tasks that always run */
 generateTodayRecurringTasks();
 generateTaskInstances(today());
 updateTaskDot();
@@ -802,10 +896,88 @@ const pf=(STATE.flaggedEntries||[]).filter(f=>f.status==='pending').length;
 fd.textContent=pf; fd.style.display=pf>0?'':'none';
 }
 }
+
+function openDashConfig(){
+const isAdmin=STATE.user?.role==='admin';
+const dashCfg=getDashConfig();
+const currentOrder=[...dashCfg.order];
+const hiddenSet=new Set(dashCfg.hidden);
+/* Ensure all widgets are in the order list */
+DASH_WIDGETS.forEach(w=>{if(!currentOrder.includes(w.id))currentOrder.push(w.id);});
+
+const div=document.createElement('div');div.id='m-dashcfg';
+div.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
+
+function buildHTML(){
+let h='<div style="background:white;border-radius:16px 16px 0 0;width:min(500px,100%);padding:16px;max-height:85vh;overflow-y:auto">';
+h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">';
+h+='<h3 style="margin:0;font-size:17px;font-weight:800">\u2699\uFE0F Customize Dashboard</h3>';
+h+='<button onclick="rmEl(\'m-dashcfg\')" style="background:none;border:none;font-size:24px;cursor:pointer">&times;</button></div>';
+h+='<div style="font-size:12px;color:var(--t3);margin-bottom:12px">Toggle widgets on/off and drag to reorder. Use arrows to move widgets up or down.</div>';
+
+h+='<div id="dash-cfg-list">';
+currentOrder.forEach((wid,idx)=>{
+  const w=DASH_WIDGETS.find(x=>x.id===wid); if(!w) return;
+  const visible=!hiddenSet.has(wid);
+  h+='<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid '+(visible?'#E5E7EB':'#F3F4F6')+';border-radius:10px;margin-bottom:6px;background:'+(visible?'white':'#FAFAFA')+'">';
+  h+='<div style="display:flex;flex-direction:column;gap:2px">';
+  h+='<button onclick="dashCfgMove('+idx+',-1)" style="background:none;border:none;font-size:14px;cursor:pointer;padding:0;line-height:1;color:'+(idx===0?'#D1D5DB':'#374151')+'"'+(idx===0?' disabled':'')+'>&#x25B2;</button>';
+  h+='<button onclick="dashCfgMove('+idx+',1)" style="background:none;border:none;font-size:14px;cursor:pointer;padding:0;line-height:1;color:'+(idx===currentOrder.length-1?'#D1D5DB':'#374151')+'"'+(idx===currentOrder.length-1?' disabled':'')+'>&#x25BC;</button>';
+  h+='</div>';
+  h+='<span style="font-size:20px">'+w.icon+'</span>';
+  h+='<div style="flex:1"><div style="font-size:13px;font-weight:700;color:'+(visible?'#111827':'#9CA3AF')+'">'+w.label+'</div>';
+  h+='<div style="font-size:11px;color:var(--t3)">'+w.desc+'</div></div>';
+  h+='<label style="position:relative;width:44px;height:24px;flex-shrink:0;cursor:pointer">';
+  h+='<input type="checkbox" '+(visible?'checked':'')+' onchange="dashCfgToggle(\''+wid+'\',this.checked)" style="opacity:0;width:0;height:0;position:absolute"/>';
+  h+='<span style="position:absolute;inset:0;background:'+(visible?'#4F46E5':'#D1D5DB')+';border-radius:24px;transition:.3s"></span>';
+  h+='<span style="position:absolute;top:2px;left:'+(visible?'22':'2')+'px;width:20px;height:20px;background:white;border-radius:50%;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>';
+  h+='</label></div>';
+});
+h+='</div>';
+
+h+='<div style="display:flex;gap:8px;margin-top:14px">';
+h+='<button class="btn bp bfl" onclick="dashCfgSave(false)">Save for Me</button>';
+if(isAdmin) h+='<button class="btn bs bfl" onclick="dashCfgSave(true)">Save for Everyone</button>';
+h+='</div>';
+if(!isAdmin) h+='<div style="font-size:11px;color:var(--t3);text-align:center;margin-top:6px">Your personal layout. Admin can set defaults for all staff.</div>';
+h+='<button class="btn bgh bfl mt8" onclick="dashCfgReset()">Reset to Default</button>';
+h+='</div>';
+return h;
+}
+
+div.innerHTML=buildHTML();
+document.body.appendChild(div);
+
+/* Expose config functions to global scope for onclick handlers */
+window._dashCfgOrder=currentOrder;
+window._dashCfgHidden=hiddenSet;
+window.dashCfgMove=function(idx,dir){
+  const arr=window._dashCfgOrder;
+  const newIdx=idx+dir;
+  if(newIdx<0||newIdx>=arr.length) return;
+  [arr[idx],arr[newIdx]]=[arr[newIdx],arr[idx]];
+  div.innerHTML=buildHTML();
+};
+window.dashCfgToggle=function(wid,checked){
+  if(checked) window._dashCfgHidden.delete(wid);
+  else window._dashCfgHidden.add(wid);
+  div.innerHTML=buildHTML();
+};
+window.dashCfgSave=function(isGlobal){
+  saveDashConfig({order:[...window._dashCfgOrder],hidden:[...window._dashCfgHidden]},isGlobal);
+  rmEl('m-dashcfg');
+};
+window.dashCfgReset=function(){
+  window._dashCfgOrder=[...DEFAULT_DASH_ORDER];
+  window._dashCfgHidden=new Set();
+  div.innerHTML=buildHTML();
+};
+}
 function renderStock(){
 const q=(el('sq')?.value||'').toLowerCase().trim();
 const container=el('stkov'); if(!container) return;
 const filtered=STATE.items.filter(item=>{
+if(item._deleted) return false;
 if(!q) return true;
 if(item.name.toLowerCase().includes(q)) return true;
 if((item.hsn||'').toLowerCase().includes(q)) return true;
@@ -890,7 +1062,11 @@ container.appendChild(card);
 function renderRecentAct(){
 const icons={mill:'M',jobwork:'JW','jobwork-out':'JW',exchange:'EX',transfer:'TR',opening:'OP',adjustment:'ADJ',manual:'MNL',sale:'SALE'};
 const iconEmoji={mill:'🏭',jobwork:'⚙️','jobwork-out':'⚙️',exchange:'🔄',transfer:'↩️',opening:'📦',adjustment:'📊',manual:'✏️',sale:'🧾'};
-const rec=[...STATE.entries].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);
+const rec=[...STATE.entries].filter(e=>!e._deleted).sort((a,b)=>{
+const ta=a._ts||0, tb=b._ts||0;
+if(ta!==tb) return tb-ta;
+return new Date(b.date)-new Date(a.date);
+}).slice(0,8);
 const c=el('ract'); if(!c) return;
 if(!rec.length){
 c.innerHTML='<div class="emp"><div class="emj">&#x1F4CB;</div><h3>No Activity</h3><p>Start by adding inward entries</p></div>';
@@ -953,7 +1129,7 @@ if(ok){ addStock(itemId,cIdx,shortfall,'adjustment','Stock Adjustment','','Auto-
 return false;
 }
 function buildCascade(pfx,showStk){
-const opts=[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
+const opts=[...STATE.items].filter(i=>!i._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
 return '<div class="fg"><label>Item</label><div class="fi"><select class="sel" id="'+pfx+'-i" onchange="cascRng(\''+pfx+'\','+showStk+')"><option value="">Select item...</option>'+opts+'</select><button class="ai" onclick="toastMsg(\'Add items in Masters first\')">+</button></div></div><div class="fg hid" id="'+pfx+'-rg"><label>Range</label><div class="fi"><select class="sel" id="'+pfx+'-r" onchange="cascClr(\''+pfx+'\','+showStk+')"><option value="">Select range...</option></select><button class="ai" onclick="quickRng(\''+pfx+'\')">+</button></div></div><div class="fg hid" id="'+pfx+'-cg"><label>Colour</label><div class="fi"><select class="sel" id="'+pfx+'-c" onchange="onClrSel(\''+pfx+'\','+showStk+')"><option value="">Select colour...</option></select><button class="ai" onclick="quickClr(\''+pfx+'\')">+</button></div></div><div id="'+pfx+'-si"></div>';
 }
 function cascRng(pfx,showStk){
@@ -1003,7 +1179,7 @@ el('aclrtit').textContent='Add Colours to Range '+rng; showMod('m-aclr');
 }
 function renderItems(q=''){
 const c=el('itmlst'); if(!c) return;
-const f=STATE.items.filter(i=>!q||i.name.toLowerCase().includes(q.toLowerCase()));
+const f=STATE.items.filter(i=>!i._deleted&&(!q||i.name.toLowerCase().includes(q.toLowerCase())));
 if(!f.length){
 c.innerHTML='<div class="emp"><div class="emj">&#x1F9F5;</div><h3>No Items</h3><p>Tap + to add your first item</p></div>';
 return;
@@ -1228,7 +1404,7 @@ c.innerHTML=f.map(x=>'<div class="et" onclick="editCust(\''+x.id+'\')"><div clas
 }
 function renderCustGroups(){
 const c=el('grplst'); if(!c) return;
-const groups=STATE.custGroups||[];
+const groups=(STATE.custGroups||[]).filter(g=>!g._deleted);
 if(!groups.length){c.innerHTML='<div class="emp"><div class="emj">🏢</div><h3>No Party Groups</h3><p>Tap + to create a group linking related firms</p></div>';return;}
 c.innerHTML=groups.map(g=>{
 const members=(g.memberIds||[]).map(id=>STATE.customers.find(x=>x.id===id)).filter(Boolean);
@@ -1306,8 +1482,9 @@ renderCustGroups();
 async function deleteCustGroup(id){
 const ok=await appConfirm('Delete Group?','Members will not be deleted — only the group link is removed.','?','Delete','dr');
 if(!ok) return;
-STATE.custGroups=STATE.custGroups.filter(g=>g.id!==id);
-lsSave('vs_cust_groups',STATE.custGroups);
+const grp=STATE.custGroups.find(g=>g.id===id);
+if(grp){grp._deleted=true;grp._ts=Date.now();}
+persist();
 toast('Group deleted','ok');
 hideMod('m-cust-group');
 renderCustGroups();
@@ -1379,7 +1556,7 @@ discount:cDisc!==''?parseFloat(cDisc):undefined,
 discountDays:cDd!==''?parseInt(cDd):undefined,
 nettDays:cNd!==''?parseInt(cNd):undefined};
 const savedId=id||uid();
-if(id){const i=STATE.customers.findIndex(c=>c.id===id);if(i>=0) STATE.customers[i]={...STATE.customers[i],...obj};}
+if(id){const i=STATE.customers.findIndex(c=>c.id===id);if(i>=0){STATE.customers[i]={...STATE.customers[i],...obj};STATE.customers[i]._ts=Date.now();}}
 else STATE.customers.push(stamp({id:savedId,...obj}));
 /* Handle party group membership */
 const selGrpId=(el('cst-grp-sel')?.value||'').trim();
@@ -1435,9 +1612,9 @@ const name=(el('brk-name').value||'').trim(); if(!name){toast('Enter broker name
 const id=el('brk-id').value;
 if(!id&&isDuplicate(STATE.brokers,'name',name)){toast('Broker "'+name+'" already exists','er');return;}
 const obj={name,phone:el('brk-ph').value.trim(),commission:parseFloat(el('brk-cm').value)||0};
-if(id){const i=STATE.brokers.findIndex(b=>b.id===id);if(i>=0) STATE.brokers[i]={...STATE.brokers[i],...obj};}
-else STATE.brokers.push({id:uid(),...obj});
-lsSave('vs_brokers',STATE.brokers);
+if(id){const i=STATE.brokers.findIndex(b=>b.id===id);if(i>=0){STATE.brokers[i]={...STATE.brokers[i],...obj};STATE.brokers[i]._ts=Date.now();}}
+else STATE.brokers.push(stamp({id:uid(),...obj}));
+lsSave('vs_brokers',STATE.brokers);autoSyncFirebase();
 if(window._returnToBroker){
 window._returnToBroker=false; hideMod('m-brk');
 const bs=el('od-b');
@@ -1475,8 +1652,8 @@ function saveSup(){
   if(gstin){const dup=STATE.suppliers.find(s=>s.gstin===gstin&&s.id!==id);if(dup){toast('GSTIN exists: '+dup.name,'er');return;}}
   const obj={name,group:el('sup-grp').value,gstin,phone:el('sup-ph').value.trim(),
     contact:el('sup-ct').value.trim(),address:el('sup-addr').value.trim(),notes:el('sup-nt').value.trim()};
-  if(id){const i=STATE.suppliers.findIndex(s=>s.id===id);if(i>=0)STATE.suppliers[i]={...STATE.suppliers[i],...obj};}
-  else STATE.suppliers.push({id:uid(),...obj});
+  if(id){const i=STATE.suppliers.findIndex(s=>s.id===id);if(i>=0){STATE.suppliers[i]={...STATE.suppliers[i],...obj};STATE.suppliers[i]._ts=Date.now();}}
+  else STATE.suppliers.push(stamp({id:uid(),...obj}));
   lsSave('vs_suppliers',STATE.suppliers);hideMod('m-sup');renderSups();toast('Supplier saved','ok');autoSyncFirebase();
 }
 function renderPrds(){
@@ -1590,7 +1767,11 @@ function renderInRec(q){
 const c=el('inrec'); if(!c) return;
 const icons={mill:'🏭',jobwork:'⚙️',exchange:'🔄',transfer:'↩️',jwin:'⚙️',exch:'🔄'};
 const query=(q||el('inward-search')?.value||'').trim().toLowerCase();
-let ents=STATE.entries.filter(e=>['mill','jobwork','exchange','transfer'].includes(e.type)).sort((a,b)=>new Date(b.date)-new Date(a.date));
+let ents=STATE.entries.filter(e=>!e._deleted&&['mill','jobwork','exchange','transfer'].includes(e.type)).sort((a,b)=>{
+const ta=a._ts||0, tb=b._ts||0;
+if(ta!==tb) return tb-ta;
+return new Date(b.date)-new Date(a.date);
+});
 if(query){ents=ents.filter(e=>(e.itemName||'').toLowerCase().includes(query)||(e.colourName||'').toLowerCase().includes(query)||(e.party||'').toLowerCase().includes(query)||(e.sku||'').toLowerCase().includes(query)||(e.date||'').includes(query)||(e.type||'').toLowerCase().includes(query));}
 else{ents=ents.slice(0,200);}
 c.innerHTML=!ents.length
@@ -1663,17 +1844,23 @@ function filterJW(list){
   if(!query)return list;
   return list.filter(j=>(j.ref||'').toLowerCase().includes(query)||(j.jwParty||'').toLowerCase().includes(query)||(j.millParty||'').toLowerCase().includes(query)||(j.date||'').includes(query)||(j.rows||[]).some(r=>(r.itemName||'').toLowerCase().includes(query)||(r.colourName||'').toLowerCase().includes(query)||(r.sku||'').toLowerCase().includes(query)));
 }
-renderJWList('jwpnd',filterJW(STATE.jobWork.filter(j=>j.status==='pending')),query);
-renderJWList('jwrec',filterJW(STATE.jobWork.filter(j=>j.status==='received')),query);
-renderJWList('jwall',filterJW([...STATE.jobWork]),query);
+const activeJW=STATE.jobWork.filter(j=>!j._deleted);
+renderJWList('jwpnd',filterJW(activeJW.filter(j=>j.status==='pending')),query);
+renderJWList('jwrec',filterJW(activeJW.filter(j=>j.status==='received')),query);
+renderJWList('jwall',filterJW([...activeJW]),query);
 }
 function renderJWList(cid,list,query){
 const c=el(cid); if(!c) return;
 if(!list.length){c.innerHTML='<div class="emp"><div class="emj">⚙️</div><h3>'+(query?'No matches':'No Challans')+'</h3></div>';return;}
-c.innerHTML=list.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(j=>{
+c.innerHTML=list.sort((a,b)=>{
+const aNum=parseInt((a.ref||'').replace(/\D/g,''))||0;
+const bNum=parseInt((b.ref||'').replace(/\D/g,''))||0;
+if(aNum!==bNum) return bNum-aNum;
+return new Date(b.date)-new Date(a.date);
+}).map(j=>{
 const tot=j.rows.reduce((s,r)=>s+r.taka,0);
 const over=j.status==='pending'&&j.expDate&&new Date(j.expDate)<new Date();
-return '<div class="et '+(j.status==='pending'?'jwp':'jwr')+'"><div class="ei" style="background:'+(j.status==='pending'?'var(--Al)':'var(--Gl)')+';color:'+(j.status==='pending'?'var(--Ad)':'var(--Gd)')+'">⚙️</div><div class="eb"><div class="etit mono">'+j.ref+' - '+j.jwParty+'</div><div class="esub">'+j.rows.length+' SKU - '+fmtDate(j.date)+(j.millParty?' - '+j.millParty:'')+'</div>'+(over?'<span class="bdg bg-r">OVERDUE</span>':'')+'</div><div class="er"><div class="ev out">'+tot+'T</div><span class="bdg '+(j.status==='pending'?'bg-a':'bg-g')+'">'+j.status+'</span>'+(j.status==='pending'?'<div class="mt4"><button class="btn bsuc bxs" onclick="event.stopPropagation();openRecvJW(\''+j.id+'\')">Receive</button></div>':'')+'</div></div>';
+return '<div class="et '+(j.status==='pending'?'jwp':'jwr')+'"><div class="ei" style="background:'+(j.status==='pending'?'var(--Al)':'var(--Gl)')+';color:'+(j.status==='pending'?'var(--Ad)':'var(--Gd)')+'">⚙️</div><div class="eb"><div class="etit mono">'+j.ref+' - '+j.jwParty+'</div><div class="esub">'+j.rows.length+' SKU - '+fmtDate(j.date)+(j.millParty?' - '+j.millParty:'')+'</div>'+(over?'<span class="bdg bg-r">OVERDUE</span>':'')+'</div><div class="er"><div class="ev out">'+tot+'T</div><span class="bdg '+(j.status==='pending'?'bg-a':'bg-g')+'">'+j.status+'</span>'+(j.status==='pending'?'<div class="mt4 flx g8"><button class="btn bsuc bxs" onclick="event.stopPropagation();openRecvJW(\''+j.id+'\')">Receive</button><button class="btn bd bxs" onclick="event.stopPropagation();deleteJW(\''+j.id+'\')">Del</button></div>':'')+'</div></div>';
 }).join('');
 }
 function openRecvJW(id){
@@ -1706,10 +1893,20 @@ persist(); hideMod('m-rjw'); renderJWLists(); renderDash();
 toast('Job Work '+j.ref+' received','ok');
 api('saveJobWork',{jobWork:STATE.jobWork,entries:STATE.entries,items:STATE.items});
 }
+async function deleteJW(id){
+if(!hasPerm('delete_entry')){toast('No permission','er');return;}
+const j=STATE.jobWork.find(x=>x.id===id);if(!j)return;
+const ok=await appConfirm('Delete Job Work?','Challan: '+j.ref+'\nParty: '+j.jwParty+'\n\nRelated stock entries will remain in the ledger.','?','Delete','dr');
+if(!ok)return;
+j._deleted=true;j._ts=Date.now();
+persist();renderJWLists();renderDash();
+toast('Job Work '+j.ref+' deleted','ok');
+}
 let _ordRows=[{}], _ordId=null;
 function nextOrdNo(pfx){
 pfx=pfx||(STATE.user?.orderPrefix||STATE.settings.orderPrefix||'B/');
-const nums=STATE.orders
+const allOrders=STATE.orders.filter(o=>!o._deleted);
+const nums=allOrders
   .filter(o=>(o.orderNo||'').startsWith(pfx))
   .map(o=>parseInt((o.orderNo||'').slice(pfx.length))||0)
   .filter(n=>n>0);
@@ -1743,10 +1940,10 @@ showMod('m-ord');
 }
 function buildOrdBody(){
 const salesmen=STATE.users.filter(u=>
-u.active!==false&&(
+u.active!==false&&!u._deleted&&(
 (u.staffTypeId||'').toLowerCase().includes('salesman')||
 (u.staffTypeName||'').toLowerCase().includes('salesman')||
-u.role==='admin'||(!u.staffTypeId&&!u.staffTypeName)
+u.role==='admin'
 )
 );
 const smOpts=salesmen.sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(u=>'<option value="'+u.id+'">'+u.name+(u.orderPrefix?' ('+u.orderPrefix+')':'')+'</option>').join('');
@@ -2270,10 +2467,19 @@ const smId=el('od-sm')?.value;
 const smUser=STATE.users.find(u=>u.id===smId);
 if(!smId){toast('Select a salesman','er');return;}
 const existingOrd=_ordId?STATE.orders.find(o=>o.id===_ordId):null;
+/* Conflict detection: warn if another device modified the order since we opened the edit form */
+if(existingOrd&&window._editOrdTs&&existingOrd._ts>window._editOrdTs){
+if(!confirm('⚠️ This order was modified by '+( existingOrd.by||'another user')+' while you were editing.\n\nSave anyway and overwrite their changes?'))return;
+}
 const pfx=smUser?.orderPrefix||STATE.settings.orderPrefix||'B/';
 const editedOrdNo=(el('od-ordno-edit')?.value||'').trim();
 /* CRITICAL: During edit, ALWAYS preserve order number — never generate a new one */
-const ordNo=_ordId?(editedOrdNo||existingOrd?.orderNo||window._editOrdNo||el('ordno')?.textContent||''):nextOrdNo(pfx);
+let ordNo=_ordId?(editedOrdNo||existingOrd?.orderNo||window._editOrdNo||el('ordno')?.textContent||''):nextOrdNo(pfx);
+/* Duplicate number check — another device may have created same number simultaneously */
+if(!_ordId){
+const dup=STATE.orders.find(o=>o.orderNo===ordNo&&!o._deleted);
+if(dup){ordNo=nextOrdNo(pfx);}
+}
 const commonFields={orderNo:ordNo,salesmanId:smId,salesmanName:smUser?.name||'',date:el('od-d')?.value,custId:cId,custName:cust?.name||'',brkId:bId,brkName:brk?.name||'',notes:el('od-nt')?.value,by:STATE.user?.name||'',fy:existingOrd?.fy||STATE.settings.currentFY||getCurrentFY()};
 
 /* ── OPEN / PROGRAMME ORDER ── */
@@ -2328,17 +2534,18 @@ toast('Order '+ordNo+' saved','ok'); api('saveOrder',{orders:STATE.orders});
 }
 function renderOrders(q=''){
 const c=el('ordlst'); if(!c) return;
-const f=STATE.orders.filter(o=>!q||o.orderNo.includes(q)||o.custName.toLowerCase().includes(q.toLowerCase()));
+const f=STATE.orders.filter(o=>!o._deleted&&o.status!=='deleted'&&(!q||o.orderNo.includes(q)||o.custName.toLowerCase().includes(q.toLowerCase())));
 if(!f.length){c.innerHTML='<div class="emp"><div class="emj">&#x1F9FE;</div><h3>No Orders</h3><p>Tap + Order to create one</p></div>';return;}
 c.innerHTML='';
 f.sort((a,b)=>{
-const da=a.date?new Date(a.date).getTime():0;
-const db=b.date?new Date(b.date).getTime():0;
-const d=db-da;
-if(d!==0&&!isNaN(d)) return d;
+/* Primary: order number descending (latest first) */
 const aNum=parseInt((a.orderNo||'').replace(/\D/g,''))||0;
 const bNum=parseInt((b.orderNo||'').replace(/\D/g,''))||0;
-return bNum-aNum;
+if(aNum!==bNum) return bNum-aNum;
+/* Fallback: date descending */
+const da=a.date?new Date(a.date).getTime():0;
+const db=b.date?new Date(b.date).getTime():0;
+return db-da;
 }).forEach(o=>{
 const row=document.createElement('div');
 row.className='et'; row.style.flexWrap='wrap'; row.style.cursor='pointer';
@@ -2580,8 +2787,8 @@ function nextBillNo(){
 const pfx=STATE.settings.billPrefix||'INV-';
 const padLen=parseInt(STATE.settings.billPadLen)||4;
 const startNo=parseInt(STATE.settings.billStartNo)||1;
-const activeBills=STATE.bills.filter(b=>b.status!=='cancelled');
-const nums=activeBills.map(b=>{
+/* Include ALL bills (even cancelled/deleted) to avoid number reuse across devices */
+const nums=STATE.bills.map(b=>{
   const n=parseInt((b.billNo||'').replace(pfx,''))||0; return n;
 }).filter(n=>n>0);
 const maxNum=nums.length?Math.max(...nums):startNo-1;
@@ -2873,8 +3080,10 @@ async function saveBill(){
 const cId=el('bl-c')?.value; if(!cId){toast('Select customer','er');return;}
 const cust=STATE.customers.find(c=>c.id===cId);
 const brkId=el('bl-b')?.value, brk=STATE.brokers.find(b=>b.id===brkId);
-const items=[]; const bno=(el('bl-bno')?.value||'').trim()||nextBillNo();
+const items=[]; let bno=(el('bl-bno')?.value||'').trim()||nextBillNo();
 if(!bno){toast('Enter invoice number','er');return;}
+/* Duplicate number check — another device may have created same number simultaneously */
+if(STATE.bills.find(b=>b.billNo===bno)){bno=nextBillNo();}
 if(!_billOrdId){
 /* Standalone bill — read from lot cards */
 for(const lot of _billLots){
@@ -2953,7 +3162,12 @@ const c=el('billst')||el('billlst'); if(!c) return;
 const f=liveBills().filter(b=>!q||b.billNo.includes(q)||b.custName.toLowerCase().includes(q.toLowerCase()));
 if(!f.length){c.innerHTML='<div class="emp"><div class="emj">&#x1F9FE;</div><h3>No Bills</h3><p>Create bills from orders</p></div>';return;}
 c.innerHTML='';
-f.sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(b=>{
+f.sort((a,b)=>{
+const aNum=parseInt((a.billNo||'').replace(/\D/g,''))||0;
+const bNum=parseInt((b.billNo||'').replace(/\D/g,''))||0;
+if(aNum!==bNum) return bNum-aNum;
+return new Date(b.date)-new Date(a.date);
+}).forEach(b=>{
 const row=document.createElement('div');
 row.className='et'; row.style.cursor='pointer';
 row.onclick=e=>{if(e.target.tagName==='BUTTON')return; showBillDetailView(b.id);};
@@ -3028,12 +3242,12 @@ showMod('m-pay');
 function savePay(){
 const b=STATE.bills.find(x=>x.id===_payBillId); if(!b) return;
 const amt=parseFloat(el('py-a')?.value)||0; if(!amt){toast('Enter payment amount','er');return;}
-STATE.payments.push({id:uid(),billId:b.id,billNo:b.billNo,custId:b.custId,custName:b.custName,date:el('py-d')?.value,amount:amt,mode:el('py-m')?.value,ref:el('py-r')?.value,notes:el('py-nt')?.value,by:STATE.user?.name||''});
+STATE.payments.push(stamp({id:uid(),billId:b.id,billNo:b.billNo,custId:b.custId,custName:b.custName,date:el('py-d')?.value,amount:amt,mode:el('py-m')?.value,ref:el('py-r')?.value,notes:el('py-nt')?.value,by:STATE.user?.name||''}));
 b.amtPaid=(b.amtPaid||0)+amt;
 b.payStatus=b.amtPaid>=b.grandTotal?'paid':'partial';
+b._ts=Date.now();
 persist(); hideMod('m-pay'); renderBills(); renderPayments(); renderOutstanding();
 toast('Payment '+fmtRs(amt)+' recorded','ok');
-api('savePayment',{payments:STATE.payments,bills:STATE.bills});
 }
 function renderPayments(q=''){
 const c=el('paylst'); if(!c) return;
@@ -3044,22 +3258,22 @@ c.innerHTML=f.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=>'<div class=
 function _recheckOrderStatuses(){
 /* Auto-fix orders that are fully dispatched but still marked pending/billed */
 let changed=false;
-STATE.orders.forEach(o=>{
+STATE.orders.filter(o=>!o._deleted).forEach(o=>{
 if(o.status!=='pending'&&o.status!=='billed') return;
 const totalOrdered=(o.items||[]).reduce((s,i)=>s+(i.pcs||0),0);
-const activeBills=(o.bills||[]).filter(b=>b.status!=='cancelled');
+const activeBills=(o.bills||[]).filter(b=>b.status!=='cancelled'&&!b._deleted);
 if(!activeBills.length) return;
 const totalDispatched=activeBills.reduce((s,b)=>s+(b.items||[]).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
-if(totalDispatched>=totalOrdered){o.status='fulfilled';changed=true;}
+if(totalDispatched>=totalOrdered){o.status='fulfilled';o._ts=Date.now();changed=true;}
 });
 /* Also check STATE.bills for orders that have all items billed */
-STATE.orders.forEach(o=>{
+STATE.orders.filter(o=>!o._deleted).forEach(o=>{
 if(o.status!=='pending'&&o.status!=='billed') return;
 const totalOrdered=(o.items||[]).reduce((s,i)=>s+(i.pcs||0),0);
-const extBills=STATE.bills.filter(b=>b.ordId===o.id&&b.status!=='cancelled');
+const extBills=liveBills().filter(b=>b.ordId===o.id&&b.status!=='cancelled');
 if(!extBills.length) return;
 const totalDispatched=extBills.reduce((s,b)=>s+(b.items||[]).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
-if(totalDispatched>=totalOrdered){o.status='fulfilled';changed=true;}
+if(totalDispatched>=totalOrdered){o.status='fulfilled';o._ts=Date.now();changed=true;}
 });
 if(changed) lsSave('vs_orders',STATE.orders);
 }
@@ -3067,12 +3281,18 @@ function renderPendingOrders(){
 const c=el('pendlst'); if(!c) return;
 _recheckOrderStatuses();
 /* Pending/billed orders — not yet fully dispatched */
-const pendingOrders=STATE.orders.filter(o=>o.status==='pending'||o.status==='billed').sort((a,b)=>{
-const da=a.date?new Date(a.date).getTime():0, db=b.date?new Date(b.date).getTime():0; return da-db;
+const pendingOrders=STATE.orders.filter(o=>!o._deleted&&(o.status==='pending'||o.status==='billed')).sort((a,b)=>{
+const aNum=parseInt((a.orderNo||'').replace(/\D/g,''))||0;
+const bNum=parseInt((b.orderNo||'').replace(/\D/g,''))||0;
+if(aNum!==bNum) return bNum-aNum;
+const da=a.date?new Date(a.date).getTime():0, db=b.date?new Date(b.date).getTime():0; return db-da;
 });
 /* Bills that are unpaid or partly paid */
-const unpaidBills=STATE.bills.filter(b=>b.status!=='cancelled'&&b.payStatus!=='paid').sort((a,b)=>{
-const da=a.date?new Date(a.date).getTime():0, db=b.date?new Date(b.date).getTime():0; return da-db;
+const unpaidBills=STATE.bills.filter(b=>b.status!=='cancelled'&&!b._deleted&&b.payStatus!=='paid').sort((a,b)=>{
+const aNum=parseInt((a.billNo||'').replace(/\D/g,''))||0;
+const bNum=parseInt((b.billNo||'').replace(/\D/g,''))||0;
+if(aNum!==bNum) return bNum-aNum;
+const da=a.date?new Date(a.date).getTime():0, db=b.date?new Date(b.date).getTime():0; return db-da;
 });
 /* Summary figures */
 const totalOrderValue=pendingOrders.reduce((s,o)=>s+(o.total||0),0);
@@ -3823,10 +4043,9 @@ staffTypeId, staffTypeName:staffType?.name||'',
 permissions:{...window._usrPerms}
 };
 if(pw) obj.password=pw;
-if(id){const i=STATE.users.findIndex(u=>u.id===id);if(i>=0) STATE.users[i]={...STATE.users[i],...obj};}
+if(id){const i=STATE.users.findIndex(u=>u.id===id);if(i>=0){STATE.users[i]={...STATE.users[i],...obj};STATE.users[i]._ts=Date.now();}}
 else{if(!pw){toast('Enter password for new user','er');return;}STATE.users.push(stamp({id:uid(),...obj}));}
-lsSave('vs_users',STATE.users); hideMod('m-usr'); renderUsers(); toast('User saved','ok');
-api('saveUser',{users:STATE.users});
+persist(); hideMod('m-usr'); renderUsers(); toast('User saved','ok');
 }
 async function deleteUser(id){
   const u=STATE.users.find(x=>x.id===id);if(!u)return;
@@ -3879,6 +4098,9 @@ c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Compa
 '<div class="ir2"><div class="fg"><label>Padding Digits</label><input class="inp mono" type="number" id="s-bpad" step="1" min="1" max="8" value="'+(s.billPadLen||4)+'"/></div>'+
 '<div class="fg"><label>Preview</label><div class="inp mono" style="background:var(--Pl);color:var(--Pd);font-weight:800;display:flex;align-items:center" id="s-bprev">'+(s.billPrefix||'INV-')+String(s.billStartNo||1).padStart(s.billPadLen||4,'0')+'</div></div></div>'+
 '</div>'+
+'<div class="card mt12"><div class="fw8" style="margin-bottom:14px">Dashboard Layout</div>'+
+'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Control which widgets appear on the dashboard and their order. Click the gear icon on the Dashboard to customize.</div>'+
+'<button class="btn bs bfl" onclick="openDashConfig()">Customize Dashboard Layout</button></div>'+
 '<div class="card mt12" style="background:#F9FAFB;text-align:center"><div style="font-size:11px;color:var(--t3)">ALT Stock v'+APP_VERSION+' | Build: '+APP_BUILD_DATE+'</div></div>'+
 '<button class="btn bp bfl mt16" onclick="saveSettings()">Save Settings</button>'+
 '<button class="btn bd bfl mt8" onclick="logout()">Logout</button>'+
@@ -4069,19 +4291,19 @@ if(ledgerEntries.length>0){
     '🗑️','Force Delete','dr'
   );
   if(!choice) return;
-  /* Remove all ledger entries for this SKU */
-  STATE.entries=STATE.entries.filter(e=>!(e.sku===col.sku&&e.itemId===itemId));
-  lsSave('vs_entries',STATE.entries);
+  /* Soft-delete all ledger entries for this SKU so they won't resurrect */
+  STATE.entries.filter(e=>e.sku===col.sku&&e.itemId===itemId).forEach(e=>{e._deleted=true;e._ts=Date.now();});
 } else {
   const msg='Delete colour: '+col.name+' ['+col.range+']\nSKU: '+col.sku+(stk>0?'\n\n\u26A0\uFE0F This colour has '+stk+'T stock. Deleting will remove it from records.':'');
   const ok=await appConfirm('Delete Colour?',msg,'🗑️','Delete','dr');
   if(!ok) return;
 }
-item.colours.splice(cIdx,1);
-lsSave('vs_items',STATE.items);
+/* Mark colour as discontinued+deleted instead of splice (prevents index drift across devices) */
+col.discontinued=true;col._deleted=true;col.stock_taka=0;col.stock_mtrs=0;
+item._ts=Date.now();
+persist();
 renderItems(document.querySelector('#tp-itm .srch input')?.value||'');
 toast('Colour "'+col.name+'" deleted','ok');
-api('saveItem',{items:STATE.items,entries:STATE.entries});
 }
 let _skuItemId=null, _skuCIdx=null;
 function showSKUDetail(itemId, cIdx){
@@ -4137,13 +4359,13 @@ const stk_warn=totStk>0?' This item has '+totStk+'T stock across all colours. Le
 const msg='Delete: '+item.name+'\n'+item.colours.length+' colour(s) / '+item.colours.length+' SKUs.'+stk_warn;
 const ok=await appConfirm('Delete Item?',msg,'?','Delete','dr');
 if(!ok) return;
-STATE.items=STATE.items.filter(i=>i.id!==id);
-lsSave('vs_items',STATE.items);
+/* Soft-delete so smartMerge won't resurrect from other devices */
+item._deleted=true;item._ts=Date.now();
+persist();
 hideMod('m-item');
 renderItems();
 renderDash();
 toast('"'+item.name+'" deleted','ok');
-api('saveItem',{items:STATE.items});
 }
 let _entryRef=null;
 function showEntryDetail(e){
@@ -4187,11 +4409,13 @@ if(!_entryRef) return;
 if(!hasPerm('delete_entry')){toast('No permission to delete entries','er');return;}
 const ok=await appConfirm('Delete Entry?','This ledger entry will be removed. Stock levels will NOT be auto-corrected.','?','Delete','dr');
 if(!ok) return;
-STATE.entries=STATE.entries.filter(x=>x.id!==_entryRef.id);
-lsSave('vs_entries',STATE.entries);
+/* Soft-delete entry so smartMerge won't resurrect it from other devices */
+const eDel=STATE.entries.find(x=>x.id===_entryRef.id);
+if(eDel){eDel._deleted=true;eDel._ts=Date.now();}
+persist();
 hideMod('m-entry');
-renderRecentAct(); renderInRec();
-toast('Entry deleted','ok');
+renderRecentAct(); renderInRec(); renderDash();
+toast('Entry deleted - stock will auto-correct','ok');
 }
 function editEntryMode(){
 const e=_entryRef; if(!e) return;
@@ -4262,10 +4486,13 @@ addStock(item.itemId,item.colIdx,item.taka,'adjustment',
 });
 });
 }
-const billIds=new Set(activeBills.map(b=>b.id));
-STATE.bills=STATE.bills.filter(b=>!billIds.has(b.id));
+/* Soft-delete bills so smartMerge won't resurrect them from other devices */
+activeBills.forEach(b=>{
+b._deleted=true; b._ts=Date.now(); b.status='deleted';
+});
 }
-STATE.orders=STATE.orders.filter(x=>x.id!==id);
+/* Soft-delete order so smartMerge won't resurrect it from other devices */
+o._deleted=true; o._ts=Date.now(); o.status='deleted';
 persist(); renderOrders(); renderBills(); renderDash();
 toast('Order '+o.orderNo+' deleted','ok');
 res();
@@ -4280,17 +4507,18 @@ async function cancelOrder(id){
 const ok=await appConfirm('Cancel Order?','Order will be marked as cancelled.','?','Cancel Order','dr');
 if(!ok) return;
 const o=STATE.orders.find(x=>x.id===id); if(!o) return;
-o.status='cancelled'; lsSave('vs_orders',STATE.orders); renderOrders(); toast('Order cancelled');
+o.status='cancelled'; o._ts=Date.now(); persist(); renderOrders(); toast('Order cancelled');
 }
 async function clearOrder(id){
 const ok=await appConfirm('Clear Order?','Mark this order as cleared/fulfilled without creating a bill?','?','Clear','ok');
 if(!ok) return;
 const o=STATE.orders.find(x=>x.id===id); if(!o) return;
-o.status='fulfilled'; lsSave('vs_orders',STATE.orders); renderOrders(); toast('Order marked as fulfilled','ok');
+o.status='fulfilled'; o._ts=Date.now(); persist(); renderOrders(); toast('Order marked as fulfilled','ok');
 }
 function editOrder(id){
 const o=STATE.orders.find(x=>x.id===id); if(!o) return;
 _ordId=id; _ordRows=[{}];
+window._editOrdTs=o._ts||0; /* Capture version for conflict detection */
 /* Detect order type */
 _ordType=(o.type==='open')?'open':'fixed';
 if(_ordType==='open'){
@@ -4956,7 +5184,7 @@ toast('Bill cancelled - stock returned','ok');
 }else{
 toast('Bill cancelled - no stock return','ok');
 }
-bill.status='cancelled';
+bill.status='cancelled';bill._ts=Date.now();
 const o=STATE.orders.find(x=>x.id===bill.ordId);
 if(o&&o.status!=='cleared'){
 /* Recalculate status from STATE.bills (canonical source) */
@@ -5502,11 +5730,25 @@ let lines='*'+STATE.settings.companyName+'*\n*Top SKUs*\n\n';
 rows.forEach((r,i)=>{ lines+=(i+1)+'. '+r.name+' - '+r.qty+'pcs - \u20B9'+fmtN(Math.round(r.amount))+'\n'; });
 openWA(STATE.settings.adminWhatsApp,lines);
 }
-const LEAD_STATUSES=['Received','Sent Sample Sets','Salesman Sent','Follow up for final order','Contacted','Visited','Interested','Negotiation','Won','Lost'];
-const LEAD_STATUS_COLORS={Received:'#6366F1','Sent Sample Sets':'#F59E0B','Salesman Sent':'#0891B2','Follow up for final order':'#D97706',Contacted:'#0EA5E9',Visited:'#8B5CF6',Interested:'#A855F7',Negotiation:'#EF4444',Won:'#10B981',Lost:'#6B7280',Closed:'#374151',New:'#6366F1','Sample Sent':'#F59E0B'};
-function leadTab(t,b){ switchTab('leads','l'+t,b); if(t==='recurring') renderRecurringLeads(); else renderLeads(t); }
+const LEAD_STATUSES=['Received','Salesman Sent','Sample Sent','Follow-up Visit','Order Received','Broker Updated','Broker Follow-up','Won','Lost'];
+const LEAD_STATUS_COLORS={
+  'Received':'#6366F1',
+  'Salesman Sent':'#0891B2',
+  'Sample Sent':'#F59E0B',
+  'Follow-up Visit':'#8B5CF6',
+  'Order Received':'#059669',
+  'Broker Updated':'#D97706',
+  'Broker Follow-up':'#EF4444',
+  'Won':'#10B981',
+  'Lost':'#6B7280',
+  /* Backward compat for old statuses */
+  'New':'#6366F1','Contacted':'#0EA5E9','Visited':'#8B5CF6','Interested':'#A855F7',
+  'Negotiation':'#EF4444','Closed':'#374151','Quoted':'#D97706',
+  'Sent Sample Sets':'#F59E0B','Follow up for final order':'#D97706'
+};
+function leadTab(t,b){ switchTab('leads','l'+t,b); if(t==='recurring') renderRecurringLeads(); else if(t==='report') renderLeadReport(); else renderLeads(t); }
 function renderLeads(tab,q){
-let leads=[...STATE.leads||[]];
+let leads=(STATE.leads||[]).filter(l=>!l._deleted);
 const today_s=today();
 const query=(q||el('lead-search')?.value||'').trim().toLowerCase();
 if(query){leads=leads.filter(l=>(l.name||'').toLowerCase().includes(query)||(l.phone||'').includes(query)||(l.status||'').toLowerCase().includes(query)||(l.assignedName||'').toLowerCase().includes(query)||(l.market||'').toLowerCase().includes(query)||(l.address||'').toLowerCase().includes(query)||(l.interest||'').toLowerCase().includes(query)||(l.source||'').toLowerCase().includes(query));}
@@ -5737,8 +5979,8 @@ lsSave('vs_leads',STATE.leads);rmEl('m-qstat');
 renderLeads('all');renderLeads('mine');renderLeads('today');renderLeads('won');
 toast('Status → '+status,'ok');autoSyncFirebase();
 }
-const LC_ACTS=[{k:'Call',ico:'📞'},{k:'Visit',ico:'🤝'},{k:'WhatsApp',ico:'💬'},{k:'Email',ico:'📧'},{k:'Note',ico:'📝'}];
-const LC_ACT_COLORS={Call:'#4F46E5',Visit:'#059669',WhatsApp:'#16A34A',Email:'#0891B2',Note:'#D97706'};
+const LC_ACTS=[{k:'Call',ico:'📞'},{k:'Visit',ico:'🤝'},{k:'WhatsApp',ico:'💬'},{k:'Email',ico:'📧'},{k:'Broker Update',ico:'🤝'},{k:'Sample Sent',ico:'📦'},{k:'Order Report',ico:'📋'},{k:'Note',ico:'📝'}];
+const LC_ACT_COLORS={Call:'#4F46E5',Visit:'#059669',WhatsApp:'#16A34A',Email:'#0891B2','Broker Update':'#D97706','Sample Sent':'#F59E0B','Order Report':'#10B981',Note:'#6B7280'};
 function openLogContact(leadId){
 const lead=STATE.leads?.find(l=>l.id===leadId); if(!lead) return;
 el('lc-id').value=leadId;
@@ -5798,7 +6040,7 @@ async function convertLead(id){
 const lead=STATE.leads?.find(l=>l.id===id); if(!lead) return;
 const ok=await appConfirm('Convert to Customer?',lead.name+' will be opened in Add Customer form with pre-filled details.','?','Convert','ok');
 if(!ok) return;
-lead.status='Won'; lead._ts=Date.now(); lsSave('vs_leads',STATE.leads);
+lead.status='Won'; lead.updatedAt=today(); lead._ts=Date.now(); lsSave('vs_leads',STATE.leads); autoSyncFirebase();
 hideMod('m-lead'); hideMod('m-lead-det');
 /* Open customer form pre-filled with lead data */
 openCust();
@@ -6840,6 +7082,22 @@ function setLiveStatus(state){
   else if(state==='connecting'){dot.style.background='#F59E0B';txt.style.color='#F59E0B';txt.textContent='\u23f3 Syncing';}
   else{dot.style.background='#EF4444';txt.style.color='#EF4444';txt.textContent='\u25cb Offline';}
 }
+/* Show a subtle notification when data arrives from another device */
+function showSyncToast(){
+  /* Don't spam — max once per 5 seconds */
+  if(window._lastSyncToast&&Date.now()-window._lastSyncToast<5000)return;
+  window._lastSyncToast=Date.now();
+  let bar=document.getElementById('sync-toast');
+  if(!bar){
+    bar=document.createElement('div');bar.id='sync-toast';
+    bar.style.cssText='position:fixed;top:0;left:0;right:0;z-index:700;background:linear-gradient(135deg,#059669,#10B981);color:white;font-size:12px;font-weight:700;text-align:center;padding:6px 16px;transform:translateY(-100%);transition:transform .3s ease;pointer-events:none';
+    document.body.appendChild(bar);
+  }
+  bar.textContent='\u26A1 Data updated from another device';
+  bar.style.transform='translateY(0)';
+  clearTimeout(window._syncToastTimer);
+  window._syncToastTimer=setTimeout(()=>{bar.style.transform='translateY(-100%)';},2500);
+}
 function startFirebaseRealtime(){
   const url=(STATE.settings.firebaseUrl||'').trim().replace(/\/+$/,'');
   const secret=(STATE.settings.firebaseSecret||'').trim();
@@ -6852,21 +7110,22 @@ function startFirebaseRealtime(){
     const onData=e=>{
       try{
         if(window._saveLock||window._syncRunning)return;
-        if(window._lastSaveAt&&Date.now()-window._lastSaveAt<2000)return;
+        if(window._lastSaveAt&&Date.now()-window._lastSaveAt<4000)return;
         /* Firebase sends partial patch events — don't rely on patch payload.
            Instead fetch the full dataset so nothing gets dropped. */
         clearTimeout(window._fbPullTimer);
         window._fbPullTimer=setTimeout(async()=>{
-          if(window._saveLock||window._syncRunning)return;
+          if(window._lastSaveAt&&Date.now()-window._lastSaveAt<4000)return;
+          if(window._saveLock||window._syncRunning){return;}
           try{
             const fu=fbUrl('data');if(!fu)return;
             const r=await fetch(fu);if(!r.ok)return;
             const d=await r.json();if(!d||!d.items)return;
             const cT=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
             const lT=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
-            if(cT>lT){applyCloudData(d);setLiveStatus('live');}
+            if(cT>lT){applyCloudData(d);setLiveStatus('live');showSyncToast();}
           }catch(x){}
-        },300);
+        },800);
       }catch(x){}
     };
     window._fbES.addEventListener('put',onData);window._fbES.addEventListener('patch',onData);
@@ -7867,10 +8126,10 @@ market:(el('rec-market')?.value||'').trim(),address:(el('rec-address')?.value||'
 smId,smName:smUser?.name||'',brokerId:brkId||'',brokerName:brk?.name||'',brokerPhone:brk?.phone||'',
 interest:(el('rec-interest')?.value||'').trim(),rateGiven:parseFloat(el('rec-rate')?.value)||undefined,
 freq,days,dates,active:el('rec-active')?.value==='1',
-createdAt:today(),updatedAt:today()};
+createdAt:today(),updatedAt:today(),_ts:Date.now()};
 if(!STATE.recurringLeads) STATE.recurringLeads=[];
 const idx=STATE.recurringLeads.findIndex(x=>x.id===id);
-if(idx>=0) STATE.recurringLeads[idx]=obj; else STATE.recurringLeads.push(obj);
+if(idx>=0) STATE.recurringLeads[idx]={...STATE.recurringLeads[idx],...obj}; else STATE.recurringLeads.push(obj);
 lsSave('vs_rec_leads',STATE.recurringLeads);
 hideMod('m-rec-lead'); renderRecurringLeads(); renderDash();
 toast('Recurring lead saved','ok');
@@ -7890,8 +8149,9 @@ waRecurringToSalesman(rl.id);
 async function deleteRecurringLead(id){
 const ok=await appConfirm('Delete Recurring Lead?','This schedule will be permanently removed.','?','Delete','dr');
 if(!ok) return;
-STATE.recurringLeads=(STATE.recurringLeads||[]).filter(x=>x.id!==id);
-lsSave('vs_rec_leads',STATE.recurringLeads);
+const rl=(STATE.recurringLeads||[]).find(x=>x.id===id);
+if(rl){rl._deleted=true;rl._ts=Date.now();}
+persist();
 renderRecurringLeads(); renderDash();
 toast('Recurring lead deleted','ok');
 }
@@ -7899,7 +8159,7 @@ function renderRecurringLeads(){
 const c=el('lead-rec-list'); if(!c) return;
 const isAdmin=STATE.user?.role==='admin';
 generateTodayRecurringTasks();
-const recs=STATE.recurringLeads||[];
+const recs=(STATE.recurringLeads||[]).filter(r=>!r._deleted);
 if(isAdmin){
 let html=
 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
@@ -7929,12 +8189,16 @@ html+=
 '</div>'+
 '<span style="background:'+(r.active?'var(--Gl)':'#F3F4F6')+';color:'+(r.active?'var(--Gd)':'#9CA3AF')+';font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px">'+(r.active?'Active':'Paused')+'</span>'+
 '</div>'+
-'<div style="padding:8px 14px;font-size:12px;color:var(--t2)">'+
+(function(){
+const smLeave=getActiveLeave(r.smId,today());
+return '<div style="padding:8px 14px;font-size:12px;color:var(--t2)">'+
 '<span style="font-weight:700;color:var(--P)">'+r.smName+'</span>'+
+(smLeave?' <span style="background:#FEE2E2;color:#DC2626;font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px">ON LEAVE till '+fmtDate(smLeave.toDate)+'</span>':'')+
 (r.market?' &bull; '+r.market:'')+
 (r.brokerName?' &bull; Broker: '+r.brokerName+(r.brokerPhone?' ('+r.brokerPhone+')':''):'')+
 (r.rateGiven?' &bull; Rate: \u20B9'+r.rateGiven+'/mtr':'')+
-'</div>'+
+'</div>';
+})()+
 (r.interest?'<div style="padding:0 14px 8px;font-size:11px;color:var(--t3)">'+r.interest+'</div>':'')+
 '<div style="display:flex;border-top:1px solid var(--br)">'+
 '<button onclick="editRecurringLead(\''+r.id+'\')" style="flex:1;padding:8px;border:none;background:transparent;font-size:11px;font-weight:700;color:#4F46E5;cursor:pointer">Edit</button>'+
@@ -7945,7 +8209,18 @@ html+=
 });
 c.innerHTML=html;
 }else{
-const myTasks=(STATE.recurringLeads||[]).filter(r=>r.smId===STATE.user?.id&&r.active&&isScheduledToday(r));
+const myTasks=(STATE.recurringLeads||[]).filter(r=>!r._deleted&&r.smId===STATE.user?.id&&r.active&&isScheduledToday(r));
+/* Check if current user is on leave */
+const myLeave=getActiveLeave(STATE.user?.id,today());
+if(myLeave){
+c.innerHTML='<div style="background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:12px;padding:16px;text-align:center;margin-bottom:12px">'+
+'<div style="font-size:28px;margin-bottom:8px">🏖️</div>'+
+'<div style="font-size:15px;font-weight:800;color:#92400E">You are on leave today</div>'+
+'<div style="font-size:12px;color:#78350F;margin-top:4px">'+fmtDate(myLeave.fromDate)+' to '+fmtDate(myLeave.toDate)+(myLeave.reason?' — '+myLeave.reason:'')+'</div>'+
+'<div style="font-size:11px;color:var(--t3);margin-top:6px">Your visits are paused. Admin has been notified.</div>'+
+'</div>';
+return;
+}
 if(!myTasks.length){
 c.innerHTML='<div class="emp"><div class="emj">&#x2705;</div><h3>No Visits Scheduled Today</h3><p>Check back tomorrow</p></div>';
 return;
@@ -7990,11 +8265,11 @@ function generateTodayRecurringTasks(){
 const todayStr=today();
 const dot=el('lead-rec-dot');
 if(dot&&STATE.user?.role!=='admin'){
-const myToday=(STATE.recurringLeads||[]).filter(r=>r.smId===STATE.user?.id&&r.active&&isScheduledToday(r));
+const myToday=(STATE.recurringLeads||[]).filter(r=>!r._deleted&&r.smId===STATE.user?.id&&r.active&&isScheduledToday(r));
 dot.textContent=myToday.length;
 dot.style.display=myToday.length>0?'':'none';
 }else if(dot&&STATE.user?.role==='admin'){
-const total=(STATE.recurringLeads||[]).filter(r=>r.active).length;
+const total=(STATE.recurringLeads||[]).filter(r=>!r._deleted&&r.active).length;
 dot.textContent=total;
 dot.style.display=total>0?'':'none';
 }
@@ -8041,12 +8316,15 @@ openWA(sm.whatsapp||sm.phone, msg);
 function waTodayVisitList(){
 const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const today_name=dayNames[new Date().getDay()];
-const todayRecs=(STATE.recurringLeads||[]).filter(r=>r.active&&isScheduledToday(r));
+const todayRecs=(STATE.recurringLeads||[]).filter(r=>!r._deleted&&r.active&&isScheduledToday(r));
 if(!todayRecs.length){toast('No visits scheduled today','ok');return;}
 const smMap={};
 todayRecs.forEach(r=>{ if(!smMap[r.smId]) smMap[r.smId]=[]; smMap[r.smId].push(r); });
 Object.entries(smMap).forEach(([smId,visits])=>{
 const sm=STATE.users.find(u=>u.id===smId); if(!sm) return;
+/* Skip salesmen on leave */
+const smLeave=getActiveLeave(smId,today());
+if(smLeave){toast(sm.name+' is on leave — skipping','ok');return;}
 const msg=
 '*'+STATE.settings.companyName+'*\n'+
 '*📋 Today\'s Visit List \u2014 '+today_name+', '+fmtDate(today())+'*\n\n'+
@@ -8120,6 +8398,7 @@ else if(t==='rep') renderTaskReport();
 }
 function generateTaskInstances(dateStr){
 if(!STATE.taskTemplates||!STATE.taskTemplates.length) return;
+/* Check ALL instances (including deleted) to avoid regenerating deleted tasks */
 const existing=(STATE.taskInstances||[]).filter(t=>t.generatedDate===dateStr);
 const existingTplIds=new Set(existing.map(t=>t.templateId));
 const newInst=[];
@@ -8139,7 +8418,7 @@ description:tmpl.description||'',priority:tmpl.priority||'Medium',
 assignedUserId:assignTo.id,assignedUserName:assignTo.name,
 isSubstitute:assignTo.isSub,generatedDate:dateStr,deadline:deadline,
 status:'Pending',completedAt:null,completedByUserId:null,completedByName:null,
-isOnTime:null,note:''
+isOnTime:null,note:'',_ts:Date.now()
 });
 });
 if(newInst.length){
@@ -8162,7 +8441,7 @@ if(tmpl.freq==='quarterly'){const qs=(tmpl.quarterStart||1);const qd=(tmpl.quart
 return false;
 }
 function getActiveLeave(userId,dateStr){
-return (STATE.staffLeave||[]).find(lv=>lv.userId===userId&&dateStr>=lv.fromDate&&dateStr<=lv.toDate);
+return (STATE.staffLeave||[]).find(lv=>!lv._deleted&&lv.userId===userId&&dateStr>=lv.fromDate&&dateStr<=lv.toDate);
 }
 function renderMyTasks(q){
 const c=el('task-lst-my'); if(!c) return;
@@ -8343,7 +8622,7 @@ if(staffFilter!==undefined) window._taskStaffFilter=staffFilter;
 const activeFilter=window._taskStaffFilter||'all';
 const today_s=today();
 const todayInst=(STATE.taskInstances||[]).filter(t=>!t._deleted&&(t.generatedDate===today_s||(t.status==='Pending'&&t.generatedDate<today_s)));
-const staffColors=['#4F46E5','#0891B2','#D97706','#059669','#DC2626','#7C3AED','#B45309','#0F766E'];
+const staffColors=['#4F46E5','#0891B2','#D97706','#059669','#DC2626','#7C3AED','#B45309','#0F766E','#BE185D','#1D4ED8','#047857','#9333EA','#C2410C','#0369A1','#A16207','#4338CA','#DB2777','#15803D','#7E22CE','#EA580C'];
 const staffMap={};const staffOrder=[];
 todayInst.forEach(t=>{
 const uid=t.assignedUserId||(t.assignedUserName?'~n:'+t.assignedUserName:'~unassigned');
@@ -8501,7 +8780,7 @@ populateTplUserDropdowns(t.assignedUserId,t.substituteUserId);
 showMod('m-task-tpl');
 }
 function populateTplUserDropdowns(selId,subId){
-const users=STATE.users.filter(u=>u.active!==false);
+const users=STATE.users.filter(u=>u.active!==false&&!u._deleted);
 ['tpl-user','tpl-sub'].forEach((sid,idx)=>{
 const sel=el(sid); if(!sel) return;
 const def=idx===0?'<option value="">Unassigned</option>':'<option value="">No substitute</option>';
@@ -8536,10 +8815,10 @@ substituteUserId:subId||'',substituteName:sub?.name||'',
 freq,days,dates,deadlineTime:el('tpl-time')?.value||'18:00',duration:parseInt(el('tpl-duration')?.value)||1,
 yearMonth:parseInt(el('tpl-month')?.value)||3,
 quarterStart:parseInt(el('tpl-qstart')?.value)||1,quarterDay:parseInt(el('tpl-qday')?.value)||1,
-active:el('tpl-active')?.value==='1',startDate:el('tpl-startdate')?.value||today(),createdBy:STATE.user?.id,createdByRole:STATE.user?.role||'staff'};
+active:el('tpl-active')?.value==='1',startDate:el('tpl-startdate')?.value||today(),createdBy:STATE.user?.id,createdByRole:STATE.user?.role||'staff',_ts:Date.now()};
 if(!STATE.taskTemplates) STATE.taskTemplates=[];
 const idx=STATE.taskTemplates.findIndex(x=>x.id===id);
-if(idx>=0) STATE.taskTemplates[idx]=obj; else STATE.taskTemplates.push(obj);
+if(idx>=0) STATE.taskTemplates[idx]={...STATE.taskTemplates[idx],...obj}; else STATE.taskTemplates.push(obj);
 lsSave('vs_task_templates',STATE.taskTemplates);
 generateTaskInstances(today());
 if(obj.startDate&&obj.startDate<today()) generateTaskInstances(obj.startDate);
@@ -8551,6 +8830,7 @@ autoSyncFirebase();
 async function toggleTaskTemplate(id){
 const t=(STATE.taskTemplates||[]).find(x=>x.id===id); if(!t) return;
 t.active=!t.active;
+t._ts=Date.now();
 lsSave('vs_task_templates',STATE.taskTemplates);
 renderTaskTemplates();
 toast(t.name+(t.active?' activated':' paused'),'ok');
@@ -8568,7 +8848,7 @@ autoSyncFirebase();
 }
 function renderLeaveList(){
 const c=el('task-lst-lv'); if(!c) return;
-const leaves=STATE.staffLeave||[];
+const leaves=(STATE.staffLeave||[]).filter(l=>!l._deleted);
 let html=
 '<button class="btn bp bfl" style="margin-bottom:14px" onclick="openNewLeave()">+ Add Leave</button>';
 if(!leaves.length){
@@ -8626,14 +8906,14 @@ autoSyncFirebase();
 async function deleteLeave(id){
 const ok=await appConfirm('Remove Leave?','','?','Remove','dr');
 if(!ok) return;
-STATE.staffLeave=STATE.staffLeave.filter(x=>x.id!==id);
-lsSave('vs_staff_leave',STATE.staffLeave);
-renderLeaveList();
+const lv=STATE.staffLeave.find(x=>x.id===id);
+if(lv){lv._deleted=true;lv._ts=Date.now();}
+persist();renderLeaveList();
 toast('Leave removed','ok');
 }
 function waPendingTaskReminders(){
 const today_s=today();
-const pending=(STATE.taskInstances||[]).filter(t=>t.generatedDate===today_s&&t.status==='Pending');
+const pending=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.status==='Pending'&&(t.generatedDate===today_s||t.generatedDate<today_s));
 if(!pending.length){toast('No pending tasks today','ok');return;}
 const smMap={};
 pending.forEach(t=>{if(!smMap[t.assignedUserId])smMap[t.assignedUserId]=[]; smMap[t.assignedUserId].push(t);});
@@ -8678,14 +8958,16 @@ function updateTaskDot(){
 const dot=el('tdot'); if(!dot) return;
 const myId=STATE.user?.id;
 const today_s=today();
-const myPending=(STATE.taskInstances||[]).filter(t=>t.assignedUserId===myId&&t.generatedDate===today_s&&t.status==='Pending');
+/* Count today's tasks + overdue past tasks (same as what renderMyTasks shows) */
+const myPending=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.assignedUserId===myId&&t.status==='Pending'
+  &&(t.generatedDate===today_s||t.generatedDate<today_s));
 dot.textContent=myPending.length;
 dot.style.display=myPending.length>0?'':'none';
 }
 function openNewTaskInstance(){
 const isAdmin=STATE.user?.role==='admin';
 if(isAdmin){openNewTaskTemplate();el('tpl-title').textContent='Add One-Off Task';el('tpl-freq').value='once';onTplFreqChange();return;}
-const users=STATE.users.filter(u=>u.active!==false);
+const users=STATE.users.filter(u=>u.active!==false&&!u._deleted);
 const uO=users.map(u=>'<option value="'+u.id+'"'+(u.id===STATE.user?.id?' selected':'')+'>'+u.name+'</option>').join('');
 const pO=['High','Medium','Low'].map(p=>'<option'+(p==='Medium'?' selected':'')+'>'+p+'</option>').join('');
 const catO=['Accounting','Dispatch','Mill/Stock','Sales','Admin','Compliance','Other'].map(c=>'<option>'+c+'</option>').join('');
@@ -8719,7 +9001,7 @@ priority:el('ntip')?.value||'Medium',
 assignedUserId:userId,assignedUserName:user?.name||STATE.user?.name||'',
 isSubstitute:false,generatedDate:dateVal,deadline:dateVal+'T'+timeVal,
 status:'Pending',completedAt:null,completedByUserId:null,completedByName:null,
-isOnTime:null,note:el('ntin2')?.value||'',createdBy:STATE.user?.id};
+isOnTime:null,note:el('ntin2')?.value||'',createdBy:STATE.user?.id,_ts:Date.now()};
 if(!STATE.taskInstances)STATE.taskInstances=[];
 STATE.taskInstances.push(inst);
 lsSave('vs_task_instances',STATE.taskInstances);
@@ -8737,6 +9019,7 @@ async function hybridSaveAll(silent){
     jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],
     taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],
     staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
+    custGroups:STATE.custGroups||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],
     settings:STATE.settings,syncedAt:new Date().toISOString()};
   let fb=false,gs=false;
   // Firebase FIRST (fast, reliable, real-time)
@@ -8848,10 +9131,10 @@ function erNew(){
 async function deleteLead(id){
   const lead=(STATE.leads||[]).find(l=>l.id===id);if(!lead)return;
   const ok=await appConfirm('Delete Lead?',lead.name,'🗑','Delete','dr');if(!ok)return;
-  STATE.leads=STATE.leads.filter(l=>l.id!==id);lsSave('vs_leads',STATE.leads);
-  hideMod('m-lead-det');
+  softDelete(STATE.leads,id);
+  persist();hideMod('m-lead-det');
   renderLeads('all');renderLeads('mine');renderLeads('today');renderLeads('won');
-  toast('Lead deleted','ok');autoSyncFirebase();
+  toast('Lead deleted','ok');
 }
 
 // ═══ LEAD STATUS (instant save) ══════════════════════════════════
@@ -8873,7 +9156,7 @@ function renderDashTaskWidget(){
   const td=today(),myId=STATE.user?.id,isAdmin=STATE.user?.role==='admin';
   const allInst=(STATE.taskInstances||[]).filter(t=>!t._deleted&&(t.generatedDate===td||(t.status==='Pending'&&t.generatedDate<td)));
   const mine=allInst.filter(t=>t.assignedUserId===myId||(t.assignedUserName&&STATE.user?.name&&t.assignedUserName.toLowerCase()===STATE.user.name.toLowerCase()));
-  const staffColors=['#4F46E5','#0891B2','#D97706','#059669','#DC2626','#7C3AED','#B45309','#0F766E'];
+  const staffColors=['#4F46E5','#0891B2','#D97706','#059669','#DC2626','#7C3AED','#B45309','#0F766E','#BE185D','#1D4ED8','#047857','#9333EA','#C2410C','#0369A1','#A16207','#4338CA','#DB2777','#15803D','#7E22CE','#EA580C'];
   let h='';
   // ── Admin: all-staff breakdown ──
   if(isAdmin&&allInst.length){
@@ -8953,7 +9236,7 @@ function editTaskInstance(id){
   const isAdmin=STATE.user?.role==='admin';
   const isStaffCreated=task.templateId==='manual'&&task.createdBy===STATE.user?.id;
   if(!isAdmin&&!isStaffCreated){toast('Cannot edit admin tasks','er');return;}
-  const users=STATE.users.filter(u=>u.active!==false);
+  const users=STATE.users.filter(u=>u.active!==false&&!u._deleted);
   const uO=users.map(u=>'<option value="'+u.id+'"'+(u.id===task.assignedUserId?' selected':'')+'>'+u.name+'</option>').join('');
   const pO=['High','Medium','Low'].map(p=>'<option'+(p===task.priority?' selected':'')+'>'+p+'</option>').join('');
   const div=document.createElement('div');div.id='m-etit';
@@ -8982,6 +9265,7 @@ function saveETI(id){
   task.priority=el('etip')?.value||task.priority;
   const dl=el('etid')?.value;if(dl)task.deadline=new Date(dl).toISOString();
   task.note=el('etint')?.value||'';
+  task._ts=Date.now();
   lsSave('vs_task_instances',STATE.taskInstances);rmEl('m-etit');
   renderAllTasks();renderMyTasks();toast('Task updated','ok');autoSyncFirebase();
 }
@@ -8989,7 +9273,7 @@ function saveETI(id){
 // ═══ WA DAILY TASK REMINDERS ═════════════════════════════════════
 function sendDailyTaskReminders(){
   const td=today();
-  const pend=(STATE.taskInstances||[]).filter(t=>t.generatedDate===td&&t.status==='Pending');
+  const pend=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.status==='Pending'&&(t.generatedDate===td||t.generatedDate<td));
   if(!pend.length){toast('No pending tasks today','ok');return;}
   const smMap={};
   pend.forEach(t=>{if(!smMap[t.assignedUserId])smMap[t.assignedUserId]=[];smMap[t.assignedUserId].push(t);});
@@ -9080,8 +9364,8 @@ function getDCT(){
 async function doDCT(){
   const targets=getDCT();if(!targets.length){toast('No tasks match','er');return;}
   const ok=await appConfirm('Delete '+targets.length+' completed tasks?','Cannot be undone.','🗑','Delete','dr');if(!ok)return;
-  const ids=new Set(targets.map(t=>t.id));
-  STATE.taskInstances=STATE.taskInstances.filter(t=>!ids.has(t.id));
+  /* Soft-delete so smartMerge won't resurrect from other devices */
+  targets.forEach(t=>{t._deleted=true;t._ts=Date.now();});
   lsSave('vs_task_instances',STATE.taskInstances);rmEl('m-dctt');
   renderAllTasks();renderMyTasks();toast(targets.length+' tasks deleted','ok');autoSyncFirebase();
 }
@@ -9090,14 +9374,15 @@ function autoDeleteOldCompletedTasks(){
   const days=parseInt(STATE.settings.autoDeleteCompletedDays)||0;
   if(!days)return;
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-days);
-  const before=(STATE.taskInstances||[]).length;
-  STATE.taskInstances=(STATE.taskInstances||[]).filter(t=>{
-    if(t.status!=='Done')return true;
-    return new Date(t.completedAt)>cutoff;
+  let count=0;
+  (STATE.taskInstances||[]).forEach(t=>{
+    if(t._deleted||t.status!=='Done')return;
+    if(new Date(t.completedAt)<=cutoff){t._deleted=true;t._ts=Date.now();count++;}
   });
-  if(STATE.taskInstances.length<before){
+  if(count){
     lsSave('vs_task_instances',STATE.taskInstances);
-    console.log('Auto-deleted '+(before-STATE.taskInstances.length)+' old completed tasks');
+    console.log('Auto-deleted '+count+' old completed tasks');
+    autoSyncFirebase();
   }
 }
 // ═══ TASK REPORT ═════════════════════════════════════════════════
@@ -9151,8 +9436,8 @@ function recalcStockFromEntries(){
       if(col.sku) skuMap[item.id+'::'+col.sku]={item,col,idx};
     });
   });
-  // Rebuild from ledger entries
-  STATE.entries.forEach(e=>{
+  // Rebuild from ledger entries (skip soft-deleted entries)
+  STATE.entries.filter(e=>!e._deleted).forEach(e=>{
     const item=STATE.items.find(i=>i.id===e.itemId); if(!item) return;
     // Try colIdx first, then fallback to SKU matching
     let col=item.colours[e.colIdx];
@@ -9185,7 +9470,7 @@ function verifyStockIntegrity(){
       if(col.sku) skuMap[item.id+'::'+col.sku]=col;
     });
   });
-  STATE.entries.forEach(e=>{
+  STATE.entries.filter(e=>!e._deleted).forEach(e=>{
     const item=STATE.items.find(i=>i.id===e.itemId); if(!item) return;
     let col=item.colours[e.colIdx];
     if(col && e.sku && col.sku && col.sku!==e.sku) col=null;
@@ -9229,8 +9514,9 @@ function applyCloudData(d,force=false){
   const keep={firebaseUrl:STATE.settings.firebaseUrl,firebaseSecret:STATE.settings.firebaseSecret};
   const keys=['items','entries','customers','brokers','suppliers','users','orders','bills',
    'payments','jobWork','leads','flaggedEntries',
-   'taskTemplates','taskInstances','staffLeave','recurringLeads','mixedSarees'];
-  const uniqueKeys={users:'username',customers:'name',brokers:'name',suppliers:'name'};
+   'taskTemplates','taskInstances','staffLeave','recurringLeads','mixedSarees',
+   'custGroups','products'];
+  const uniqueKeys={users:'username'};
   const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;
   if(localCount<=1){
     keys.forEach(k=>{if(d[k]!==undefined)STATE[k]=d[k];});
@@ -9255,19 +9541,32 @@ function applyCloudData(d,force=false){
   if(STATE.flaggedEntries)lsSave('vs_flagged',STATE.flaggedEntries);
   if(STATE.recurringLeads)lsSave('vs_rec_leads',STATE.recurringLeads);
   if(STATE.mixedSarees)lsSave('vs_mixed_sarees',STATE.mixedSarees);
+  if(STATE.custGroups)lsSave('vs_cust_groups',STATE.custGroups);
+  if(STATE.products)lsSave('vs_products',STATE.products);
   renderDash();
   try{renderOrders();}catch(e){}
   try{renderBills();}catch(e){}
+  try{renderPendingOrders();}catch(e){}
+  try{renderPayments();}catch(e){}
+  try{renderOutstanding();}catch(e){}
   try{renderLeads('all');renderLeads('mine');renderLeads('today');renderLeads('won');}catch(e){}
+  try{renderRecurringLeads();}catch(e){}
   try{renderMyTasks();renderAllTasks();}catch(e){}
   try{renderItems();}catch(e){}
   try{renderCustomers();}catch(e){}
+  try{renderCustGroups();}catch(e){}
+  try{renderBrks();}catch(e){}
+  try{renderSups();}catch(e){}
+  try{renderPrds();}catch(e){}
+  try{renderInRec();}catch(e){}
+  try{renderJWLists();}catch(e){}
+  try{renderStock();}catch(e){}
   try{applyRoleUI();}catch(e){}
 }
 function getLeadsNeedingFollowup(){
   var td=today();
   return(STATE.leads||[]).filter(function(l){
-    return l.status!=='Won'&&l.status!=='Lost'&&l.status!=='Closed'&&l.followupDate&&l.followupDate<=td;
+    return !l._deleted&&l.status!=='Won'&&l.status!=='Lost'&&l.status!=='Closed'&&l.followupDate&&l.followupDate<=td;
   });
 }
 function renderFollowupAlert(){
@@ -9288,18 +9587,204 @@ function renderFollowupAlert(){
     +'<div style="color:white;font-size:18px">&#x276F;</div>';
   c2.innerHTML='';c2.appendChild(div);
 }
-function renderDashRecurringVisits(){
-  var c3=document.getElementById('dash-recurring-visits');if(!c3){
-    var fa=document.getElementById('dash-followup-alert');
-    if(!fa)return;
-    c3=document.createElement('div');c3.id='dash-recurring-visits';
-    fa.parentNode.insertBefore(c3,fa.nextSibling);
+/* ═══ LEAD PERFORMANCE REPORT ════════════════════════════════════ */
+function renderLeadReport(){
+const c=el('lead-rep-body'); if(!c) return;
+const isAdmin=STATE.user?.role==='admin';
+const leads=(STATE.leads||[]).filter(l=>!l._deleted);
+
+/* Date range filter */
+const fromEl=document.getElementById('lr-from');
+const toEl=document.getElementById('lr-to');
+const fromDate=fromEl?.value||'';
+const toDate=toEl?.value||'';
+
+/* Filter leads by creation date range */
+let filtered=leads;
+if(fromDate) filtered=filtered.filter(l=>(l.createdAt||'')>=fromDate);
+if(toDate) filtered=filtered.filter(l=>(l.createdAt||'')<=toDate);
+
+/* Build per-salesman stats */
+const smMap={};
+const unassigned={name:'Unassigned',total:0,won:0,lost:0,active:0,sampleSent:0,contacts:0,avgDaysToWin:0,winDays:[],leads:[]};
+filtered.forEach(l=>{
+  const sid=l.assignedId||'_unassigned';
+  const sname=l.assignedName||'Unassigned';
+  if(!smMap[sid]) smMap[sid]={id:sid,name:sname,total:0,won:0,lost:0,active:0,sampleSent:0,orderReceived:0,brokerUpdated:0,contacts:0,avgDaysToWin:0,winDays:[],leads:[]};
+  const s=smMap[sid];
+  s.total++;
+  s.leads.push(l);
+  if(l.status==='Won'){s.won++;
+    if(l.createdAt){const days=daysBetween(l.createdAt,l.updatedAt||today());s.winDays.push(days);}
   }
+  else if(l.status==='Lost') s.lost++;
+  else s.active++;
+  if(l.status==='Sample Sent'||l.status==='Sent Sample Sets') s.sampleSent++;
+  if(l.status==='Order Received') s.orderReceived++;
+  if(l.status==='Broker Updated'||l.status==='Broker Follow-up') s.brokerUpdated++;
+  s.contacts+=(l.notes||[]).length;
+});
+
+/* Overall stats */
+const totalLeads=filtered.length;
+const totalWon=filtered.filter(l=>l.status==='Won').length;
+const totalLost=filtered.filter(l=>l.status==='Lost').length;
+const totalActive=totalLeads-totalWon-totalLost;
+const convRate=totalLeads?Math.round(totalWon/totalLeads*100):0;
+const totalSamples=filtered.filter(l=>['Sample Sent','Sent Sample Sets'].includes(l.status)||l.notes?.some(n=>n.activityType==='Sample Sent')).length;
+const neverContacted=filtered.filter(l=>!l.notes||!l.notes.length).length;
+const overdue=filtered.filter(l=>l.followupDate&&l.followupDate<today()&&l.status!=='Won'&&l.status!=='Lost').length;
+
+let h='';
+
+/* Date range picker */
+h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">'+
+'<input type="date" class="inp" id="lr-from" value="'+fromDate+'" style="flex:1;min-width:120px" onchange="renderLeadReport()"/>'+
+'<span style="font-size:12px;color:var(--t3)">to</span>'+
+'<input type="date" class="inp" id="lr-to" value="'+toDate+'" style="flex:1;min-width:120px" onchange="renderLeadReport()"/>'+
+'<button class="btn bs bsm" onclick="document.getElementById(\'lr-from\').value=\'\';document.getElementById(\'lr-to\').value=\'\';renderLeadReport()">All Time</button>'+
+'</div>';
+
+/* Overall summary card */
+h+='<div style="background:linear-gradient(135deg,#1e1b4b,#4F46E5);border-radius:16px;padding:18px;margin-bottom:14px;color:white">'+
+'<div style="font-size:11px;font-weight:700;opacity:.7;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px">Lead Pipeline Summary</div>'+
+'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">'+
+'<div style="background:rgba(255,255,255,.12);border-radius:10px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:900">'+totalLeads+'</div><div style="font-size:9px;opacity:.7">Total</div></div>'+
+'<div style="background:rgba(74,222,128,.2);border-radius:10px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:900;color:#4ADE80">'+totalWon+'</div><div style="font-size:9px;opacity:.7">Won</div></div>'+
+'<div style="background:rgba(248,113,113,.2);border-radius:10px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:900;color:#F87171">'+totalLost+'</div><div style="font-size:9px;opacity:.7">Lost</div></div>'+
+'<div style="background:rgba(251,191,36,.2);border-radius:10px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:900;color:#FBBF24">'+totalActive+'</div><div style="font-size:9px;opacity:.7">Active</div></div>'+
+'</div>'+
+'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'+
+'<div style="background:rgba(255,255,255,.08);border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:800">'+convRate+'%</div><div style="font-size:9px;opacity:.7">Win Rate</div></div>'+
+'<div style="background:rgba(255,255,255,.08);border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:800">'+totalSamples+'</div><div style="font-size:9px;opacity:.7">Samples Sent</div></div>'+
+'<div style="background:rgba(255,255,255,.08);border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:800;color:'+(overdue>0?'#F87171':'#4ADE80')+'">'+overdue+'</div><div style="font-size:9px;opacity:.7">Overdue</div></div>'+
+'</div>'+
+'</div>';
+
+/* Warning cards */
+if(neverContacted>0){
+h+='<div style="background:#FEF2F2;border:1.5px solid #FECACA;border-radius:10px;padding:12px;margin-bottom:10px;display:flex;align-items:center;gap:10px">'+
+'<span style="font-size:22px">&#x26A0;&#xFE0F;</span>'+
+'<div><div style="font-size:13px;font-weight:800;color:#991B1B">'+neverContacted+' lead(s) never contacted</div>'+
+'<div style="font-size:11px;color:#B91C1C">These leads have no contact logs at all</div></div></div>';
+}
+
+/* Status funnel */
+h+='<div style="background:white;border:1.5px solid #E5E7EB;border-radius:12px;padding:14px;margin-bottom:14px">'+
+'<div style="font-size:12px;font-weight:800;color:#374151;margin-bottom:10px">Lead Funnel</div>';
+const funnelStatuses=['Received','Salesman Sent','Sample Sent','Follow-up Visit','Order Received','Broker Updated','Broker Follow-up','Won','Lost'];
+const maxFunnel=Math.max(1,...funnelStatuses.map(s=>filtered.filter(l=>l.status===s).length));
+funnelStatuses.forEach(s=>{
+  const cnt=filtered.filter(l=>l.status===s).length;
+  /* Also count old status names */
+  const cnt2=s==='Sample Sent'?filtered.filter(l=>l.status==='Sent Sample Sets').length:0;
+  const total2=cnt+cnt2;
+  const pct=Math.round(total2/maxFunnel*100);
+  const clr=LEAD_STATUS_COLORS[s]||'#6366F1';
+  h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
+  '<div style="width:100px;font-size:11px;font-weight:700;color:'+clr+';text-align:right;flex-shrink:0">'+s+'</div>'+
+  '<div style="flex:1;background:#F3F4F6;border-radius:4px;height:20px;overflow:hidden">'+
+  '<div style="background:'+clr+';height:100%;width:'+pct+'%;border-radius:4px;transition:.3s;min-width:'+(total2>0?'2px':'0')+'"></div>'+
+  '</div>'+
+  '<div style="width:30px;font-size:12px;font-weight:800;color:#374151;text-align:right">'+total2+'</div>'+
+  '</div>';
+});
+h+='</div>';
+
+/* Per-salesman performance cards */
+if(isAdmin){
+h+='<div style="font-size:12px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Salesman Performance</div>';
+const staffColors=['#4F46E5','#0891B2','#D97706','#059669','#DC2626','#7C3AED'];
+Object.values(smMap).sort((a,b)=>b.won-a.won||b.total-a.total).forEach((s,idx)=>{
+  if(s.id==='_unassigned'&&s.total===0) return;
+  const clr=staffColors[idx%staffColors.length];
+  const winRate=s.total?Math.round(s.won/s.total*100):0;
+  const avgDays=s.winDays.length?Math.round(s.winDays.reduce((a,b)=>a+b,0)/s.winDays.length):0;
+  const contactsPerLead=s.total?Math.round(s.contacts/s.total*10)/10:0;
+
+  h+='<div style="border:1.5px solid #E5E7EB;border-radius:12px;overflow:hidden;margin-bottom:10px;background:white">'+
+  '<div style="background:'+clr+';padding:12px 14px;display:flex;justify-content:space-between;align-items:center">'+
+  '<div style="color:white;font-size:14px;font-weight:800">'+s.name+'</div>'+
+  '<div style="color:white;font-size:12px;opacity:.85">'+s.won+'/'+s.total+' won ('+winRate+'%)</div>'+
+  '</div>'+
+  '<div style="padding:12px 14px">'+
+  /* Progress bar */
+  '<div style="background:#F3F4F6;border-radius:5px;height:6px;overflow:hidden;margin-bottom:10px">'+
+  '<div style="background:'+clr+';height:100%;width:'+winRate+'%;transition:.5s"></div>'+
+  '</div>'+
+  /* Stats grid */
+  '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">'+
+  '<div style="text-align:center;background:#F0FDF4;border-radius:8px;padding:6px 2px"><div style="font-size:16px;font-weight:900;color:#059669">'+s.won+'</div><div style="font-size:9px;color:#065F46">Won</div></div>'+
+  '<div style="text-align:center;background:#FEF2F2;border-radius:8px;padding:6px 2px"><div style="font-size:16px;font-weight:900;color:#DC2626">'+s.lost+'</div><div style="font-size:9px;color:#991B1B">Lost</div></div>'+
+  '<div style="text-align:center;background:#FEF3C7;border-radius:8px;padding:6px 2px"><div style="font-size:16px;font-weight:900;color:#D97706">'+s.active+'</div><div style="font-size:9px;color:#92400E">Active</div></div>'+
+  '<div style="text-align:center;background:#EEF2FF;border-radius:8px;padding:6px 2px"><div style="font-size:16px;font-weight:900;color:#4F46E5">'+s.sampleSent+'</div><div style="font-size:9px;color:#3730A3">Samples</div></div>'+
+  '</div>'+
+  /* Extra metrics */
+  '<div style="display:flex;gap:12px;font-size:11px;flex-wrap:wrap">'+
+  '<span style="color:var(--t3)">Contacts: <b>'+s.contacts+'</b> ('+contactsPerLead+'/lead)</span>'+
+  (avgDays?'<span style="color:var(--t3)">Avg days to win: <b>'+avgDays+'d</b></span>':'')+
+  '<span style="color:var(--t3)">Broker updates: <b>'+s.brokerUpdated+'</b></span>'+
+  '<span style="color:var(--t3)">Orders reported: <b>'+s.orderReceived+'</b></span>'+
+  '</div>'+
+  '</div>'+
+  '</div>';
+});
+}else{
+/* Staff view — show own performance */
+const myId=STATE.user?.id;
+const myLeads=filtered.filter(l=>l.assignedId===myId);
+const myWon=myLeads.filter(l=>l.status==='Won').length;
+const myLost=myLeads.filter(l=>l.status==='Lost').length;
+const myActive=myLeads.length-myWon-myLost;
+const myContacts=myLeads.reduce((s,l)=>s+(l.notes||[]).length,0);
+const myWinRate=myLeads.length?Math.round(myWon/myLeads.length*100):0;
+h+='<div style="background:white;border:1.5px solid #E5E7EB;border-radius:12px;padding:14px;margin-bottom:14px">'+
+'<div style="font-size:13px;font-weight:800;color:#374151;margin-bottom:10px">Your Performance</div>'+
+'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'+
+'<div style="text-align:center"><div style="font-size:20px;font-weight:900;color:#4F46E5">'+myLeads.length+'</div><div style="font-size:9px;color:var(--t3)">Total</div></div>'+
+'<div style="text-align:center"><div style="font-size:20px;font-weight:900;color:#059669">'+myWon+'</div><div style="font-size:9px;color:var(--t3)">Won</div></div>'+
+'<div style="text-align:center"><div style="font-size:20px;font-weight:900;color:#DC2626">'+myLost+'</div><div style="font-size:9px;color:var(--t3)">Lost</div></div>'+
+'<div style="text-align:center"><div style="font-size:20px;font-weight:900;color:#D97706">'+myWinRate+'%</div><div style="font-size:9px;color:var(--t3)">Win Rate</div></div>'+
+'</div>'+
+'<div style="margin-top:10px;font-size:11px;color:var(--t3)">Active: '+myActive+' | Contacts logged: '+myContacts+'</div>'+
+'</div>';
+}
+
+/* Broker performance (admin only) */
+if(isAdmin){
+const brkMap={};
+filtered.forEach(l=>{
+  if(!l.brokerName) return;
+  if(!brkMap[l.brokerName]) brkMap[l.brokerName]={name:l.brokerName,total:0,won:0,lost:0,active:0};
+  const b=brkMap[l.brokerName]; b.total++;
+  if(l.status==='Won') b.won++;
+  else if(l.status==='Lost') b.lost++;
+  else b.active++;
+});
+if(Object.keys(brkMap).length){
+h+='<div style="font-size:12px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 10px">Broker Performance</div>';
+Object.values(brkMap).sort((a,b)=>b.won-a.won||b.total-a.total).forEach(b=>{
+  const wr=b.total?Math.round(b.won/b.total*100):0;
+  h+='<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1.5px solid #E5E7EB;border-radius:10px;margin-bottom:6px;background:white">'+
+  '<div style="width:36px;height:36px;border-radius:10px;background:#FEF3C7;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🤝</div>'+
+  '<div style="flex:1"><div style="font-size:13px;font-weight:800">'+b.name+'</div>'+
+  '<div style="font-size:11px;color:var(--t3)">'+b.total+' leads | Won: '+b.won+' | Lost: '+b.lost+' | Active: '+b.active+'</div></div>'+
+  '<div style="font-size:16px;font-weight:900;color:'+(wr>=50?'#059669':wr>=25?'#D97706':'#DC2626')+'">'+wr+'%</div>'+
+  '</div>';
+});
+}
+}
+
+c.innerHTML=h;
+}
+
+function renderDashRecurringVisits(){
+  var c3=document.getElementById('dash-recurring-visits');if(!c3)return;
   c3.innerHTML='';
   var isAdmin=STATE.user&&STATE.user.role==='admin';
   var isSalesman=STATE.user&&((STATE.user.staffTypeId||'').toLowerCase().indexOf('salesman')>=0||hasPerm('leads_view'));
   if(!isAdmin&&!isSalesman)return;
-  var visits=(STATE.recurringLeads||[]).filter(function(r){return r.active&&isScheduledToday(r);});
+  var visits=(STATE.recurringLeads||[]).filter(function(r){return !r._deleted&&r.active&&isScheduledToday(r);});
   if(!isAdmin) visits=visits.filter(function(r){return r.smId===STATE.user.id;});
   if(!visits.length)return;
   var html='<div style="background:linear-gradient(135deg,#D97706,#F59E0B);border-radius:14px;padding:13px 16px;margin:0 16px 10px">';
