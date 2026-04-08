@@ -4907,6 +4907,7 @@ toast('Colour(s) added','ok');
 }
 let _dispOrdId=null;
 let _dispCustId=null;
+let _dispExtraOrds=[]; /* array of extra order IDs for multi-order billing */
 function openDispatchForCustomer(custId){
 _dispOrdId=null; _dispCustId=custId;
 setupDispatchModal(custId, null);
@@ -4919,6 +4920,9 @@ setupDispatchModal(o.custId, ordId);
 showMod('m-dispatch');
 }
 function setupDispatchModal(custId, ordId){
+_dispExtraOrds=[];
+const extraC=el('disp-extra-ords'); if(extraC) extraC.innerHTML='';
+const addBtn=el('disp-add-ord-btn'); if(addBtn) addBtn.style.display='none';
 const cust=STATE.customers.find(c=>c.id===custId);
 const billNo=nextBillNo();
 const billNoFld=el('disp-billno'); if(billNoFld) billNoFld.value=billNo;
@@ -5032,6 +5036,92 @@ html+=
 html+='</div>';
 });
 el('disp-table').innerHTML=html;
+/* Show "+ Add Another Order" button now that primary order is loaded */
+const addBtn=el('disp-add-ord-btn'); if(addBtn) addBtn.style.display='block';
+calcDispTotal();
+}
+/* ── MULTI-ORDER DISPATCH HELPERS ── */
+function addExtraDispOrd(){
+const idx=_dispExtraOrds.length;
+_dispExtraOrds.push(null);
+const c=el('disp-extra-ords'); if(!c) return;
+const usedIds=[_dispOrdId,..._dispExtraOrds.slice(0,-1)].filter(Boolean);
+const pendOrds=STATE.orders.filter(o=>o.custId===_dispCustId&&(o.status==='pending'||o.status==='billed')&&!usedIds.includes(o.id));
+const div=document.createElement('div');
+div.id='disp-extra-'+idx;
+div.style.cssText='margin-top:10px;border:2px solid var(--P);border-radius:12px;overflow:hidden;background:var(--Pl)';
+div.innerHTML=
+'<div style="background:var(--P);padding:7px 12px;display:flex;align-items:center;gap:8px">'+
+'<span style="background:white;color:var(--P);font-size:9px;font-weight:900;padding:2px 7px;border-radius:5px;letter-spacing:.5px">ORDER '+(idx+2)+'</span>'+
+'<select class="sel" id="disp-extra-sel-'+idx+'" onchange="onExtraDispOrdChange('+idx+')" style="flex:1;font-size:12px;font-weight:700">'+
+'<option value="">Select order...</option>'+
+pendOrds.map(o=>'<option value="'+o.id+'">'+o.orderNo+' ('+fmtDate(o.date)+') &ndash; '+o.items.length+' items</option>').join('')+
+'</select>'+
+'<button onclick="removeExtraDispOrd('+idx+')" class="btn bsm" style="background:rgba(255,255,255,.25);color:white;border:none;flex-shrink:0;font-size:12px">&#x2715; Remove</button>'+
+'</div>'+
+'<div id="disp-extra-table-'+idx+'" style="background:white"><div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select an order above</div></div>';
+c.appendChild(div);
+}
+function removeExtraDispOrd(idx){
+_dispExtraOrds[idx]=null;
+const div=el('disp-extra-'+idx); if(div) div.remove();
+calcDispTotal();
+}
+function onExtraDispOrdChange(idx){
+const sel=el('disp-extra-sel-'+idx); if(!sel) return;
+const ordId=sel.value;
+_dispExtraOrds[idx]=ordId||null;
+const tableEl=el('disp-extra-table-'+idx);
+if(!ordId){if(tableEl)tableEl.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select an order above</div>';calcDispTotal();return;}
+const o=STATE.orders.find(x=>x.id===ordId); if(!o||!tableEl) return;
+const dispatched={};
+liveBills().filter(b=>b.ordId===ordId&&b.status!=='cancelled').forEach(bill=>{
+(bill.items||[]).forEach(bi=>{dispatched[bi.sku]=(dispatched[bi.sku]||0)+(bi.dispQty||bi.pcs||0);});
+});
+const lots=[]; const lotMap={};
+(o.items||[]).forEach(item=>{
+const key=(item.itemName||'')+'|||'+(item.range||'');
+if(!lotMap[key]){const obj={lotNum:lots.length+1,key,itemName:item.itemName||'',range:item.range||'',cut:item.cut||6,items:[]};lots.push(obj);lotMap[key]=obj;}
+lotMap[key].items.push(item);
+});
+const lotColors=['#EEF2FF','#F0FDF4','#FFF7ED','#FDF4FF','#FEFCE8','#F0F9FF'];
+const lotBorders=['#818CF8','#4ADE80','#FB923C','#C084FC','#FACC15','#38BDF8'];
+const lotLabels=['#3730A3','#166534','#7C2D12','#581C87','#713F12','#0C4A6E'];
+let html='';
+lots.forEach((lot,li)=>{
+const lc=lotColors[li%lotColors.length],border=lotBorders[li%lotBorders.length],label=lotLabels[li%lotLabels.length];
+html+='<div style="margin-bottom:8px;border:2px solid '+border+';border-radius:10px;overflow:hidden">'+
+'<div style="background:'+border+';padding:6px 10px;display:flex;align-items:center;gap:8px">'+
+'<span style="background:'+label+';color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:4px">LOT '+lot.lotNum+'</span>'+
+'<span style="font-size:12px;font-weight:800;color:#0F0E1A">'+lot.itemName+'</span>'+
+'<span style="font-size:10px;font-weight:700;color:'+label+';background:white;padding:1px 6px;border-radius:4px">Range '+lot.range+'</span>'+
+'<span style="font-size:10px;color:'+label+'">Cut: '+lot.cut+'m</span>'+
+'</div>'+
+'<div style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;background:#1e1b4b;padding:5px 10px">'+
+'<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-transform:uppercase">Colour</div>'+
+'<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-align:center;text-transform:uppercase">Ord</div>'+
+'<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:center;text-transform:uppercase">Sent</div>'+
+'<div style="font-size:9px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Dispatch</div>'+
+'<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:right;text-transform:uppercase">Amount</div>'+
+'</div>';
+lot.items.forEach((item,ci)=>{
+const alreadySent=dispatched[item.sku]||0;
+const remaining=Math.max(0,(item.pcs||0)-alreadySent);
+const bg=ci%2===0?'#fff':lc;
+html+='<div style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;align-items:center;padding:7px 10px;background:'+bg+';border-top:1px solid #E5E4F0">'+
+'<div><div style="font-size:11px;font-weight:700">'+item.colourName+'</div><div style="font-size:9px;color:#9897B0;font-family:monospace">'+item.sku+'</div></div>'+
+'<div style="text-align:center;font-size:12px;font-weight:700;color:#454460">'+item.pcs+'</div>'+
+'<div style="text-align:center;font-size:11px;font-weight:600;color:'+(alreadySent>0?'#10B981':'#9897B0')+'">' +alreadySent+'</div>'+
+'<input type="number" id="disp-e'+idx+'-qty-'+item.sku+'" step="1" min="0" max="'+remaining+'" value="'+remaining+'" '+
+'data-sku="'+item.sku+'" data-rate="'+item.rate+'" data-cut="'+item.cut+'" '+
+'oninput="calcDispTotal()" '+
+'style="width:100%;text-align:center;border:2px solid #F59E0B;border-radius:7px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#FFFBEB;color:#92400E"/>'+
+'<div id="disp-e'+idx+'-amt-'+item.sku+'" style="text-align:right;font-size:11px;font-weight:700;color:#9897B0">—</div>'+
+'</div>';
+});
+html+='</div>';
+});
+tableEl.innerHTML=html;
 calcDispTotal();
 }
 function calcDispTotal(){
@@ -5041,6 +5131,7 @@ const cust=STATE.customers.find(c=>c.id===o.custId);
 const gstT=gstType(cust?.gstin||'');
 const disc=cust?.discount!=null?cust.discount:STATE.settings.discount||0;
 let sub=0;
+/* Primary order items */
 o.items.forEach(item=>{
 const inp=el('disp-qty-'+item.sku); if(!inp) return;
 const qty=parseInt(inp.value)||0;
@@ -5050,14 +5141,30 @@ const amtEl=el('disp-amt-'+item.sku);
 if(amtEl){ amtEl.textContent=amt>0?('\u20B9'+fmtN(amt)):'\u2014'; amtEl.style.color=amt>0?'var(--P)':'#9897B0'; }
 sub+=amt;
 });
+/* Extra orders */
+_dispExtraOrds.forEach((extraOrdId,idx)=>{
+if(!extraOrdId) return;
+const eo=STATE.orders.find(x=>x.id===extraOrdId); if(!eo) return;
+eo.items.forEach(item=>{
+const inp=el('disp-e'+idx+'-qty-'+item.sku); if(!inp) return;
+const qty=parseInt(inp.value)||0;
+const rate=item.rate||0; const cut=item.cut||6;
+const amt=Math.round(qty*cut*rate);
+const amtEl=el('disp-e'+idx+'-amt-'+item.sku);
+if(amtEl){ amtEl.textContent=amt>0?('\u20B9'+fmtN(amt)):'\u2014'; amtEl.style.color=amt>0?'var(--P)':'#9897B0'; }
+sub+=amt;
+});
+});
 const discAmt=disc>0?Math.round(sub*disc/100):0;
 const afterDisc=sub-discAmt;
 const gA=cust?.gstin?Math.round(afterDisc*0.05):0;
 const grand=afterDisc+gA;
+const extraCount=_dispExtraOrds.filter(Boolean).length;
 const t=el('disp-total');
 if(sub>0){
 t.style.display='block';
 t.innerHTML=
+(extraCount>0?'<div class="brow" style="color:var(--Pd);font-size:11px"><span>&#x1F4CB; Orders combined: '+(1+extraCount)+'</span><span class="mono">&mdash;</span></div>':'')+
 '<div class="brow"><span>Taxable Amount</span><span class="mono fw7">\u20B9'+fmtN(sub)+'</span></div>'+
 (discAmt>0?'<div class="brow cG"><span>Discount ('+disc+'%)</span><span class="mono cG">- \u20B9'+fmtN(discAmt)+'</span></div>':'')+
 (discAmt>0?'<div class="brow"><span>After Discount</span><span class="mono fw7">\u20B9'+fmtN(afterDisc)+'</span></div>':'')+
@@ -5071,9 +5178,10 @@ const o=STATE.orders.find(x=>x.id===_dispOrdId); if(!o) return;
 /* Support billing to a different party from same group */
 const billToCustId=el('disp-bill-to')?.value||o.custId;
 const cust=STATE.customers.find(c=>c.id===billToCustId)||STATE.customers.find(c=>c.id===o.custId);
-const gstT=gstType(cust?.gstin||'');
+const gstT2=gstType(cust?.gstin||'');
 const dispItems=[];
 let sub=0;
+/* ── Process primary order ── */
 for(const item of o.items){
 const inp=el('disp-qty-'+item.sku); if(!inp) continue;
 const qty=parseInt(inp.value)||0; if(!qty) continue;
@@ -5083,16 +5191,38 @@ const taka=Math.round(qty*cut/STATE.settings.avgMtrPerTaka);
 const ok=await checkAdj(item.itemId,item.colIdx,taka);
 if(!ok) continue;
 deductStock(item.itemId,item.colIdx,taka,'sale',o.custName,billNo);
-dispItems.push({...item,dispQty:qty,mtrs:Math.round(qty*cut*10)/10,taka,amount:amt});
+dispItems.push({...item,dispQty:qty,mtrs:Math.round(qty*cut*10)/10,taka,amount:amt,srcOrdId:o.id,srcOrdNo:o.orderNo});
 sub+=amt;
 }
+/* ── Process extra orders ── */
+const extraOrdObjs=[];
+for(let idx=0;idx<_dispExtraOrds.length;idx++){
+const extraOrdId=_dispExtraOrds[idx]; if(!extraOrdId) continue;
+const eo=STATE.orders.find(x=>x.id===extraOrdId); if(!eo) continue;
+extraOrdObjs.push(eo);
+for(const item of eo.items){
+const inp=el('disp-e'+idx+'-qty-'+item.sku); if(!inp) continue;
+const qty=parseInt(inp.value)||0; if(!qty) continue;
+const rate=item.rate||0, cut=item.cut||6;
+const amt=Math.round(qty*cut*rate);
+const taka=Math.round(qty*cut/STATE.settings.avgMtrPerTaka);
+const ok=await checkAdj(item.itemId,item.colIdx,taka);
+if(!ok) continue;
+deductStock(item.itemId,item.colIdx,taka,'sale',eo.custName,billNo);
+dispItems.push({...item,dispQty:qty,mtrs:Math.round(qty*cut*10)/10,taka,amount:amt,srcOrdId:eo.id,srcOrdNo:eo.orderNo});
+sub+=amt;
+}
+}
 if(!dispItems.length){toast('Enter dispatch qty for at least one item','er');return;}
-const gA=cust?.gstin?sub*0.05:0;
 const disc2=cust?.discount!=null?cust.discount:STATE.settings.discount||0;
 const discAmt2=Math.round(sub*disc2/100);
 const afterDisc2=sub-discAmt2;
-const gstT2=gstType(cust?.gstin||'');
-const bill={id:uid(),billNo,ordId:_dispOrdId,ordNo:o.orderNo,
+/* Build ordIds array for multi-order bills */
+const allOrdIds=[_dispOrdId,...extraOrdObjs.map(e=>e.id)];
+const allOrdNos=[o.orderNo,...extraOrdObjs.map(e=>e.orderNo)];
+const bill={id:uid(),billNo,
+ordId:_dispOrdId,ordNo:o.orderNo, /* keep primary for backward compat */
+ordIds:allOrdIds,ordNos:allOrdNos, /* all orders in this bill */
 date:el('disp-date')?.value,dueDate:el('disp-due')?.value,
 custId:o.custId,custName:o.custName,custGstin:cust?.gstin||'',
 brkId:o.brkId,brkName:o.brkName||'',
@@ -5108,11 +5238,21 @@ if(!o.bills) o.bills=[];
 o.bills.push(bill);
 STATE.bills.push(bill);
 const totalOrdered=o.items.reduce((s,i)=>s+(i.pcs||0),0);
-const totalDispatched=o.bills.filter(b=>b.status!=='cancelled').reduce((s,b)=>s+(b.items||[]).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
+const totalDispatched=o.bills.filter(b=>b.status!=='cancelled').reduce((s,b)=>s+(b.items||[]).filter(bi=>bi.srcOrdId===o.id||!bi.srcOrdId).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
 o.status=totalDispatched>=totalOrdered?'fulfilled':'billed';
+/* ── Update each extra order ── */
+extraOrdObjs.forEach(eo=>{
+if(!eo.bills) eo.bills=[];
+eo.bills.push(bill);
+const tot=eo.items.reduce((s,i)=>s+(i.pcs||0),0);
+const sent=liveBills().filter(b=>b.ordId===eo.id&&b.status!=='cancelled').reduce((s,b)=>s+(b.items||[]).filter(bi=>bi.srcOrdId===eo.id).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0)+
+dispItems.filter(bi=>bi.srcOrdId===eo.id).reduce((s,bi)=>s+(bi.dispQty||0),0);
+eo.status=sent>=tot?'fulfilled':'billed';
+});
 persist(); hideMod('m-dispatch');
 renderOrders(); renderBills(); renderDash();
-toast('Bill '+billNo+' saved - '+dispItems.length+' items dispatched','ok');
+const ordLabel=allOrdNos.length>1?allOrdNos.join(' + '):allOrdNos[0];
+toast('Bill '+billNo+' saved \u2014 '+dispItems.length+' items from '+ordLabel,'ok');
 api('saveBill',{bills:STATE.bills,entries:STATE.entries,items:STATE.items,orders:STATE.orders});
 }
 async function deleteBill(billId){
@@ -9863,7 +10003,7 @@ const lv=el('login-version');if(lv)lv.textContent='ALT Stock v'+APP_VERSION+' | 
 </div></div>
 <div class="ov" id="m-ord-det" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="ord-det-title">Order Detail</h3><p class="sub mono cP" id="ord-det-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-ord-det')">&#x2715;</button></div></div><div class="shb" id="ord-det-body"></div><div class="shf" id="ord-det-foot" style="flex-wrap:wrap;gap:6px"></div>
 </div></div>
-<div class="ov" id="m-dispatch" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Tax Invoice</p><div style="font-size:22px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace" id="disp-ordno">—</div></div><button class="btn bgh bsm" onclick="hideMod('m-dispatch')">&#x2715;</button></div></div><div class="shb"><div style="background:var(--Pl);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12px" id="disp-cust-info"></div><div class="fg" style="display:none"><label>Bill To (Party Group)</label><select class="sel" id="disp-bill-to"></select><div class="xs ct3 mt4">Select a different party from the same group for billing</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div class="fg"><label>Invoice No *</label><input class="inp mono" id="disp-billno" style="font-size:16px;font-weight:800;color:var(--P)"/></div><div class="fg"><label>Invoice Date</label><input class="inp" type="date" id="disp-date"/></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div class="fg"><label>Due Date</label><input class="inp" type="date" id="disp-due"/></div><div class="fg"><label>Order Ref (Pending)</label><select class="sel" id="disp-ord-sel" onchange="onDispOrderChange()"><option value="">Select pending order...</option></select></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div class="fg"><label>Goods Received By</label><input class="inp" id="disp-recv" placeholder="Name of person / khatawala"/></div><div class="fg"><label>Receiver Contact</label><input class="inp" id="disp-recv-ph" type="tel" placeholder="Phone number"/></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px"><div class="fg"><label>Party Challan No</label><input class="inp mono" id="disp-challan" placeholder="Challan / DC number"/></div><div class="fg"><label>Transport / LR No</label><input class="inp mono" id="disp-lr" placeholder="LR / transport number"/></div></div><div id="disp-table"></div><div id="disp-total" class="bsum mt12" style="display:none"></div><div class="fg mt8"><label>Notes</label><textarea class="ta" id="disp-notes" rows="2" placeholder="Special instructions, delivery notes..."></textarea></div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><div style="width:100%;display:flex;gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-dispatch')">Cancel</button><button class="btn bp bfl" onclick="saveDispatchBill()">&#x1F9FE; Save Invoice</button></div></div>
+<div class="ov" id="m-dispatch" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Tax Invoice</p><div style="font-size:22px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace" id="disp-ordno">—</div></div><button class="btn bgh bsm" onclick="hideMod('m-dispatch')">&#x2715;</button></div></div><div class="shb"><div style="background:var(--Pl);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12px" id="disp-cust-info"></div><div class="fg" style="display:none"><label>Bill To (Party Group)</label><select class="sel" id="disp-bill-to"></select><div class="xs ct3 mt4">Select a different party from the same group for billing</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div class="fg"><label>Invoice No *</label><input class="inp mono" id="disp-billno" style="font-size:16px;font-weight:800;color:var(--P)"/></div><div class="fg"><label>Invoice Date</label><input class="inp" type="date" id="disp-date"/></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div class="fg"><label>Due Date</label><input class="inp" type="date" id="disp-due"/></div><div class="fg"><label>Order Ref (Pending)</label><select class="sel" id="disp-ord-sel" onchange="onDispOrderChange()"><option value="">Select pending order...</option></select></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div class="fg"><label>Goods Received By</label><input class="inp" id="disp-recv" placeholder="Name of person / khatawala"/></div><div class="fg"><label>Receiver Contact</label><input class="inp" id="disp-recv-ph" type="tel" placeholder="Phone number"/></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px"><div class="fg"><label>Party Challan No</label><input class="inp mono" id="disp-challan" placeholder="Challan / DC number"/></div><div class="fg"><label>Transport / LR No</label><input class="inp mono" id="disp-lr" placeholder="LR / transport number"/></div></div><div id="disp-table"></div><div id="disp-add-ord-btn" style="display:none;margin-top:8px"><button class="btn bs bfl" onclick="addExtraDispOrd()">+ Add Another Order to this Bill</button></div><div id="disp-extra-ords"></div><div id="disp-total" class="bsum mt12" style="display:none"></div><div class="fg mt8"><label>Notes</label><textarea class="ta" id="disp-notes" rows="2" placeholder="Special instructions, delivery notes..."></textarea></div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><div style="width:100%;display:flex;gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-dispatch')">Cancel</button><button class="btn bp bfl" onclick="saveDispatchBill()">&#x1F9FE; Save Invoice</button></div></div>
 </div></div>
 <div class="ov" id="m-lead" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="lead-title">New Lead</h3><p class="sub" id="lead-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-lead')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="lead-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="lead-name" list="lead-name-list" placeholder="Type or select customer..." autocomplete="off"/><datalist id="lead-name-list"></datalist></div><div class="fg"><label>Phone</label><input class="inp" id="lead-ph" type="tel" placeholder="Mobile number (optional)"/></div></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="lead-wa" type="tel" placeholder="91XXXXXXXXXX"/></div><div class="fg"><label>Market / Area / Address</label><input class="inp" id="lead-market" placeholder="e.g. Surat, Ring Road, Shop name"/></div></div><input type="hidden" id="lead-address"/><div class="ir2"><div class="fg"><label>Broker</label><div class="fi"><select class="sel" id="lead-broker"><option value="">No Broker</option></select><button class="ai" onclick="openBrkFromLead()">+</button></div></div><div class="fg"><label>Source</label><select class="sel" id="lead-src"><option>Walk-in</option><option>Broker Reference</option><option>Old Customer</option><option>Exhibition</option><option>WhatsApp</option><option>Cold Call</option><option>Social Media</option><option>Other</option></select></div></div><div class="ir2"><div class="fg"><label>Assign to Salesman</label><select class="sel" id="lead-sm"><option value="">Unassigned</option></select></div><div class="fg"><label>Rate Given (&#x20B9;/mtr)</label><input class="inp mono" id="lead-rate" type="number" step="0.01" placeholder="e.g. 125.00"/></div></div><div class="fg"><label>Interested In (Notes)</label><textarea class="ta" id="lead-interest" rows="2" placeholder="e.g. FRENDY CHIFFON Range A, 6m cut, need 50 pcs..."></textarea></div><div class="fg"><label>Status</label><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:4px" id="lead-status-btns"></div></div><div class="fg"><label>Next Follow-up Date</label><input class="inp" type="date" id="lead-followup"/></div><div class="fg"><label>Latest Conversation / Update</label><textarea class="ta" id="lead-note" rows="3" placeholder="What was discussed? Any specific requirement, objection, or commitment..."></textarea></div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><button class="btn bsuc bfl" id="lead-convert-btn" onclick="convertLeadToCustomer()" style="display:none">&#x2714; Convert to Customer</button><div style="display:flex;gap:6px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-lead')">Cancel</button><button class="wa" style="flex:1;padding:10px;font-size:13px;font-weight:800;border-radius:10px" onclick="saveLeadAndWA()">&#x1F4F2; Save &amp; WA Salesman</button><button class="btn bp bfl" onclick="saveLead()">Save</button></div></div>
 </div></div>
