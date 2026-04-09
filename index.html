@@ -56,7 +56,7 @@
 </div></div>
 <div class="ov" id="m-ord" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px" id="ordtit">New Sale Order</p><div style="font-size:28px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace;letter-spacing:-0.5px;line-height:1" id="ordno">—</div></div><div style="display:flex;gap:6px"><button class="btn bs bsm" onclick="showScan()">📷 Scan</button><button class="btn bgh bsm" onclick="hideMod('m-ord')">✕</button></div></div></div><div class="shb" id="ordbod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-ord')">Cancel</button><button class="btn bp bfl" onclick="saveOrd()">Save Order</button></div>
 </div></div>
-<div class="ov" id="m-bill" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="billtit">New Tax Invoice</h3><button class="btn bgh bsm" onclick="hideMod('m-bill')">✕</button></div></div><div class="shb" id="billbod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-bill')">Cancel</button><button class="btn bp bfl" onclick="saveBill()">Create Bill</button></div>
+<div class="ov" id="m-bill" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="billtit">New Tax Invoice</h3><button class="btn bgh bsm" onclick="closeBillMod()">✕</button></div></div><div class="shb" id="billbod"></div><div class="shf"><button class="btn bgh bfl" onclick="closeBillMod()">Cancel</button><button class="btn bp bfl" id="bill-save-btn" onclick="saveBill()">Create Bill</button></div>
 </div></div>
 <div class="ov" id="m-pay" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>&#x1F4B0; Record Payment</h3><p class="sub" id="pay-sub">Against Tax Invoice</p></div><button class="btn bgh bsm" onclick="hideMod('m-pay')">&#x2715;</button></div></div><div class="shb" id="paybod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-pay')">Cancel</button><button class="btn bp bfl" onclick="savePay()">&#x1F4BE; Save Payment</button></div>
 </div></div>
@@ -2783,7 +2783,33 @@ const lines=o.items.map(i=>'- '+i.itemName+' '+i.colourName+' — '+i.pcs+' pcs 
 const msg='*'+STATE.settings.companyName+'*\n'+STATE.settings.address+'\nPh: '+STATE.settings.phone+'\n\n*Order: '+o.orderNo+'*\nDate: '+fmtDate(o.date)+'\nCustomer: '+o.custName+'\n\n'+lines+'\n\n*Total: '+fmtRs(o.total)+'*\n\n'+STATE.settings.discount+'% disc within '+STATE.settings.discountDays+'d. Nett '+STATE.settings.nettDays+'d.';
 openWA(cust?.whatsapp||'',msg);
 }
-let _billRows=[{}], _billOrdId=null;
+let _billRows=[{}], _billOrdId=null, _editBillId=null;
+function closeBillMod(){_editBillId=null;hideMod('m-bill');}
+function openEditBill(billId){
+  const bill=STATE.bills.find(b=>b.id===billId);
+  if(!bill)return;
+  if(STATE.user?.role!=='admin'&&!hasPerm('cancel_bill')){toast('No permission to edit bills','er');return;}
+  _editBillId=bill.id;
+  _billOrdId=bill.ordId||null;
+  const o=bill.ordId?STATE.orders.find(x=>x.id===bill.ordId):null;
+  /* Build _billRows from the bill's saved items so user can adjust them */
+  _billRows=bill.items.map(i=>({...i,_orderedPcs:i.pcs,_billedPcs:0}));
+  buildBillBody(o||{custId:bill.custId,custName:bill.custName,orderNo:bill.ordNo});
+  /* Pre-fill header fields after the modal DOM is built */
+  setTimeout(()=>{
+    if(el('billtit'))el('billtit').textContent='Edit Invoice';
+    if(el('bill-save-btn'))el('bill-save-btn').textContent='Update Bill';
+    if(el('bl-bno'))el('bl-bno').value=bill.billNo;
+    if(el('bl-d'))el('bl-d').value=bill.date||'';
+    if(el('bl-due'))el('bl-due').value=bill.dueDate||'';
+    if(el('bl-c'))el('bl-c').value=bill.custId||'';
+    if(el('bl-b'))el('bl-b').value=bill.brkId||'';
+    if(el('bl-disc'))el('bl-disc').value=bill.discountPct||0;
+    if(el('bl-nt'))el('bl-nt').value=bill.notes||'';
+    detBillGST();
+  },80);
+  showMod('m-bill');
+}
 function nextBillNo(){
 const pfx=STATE.settings.billPrefix||'INV-';
 const padLen=parseInt(STATE.settings.billPadLen)||4;
@@ -2890,9 +2916,12 @@ calcBillTot();
 function calcBillTot(){
 const cust=STATE.customers.find(c=>c.id===el('bl-c')?.value);
 let sub=0; _billRows.forEach((_,i)=>{sub+=(parseInt(el('bl'+i+'-p')?.value)||0)*(parseFloat(el('bl'+i+'-r')?.value)||0);});
-let gH='', grand=sub;
-if(cust?.gstin){const t=gstType(cust.gstin),gA=sub*0.05; grand=sub+gA; gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
-const s=el('bl-sum'); if(s) s.innerHTML='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>'+gH+'<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div><div class="xs ct3 mt4">'+STATE.settings.discount+'% disc within '+STATE.settings.discountDays+'d - Nett '+STATE.settings.nettDays+'d</div>';
+const disc=parseFloat(el('bl-disc')?.value)||0;
+const discAmt=disc>0?Math.round(sub*disc/100):0;
+const afterDisc=sub-discAmt;
+let gH='',grand=afterDisc;
+if(cust?.gstin){const t=gstType(cust.gstin),gA=Math.round(afterDisc*0.05);grand=afterDisc+gA;gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
+const s=el('bl-sum');if(s)s.innerHTML='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>'+(discAmt>0?'<div class="brow" style="color:#059669"><span>Discount ('+disc+'%)</span><span class="mono">- '+fmtRs(discAmt)+'</span></div><div class="brow"><span>After Discount</span><span class="mono">'+fmtRs(afterDisc)+'</span></div>':'')+gH+'<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div>';
 }
 /* ── BILL LOT CARD SYSTEM (standalone bills without an order) ── */
 let _billLots=[],_billLotId=0;
@@ -3082,6 +3111,13 @@ const cId=el('bl-c')?.value; if(!cId){toast('Select customer','er');return;}
 const cust=STATE.customers.find(c=>c.id===cId);
 const brkId=el('bl-b')?.value, brk=STATE.brokers.find(b=>b.id===brkId);
 const items=[]; let bno=(el('bl-bno')?.value||'').trim()||nextBillNo();
+/* In edit mode, reverse the old bill's stock deductions before applying new ones */
+const editingBill=_editBillId?STATE.bills.find(b=>b.id===_editBillId):null;
+if(editingBill){
+  editingBill.items.forEach(item=>{
+    addStock(item.itemId,item.colIdx,item.taka,'adjustment','Bill Edit - Return',editingBill.billNo,'Editing bill '+editingBill.billNo);
+  });
+}
 if(!bno){toast('Enter invoice number','er');return;}
 /* Duplicate number check — another device may have created same number simultaneously */
 if(STATE.bills.find(b=>b.billNo===bno)){bno=nextBillNo();}
@@ -3131,17 +3167,31 @@ const ordParty=_billOrdId?STATE.orders.find(x=>x.id===_billOrdId):null;
 const ordCustId=ordParty?.custId||'';
 const ordCustName=ordParty?.custName||'';
 const isCrossGroupBill=(ordCustId&&ordCustId!==cId);
-const newBill={id:uid(),billNo:bno,date:el('bl-d')?.value,dueDate:el('bl-due')?.value,custId:cId,custName:cust.name,custGstin:cust.gstin||'',brkId,brkName:brk?.name||'',ordId:_billOrdId||'',ordCustId:isCrossGroupBill?ordCustId:'',ordCustName:isCrossGroupBill?ordCustName:'',items,subtotal:sub,discountPct:discPct,discountAmt:discAmt,afterDiscount:afterDisc,gstAmt:gA,gstType:gt,grandTotal,notes:el('bl-nt')?.value,payStatus:'unpaid',amtPaid:0,by:STATE.user?.name||'',fy:STATE.settings.currentFY||getCurrentFY()};
-STATE.bills.push(newBill);
+/* In edit mode: preserve id, payStatus, amtPaid from existing bill; otherwise create fresh */
+const billId=editingBill?editingBill.id:uid();
+const payStatus=editingBill?.payStatus||'unpaid';
+const amtPaid=editingBill?.amtPaid||0;
+const newBill={id:billId,billNo:bno,date:el('bl-d')?.value,dueDate:el('bl-due')?.value,custId:cId,custName:cust.name,custGstin:cust.gstin||'',brkId,brkName:brk?.name||'',ordId:_billOrdId||'',ordCustId:isCrossGroupBill?ordCustId:'',ordCustName:isCrossGroupBill?ordCustName:'',items,subtotal:sub,discountPct:discPct,discountAmt:discAmt,afterDiscount:afterDisc,gstAmt:gA,gstType:gt,grandTotal,notes:el('bl-nt')?.value,payStatus,amtPaid,by:STATE.user?.name||'',fy:STATE.settings.currentFY||getCurrentFY()};
+if(editingBill){
+  /* Replace the existing bill in-place */
+  const idx=STATE.bills.findIndex(b=>b.id===billId);
+  if(idx>=0)STATE.bills[idx]=newBill; else STATE.bills.push(newBill);
+}else{
+  STATE.bills.push(newBill);
+}
+_editBillId=null;
 if(_billOrdId){
 const o=STATE.orders.find(x=>x.id===_billOrdId);
-if(o){if(!o.bills)o.bills=[];o.bills.push(newBill);}
 if(o){
-const ordTotal=o.items.reduce((s,i)=>s+i.pcs,0);
-/* Count cumulative pcs billed — newBill is already in STATE.bills, so just count all active bills */
+  if(!editingBill){if(!o.bills)o.bills=[];o.bills.push(newBill);}
+  else{const bi=o.bills?o.bills.findIndex(b=>b.id===billId):-1;if(bi>=0)o.bills[bi]=newBill;else{if(!o.bills)o.bills=[];o.bills.push(newBill);}}
+}
+if(o){
+const ordTotal=o.items.reduce((s,i)=>s+(i.pcs||0),0);
+/* Count cumulative pcs billed — use dispQty||pcs to handle both dispatch-style and classic bills. */
 const totalBilled=liveBills()
   .filter(b=>b.ordId===_billOrdId&&b.status!=='cancelled')
-  .reduce((s,b)=>s+b.items.reduce((ss,i)=>ss+i.pcs,0),0);
+  .reduce((s,b)=>s+b.items.reduce((ss,i)=>ss+(i.dispQty||i.pcs||0),0),0);
 o.status=totalBilled>=ordTotal?'fulfilled':'billed';
 }
 /* Mark programme as billed if this bill came from a programme lot */
@@ -3149,14 +3199,14 @@ const progId=_billRows[0]?._progId;
 if(progId&&o){
   const prog=(o.programmes||[]).find(p=>p.id===progId);
   if(prog){prog.status='billed'; prog.billId=STATE.bills[STATE.bills.length-1]?.id||'';}
-  /* Check if all programmes are billed and total dispatched >= total ordered */
   const stat=calcProgStats(o);
   if(stat.remaining<=0) o.status='fulfilled';
 }
 lsSave('vs_orders',STATE.orders);
 }
-persist(); hideMod('m-bill'); renderBills(); renderOrders(); renderDash();
-toast('Bill '+bno+' created','ok'); api('saveBill',{bills:STATE.bills,entries:STATE.entries,items:STATE.items});
+persist(); closeBillMod(); renderBills(); renderOrders(); renderDash();
+const isEdit=!!editingBill;
+toast('Bill '+bno+(isEdit?' updated':' created'),'ok'); api('saveBill',{bills:STATE.bills,entries:STATE.entries,items:STATE.items});
 }
 function renderBills(q=''){
 const c=el('billst')||el('billlst'); if(!c) return;
@@ -3198,6 +3248,12 @@ cTag.style.cssText='font-size:10px;font-weight:800;color:#EF4444;padding:3px 7px
 cTag.textContent='CANCELLED';
 erDiv.appendChild(cTag);
 }else{
+const editBtn=document.createElement('button');
+editBtn.className='btn bxs';
+editBtn.style.cssText='padding:3px 7px;font-size:10px;margin-top:4px;display:block;width:100%;background:#E0F2FE;color:#0369A1;border:1px solid #BAE6FD';
+editBtn.innerHTML='&#x270E; Edit';
+editBtn.onclick=e=>{e.stopPropagation();openEditBill(b.id);};
+erDiv.appendChild(editBtn);
 const cancelBtn=document.createElement('button');
 cancelBtn.className='btn bd bxs';
 cancelBtn.style.cssText='padding:3px 7px;font-size:10px;margin-top:4px;display:block;width:100%';
