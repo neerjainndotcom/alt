@@ -615,10 +615,11 @@ renderDBSetup();
       if(!d)return;
       const cloudSync=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
       const localSync=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
-      if(cloudSync>localSync){
-        applyCloudData(d);
+      const hasNewItems=(d.items||[]).some(ci=>!(STATE.items||[]).find(li=>li.id===ci.id));
+      if(cloudSync>localSync||hasNewItems){
+        applyCloudData(d,true);
         setLiveStatus('live');
-        showSyncToast();
+        if(cloudSync>localSync) showSyncToast();
       }
     }catch(e){}
   },15000);/* Poll every 15s as safety net — SSE handles real-time, this catches anything SSE misses */
@@ -7263,7 +7264,8 @@ function startFirebaseRealtime(){
             const d=await r.json();if(!d||!d.items)return;
             const cT=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
             const lT=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
-            if(cT>lT){applyCloudData(d);setLiveStatus('live');showSyncToast();}
+            const hasNew=(d.items||[]).some(ci=>!(STATE.items||[]).find(li=>li.id===ci.id));
+            if(cT>lT||hasNew){applyCloudData(d,true);setLiveStatus('live');showSyncToast();}
           }catch(x){}
         },800);
       }catch(x){}
@@ -9650,7 +9652,10 @@ function applyCloudData(d,force=false){
   if(!force){
     const cloudTs=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
     const localTs=STATE.settings?.lastSync?new Date(STATE.settings.lastSync):new Date(0);
-    if(cloudTs<=localTs&&localTs.getTime()>0)return;
+    // Also apply if cloud has items that don't exist locally (e.g. new SKU added by admin
+    // via saveItem without bumping lastSync on the backend)
+    const hasNewItems=(d.items||[]).some(ci=>!(STATE.items||[]).find(li=>li.id===ci.id));
+    if(cloudTs<=localTs&&localTs.getTime()>0&&!hasNewItems)return;
   }
   const keep={firebaseUrl:STATE.settings.firebaseUrl,firebaseSecret:STATE.settings.firebaseSecret};
   const keys=['items','entries','customers','brokers','suppliers','users','orders','bills',
