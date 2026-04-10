@@ -2699,6 +2699,8 @@ if(o.status==='fulfilled'){
   if(ordBills.length) btns.appendChild(mk('bp','&#x1F9FE; View Bills',()=>showOrderDetail(o.id)));
 }else if(isOpen&&o.status!=='cancelled'){
   btns.appendChild(mk('bp','&#x1F4CB; Programme Lot',()=>openProgModal(o.id)));
+  const pendingProgs=(o.programmes||[]).filter(p=>p.status!=='billed'&&!p.billId);
+  if(pendingProgs.length) btns.appendChild(mk('bs','&#x1F9FE; Bill Lot ('+pendingProgs.length+')',()=>openBillLotSelector(o.id)));
 }else{
   if(o.status!=='cancelled') btns.appendChild(mk('bp','&#x1F9FE; Bill',()=>createBill(o.id)));
 }
@@ -2725,6 +2727,7 @@ function calcOrdRow(i){}
 let _ordType='fixed';
 let _openItems=[{id:0}], _openItemId=0;
 let _progOrdId=null;
+let _progLots=[],_progLotId=0;
 
 function setOrdType(t){
   _ordType=t;
@@ -2770,47 +2773,33 @@ function calcProgStats(o){
 
 function openProgModal(ordId){
   const o=STATE.orders.find(x=>x.id===ordId); if(!o||o.type!=='open') return;
-  _progOrdId=ordId;
+  _progOrdId=ordId; _progLots=[]; _progLotId=0;
   const stat=calcProgStats(o);
   if(el('prog-ord-no')) el('prog-ord-no').textContent=o.orderNo;
   if(el('prog-cust')) el('prog-cust').textContent=o.custName;
-  const openItem=o.openItems?.[0]; if(!openItem) return;
-  const item=STATE.items.find(i=>i.id===openItem.itemId);
-  const rngs=item?[...new Set(item.colours.filter(c=>!c.discontinued).map(c=>c.range))]:[];
 
   let bod=
     '<div style="background:var(--Pl);border-radius:12px;padding:12px;margin-bottom:14px">'+
-    '<div class="fw7 sm" style="margin-bottom:8px">'+openItem.itemName+'</div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'+
     '<div style="text-align:center;background:var(--Tl);border-radius:8px;padding:8px"><div class="xs fw7 ct3">ORDERED</div><div class="fw8 cT" style="font-size:18px">'+fmtN(stat.total)+'</div><div class="xs ct3">sarees</div></div>'+
     '<div style="text-align:center;background:var(--Gl);border-radius:8px;padding:8px"><div class="xs fw7 ct3">DISPATCHED</div><div class="fw8 cG" style="font-size:18px">'+fmtN(stat.dispatched)+'</div><div class="xs ct3">sarees</div></div>'+
     '<div style="text-align:center;background:'+(stat.remaining>0?'var(--Rl)':'var(--Gl)')+';border-radius:8px;padding:8px"><div class="xs fw7 ct3">REMAINING</div><div class="fw8" style="font-size:18px;color:'+(stat.remaining>0?'var(--Rd)':'var(--Gd)')+'">'+fmtN(stat.remaining)+'</div><div class="xs ct3">sarees</div></div>'+
     '</div></div>'+
-    '<div style="font-size:11px;font-weight:800;color:var(--Pd);text-transform:uppercase;margin-bottom:10px">Programme New Lot</div>'+
-    '<div class="fg"><label>Date</label><input class="inp" type="date" id="prog-date" value="'+today()+'"/></div>'+
-    '<div class="fg"><label>Range</label>'+
-    '<select class="sel" id="prog-range" onchange="onProgRangeChange()">'+
-    '<option value="">Select Range...</option>'+rngs.map(r=>'<option value="'+r+'">Range '+r+'</option>').join('')+
-    '</select></div>'+
-    '<div class="fg"><label>Colour / SKU</label>'+
-    '<select class="sel" id="prog-clr" disabled><option value="">Select range first...</option></select></div>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
-    '<div class="fg"><label>Quantity (Sarees)</label><input class="inp mono big" type="number" id="prog-pcs" step="1" min="1" placeholder="e.g. 720"/></div>'+
-    '<div class="fg"><label>Rate \u20B9/mtr</label><input class="inp mono" type="number" id="prog-rate" step="0.01" value="'+(openItem.rate||'')+'"/></div>'+
-    '</div>'+
-    '<div class="fg"><label>Remark</label><input class="inp" type="text" id="prog-rem" placeholder="e.g. Urgent — send by evening"/></div>';
+    '<div style="font-size:11px;font-weight:800;color:var(--Pd);text-transform:uppercase;margin-bottom:10px">Programme New Lots</div>'+
+    '<div id="prog-lots-wrap"></div>'+
+    '<button class="btn bs bfl" onclick="addProgLot()" style="margin-top:4px">+ Add Another Lot</button>';
 
   /* Previous programmes */
   const progs=o.programmes||[];
   if(progs.length){
-    bod+='<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px">Previous Lots</div>';
+    bod+='<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 6px">Previous Lots</div>';
     bod+='<div style="border-radius:10px;overflow:hidden;border:1px solid var(--br)">';
     progs.slice().reverse().forEach(p=>{
       bod+='<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--br)">'+
         '<span class="bdg '+(p.status==='billed'?'bg-g':'bg-a')+'" style="flex-shrink:0;font-size:9px">'+p.status.toUpperCase()+'</span>'+
         '<div style="flex:1;min-width:0">'+
           '<div class="fw7 sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.colourName+' <span class="sku" style="font-size:9px">'+p.sku+'</span></div>'+
-          '<div class="xs ct3">'+fmtDate(p.date)+(p.remark?' · '+p.remark:'')+'</div>'+
+          '<div class="xs ct3">'+fmtDate(p.date)+(p.remark?' \u00B7 '+p.remark:'')+'</div>'+
         '</div>'+
         '<div class="mono fw8" style="flex-shrink:0">'+fmtN(p.pcs)+' pcs</div>'+
         (p.status!=='billed'?'<button onclick="billProgramme(\''+ordId+'\',\''+p.id+'\');hideMod(\'m-prog\')" class="btn bp bxs" style="font-size:10px;flex-shrink:0">Bill</button>':'<span class="bdg bg-g bxs" style="font-size:9px">Billed</span>')+
@@ -2819,64 +2808,213 @@ function openProgModal(ordId){
     bod+='</div>';
   }
   el('prog-bod').innerHTML=bod;
+  /* Reset footer save button to programme mode */
+  const sb=document.querySelector('#m-prog .shf .btn.bp');
+  if(sb){sb.innerHTML='\u2714 Add Programme';sb.onclick=saveProgramme;}
+  /* Add first lot card */
+  addProgLot();
   showMod('m-prog');
 }
 
-function onProgRangeChange(){
-  const rng=el('prog-range')?.value;
+function addProgLot(){
+  const wrap=el('prog-lots-wrap'); if(!wrap) return;
   const o=STATE.orders.find(x=>x.id===_progOrdId); if(!o) return;
-  const openItem=o.openItems?.[0]; if(!openItem) return;
-  const item=STATE.items.find(i=>i.id===openItem.itemId); if(!item||!rng) return;
-  const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued);
-  el('prog-clr').innerHTML='<option value="">Select Colour...</option>'+
+  const id=_progLotId++;
+  _progLots.push({id});
+  const lotNum=_progLots.length;
+  const iOpts=(o.openItems||[]).map(oi=>'<option value="'+oi.itemId+'">'+oi.itemName+'</option>').join('');
+  const defaultRate=o.openItems?.[0]?.rate||'';
+
+  const div=document.createElement('div');
+  div.id='prog-lot-'+id;
+  div.style.cssText='background:var(--s2);border-radius:12px;padding:12px;margin-bottom:10px';
+  div.innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'+
+    '<span style="font-size:11px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.5px">Lot '+lotNum+'</span>'+
+    (lotNum>1?'<button onclick="removeProgLot('+id+')" style="background:var(--Rl);color:var(--Rd);border:none;border-radius:7px;padding:3px 10px;font-size:12px;cursor:pointer">\u2715 Remove</button>':'')+
+    '</div>'+
+    '<div class="fg" style="margin-bottom:8px"><label>Item</label>'+
+    '<select class="sel" id="pl-'+id+'-itm" onchange="onProgLotItemChange('+id+')">'+
+    '<option value="">Select Item\u2026</option>'+iOpts+
+    '</select></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">'+
+    '<div class="fg"><label>Range</label>'+
+    '<select class="sel" id="pl-'+id+'-rng" onchange="onProgLotRangeChange('+id+')" disabled>'+
+    '<option value="">Select item first\u2026</option></select></div>'+
+    '<div class="fg"><label>Colour / SKU</label>'+
+    '<select class="sel" id="pl-'+id+'-clr" disabled>'+
+    '<option value="">Select range first\u2026</option></select></div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">'+
+    '<div class="fg"><label>Date</label><input class="inp" type="date" id="pl-'+id+'-date" value="'+today()+'"/></div>'+
+    '<div class="fg"><label>Cut (m/saree)</label><input class="inp mono" type="number" id="pl-'+id+'-cut" step="0.1" min="0.1" value="6"/></div>'+
+    '<div class="fg"><label>Qty (Sarees)</label><input class="inp mono big" type="number" id="pl-'+id+'-pcs" step="1" min="1" placeholder="e.g. 720"/></div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+    '<div class="fg"><label>Rate \u20B9/mtr</label><input class="inp mono" type="number" id="pl-'+id+'-rate" step="0.01" value="'+defaultRate+'"/></div>'+
+    '<div class="fg"><label>Remark</label><input class="inp" type="text" id="pl-'+id+'-rem" placeholder="e.g. Urgent"/></div>'+
+    '</div>';
+  wrap.appendChild(div);
+  /* Auto-select if only one item in the order */
+  if((o.openItems||[]).length===1){
+    const itmSel=el('pl-'+id+'-itm');
+    if(itmSel){itmSel.value=o.openItems[0].itemId;onProgLotItemChange(id);}
+  }
+}
+
+function removeProgLot(id){
+  _progLots=_progLots.filter(l=>l.id!==id);
+  const div=el('prog-lot-'+id);if(div)div.remove();
+}
+
+function onProgLotItemChange(id){
+  const itemId=el('pl-'+id+'-itm')?.value; if(!itemId) return;
+  const item=STATE.items.find(i=>i.id===itemId); if(!item) return;
+  const rngs=[...new Set((item.colours||[]).filter(c=>!c.discontinued).map(c=>c.range).filter(r=>r!==''))];
+  const hasDefault=(item.colours||[]).some(c=>c.range===''&&!c.discontinued);
+  const rngSel=el('pl-'+id+'-rng'); if(!rngSel) return;
+  rngSel.innerHTML='<option value="">Select Range\u2026</option>'+
+    rngs.map(r=>'<option value="'+r+'">'+r+'</option>').join('')+
+    (hasDefault?'<option value="__norange__">(No Range / Default)</option>':'');
+  rngSel.disabled=false;
+  const clrSel=el('pl-'+id+'-clr');
+  if(clrSel){clrSel.innerHTML='<option value="">Select range first\u2026</option>';clrSel.disabled=true;}
+  if(rngs.length===1&&!hasDefault){rngSel.value=rngs[0];onProgLotRangeChange(id);}
+  else if(rngs.length===0&&hasDefault){rngSel.value='__norange__';onProgLotRangeChange(id);}
+  /* Pre-fill rate from order item */
+  const o=STATE.orders.find(x=>x.id===_progOrdId);
+  const oi=(o?.openItems||[]).find(x=>x.itemId===itemId);
+  if(oi?.rate){const rf=el('pl-'+id+'-rate');if(rf&&!rf.value)rf.value=oi.rate;}
+}
+
+function onProgLotRangeChange(id){
+  const itemId=el('pl-'+id+'-itm')?.value; if(!itemId) return;
+  const rng=el('pl-'+id+'-rng')?.value; if(!rng) return;
+  const item=STATE.items.find(i=>i.id===itemId); if(!item) return;
+  const actualRng=rng==='__norange__'?'':rng;
+  const cols=(item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued);
+  const clrSel=el('pl-'+id+'-clr'); if(!clrSel) return;
+  clrSel.innerHTML='<option value="">Select Colour\u2026</option>'+
     cols.map(c=>{
-      const idx=item.colours.indexOf(c);
-      const stk=c.stock_taka||0;
-      return '<option value="'+idx+'">'+c.name+' · SKU: '+c.sku+' · Stock: '+stk+'T</option>';
+      const idx=(item.colours||[]).indexOf(c);
+      return '<option value="'+idx+'">'+c.name+' \u00B7 SKU: '+c.sku+' \u00B7 Stock: '+(c.stock_taka||0)+'T</option>';
     }).join('');
-  el('prog-clr').disabled=false;
+  clrSel.disabled=false;
+  if(cols.length===1){clrSel.value=String((item.colours||[]).indexOf(cols[0]));}
 }
 
 async function saveProgramme(){
   const o=STATE.orders.find(x=>x.id===_progOrdId); if(!o) return;
-  const openItem=o.openItems?.[0]; if(!openItem) return;
-  const item=STATE.items.find(i=>i.id===openItem.itemId); if(!item){toast('Item not found','er');return;}
-  const rng=el('prog-range')?.value; if(!rng){toast('Select a range','er');return;}
-  const cIdxStr=el('prog-clr')?.value; if(cIdxStr===''){toast('Select a colour','er');return;}
-  const colIdx=parseInt(cIdxStr);
-  const col=item.colours[colIdx]; if(!col){toast('Colour not found','er');return;}
-  const pcs=parseInt(el('prog-pcs')?.value)||0; if(!pcs){toast('Enter quantity (sarees)','er');return;}
-  const rate=parseFloat(el('prog-rate')?.value)||0;
-  const date=el('prog-date')?.value||today();
-  const remark=(el('prog-rem')?.value||'').trim();
+  const lotDivs=[...document.querySelectorAll('[id^="prog-lot-"]')];
+  if(!lotDivs.length){toast('No lots to save','er');return;}
+
+  /* Collect & validate all lots */
+  const toSave=[];
+  for(let di=0;di<lotDivs.length;di++){
+    const lid=parseInt(lotDivs[di].id.replace('prog-lot-',''));
+    const lbl='Lot '+(di+1)+': ';
+    const itemId=el('pl-'+lid+'-itm')?.value;
+    if(!itemId){toast(lbl+'Select an item','er');return;}
+    const item=STATE.items.find(i=>i.id===itemId);
+    if(!item){toast(lbl+'Item not found','er');return;}
+    const rng=el('pl-'+lid+'-rng')?.value;
+    if(!rng){toast(lbl+'Select a range','er');return;}
+    const cIdxStr=el('pl-'+lid+'-clr')?.value;
+    if(cIdxStr===''||cIdxStr==null){toast(lbl+'Select a colour','er');return;}
+    const colIdx=parseInt(cIdxStr);
+    const col=(item.colours||[])[colIdx];
+    if(!col){toast(lbl+'Colour not found','er');return;}
+    const pcs=parseInt(el('pl-'+lid+'-pcs')?.value)||0;
+    if(!pcs){toast(lbl+'Enter quantity (sarees)','er');return;}
+    const cut=parseFloat(el('pl-'+lid+'-cut')?.value)||6;
+    const rate=parseFloat(el('pl-'+lid+'-rate')?.value)||0;
+    const date=el('pl-'+lid+'-date')?.value||today();
+    const remark=(el('pl-'+lid+'-rem')?.value||'').trim();
+    const actualRng=rng==='__norange__'?'':rng;
+    toSave.push({itemId,item,colIdx,col,pcs,cut,rate,date,remark,range:actualRng});
+  }
+  if(!toSave.length) return;
+
+  /* Over-programme check */
   const stat=calcProgStats(o);
-  if(pcs>stat.remaining&&stat.remaining>0){
+  const totalNew=toSave.reduce((s,l)=>s+l.pcs,0);
+  if(totalNew>stat.remaining&&stat.remaining>0){
     const ok=await appConfirm('Over Programme?',
-      'Programming '+fmtN(pcs)+' pcs but only '+fmtN(stat.remaining)+' remain in this order.\nThis will exceed the confirmed total of '+fmtN(stat.total)+' sarees.\n\nContinue anyway?',
+      'Programming '+fmtN(totalNew)+' pcs but only '+fmtN(stat.remaining)+' remain.\nThis exceeds the confirmed total of '+fmtN(stat.total)+' sarees.\n\nContinue anyway?',
       '\u26A0\uFE0F','Yes, Continue','ok');
     if(!ok) return;
   }
+
   if(!o.programmes) o.programmes=[];
-  const progId=uid();
-  const cut=6;
-  const amount=rate>0?Math.round(pcs*cut*rate):0;
-  o.programmes.push({id:progId,date,itemId:openItem.itemId,range:rng,colIdx,sku:col.sku,colourName:col.name,pcs,rate,amount,remark,status:'pending',billId:null});
+  const savedProgs=[];
+  toSave.forEach(l=>{
+    const progId=uid();
+    const amount=l.rate>0?Math.round(l.pcs*l.cut*l.rate):0;
+    o.programmes.push({id:progId,date:l.date,itemId:l.itemId,range:l.range,colIdx:l.colIdx,sku:l.col.sku,colourName:l.col.name,pcs:l.pcs,cut:l.cut,rate:l.rate,amount,remark:l.remark,status:'pending',billId:null});
+    savedProgs.push({progId,col:l.col,pcs:l.pcs});
+  });
   o.total=(o.programmes||[]).reduce((s,p)=>s+(p.amount||0),0);
-  const newStat=calcProgStats(o);
-  if(newStat.remaining<=0) o.status='programmed';
+  if(calcProgStats(o).remaining<=0) o.status='programmed';
   stamp(o);
   lsSave('vs_orders',STATE.orders);
   hideMod('m-prog');
   renderOrders();
-  toast('Programme added: '+col.name+' \u2014 '+fmtN(pcs)+' pcs','ok');
+  const msg=toSave.length===1?'Programme added: '+toSave[0].col.name+' \u2014 '+fmtN(toSave[0].pcs)+' pcs':toSave.length+' lots programmed successfully';
+  toast(msg,'ok');
   api('saveOrder',{orders:STATE.orders});
-  /* Offer to bill immediately */
+  /* Offer to bill */
   setTimeout(async()=>{
-    const bill=await appConfirm('Bill This Lot Now?',
-      col.name+' \u2014 '+fmtN(pcs)+' pcs\nDate: '+fmtDate(date)+(remark?'\nRemark: '+remark:''),
+    const bill=await appConfirm('Bill Now?',
+      toSave.length===1?toSave[0].col.name+' \u2014 '+fmtN(toSave[0].pcs)+' pcs':toSave.length+' new lots ready\u2014open bill selector?',
       '\uD83E\uDDFE','Yes, Create Bill','ok');
-    if(bill) billProgramme(o.id,progId);
+    if(bill){
+      if(toSave.length===1) billProgramme(o.id,savedProgs[0].progId);
+      else openBillLotSelector(o.id);
+    }
   },300);
+}
+
+function openBillLotSelector(ordId){
+  const o=STATE.orders.find(x=>x.id===ordId); if(!o) return;
+  _progOrdId=ordId;
+  if(el('prog-ord-no')) el('prog-ord-no').textContent=o.orderNo;
+  if(el('prog-cust')) el('prog-cust').textContent=o.custName;
+  const pending=(o.programmes||[]).filter(p=>p.status!=='billed'&&!p.billId);
+  if(!pending.length){toast('No pending lots to bill','er');return;}
+
+  let bod='<div style="font-size:11px;font-weight:800;color:var(--Pd);text-transform:uppercase;margin-bottom:12px">Select Lots to Bill</div>';
+  pending.slice().reverse().forEach((p,i)=>{
+    bod+='<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border-radius:10px;margin-bottom:8px;cursor:pointer">'+
+      '<input type="checkbox" id="bls-'+p.id+'" value="'+p.id+'" style="width:18px;height:18px;accent-color:var(--P)" '+(i===0?'checked':'')+'>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div class="fw7 sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.colourName+' <span class="sku" style="font-size:9px">'+p.sku+'</span></div>'+
+        '<div class="xs ct3">'+fmtDate(p.date)+(p.remark?' \u00B7 '+p.remark:'')+'</div>'+
+        '<div class="xs mono ct3">'+fmtN(p.pcs)+' pcs'+(p.rate?' \u00B7 \u20B9'+p.rate+'/mtr':'')+'</div>'+
+      '</div>'+
+      '</label>';
+  });
+  el('prog-bod').innerHTML=bod;
+  /* Switch footer button to bill mode */
+  const sb=document.querySelector('#m-prog .shf .btn.bp');
+  if(sb){sb.innerHTML='\uD83E\uDDFE Create Bill for Selected';sb.onclick=()=>confirmBillLots(ordId);}
+  showMod('m-prog');
+}
+
+function confirmBillLots(ordId){
+  const o=STATE.orders.find(x=>x.id===ordId); if(!o) return;
+  const checked=[...document.querySelectorAll('[id^="bls-"]:checked')];
+  if(!checked.length){toast('Select at least one lot','er');return;}
+  const progs=checked.map(cb=>(o.programmes||[]).find(p=>p.id===cb.value)).filter(Boolean);
+  if(!progs.length) return;
+  _billOrdId=ordId;
+  _billRows=progs.map(p=>{
+    const it=STATE.items.find(i=>i.id===p.itemId);
+    const c=p.cut||6;
+    return {itemId:p.itemId,colIdx:p.colIdx,sku:p.sku,itemName:it?.name||'',colourName:p.colourName,range:p.range,pcs:p.pcs,rate:Math.round(p.rate*c*100)/100,cut:c,_progId:p.id};
+  });
+  hideMod('m-prog');
+  buildBillBody({...o,ordId:o.id});
+  showMod('m-bill');
 }
 
 function billProgramme(ordId,progId){
@@ -2885,8 +3023,9 @@ function billProgramme(ordId,progId){
   if(prog.status==='billed'){toast('This lot is already billed','er');return;}
   const item=STATE.items.find(i=>i.id===prog.itemId); if(!item) return;
   _billOrdId=ordId;
-  _billRows=[{itemId:prog.itemId,colIdx:prog.colIdx,sku:prog.sku,itemName:item.name,colourName:prog.colourName,range:prog.range,pcs:prog.pcs,rate:prog.rate,_progId:progId}];
-  buildBillBody(o);
+  const cut=prog.cut||6;
+  _billRows=[{itemId:prog.itemId,colIdx:prog.colIdx,sku:prog.sku,itemName:item.name,colourName:prog.colourName,range:prog.range,pcs:prog.pcs,rate:Math.round(prog.rate*cut*100)/100,cut,_progId:progId}];
+  buildBillBody({...o,ordId:o.id});
   showMod('m-bill');
 }
 function waOrd(id){
@@ -3307,14 +3446,16 @@ const totalBilled=liveBills()
   .reduce((s,b)=>s+b.items.reduce((ss,i)=>ss+(i.dispQty||i.pcs||0),0),0);
 o.status=totalBilled>=ordTotal?'fulfilled':'billed';
 }
-/* Mark programme as billed if this bill came from a programme lot */
-const progId=_billRows[0]?._progId;
-if(progId&&o){
-  const prog=(o.programmes||[]).find(p=>p.id===progId);
-  if(prog){prog.status='billed'; prog.billId=STATE.bills[STATE.bills.length-1]?.id||'';}
-  const stat=calcProgStats(o);
-  if(stat.remaining<=0) o.status='fulfilled';
-}
+/* Mark all programme lots as billed if this bill came from programme lot(s) */
+const savedBillId=STATE.bills[STATE.bills.length-1]?.id||'';
+let anyProgBilled=false;
+_billRows.forEach(row=>{
+  if(row._progId&&o){
+    const prog=(o.programmes||[]).find(p=>p.id===row._progId);
+    if(prog){prog.status='billed';prog.billId=savedBillId;anyProgBilled=true;}
+  }
+});
+if(anyProgBilled&&o){const stat=calcProgStats(o);if(stat.remaining<=0)o.status='fulfilled';}
 lsSave('vs_orders',STATE.orders);
 }
 persist(); closeBillMod(); renderBills(); renderOrders(); renderDash();
