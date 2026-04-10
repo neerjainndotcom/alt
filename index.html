@@ -873,17 +873,19 @@ if(scrBody){
   });
 }
 
-/* Gear icon for dashboard config */
+/* Gear icon for dashboard config — placed in the flex button row next to refresh */
 let gearBtn=document.getElementById('dash-gear-btn');
 if(!gearBtn){
   gearBtn=document.createElement('button');
   gearBtn.id='dash-gear-btn';
-  gearBtn.style.cssText='position:absolute;top:12px;right:120px;background:rgba(0,0,0,.06);border:none;border-radius:8px;padding:5px 10px;font-size:16px;cursor:pointer;z-index:10';
+  gearBtn.className='btn bgh bsm';
   gearBtn.title='Customize Dashboard';
-  gearBtn.textContent='\u2699\uFE0F';
+  gearBtn.innerHTML='\u2699\uFE0F';
   gearBtn.onclick=()=>openDashConfig();
-  const hdr=document.querySelector('#s-dash .shdr .hr');
-  if(hdr){hdr.style.position='relative';hdr.appendChild(gearBtn);}
+  const refreshBtn=document.getElementById('refresh-btn');
+  if(refreshBtn&&refreshBtn.parentNode){
+    refreshBtn.parentNode.insertBefore(gearBtn,refreshBtn);
+  }
 }
 
 /* Non-widget tasks that always run */
@@ -9865,7 +9867,12 @@ function applyCloudData(d,force=false){
     keys.forEach(k=>{if(d[k]!==undefined)STATE[k]=smartMerge(STATE[k],d[k],uniqueKeys[k]);});
   }
   keys.forEach(k=>{STATE[k]=cleanupDeleted(STATE[k]);});
-  if(d.settings)STATE.settings={...STATE.settings,...d.settings,...keep};
+  if(d.settings){
+    // Deep-merge dashConfigPerUser so every staff member's personal layout survives sync
+    const mergedPerUser={...(STATE.settings.dashConfigPerUser||{}), ...(d.settings.dashConfigPerUser||{})};
+    STATE.settings={...STATE.settings,...d.settings,...keep};
+    if(Object.keys(mergedPerUser).length) STATE.settings.dashConfigPerUser=mergedPerUser;
+  }
   /* Keep cloud's lastSync (not current time) so future syncs from other devices still pass the timestamp check */
   if(d.settings?.lastSync) STATE.settings.lastSync=d.settings.lastSync;
   try{migrateData();}catch(e){}
