@@ -539,11 +539,10 @@ async function logout(){
 }
 function initApp(){
 const vEl=el('d-version');if(vEl)vEl.textContent='v'+APP_VERSION+' ('+APP_BUILD_DATE+')';
-// NOTE: recalcStockFromEntries() is NOT called here on purpose.
-// The cloud pull hasn't happened yet at this point — calling recalc with
-// stale local-only entries would produce wrong stock and save to localStorage,
-// which then gets treated as "newer" during smartMerge. Recalc runs correctly
-// inside applyCloudData() AFTER all cloud data has been merged in.
+// Recalc stock from local entries immediately so stock is never shown as 0
+// while waiting for cloud sync. applyCloudData() will recalc again after
+// merging cloud data, so this is always safe and never causes stale values.
+recalcStockFromEntries();
 // ── LOCK IN FINANCIAL YEAR on first use ──────────────────────────
 // If currentFY is not saved yet, detect from calendar and lock it in now.
 // This prevents new entries from silently getting a different FY tag
@@ -2535,7 +2534,19 @@ toast('Order '+ordNo+' saved','ok'); api('saveOrder',{orders:STATE.orders});
 }
 function renderOrders(q=''){
 const c=el('ordlst'); if(!c) return;
-const f=STATE.orders.filter(o=>!o._deleted&&o.status!=='deleted'&&(!q||o.orderNo.includes(q)||o.custName.toLowerCase().includes(q.toLowerCase())));
+const ql=q.toLowerCase();
+const f=STATE.orders.filter(o=>{
+  if(o._deleted||o.status==='deleted') return false;
+  if(!q) return true;
+  return (o.orderNo||'').toLowerCase().includes(ql)||
+    (o.custName||'').toLowerCase().includes(ql)||
+    (o.salesmanName||'').toLowerCase().includes(ql)||
+    (o.brkName||'').toLowerCase().includes(ql)||
+    (o.notes||'').toLowerCase().includes(ql)||
+    (o.status||'').toLowerCase().includes(ql)||
+    (o.date||'').includes(ql)||
+    (o.items||[]).some(i=>(i.itemName||'').toLowerCase().includes(ql)||(i.colourName||'').toLowerCase().includes(ql)||(i.sku||'').toLowerCase().includes(ql)||(i.range||'').toLowerCase().includes(ql));
+});
 if(!f.length){c.innerHTML='<div class="emp"><div class="emj">&#x1F9FE;</div><h3>No Orders</h3><p>Tap + Order to create one</p></div>';return;}
 c.innerHTML='';
 f.sort((a,b)=>{
@@ -9731,6 +9742,9 @@ function applyCloudData(d,force=false){
   if(d.settings?.lastSync) STATE.settings.lastSync=d.settings.lastSync;
   try{migrateData();}catch(e){}
   recalcStockFromEntries();
+  // Refresh the logged-in user's permissions from the newly merged STATE.users,
+  // so that permission changes made by admin take effect without a re-login.
+  try{refreshCurrentUser();}catch(e){}
   lsSave('vs_items',STATE.items);lsSave('vs_entries',STATE.entries);
   lsSave('vs_customers',STATE.customers);lsSave('vs_brokers',STATE.brokers);
   lsSave('vs_suppliers',STATE.suppliers);lsSave('vs_users',STATE.users);
