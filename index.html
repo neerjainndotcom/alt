@@ -327,6 +327,8 @@ STATE.taskInstances=lsGet('vs_task_instances')||[];
 STATE.staffLeave=lsGet('vs_staff_leave')||[];
 STATE.mixedSarees=lsGet('vs_mixed_sarees')||[];
 STATE.custGroups=lsGet('vs_cust_groups')||[];
+// Ensure every item has a colours array — guards against any corrupt saved records
+STATE.items.forEach(item=>{if(!Array.isArray(item.colours))item.colours=[];});
 }
 const _lsCache={};
 function lsSaveIfChanged(key,val){
@@ -9867,6 +9869,8 @@ function applyCloudData(d,force=false){
     keys.forEach(k=>{if(d[k]!==undefined)STATE[k]=smartMerge(STATE[k],d[k],uniqueKeys[k]);});
   }
   keys.forEach(k=>{STATE[k]=cleanupDeleted(STATE[k]);});
+  // Defensive: ensure every item has a colours array — corrupt/partial records from Firebase can omit it
+  (STATE.items||[]).forEach(item=>{if(!Array.isArray(item.colours))item.colours=[];});
   if(d.settings){
     // Deep-merge dashConfigPerUser so every staff member's personal layout survives sync
     const mergedPerUser={...(STATE.settings.dashConfigPerUser||{}), ...(d.settings.dashConfigPerUser||{})};
