@@ -406,13 +406,14 @@ const t=el('tst'); t.textContent=msg;
 t.className='on'+(type?' '+type:'');
 clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('on'),2800);
 }
-function appConfirm(title,msg,icon='⚠️',btnLabel='Confirm',btnColor=''){
+function appConfirm(title,msg,icon='⚠️',btnLabel='Confirm',btnColor='',cancelLabel=''){
 return new Promise(res=>{
 el('ci').textContent=icon; el('ct').textContent=title; el('cm').textContent=msg;
 const ob=el('cy'); ob.textContent=btnLabel;
 ob.className='cyes'+(btnColor?' '+btnColor:'');
+const nb=el('cn'); nb.textContent=cancelLabel||'Cancel';
 const ov=el('cov'); ov.classList.add('on');
-const done=v=>{ov.classList.remove('on');res(v);};
+const done=v=>{ov.classList.remove('on');nb.textContent='Cancel';res(v);};
 el('cy').onclick=()=>done(true);
 el('cn').onclick=()=>done(false);
 });
@@ -3109,8 +3110,8 @@ async function saveProgramme(){
   /* Offer to bill */
   setTimeout(async()=>{
     const bill=await appConfirm('Bill Now?',
-      toSave.length===1?toSave[0].col.name+' \u2014 '+fmtN(toSave[0].pcs)+' pcs':toSave.length+' new lots ready\u2014open bill selector?',
-      '\uD83E\uDDFE','Yes, Create Bill','ok');
+      toSave.length===1?toSave[0].col.name+' \u2014 '+fmtN(toSave[0].pcs)+' pcs':toSave.length+' new lots ready \u2014 create bill now?',
+      '\uD83E\uDDFE','Yes, Create Bill','ok','No, Later');
     if(bill){
       if(toSave.length===1) billProgramme(o.id,savedProgs[0].progId);
       else openBillLotSelector(o.id);
@@ -3151,13 +3152,9 @@ function confirmBillLots(ordId){
   const progs=checked.map(cb=>(o.programmes||[]).find(p=>p.id===cb.value)).filter(Boolean);
   if(!progs.length) return;
   _billOrdId=ordId;
-  _billRows=progs.map(p=>{
-    const it=STATE.items.find(i=>i.id===p.itemId);
-    const c=p.cut||6;
-    return {itemId:p.itemId,colIdx:p.colIdx,sku:p.sku,itemName:it?.name||'',colourName:p.colourName,range:p.range,pcs:p.pcs,rate:Math.round(p.rate*c*100)/100,cut:c,_progId:p.id};
-  });
+  _billRows=progs.map(p=>({_progId:p.id}));
   hideMod('m-prog');
-  buildBillBody({...o,ordId:o.id});
+  buildBillBody(o);
   showMod('m-bill');
 }
 
@@ -3167,9 +3164,8 @@ function billProgramme(ordId,progId){
   if(prog.status==='billed'){toast('This lot is already billed','er');return;}
   const item=STATE.items.find(i=>i.id===prog.itemId); if(!item) return;
   _billOrdId=ordId;
-  const cut=prog.cut||6;
-  _billRows=[{itemId:prog.itemId,colIdx:prog.colIdx,sku:prog.sku,itemName:item.name,colourName:prog.colourName,range:prog.range,pcs:prog.pcs,rate:Math.round(prog.rate*cut*100)/100,cut,_progId:progId}];
-  buildBillBody({...o,ordId:o.id});
+  _billRows=[{_progId:progId}];
+  buildBillBody(o);
   showMod('m-bill');
 }
 function waOrd(id){
@@ -3517,8 +3513,8 @@ if(editingBill){
 if(!bno){toast('Enter invoice number','er');return;}
 /* Duplicate number check — another device may have created same number simultaneously */
 if(STATE.bills.find(b=>b.billNo===bno)){bno=nextBillNo();}
-if(!_billOrdId){
-/* Standalone bill — read from lot cards */
+if(!_billOrdId||_billLots.length>0){
+/* Standalone or programme bill — read from lot cards */
 for(const lot of _billLots){
 const iid=el('bl-lot-'+lot.id+'-i')?.value;
 const item=STATE.items.find(x=>x.id===iid);if(!item)continue;
@@ -5277,11 +5273,52 @@ html+=
 '</div>';
 if(o.notes) html+='<div style="margin-top:10px;padding:10px;background:var(--Al);border-radius:8px"><span style="font-size:10px;font-weight:700;color:var(--Ad)">NOTES</span><div style="font-size:13px;color:var(--Ad);margin-top:2px">'+o.notes+'</div></div>';
 el('ord-det-body').innerHTML=html;
+/* ── Programme lots section for open orders ── */
+if(o.type==='open'){
+  const stat=calcProgStats(o);
+  const pct=stat.total>0?Math.round(stat.dispatched/stat.total*100):0;
+  const progs=o.programmes||[];
+  const pending=progs.filter(p=>p.status!=='billed'&&!p.billId);
+  const billed=progs.filter(p=>p.status==='billed'||p.billId);
+  html+=
+    '<div style="margin-bottom:12px">'+
+    '<div style="font-size:11px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Open Order — Ordered Items</div>'+
+    '<div class="bsum" style="margin-bottom:10px">'+
+    (o.openItems||[]).map(oi=>'<div class="brow"><span class="fw7">'+oi.itemName+'</span><span class="mono">'+fmtN(oi.totalPcs)+' sarees @ \u20B9'+(oi.rate||0)+'/mtr</span></div>').join('')+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">'+
+    '<div style="text-align:center;background:var(--Tl);border-radius:8px;padding:8px"><div class="xs fw7 ct3">ORDERED</div><div class="fw8 cT" style="font-size:18px">'+fmtN(stat.total)+'</div></div>'+
+    '<div style="text-align:center;background:var(--Gl);border-radius:8px;padding:8px"><div class="xs fw7 ct3">DISPATCHED</div><div class="fw8 cG" style="font-size:18px">'+fmtN(stat.dispatched)+'</div></div>'+
+    '<div style="text-align:center;background:'+(stat.remaining>0?'var(--Rl)':'var(--Gl)')+';border-radius:8px;padding:8px"><div class="xs fw7 ct3">REMAINING</div><div class="fw8" style="font-size:18px;color:'+(stat.remaining>0?'var(--Rd)':'var(--Gd)')+'">'+fmtN(stat.remaining)+'</div></div>'+
+    '</div>'+
+    (progs.length?
+      '<div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Programme Lots ('+progs.length+')</div>'+
+      '<div style="border-radius:10px;overflow:hidden;border:1px solid var(--br)">'+
+      progs.slice().reverse().map(p=>
+        '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--br)">'+
+        '<span class="bdg '+(p.status==='billed'?'bg-g':'bg-a')+'" style="flex-shrink:0;font-size:9px">'+p.status.toUpperCase()+'</span>'+
+        '<div style="flex:1;min-width:0">'+
+          '<div class="fw7 sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.colourName+' <span class="sku" style="font-size:9px">'+p.sku+'</span></div>'+
+          '<div class="xs ct3">'+fmtDate(p.date)+' \u00B7 '+fmtN(p.pcs)+' pcs \u00B7 Cut:'+(p.cut||6)+'m'+(p.remark?' \u00B7 '+p.remark:'')+'</div>'+
+        '</div>'+
+        '<div class="mono fw8" style="flex-shrink:0">'+(p.amount?fmtRs(p.amount):'')+'</div>'+
+        (p.status!=='billed'?'<button onclick="hideMod(\'m-ord-det\');billProgramme(\''+o.id+'\',\''+p.id+'\')" class="btn bp bxs" style="font-size:10px;flex-shrink:0">Bill</button>':'<span class="bdg bg-g bxs" style="font-size:9px">Billed</span>')+
+        '</div>'
+      ).join('')+
+      '</div>'
+    :'<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px;background:var(--s2);border-radius:8px">No programme lots yet \u2014 tap \u201CProgramme Lot\u201D to add</div>')+
+    '</div>';
+  el('ord-det-body').innerHTML=html;
+}
 const foot=el('ord-det-foot');
 foot.innerHTML='';
 const mk=(cls,txt,fn)=>{const b=document.createElement('button');b.className='btn '+cls;b.innerHTML=txt;b.onclick=fn;return b;};
 foot.appendChild(mk('wa','&#x1F4F2; WhatsApp',()=>waOrd(o.id)));
-if(o.status!=='fulfilled'&&o.status!=='cancelled'){
+if(o.type==='open'&&o.status!=='cancelled'){
+  foot.appendChild(mk('bp bfl','&#x1F4CB; Programme Lot',()=>{hideMod('m-ord-det');openProgModal(o.id);}));
+  const pendingProgs=(o.programmes||[]).filter(p=>p.status!=='billed'&&!p.billId);
+  if(pendingProgs.length) foot.appendChild(mk('bs bfl','&#x1F9FE; Bill Lot ('+pendingProgs.length+')',()=>{hideMod('m-ord-det');openBillLotSelector(o.id);}));
+}else if(o.status!=='fulfilled'&&o.status!=='cancelled'){
 foot.appendChild(mk('bp bfl','&#x1F9FE; Dispatch Bill',()=>{hideMod('m-ord-det');openDispatch(o.id);}));
 }
 const ordBills=liveBills().filter(b=>b.ordId===o.id);
@@ -7146,7 +7183,7 @@ html+='</div>';
 /* Party group: find all members in the same group as this customer */
 const custGroup=(STATE.custGroups||[]).find(g=>g.memberIds&&g.memberIds.includes(custId));
 const groupMemberIds=custGroup?custGroup.memberIds:[custId];
-const pendOrds=STATE.orders.filter(o=>groupMemberIds.includes(o.custId)&&(o.status==='pending'||o.status==='billed'));
+const pendOrds=STATE.orders.filter(o=>groupMemberIds.includes(o.custId)&&((o.status==='pending'||o.status==='billed')||(o.type==='open'&&(o.programmes||[]).some(p=>p.status!=='billed'&&!p.billId))));
 /* Party group banner */
 if(custGroup&&custGroup.memberIds.length>1){
 const memberNames=custGroup.memberIds.map(mid=>{const m=STATE.customers.find(c=>c.id===mid);return m?m.name:'?';}).join(', ');
@@ -7166,9 +7203,56 @@ html+=
 c.innerHTML=html; return;
 }
 html+='<div style="margin-bottom:12px"><button class="btn bp bfl" onclick="createStandaloneBill(\''+custId+'\')">+ Create Invoice without Order</button></div>';
-html+='<div style="font-size:11px;font-weight:700;color:var(--Pd);margin-bottom:10px">'+pendOrds.length+' pending order(s) — tap to create invoice</div>';
+html+='<div style="font-size:11px;font-weight:700;color:var(--Pd);margin-bottom:10px">'+pendOrds.length+' pending order(s)</div>';
 pendOrds.forEach(o=>{
-/* Use liveBills() (canonical source) — o.bills can be stale after sync or delete */
+const ordCust=o.custId!==custId?STATE.customers.find(c=>c.id===o.custId):null;
+if(o.type==='open'){
+/* ── Open order: show pending programme lots ── */
+const pending=(o.programmes||[]).filter(p=>p.status!=='billed'&&!p.billId);
+const stat=calcProgStats(o);
+html+=
+'<div style="border:1.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:8px;background:white">'+
+(ordCust?'<div style="background:var(--Al);padding:4px 14px;font-size:10px;font-weight:700;color:var(--Ad)">Order of: '+ordCust.name+'</div>':'')+
+'<div style="padding:10px 14px">'+
+'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+
+'<span class="mono fw7 cP" style="font-size:14px">'+o.orderNo+'</span>'+
+'<span class="bdg bg-p">open</span>'+
+'<span style="font-size:10px;color:var(--t3)">'+pending.length+' lot(s) pending</span>'+
+'</div>'+
+'<div class="xs ct3">'+fmtDate(o.date)+(o.salesmanName?' \u00B7 '+o.salesmanName:'')+'</div>'+
+'<div style="display:flex;gap:12px;margin-top:5px">'+
+'<div style="font-size:11px"><span style="color:var(--t3)">Ordered: </span><span class="fw7">'+stat.total+'</span></div>'+
+'<div style="font-size:11px"><span style="color:var(--t3)">Prog\'d: </span><span class="fw7">'+stat.dispatched+'</span></div>'+
+'<div style="font-size:11px"><span style="color:var(--t3)">Remaining: </span><span class="fw7 '+(stat.remaining>0?'cA':'cG')+'">'+stat.remaining+'</span></div>'+
+'</div>'+
+'</div>'+
+'<div style="border-top:1px solid var(--br)">';
+pending.forEach((p,pi)=>{
+html+=
+'<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;'+(pi<pending.length-1?'border-bottom:1px solid var(--br)':'')+';background:white">'+
+'<div style="flex:1;min-width:0">'+
+'<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">'+
+'<span class="fw7 sm">'+p.colourName+'</span>'+
+'<span class="sku" style="font-size:9px">'+p.sku+'</span>'+
+'</div>'+
+'<div class="xs ct3">'+fmtDate(p.date)+(p.remark?' \u00B7 '+p.remark:'')+'</div>'+
+'<div style="font-size:10px;color:var(--P);font-weight:600;margin-top:1px">'+fmtN(p.pcs)+' pcs'+(p.cut?' \u00B7 '+p.cut+'m/pc':'')+(p.rate?' \u00B7 \u20B9'+p.rate+'/m':'')+(p.amount?' = \u20B9'+fmtN(p.amount):'')+'</div>'+
+'</div>'+
+'<button onclick="billProgramme(\''+o.id+'\',\''+p.id+'\')" style="background:var(--P);color:white;border:none;border-radius:8px;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">'+
+'\uD83E\uDDFE Bill Lot'+
+'</button>'+
+'</div>';
+});
+html+='</div>';
+if(pending.length>1){
+html+=
+'<button onclick="openBillLotSelector(\''+o.id+'\')" style="width:100%;padding:10px;border:none;border-top:1px solid var(--br);background:var(--P);color:white;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">'+
+'\uD83E\uDDFE Bill All '+pending.length+' Pending Lots \u2192'+
+'</button>';
+}
+html+='</div>';
+}else{
+/* ── Regular order: show dispatch button ── */
 const dispatched={};
 liveBills().filter(b=>b.ordId===o.id&&b.status!=='cancelled').forEach(bill=>{
 (bill.items||[]).forEach(bi=>{ dispatched[bi.sku]=(dispatched[bi.sku]||0)+(bi.dispQty||bi.pcs||0); });
@@ -7178,8 +7262,6 @@ const sentPcs=o.items.reduce((s,i)=>s+(dispatched[i.sku]||0),0);
 const remPcs=totalPcs-sentPcs;
 const billCount=(o.bills||[]).filter(b=>b.status!=='cancelled').length;
 const stBadge=o.status==='billed'?'bg-t':'bg-a';
-/* Show which party the order belongs to if it's a group order from a different member */
-const ordCust=o.custId!==custId?STATE.customers.find(c=>c.id===o.custId):null;
 html+=
 '<div style="border:1.5px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:8px;background:white">'+
 (ordCust?'<div style="background:var(--Al);padding:4px 14px;font-size:10px;font-weight:700;color:var(--Ad)">Order of: '+ordCust.name+'</div>':'')+
@@ -7200,6 +7282,7 @@ html+=
 '&#x1F9FE; Create Invoice for this Order &rarr;'+
 '</button>'+
 '</div>';
+}
 });
 c.innerHTML=html;
 }
