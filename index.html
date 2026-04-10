@@ -2822,43 +2822,84 @@ function addProgLot(){
   const id=_progLotId++;
   _progLots.push({id});
   const lotNum=_progLots.length;
-  const iOpts=(o.openItems||[]).map(oi=>'<option value="'+oi.itemId+'">'+oi.itemName+'</option>').join('');
-  const defaultRate=o.openItems?.[0]?.rate||'';
+  const openItems=o.openItems||[];
+  const singleItem=openItems.length===1;
+  const firstItem=openItems[0];
+  const iOpts=openItems.map(oi=>'<option value="'+oi.itemId+'">'+oi.itemName+'</option>').join('');
+  const defaultRate=firstItem?.rate||'';
 
-  const div=document.createElement('div');
-  div.id='prog-lot-'+id;
-  div.style.cssText='background:var(--s2);border-radius:12px;padding:12px;margin-bottom:10px';
-  div.innerHTML=
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'+
-    '<span style="font-size:11px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.5px">Lot '+lotNum+'</span>'+
-    (lotNum>1?'<button onclick="removeProgLot('+id+')" style="background:var(--Rl);color:var(--Rd);border:none;border-radius:7px;padding:3px 10px;font-size:12px;cursor:pointer">\u2715 Remove</button>':'')+
-    '</div>'+
-    '<div class="fg" style="margin-bottom:8px"><label>Item</label>'+
-    '<select class="sel" id="pl-'+id+'-itm" onchange="onProgLotItemChange('+id+')">'+
-    '<option value="">Select Item\u2026</option>'+iOpts+
-    '</select></div>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">'+
-    '<div class="fg"><label>Range</label>'+
-    '<select class="sel" id="pl-'+id+'-rng" onchange="onProgLotRangeChange('+id+')" disabled>'+
-    '<option value="">Select item first\u2026</option></select></div>'+
-    '<div class="fg"><label>Colour / SKU</label>'+
-    '<select class="sel" id="pl-'+id+'-clr" disabled>'+
-    '<option value="">Select range first\u2026</option></select></div>'+
-    '</div>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">'+
-    '<div class="fg"><label>Date</label><input class="inp" type="date" id="pl-'+id+'-date" value="'+today()+'"/></div>'+
-    '<div class="fg"><label>Cut (m/saree)</label><input class="inp mono" type="number" id="pl-'+id+'-cut" step="0.1" min="0.1" value="6"/></div>'+
-    '<div class="fg"><label>Qty (Sarees)</label><input class="inp mono big" type="number" id="pl-'+id+'-pcs" step="1" min="1" placeholder="e.g. 720"/></div>'+
-    '</div>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
-    '<div class="fg"><label>Rate \u20B9/mtr</label><input class="inp mono" type="number" id="pl-'+id+'-rate" step="0.01" value="'+defaultRate+'"/></div>'+
-    '<div class="fg"><label>Remark</label><input class="inp" type="text" id="pl-'+id+'-rem" placeholder="e.g. Urgent"/></div>'+
-    '</div>';
-  wrap.appendChild(div);
-  /* Auto-select if only one item in the order */
-  if((o.openItems||[]).length===1){
-    const itmSel=el('pl-'+id+'-itm');
-    if(itmSel){itmSel.value=o.openItems[0].itemId;onProgLotItemChange(id);}
+  const lotColors=[
+    {border:'#818CF8',label:'#3730A3',hdr:'#C7D2FE'},
+    {border:'#4ADE80',label:'#166534',hdr:'#BBF7D0'},
+    {border:'#FB923C',label:'#7C2D12',hdr:'#FED7AA'},
+    {border:'#C084FC',label:'#581C87',hdr:'#E9D5FF'},
+    {border:'#FACC15',label:'#713F12',hdr:'#FEF08A'},
+    {border:'#38BDF8',label:'#0C4A6E',hdr:'#BAE6FD'},
+  ];
+  const lc=lotColors[(lotNum-1)%lotColors.length];
+
+  const card=document.createElement('div');
+  card.id='prog-lot-'+id;
+  card.style.cssText='border:2px solid '+lc.border+';border-radius:14px;overflow:hidden;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)';
+
+  /* ── Header ── */
+  const hdr=document.createElement('div');
+  hdr.style.cssText='background:'+lc.hdr+';padding:10px 12px';
+
+  /* Row 1: LOT badge + item + range + remove */
+  const r1=document.createElement('div');
+  r1.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px';
+  /* Item: show as read-only label when single item, dropdown when multiple */
+  const itemHtml=singleItem
+    ? '<div style="flex:1;display:flex;align-items:center;gap:6px;min-width:0">'+
+        '<span style="font-size:12px;font-weight:700;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+firstItem.itemName+'</span>'+
+        '<input type="hidden" id="pl-'+id+'-itm" value="'+firstItem.itemId+'"/></div>'
+    : '<select id="pl-'+id+'-itm" onchange="onProgLotItemChange('+id+')" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0">'+
+      iOpts+'</select>';
+
+  r1.innerHTML=
+    '<div style="background:'+lc.border+';color:white;font-size:10px;font-weight:900;padding:3px 10px;border-radius:6px;letter-spacing:.5px;flex-shrink:0">LOT '+lotNum+'</div>'+
+    itemHtml+
+    '<select id="pl-'+id+'-rng" onchange="onProgLotRangeChange('+id+')" disabled style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0">'+
+    '<option value="">Range\u2026</option></select>'+
+    (lotNum>1?'<button onclick="removeProgLot('+id+')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(220,38,38,.15);color:#DC2626;font-size:13px;cursor:pointer;flex-shrink:0;font-weight:700">\u2715</button>':'');
+
+  /* Row 2: date, cut, default pcs, default rate, remark + ★Fill */
+  const r2=document.createElement('div');
+  r2.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr auto;gap:6px;align-items:end;padding:6px 8px;background:rgba(0,0,0,.06);border-radius:8px';
+  r2.innerHTML=
+    '<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">DATE</div>'+
+    '<input class="inp" type="date" id="pl-'+id+'-date" value="'+today()+'" style="padding:5px 4px;font-size:11px;border:1.5px solid '+lc.border+';border-radius:7px"/></div>'+
+    '<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">CUT (m/Saree)</div>'+
+    '<input class="inp mono" type="number" step="0.25" min="0.5" id="pl-'+id+'-cut" value="6" oninput="calcProgLot('+id+')" style="text-align:center;padding:5px 4px;font-size:13px;font-weight:800;border:1.5px solid '+lc.border+';border-radius:7px"/></div>'+
+    '<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">PCS / COLOUR</div>'+
+    '<input class="inp mono" type="number" step="1" id="pl-'+id+'-qpcs" placeholder="\u2014" style="text-align:center;padding:5px 4px;font-size:13px;font-weight:800;border:1.5px solid '+lc.border+';border-radius:7px"/></div>'+
+    '<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">RATE \u20B9/MTR</div>'+
+    '<input class="inp mono" type="number" step="0.01" id="pl-'+id+'-qrate" placeholder="\u2014" value="'+defaultRate+'" style="text-align:center;padding:5px 4px;font-size:13px;font-weight:800;border:1.5px solid '+lc.border+';border-radius:7px"/></div>'+
+    '<div><div style="font-size:9px;font-weight:800;color:'+lc.label+';letter-spacing:.3px">REMARK</div>'+
+    '<input class="inp" type="text" id="pl-'+id+'-rem" placeholder="e.g. Urgent" style="padding:5px 4px;font-size:11px;border:1.5px solid '+lc.border+';border-radius:7px"/></div>'+
+    '<button onclick="applyProgLotDefaults('+id+')" style="padding:5px 10px;border-radius:7px;border:none;background:'+lc.border+';color:white;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;align-self:end" title="Fill all checked colours">\u2b50 Fill</button>';
+
+  hdr.appendChild(r1);
+  hdr.appendChild(r2);
+  card.appendChild(hdr);
+
+  /* ── Body: colour table (filled when range selected) ── */
+  const body=document.createElement('div');
+  body.id='pl-'+id+'-body';
+  body.style.cssText='background:white';
+  body.innerHTML='<div style="padding:14px;text-align:center;color:#9897B0;font-size:12px">\u2191 Select item and range above</div>';
+  card.appendChild(body);
+  wrap.appendChild(card);
+
+  /* Auto-trigger item → range population */
+  if(singleItem){
+    /* Hidden input already has value; trigger range load directly */
+    onProgLotItemChange(id);
+  } else if(firstItem){
+    /* Multi-item: pre-select first, user can change */
+    const s=el('pl-'+id+'-itm');
+    if(s){s.value=firstItem.itemId; onProgLotItemChange(id);}
   }
 }
 
@@ -2868,39 +2909,139 @@ function removeProgLot(id){
 }
 
 function onProgLotItemChange(id){
-  const itemId=el('pl-'+id+'-itm')?.value; if(!itemId) return;
+  const itemId=el('pl-'+id+'-itm')?.value;
+  const body=el('pl-'+id+'-body');
+  const rSel=el('pl-'+id+'-rng');
+  if(!itemId||!rSel){if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range above</div>';return;}
   const item=STATE.items.find(i=>i.id===itemId); if(!item) return;
-  const rngs=[...new Set((item.colours||[]).filter(c=>!c.discontinued).map(c=>c.range).filter(r=>r!==''))];
-  const hasDefault=(item.colours||[]).some(c=>c.range===''&&!c.discontinued);
-  const rngSel=el('pl-'+id+'-rng'); if(!rngSel) return;
-  rngSel.innerHTML='<option value="">Select Range\u2026</option>'+
-    rngs.map(r=>'<option value="'+r+'">'+r+'</option>').join('')+
-    (hasDefault?'<option value="__norange__">(No Range / Default)</option>':'');
-  rngSel.disabled=false;
-  const clrSel=el('pl-'+id+'-clr');
-  if(clrSel){clrSel.innerHTML='<option value="">Select range first\u2026</option>';clrSel.disabled=true;}
-  if(rngs.length===1&&!hasDefault){rngSel.value=rngs[0];onProgLotRangeChange(id);}
-  else if(rngs.length===0&&hasDefault){rngSel.value='__norange__';onProgLotRangeChange(id);}
+  const rngs=[...new Set((item.colours||[]).filter(c=>!c.discontinued).map(c=>c.range))];
+  rSel.innerHTML='<option value="">Range\u2026</option>'+rngs.map(r=>'<option value="'+r+'">'+r+'</option>').join('');
+  rSel.disabled=false;
+  if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Now select a range</div>';
   /* Pre-fill rate from order item */
   const o=STATE.orders.find(x=>x.id===_progOrdId);
   const oi=(o?.openItems||[]).find(x=>x.itemId===itemId);
-  if(oi?.rate){const rf=el('pl-'+id+'-rate');if(rf&&!rf.value)rf.value=oi.rate;}
+  if(oi?.rate){const rf=el('pl-'+id+'-qrate');if(rf&&!rf.value)rf.value=oi.rate;}
+  if(rngs.length===1){rSel.value=rngs[0];onProgLotRangeChange(id);}
 }
 
 function onProgLotRangeChange(id){
   const itemId=el('pl-'+id+'-itm')?.value; if(!itemId) return;
-  const rng=el('pl-'+id+'-rng')?.value; if(!rng) return;
-  const item=STATE.items.find(i=>i.id===itemId); if(!item) return;
+  const rng=el('pl-'+id+'-rng')?.value;
+  const body=el('pl-'+id+'-body');
+  const item=STATE.items.find(i=>i.id===itemId);
+  if(!item||!rng||!body) return;
+
+  const lotIdx=_progLots.findIndex(l=>l.id===id);
+  const lotColors=[
+    {border:'#818CF8',label:'#3730A3',hdr:'#C7D2FE'},
+    {border:'#4ADE80',label:'#166534',hdr:'#BBF7D0'},
+    {border:'#FB923C',label:'#7C2D12',hdr:'#FED7AA'},
+    {border:'#C084FC',label:'#581C87',hdr:'#E9D5FF'},
+    {border:'#FACC15',label:'#713F12',hdr:'#FEF08A'},
+    {border:'#38BDF8',label:'#0C4A6E',hdr:'#BAE6FD'},
+  ];
+  const lc=lotColors[(lotIdx<0?0:lotIdx)%lotColors.length];
   const actualRng=rng==='__norange__'?'':rng;
   const cols=(item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued);
-  const clrSel=el('pl-'+id+'-clr'); if(!clrSel) return;
-  clrSel.innerHTML='<option value="">Select Colour\u2026</option>'+
-    cols.map(c=>{
-      const idx=(item.colours||[]).indexOf(c);
-      return '<option value="'+idx+'">'+c.name+' \u00B7 SKU: '+c.sku+' \u00B7 Stock: '+(c.stock_taka||0)+'T</option>';
-    }).join('');
-  clrSel.disabled=false;
-  if(cols.length===1){clrSel.value=String((item.colours||[]).indexOf(cols[0]));}
+  body.innerHTML='';
+
+  /* Column header */
+  const thead=document.createElement('div');
+  thead.style.cssText='display:grid;grid-template-columns:26px 1fr 48px 64px 80px 80px;gap:4px;background:linear-gradient(135deg,#1e1b4b,#312e81);padding:8px 10px';
+  thead.innerHTML='<div></div>'+
+    '<div style="font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.8px">Colour / SKU</div>'+
+    '<div style="font-size:8px;font-weight:800;color:#A5B4FC;text-align:center;text-transform:uppercase">Stock</div>'+
+    '<div style="font-size:8px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Pcs</div>'+
+    '<div style="font-size:8px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Rate \u20B9/m</div>'+
+    '<div style="font-size:8px;font-weight:800;color:#6EE7B7;text-align:right;text-transform:uppercase">Amount</div>';
+  body.appendChild(thead);
+
+  /* Select All row */
+  const selAll=document.createElement('div');
+  selAll.style.cssText='display:flex;align-items:center;gap:10px;padding:7px 10px;background:#EEF2FF;border-bottom:1px solid #C7D2FE;cursor:pointer';
+  selAll.innerHTML='<input type="checkbox" id="pl-'+id+'-all" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer" onclick="progLotToggleAll('+id+')"/>'+
+    '<span style="font-size:11px;font-weight:700;color:#3730A3;flex:1">\u2714 Select All ('+cols.length+' colours)</span>';
+  selAll.onclick=e=>{if(e.target.tagName!=='INPUT'){const c=el('pl-'+id+'-all');c.checked=!c.checked;progLotToggleAll(id);}};
+  body.appendChild(selAll);
+
+  /* Colour rows */
+  cols.forEach((col,ci)=>{
+    const colIdx=(item.colours||[]).indexOf(col);
+    const stk=col.stock_taka||0;
+    const stkColor=stk===0?'#EF4444':stk<5?'#F59E0B':'#10B981';
+    const stkBg=stk===0?'#FEE2E2':stk<5?'#FEF3C7':'#D1FAE5';
+    const rowBg=ci%2===0?'#FFFFFF':'#F8F7FF';
+    const row=document.createElement('div');
+    row.style.cssText='display:grid;grid-template-columns:26px 1fr 48px 64px 80px 80px;gap:4px;align-items:center;padding:8px 10px;border-bottom:1px solid #E5E4F0;background:'+rowBg;
+    row.innerHTML=
+      '<input type="checkbox" id="pl-'+id+'-ck-'+colIdx+'" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer" onchange="progLotClrToggle('+id+','+colIdx+')"/>'+
+      '<div style="min-width:0"><div style="display:flex;align-items:center;gap:4px">'+
+        '<span style="width:12px;height:12px;border-radius:50%;background:'+(col.hex||'#ccc')+';display:inline-block;flex-shrink:0;border:1.5px solid rgba(0,0,0,.1)"></span>'+
+        '<span style="font-size:11px;font-weight:700;color:#0F0E1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+col.name+'</span></div>'+
+        '<div style="font-size:8px;color:#9897B0;font-family:monospace;margin-top:1px">'+col.sku+'</div></div>'+
+      '<div style="text-align:center"><span style="font-size:9px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:2px 4px;border-radius:5px">'+stk+'T</span></div>'+
+      '<input type="number" id="pl-'+id+'-p-'+colIdx+'" step="1" min="1" value="" oninput="calcProgLot('+id+')" disabled style="width:100%;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;transition:.15s;box-sizing:border-box"/>'+
+      '<input type="number" id="pl-'+id+'-r-'+colIdx+'" step="0.01" min="0" value="" oninput="calcProgLot('+id+')" disabled style="width:100%;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;transition:.15s;box-sizing:border-box"/>'+
+      '<div id="pl-'+id+'-amt-'+colIdx+'" style="text-align:right;font-size:11px;font-weight:800;color:#9897B0;white-space:nowrap">\u2014</div>';
+    row.addEventListener('click',e=>{if(e.target.tagName==='INPUT')return;const c=el('pl-'+id+'-ck-'+colIdx);if(c){c.checked=!c.checked;progLotClrToggle(id,colIdx);}});
+    body.appendChild(row);
+  });
+}
+
+function progLotToggleAll(id){
+  const allChk=el('pl-'+id+'-all');
+  const itemId=el('pl-'+id+'-itm')?.value, rng=el('pl-'+id+'-rng')?.value;
+  const item=STATE.items.find(i=>i.id===itemId); if(!item||!rng) return;
+  const actualRng=rng==='__norange__'?'':rng;
+  (item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
+    const colIdx=(item.colours||[]).indexOf(col);
+    const chk=el('pl-'+id+'-ck-'+colIdx); if(!chk) return;
+    chk.checked=allChk.checked; progLotClrToggle(id,colIdx,true);
+  });
+  calcProgLot(id);
+}
+
+function progLotClrToggle(id,colIdx,skipCalc=false){
+  const chk=el('pl-'+id+'-ck-'+colIdx);
+  const pI=el('pl-'+id+'-p-'+colIdx), rI=el('pl-'+id+'-r-'+colIdx);
+  if(!pI||!rI) return;
+  const on=chk?.checked;
+  pI.disabled=!on; pI.style.background=on?'#FFFBEB':'#F3F4F6'; pI.style.color=on?'#92400E':'#9CA3AF'; pI.style.borderColor=on?'#F59E0B':'#D1D5DB';
+  rI.disabled=!on; rI.style.background=on?'#FFFBEB':'#F3F4F6'; rI.style.color=on?'#92400E':'#9CA3AF'; rI.style.borderColor=on?'#F59E0B':'#D1D5DB';
+  if(on&&!pI.value){const qp=el('pl-'+id+'-qpcs')?.value; if(qp) pI.value=qp;}
+  if(on&&!rI.value){const qr=el('pl-'+id+'-qrate')?.value; if(qr) rI.value=qr;}
+  if(!skipCalc) calcProgLot(id);
+}
+
+function applyProgLotDefaults(id){
+  const qp=el('pl-'+id+'-qpcs')?.value, qr=el('pl-'+id+'-qrate')?.value;
+  const itemId=el('pl-'+id+'-itm')?.value, rng=el('pl-'+id+'-rng')?.value;
+  const item=STATE.items.find(i=>i.id===itemId); if(!item||!rng) return;
+  const actualRng=rng==='__norange__'?'':rng;
+  (item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
+    const colIdx=(item.colours||[]).indexOf(col);
+    const chk=el('pl-'+id+'-ck-'+colIdx); if(!chk?.checked) return;
+    if(qp){const p=el('pl-'+id+'-p-'+colIdx); if(p) p.value=qp;}
+    if(qr){const r=el('pl-'+id+'-r-'+colIdx); if(r) r.value=qr;}
+  });
+  calcProgLot(id);
+}
+
+function calcProgLot(id){
+  const itemId=el('pl-'+id+'-itm')?.value, rng=el('pl-'+id+'-rng')?.value;
+  const item=STATE.items.find(i=>i.id===itemId); if(!item||!rng) return;
+  const actualRng=rng==='__norange__'?'':rng;
+  const cut=parseFloat(el('pl-'+id+'-cut')?.value)||6;
+  (item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
+    const colIdx=(item.colours||[]).indexOf(col);
+    const chk=el('pl-'+id+'-ck-'+colIdx); if(!chk?.checked) return;
+    const p=parseInt(el('pl-'+id+'-p-'+colIdx)?.value)||0;
+    const r=parseFloat(el('pl-'+id+'-r-'+colIdx)?.value)||0;
+    const amt=p*cut*r;
+    const amtEl=el('pl-'+id+'-amt-'+colIdx);
+    if(amtEl){amtEl.textContent=amt>0?('\u20B9'+fmtN(Math.round(amt))):'\u2014'; amtEl.style.color=amt>0?'var(--P)':'#9897B0';}
+  });
 }
 
 async function saveProgramme(){
@@ -2908,32 +3049,35 @@ async function saveProgramme(){
   const lotDivs=[...document.querySelectorAll('[id^="prog-lot-"]')];
   if(!lotDivs.length){toast('No lots to save','er');return;}
 
-  /* Collect & validate all lots */
+  /* Collect all checked colour rows from all lot cards */
   const toSave=[];
   for(let di=0;di<lotDivs.length;di++){
     const lid=parseInt(lotDivs[di].id.replace('prog-lot-',''));
     const lbl='Lot '+(di+1)+': ';
     const itemId=el('pl-'+lid+'-itm')?.value;
     if(!itemId){toast(lbl+'Select an item','er');return;}
-    const item=STATE.items.find(i=>i.id===itemId);
-    if(!item){toast(lbl+'Item not found','er');return;}
     const rng=el('pl-'+lid+'-rng')?.value;
     if(!rng){toast(lbl+'Select a range','er');return;}
-    const cIdxStr=el('pl-'+lid+'-clr')?.value;
-    if(cIdxStr===''||cIdxStr==null){toast(lbl+'Select a colour','er');return;}
-    const colIdx=parseInt(cIdxStr);
-    const col=(item.colours||[])[colIdx];
-    if(!col){toast(lbl+'Colour not found','er');return;}
-    const pcs=parseInt(el('pl-'+lid+'-pcs')?.value)||0;
-    if(!pcs){toast(lbl+'Enter quantity (sarees)','er');return;}
+    const item=STATE.items.find(i=>i.id===itemId);
+    if(!item){toast(lbl+'Item not found','er');return;}
     const cut=parseFloat(el('pl-'+lid+'-cut')?.value)||6;
-    const rate=parseFloat(el('pl-'+lid+'-rate')?.value)||0;
     const date=el('pl-'+lid+'-date')?.value||today();
     const remark=(el('pl-'+lid+'-rem')?.value||'').trim();
     const actualRng=rng==='__norange__'?'':rng;
-    toSave.push({itemId,item,colIdx,col,pcs,cut,rate,date,remark,range:actualRng});
+    const cols=(item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued);
+    let anyChecked=false;
+    cols.forEach(col=>{
+      const colIdx=(item.colours||[]).indexOf(col);
+      const chk=el('pl-'+lid+'-ck-'+colIdx); if(!chk?.checked) return;
+      anyChecked=true;
+      const pcs=parseInt(el('pl-'+lid+'-p-'+colIdx)?.value)||0;
+      if(!pcs) return; /* skip if 0 qty */
+      const rate=parseFloat(el('pl-'+lid+'-r-'+colIdx)?.value)||0;
+      toSave.push({itemId,item,colIdx,col,pcs,cut,rate,date,remark,range:actualRng});
+    });
+    if(!anyChecked){toast(lbl+'Check at least one colour','er');return;}
   }
-  if(!toSave.length) return;
+  if(!toSave.length){toast('Enter quantity for at least one colour','er');return;}
 
   /* Over-programme check */
   const stat=calcProgStats(o);
