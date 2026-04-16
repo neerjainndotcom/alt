@@ -6518,7 +6518,13 @@ el('lead-followup').value=lead.followupDate||'';
 el('lead-note').value=''; el('lead-src').value=lead.source||'Walk-in';
 el('lead-title').textContent='Edit Lead'; el('lead-sub').textContent=lead.status||'';
 buildLeadStatusBtns(lead.status||'New');
-refreshLeadSalesmanDropdown(lead.assignedId);
+/* If stored assignedId is stale (user re-created), resolve by name so dropdown pre-selects correctly */
+let _smSelId=lead.assignedId;
+if(_smSelId&&!STATE.users.find(u=>u.id===_smSelId&&!u._deleted&&u.active!==false)&&lead.assignedName){
+  const _smByName=STATE.users.find(u=>u.name===lead.assignedName&&!u._deleted&&u.active!==false);
+  if(_smByName) _smSelId=_smByName.id;
+}
+refreshLeadSalesmanDropdown(_smSelId);
 refreshLeadBrokerDropdown(lead.brokerId);
 const dl=el('lead-name-list');
 if(dl) dl.innerHTML=[...STATE.customers].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(c=>'<option value="'+c.name+'"/>').join('');
@@ -9164,9 +9170,12 @@ const today_s=today();
 const myId=STATE.user?.id;
 const query=(q||el('task-search')?.value||'').trim().toLowerCase();
 const myName=(STATE.user?.name||'').toLowerCase();
-let tasks=(STATE.taskInstances||[]).filter(t=>!t._deleted
+const _myRaw=(STATE.taskInstances||[]).filter(t=>!t._deleted
   &&(t.assignedUserId===myId||(myName&&(t.assignedUserName||'').toLowerCase()===myName))
   &&(t.generatedDate===today_s||(t.status==='Pending'&&t.generatedDate<today_s)));
+_myRaw.sort((a,b)=>(a.generatedDate||'').localeCompare(b.generatedDate||''));
+const _mySeen=new Set();
+let tasks=_myRaw.filter(t=>{if(!t.templateId||t.templateId==='manual')return true;if(_mySeen.has(t.templateId))return false;_mySeen.add(t.templateId);return true;});
 if(query){tasks=tasks.filter(t=>(t.taskName||'').toLowerCase().includes(query)||(t.category||'').toLowerCase().includes(query)||(t.priority||'').toLowerCase().includes(query)||(t.note||'').toLowerCase().includes(query));}
 if(!tasks.length){
 c.innerHTML='<div class="emp"><div class="emj">\u2705</div><h3>No Tasks Today</h3><p>You have no tasks assigned for today</p></div>';
@@ -9336,7 +9345,10 @@ const c=el('task-lst-all'); if(!c) return;
 if(staffFilter!==undefined) window._taskStaffFilter=staffFilter;
 const activeFilter=window._taskStaffFilter||'all';
 const today_s=today();
-const todayInst=(STATE.taskInstances||[]).filter(t=>!t._deleted&&(t.generatedDate===today_s||(t.status==='Pending'&&t.generatedDate<today_s)));
+const _rawAll=(STATE.taskInstances||[]).filter(t=>!t._deleted&&(t.generatedDate===today_s||(t.status==='Pending'&&t.generatedDate<today_s)));
+_rawAll.sort((a,b)=>(a.generatedDate||'').localeCompare(b.generatedDate||''));
+const _seenAll=new Set();
+const todayInst=_rawAll.filter(t=>{if(!t.templateId||t.templateId==='manual')return true;if(_seenAll.has(t.templateId))return false;_seenAll.add(t.templateId);return true;});
 const staffColors=['#4F46E5','#0891B2','#D97706','#059669','#DC2626','#7C3AED','#B45309','#0F766E','#BE185D','#1D4ED8','#047857','#9333EA','#C2410C','#0369A1','#A16207','#4338CA','#DB2777','#15803D','#7E22CE','#EA580C'];
 const staffMap={};const staffOrder=[];
 todayInst.forEach(t=>{
@@ -9647,7 +9659,10 @@ toast('Leave removed','ok');
 }
 function waPendingTaskReminders(){
 const today_s=today();
-const pending=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.status==='Pending'&&(t.generatedDate===today_s||t.generatedDate<today_s));
+const _pendRaw=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.status==='Pending'&&(t.generatedDate===today_s||t.generatedDate<today_s));
+_pendRaw.sort((a,b)=>(a.generatedDate||'').localeCompare(b.generatedDate||''));
+const _pendSeen=new Set();
+const pending=_pendRaw.filter(t=>{if(!t.templateId||t.templateId==='manual')return true;if(_pendSeen.has(t.templateId))return false;_pendSeen.add(t.templateId);return true;});
 if(!pending.length){toast('No pending tasks today','ok');return;}
 const smMap={};
 pending.forEach(t=>{if(!smMap[t.assignedUserId])smMap[t.assignedUserId]=[]; smMap[t.assignedUserId].push(t);});
