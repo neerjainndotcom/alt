@@ -6439,7 +6439,7 @@ row.innerHTML=
 '<span style="background:'+sc+'22;color:'+sc+';font-size:10px;font-weight:800;padding:3px 9px;border-radius:6px;flex-shrink:0">'+lead.status+'</span>'+
 '</div>'+
 '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
-(lead.assignedName?'<span style="font-size:10px;background:#EEF2FF;color:#4F46E5;padding:2px 7px;border-radius:5px;font-weight:700">'+lead.assignedName+'</span>':'')+
+(lead.assignedName?(()=>{const stale=lead.assignedId&&!STATE.users.find(u=>u.id===lead.assignedId&&!u._deleted&&u.active!==false);return '<span title="'+(stale?'User was re-created — open and re-save this lead to fix':'')+'\" style="font-size:10px;background:'+(stale?'#FEF3C7':'#EEF2FF')+';color:'+(stale?'#92400E':'#4F46E5')+';padding:2px 7px;border-radius:5px;font-weight:700">'+(stale?'⚠️ ':'')+lead.assignedName+'</span>';})():'')+
 (lead.followupDate?'<span style="font-size:10px;background:'+(overdue?'#FEE2E2':'#F0FDF4')+';color:'+(overdue?'#DC2626':'#16A34A')+';padding:2px 7px;border-radius:5px;font-weight:700">'+(overdue?'OVERDUE: ':'Follow-up: ')+fmtDate(lead.followupDate)+'</span>':'')+
 (lead.interest?'<span style="font-size:10px;color:#9897B0">'+lead.interest+'</span>':'')+
 '</div>'+
@@ -8721,9 +8721,11 @@ introHi+'\n\n'+
 }
 function waLeadToSalesman(leadId){
 const lead=STATE.leads?.find(l=>l.id===leadId); if(!lead) return;
-const sm=STATE.users.find(u=>u.id===lead.assignedId);
-if(!sm){toast('No salesman assigned','er');return;}
-if(!sm.phone&&!sm.whatsapp){toast('Salesman has no phone','er');return;}
+let sm=STATE.users.find(u=>u.id===lead.assignedId);
+/* Fallback: if user was deleted/re-created, find active user by name */
+if((!sm||sm._deleted)&&lead.assignedName) sm=STATE.users.find(u=>u.name===lead.assignedName&&!u._deleted&&u.active!==false);
+if(!sm){toast('Salesman not found — re-open and save this lead to fix assignment','er');return;}
+if(!sm.phone&&!sm.whatsapp){toast('Salesman has no WhatsApp number saved','er');return;}
 openWA(sm.whatsapp||sm.phone, buildLeadWAMsg(lead,sm.name,false));
 }
 function waLeadToBroker(leadId){
@@ -8985,7 +8987,9 @@ dot.style.display=total>0?'':'none';
 }
 function waRecurringToSalesman(rid){
 const r=(STATE.recurringLeads||[]).find(x=>x.id===rid); if(!r) return;
-const sm=STATE.users.find(u=>u.id===r.smId);
+let sm=STATE.users.find(u=>u.id===r.smId);
+/* Fallback: if user was deleted/re-created, find active user by name */
+if((!sm||sm._deleted)&&r.smName) sm=STATE.users.find(u=>u.name===r.smName&&!u._deleted&&u.active!==false);
 if(!sm?.phone&&!sm?.whatsapp){toast('Salesman has no phone number','er');return;}
 const brk=STATE.brokers.find(b=>b.id===r.brokerId);
 const rate=r.rateGiven?'\u20B9'+r.rateGiven+'/mtr':'Not set';
@@ -9110,9 +9114,11 @@ if(!STATE.taskTemplates||!STATE.taskTemplates.length) return;
 /* Check ALL instances (including deleted) to avoid regenerating deleted tasks */
 const existing=(STATE.taskInstances||[]).filter(t=>t.generatedDate===dateStr);
 const existingTplIds=new Set(existing.map(t=>t.templateId));
+/* Skip templates that already have a pending overdue instance from a previous day — prevents same task piling up across days */
+const pendingPastTplIds=new Set((STATE.taskInstances||[]).filter(t=>!t._deleted&&t.status==='Pending'&&t.generatedDate<dateStr).map(t=>t.templateId));
 const newInst=[];
 STATE.taskTemplates.filter(t=>t.active&&!t._deleted).forEach(tmpl=>{
-if(existingTplIds.has(tmpl.id)) return;
+if(existingTplIds.has(tmpl.id)||pendingPastTplIds.has(tmpl.id)) return;
 try{ if(!isTaskScheduledOn(tmpl,dateStr)) return; }catch(e){ return; }
 const leave=getActiveLeave(tmpl.assignedUserId,dateStr);
 const assignTo=leave&&leave.substituteId
@@ -9338,7 +9344,7 @@ const uid=t.assignedUserId||(t.assignedUserName?'~n:'+t.assignedUserName:'~unass
 const uname=t.assignedUserName||t.assignedUserId||'Unassigned';
 if(!staffMap[uid]){staffMap[uid]={id:uid,name:uname,total:0,done:0,onTime:0,late:0,pending:0};staffOrder.push(uid);}
 const s=staffMap[uid];s.total++;
-if(t.status==='Done'){s.done++;t.isOnTime?s.onTime++:s.late++;}else s.pending++;
+if(t.status==='Done'){s.done++;if(t.isOnTime)s.onTime++;}else if(new Date()>new Date(t.deadline)){s.late++;}else{s.pending++;}
 });
 const total=todayInst.length;
 const done=todayInst.filter(t=>t.status==='Done').length;
@@ -9396,24 +9402,42 @@ html+='<button onclick="renderAllTasks(\'all\')" style="padding:5px 14px;border-
 staffOrder.forEach((uid,idx)=>{
 const s=staffMap[uid]; const clr=staffColors[idx%staffColors.length];
 const active2=activeFilter===uid;
-html+='<button onclick="renderAllTasks(\''+uid+'\')" style="padding:5px 14px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:'+(active2?clr:'#E5E7EB')+';color:'+(active2?'white':'#374151')+'">'+s.name+(s.pending>0?' ('+s.pending+')':'')+'</button>';
+html+='<button onclick="renderAllTasks(\''+uid+'\')" style="padding:5px 14px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:'+(active2?clr:'#E5E7EB')+';color:'+(active2?'white':'#374151')+'">'+s.name+(s.pending+s.late>0?' ('+(s.pending+s.late)+')':'')+'</button>';
 });
 html+='</div></div>';
+// ── Sort control ──
+const sortBy=window._taskSortBy||'deadline';
+const sortOpts=[['deadline','Deadline'],['priority','Priority'],['name','Name'],['staff','Staff']];
+html+='<div style="background:#F8FAFC;border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+html+='<span style="font-size:11px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px">Sort:</span>';
+sortOpts.forEach(([val,lbl])=>{
+const isSel=sortBy===val;
+html+='<button onclick="window._taskSortBy=\''+val+'\';renderAllTasks()" style="padding:4px 12px;border-radius:20px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:'+(isSel?'#4F46E5':'#E5E7EB')+';color:'+(isSel?'white':'#374151')+'">'+lbl+'</button>';
+});
+html+='</div>';
 // ── Task list ──
 const filtered=activeFilter==='all'?todayInst:todayInst.filter(t=>{
 const uid=t.assignedUserId||(t.assignedUserName?'~n:'+t.assignedUserName:'~unassigned');
 return uid===activeFilter;
 });
-const overdue2=filtered.filter(t=>t.status==='Pending'&&new Date()>new Date(t.deadline));
-const pending2=filtered.filter(t=>t.status==='Pending'&&!(new Date()>new Date(t.deadline)));
-const done2=filtered.filter(t=>t.status==='Done');
+const sortFn=(a,b)=>{
+const sb=window._taskSortBy||'deadline';
+if(sb==='priority'){const p={High:0,Medium:1,Low:2};return (p[a.priority]||1)-(p[b.priority]||1);}
+if(sb==='deadline') return new Date(a.deadline)-new Date(b.deadline);
+if(sb==='name') return (a.taskName||'').localeCompare(b.taskName||'');
+if(sb==='staff') return (a.assignedUserName||'').localeCompare(b.assignedUserName||'');
+return 0;
+};
+const overdue2=filtered.filter(t=>t.status==='Pending'&&new Date()>new Date(t.deadline)).sort(sortFn);
+const pending2=filtered.filter(t=>t.status==='Pending'&&!(new Date()>new Date(t.deadline))).sort(sortFn);
+const done2=filtered.filter(t=>t.status==='Done').sort(sortFn);
 if(overdue2.length){
 html+='<div style="background:#FFF1F1;border-left:4px solid #EF4444;border-radius:0 10px 10px 0;padding:8px 12px;margin:12px 0 6px;font-size:11px;font-weight:800;color:#DC2626;text-transform:uppercase;letter-spacing:.4px">\uD83D\uDD34 Overdue ('+overdue2.length+')</div>';
 overdue2.forEach(t=>{html+=taskCard(t);});
 }
 if(pending2.length){
 html+='<div style="background:#FFFBEB;border-left:4px solid #F59E0B;border-radius:0 10px 10px 0;padding:8px 12px;margin:12px 0 6px;font-size:11px;font-weight:800;color:#D97706;text-transform:uppercase;letter-spacing:.4px">\u23F3 Pending ('+pending2.length+')</div>';
-pending2.sort((a,b)=>{const p={High:0,Medium:1,Low:2};return (p[a.priority]||1)-(p[b.priority]||1);}).forEach(t=>{html+=taskCard(t);});
+pending2.forEach(t=>{html+=taskCard(t);});
 }
 if(done2.length){
 html+='<div style="background:#F0FDF4;border-left:4px solid #22C55E;border-radius:0 10px 10px 0;padding:8px 12px;margin:12px 0 6px;font-size:11px;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.4px">\u2705 Completed ('+done2.length+')</div>';
@@ -9448,7 +9472,7 @@ html+=
 '<span style="background:'+pc+'22;color:'+pc+';font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px">'+t.priority+'</span>'+
 (t.active?'<span style="background:#D1FAE5;color:#065F46;font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px">Active</span>':'<span style="background:#F3F4F6;color:#6B7280;font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px">Paused</span>')+
 '</div>'+
-'<div style="font-size:11px;color:var(--t3)">👤 '+t.assignedUserName+' \u2022 '+schedStr+' \u2022 by '+t.deadlineTime+'</div>'+
+'<div style="font-size:11px;color:var(--t3)">'+((!STATE.users.find(u=>u.id===t.assignedUserId&&!u._deleted&&u.active!==false))?'⚠️ <span style="color:#DC2626;font-weight:700">'+t.assignedUserName+' — user changed, edit to fix</span>':'👤 '+t.assignedUserName)+' \u2022 '+schedStr+' \u2022 by '+t.deadlineTime+'</div>'+
 (t.description?'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+t.description+'</div>':'')+
 '</div>'+
 '</div>'+
@@ -9632,7 +9656,11 @@ const co=STATE.settings.companyName||'ALT Stock';
 window._waTaskMsgs={};
 const staffList=[];
 Object.entries(smMap).forEach(([uid2,tasks])=>{
-  const u=STATE.users.find(x=>x.id===uid2);if(!u)return;
+  let u=STATE.users.find(x=>x.id===uid2);
+  /* Fallback: if user was deleted/re-created, find active user by name */
+  const tName=tasks[0]?.assignedUserName;
+  if((!u||u._deleted)&&tName) u=STATE.users.find(x=>x.name===tName&&!x._deleted&&x.active!==false);
+  if(!u)return;
   const phone=u.whatsapp||u.phone||'';
   const taskList=tasks.map((t,i)=>(i+1)+'. '+t.taskName+' \u2022 By '+(t.deadline?new Date(t.deadline).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'EOD')).join('\n');
   const overdue=tasks.filter(t=>new Date()>new Date(t.deadline)).length;
@@ -9656,7 +9684,7 @@ staffList.forEach(s=>{
   if(s.phone){
     h+='<button onclick="openWA(window._waTaskMsgs[\''+s.id+'\'].phone,window._waTaskMsgs[\''+s.id+'\'].msg);this.innerHTML=\'\u2705 Sent\';this.disabled=true;this.style.background=\'#D1FAE5\';this.style.color=\'#059669\'" class="wa" style="padding:8px 14px;font-size:12px;font-weight:800;border-radius:8px;white-space:nowrap">\uD83D\uDCF2 Send WA</button>';
   }else{
-    h+='<span style="font-size:11px;color:#DC2626;font-weight:700">No phone</span>';
+    h+='<span style="font-size:11px;color:#DC2626;font-weight:700">⚠️ No WhatsApp saved — go to Admin → Users and add their number</span>';
   }
   h+='</div>';
 });
