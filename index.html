@@ -745,33 +745,27 @@ function mTab(t,b){switchTab('masters',t,b);}
 function aTab(t,b){switchTab('admin',t,b); if(t==='led') renderLedger(); if(t==='set') renderSettingsForm(); if(t==='fy') renderFYTab(); if(t==='flags') renderFlaggedTab(); if(t==='db') renderDbTab();}
 function renderShortcuts(){
 const c=el('dash-shortcuts'); if(!c) return;
+const isAdmin=STATE.user?.role==='admin';
 const groups=[
-{title:'📥 '+tr('inward_stk'),btns:[
-{ico:'🏭',lbl:tr('mill_gp'),sub:tr('const groups=[
-/* Inward Stock — only for users with inward permission */
 ...(isAdmin||hasPerm('inward')||hasPerm('inward_view')?[{title:'📥 '+tr('inward_stk'),btns:[
 {ico:'🏭',lbl:tr('mill_gp'),sub:tr('record_stk'),cl:'c-g',fn:"showInward('mill')"},
 {ico:'⚙️',lbl:tr('jwin'),sub:'Job Work',cl:'c-t',fn:"showInward('jwin')"},
 {ico:'🔄',lbl:tr('exch'),sub:tr('exch'),cl:'c-a',fn:"showInward('exch')"},
 ],cols:2}]:[]),
-/* Sales — only for users with sales permission */
 ...(isAdmin||hasPerm('sales_view')||hasPerm('sales_order')?[{title:'🧾 '+tr('sales'),btns:[
 {ico:'🧾',lbl:tr('new_order'),sub:tr('create_ord'),cl:'c-p',fn:'openNewOrder()'},
 {ico:'📋',lbl:'New Invoice',sub:'Create Tax Invoice',cl:'c-p',fn:'newBill()'},
 {ico:'📋',lbl:'Pending Report',sub:'Open orders & payments due',cl:'c-r',fn:"setNav('sales');setTimeout(()=>salesTab('pend',document.querySelector('#s-sales .tbb:nth-child(3)')),100)"},
 ],cols:2}]:[]),
-/* Job Work — only for users with jw permission */
 ...(isAdmin||hasPerm('jw')?[{title:'⚙️ Job Work',btns:[
 {ico:'🏪',lbl:tr('shop_jw'),sub:tr('from_stk'),cl:'c-a',fn:"showJWForm('s2j')"},
 {ico:'✅',lbl:tr('recv_jw'),sub:tr('mark_recv'),cl:'c-g',fn:"setNav('jw')"},
 ],cols:2}]:[]),
-/* Stat Stock — admin only */
 ...(isAdmin?[{title:'📦 '+tr('stat_stock'),btns:[
 {ico:'📦',lbl:tr('opening_stk'),sub:tr('set_init'),cl:'c-t',fn:'openOpening()'},
 {ico:'📊',lbl:tr('stk_adj'),sub:tr('corr_var'),cl:'c-t',fn:'openAdjust()'},
 {ico:'🔀',lbl:'Transfer Stock',sub:'Convert / Move takas',cl:'c-a',fn:'openTransferHub()'},
 ],cols:2}]:[]),
-/* Masters — admin only */
 ...(isAdmin?[{title:'🗂️ '+tr('masters'),btns:[
 {ico:'🧵',lbl:tr('new_item'),sub:'Add item type',cl:'c-x',fn:'openItem()'},
 {ico:'🎨',lbl:'New Range',sub:'Add range to item',cl:'c-p',fn:'openQuickRange()'},
@@ -780,7 +774,9 @@ const groups=[
 {ico:'🏭',lbl:tr('new_sup'),sub:tr('add_mill'),cl:'c-x',fn:"showMod('m-sup')"},
 {ico:'🤝',lbl:tr('new_brk'),sub:tr('add_agent'),cl:'c-x',fn:"showMod('m-brk')"},
 ],cols:2}]:[]),
-];'" onclick="'+b.fn+'"><div class="sc-ico">'+b.ico+'</div><div class="sc-txt"><div class="sc-lbl">'+b.lbl+'</div><div class="sc-sub">'+b.sub+'</div></div></button>').join('');
+];
+c.innerHTML=groups.map(g=>{
+const btnsHtml=g.btns.map(b=>'<button class="sc-btn '+b.cl+'" onclick="'+b.fn+'"><div class="sc-ico">'+b.ico+'</div><div class="sc-txt"><div class="sc-lbl">'+b.lbl+'</div><div class="sc-sub">'+b.sub+'</div></div></button>').join('');
 return '<div class="sc-grp"><div class="sc-grp-title">'+g.title+'</div><div class="sc-row col'+g.cols+'">'+btnsHtml+'</div></div>';
 }).join('');
 }
@@ -2406,7 +2402,6 @@ const stkColor=stk===0?'#EF4444':stk<5?'#F59E0B':'#10B981';
 const stkBg=stk===0?'#FEE2E2':stk<5?'#FEF3C7':'#D1FAE5';
 const rowBg=ci%2===0?'#FFFFFF':'#F8F7FF';
 const row=document.createElement('div');
-row.id='od-lot-'+lidconst row=document.createElement('div');
 row.id='od-lot-'+lid+'-row-'+idx;
 row.style.cssText=
 'padding:8px 10px;border-bottom:1px solid #E5E4F0;background:'+rowBg+';transition:.15s;border-left:3px solid transparent';
@@ -2429,7 +2424,9 @@ row.innerHTML=
 '<input type="number" id="od-lot-'+lid+'-rt-'+idx+'" step="0.01" value="'+defRate+'" oninput="calcOrdLot('+lid+')" disabled '+
 'style="width:58px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;transition:.15s;box-sizing:border-box"/>'+
 '<div id="od-lot-'+lid+'-amt-'+idx+'" style="width:62px;text-align:right;font-size:11px;font-weight:800;color:#9897B0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">&#x2014;</div>'+
-'</div>';PUT') return;
+'</div>';
+row.addEventListener('click', e=>{
+if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON') return;
 const chk=el('od-lot-'+lid+'-ck-'+idx);
 if(chk){chk.checked=!chk.checked; ordLotClrToggle(lid,idx);}
 });
