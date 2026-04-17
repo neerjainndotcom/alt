@@ -636,10 +636,11 @@ applyCloudData(d);
 toast('Synced with Google Sheets','ok');
 }
 function setNav(tab){
+document.body.style.overflow='';/* clear stuck modal-overflow on nav */
 document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
 document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
 const nb=el('nb-'+tab); if(nb) nb.classList.add('on');
-const sc=el('s-'+tab); if(sc) sc.classList.add('on');
+const sc=el('s-'+tab); if(sc){sc.classList.add('on');sc.scrollTop=0;}
 if(tab==='dash') renderDash();
 if(tab==='masters'){requestAnimationFrame(()=>{renderItems();renderCusts();renderBrks();renderSups();renderPrds();renderCustGroups();});}
 if(tab==='sales'){requestAnimationFrame(()=>{renderOrders();renderBills();});}
@@ -746,35 +747,40 @@ function renderShortcuts(){
 const c=el('dash-shortcuts'); if(!c) return;
 const groups=[
 {title:'📥 '+tr('inward_stk'),btns:[
+{ico:'🏭',lbl:tr('mill_gp'),sub:tr('const groups=[
+/* Inward Stock — only for users with inward permission */
+...(isAdmin||hasPerm('inward')||hasPerm('inward_view')?[{title:'📥 '+tr('inward_stk'),btns:[
 {ico:'🏭',lbl:tr('mill_gp'),sub:tr('record_stk'),cl:'c-g',fn:"showInward('mill')"},
 {ico:'⚙️',lbl:tr('jwin'),sub:'Job Work',cl:'c-t',fn:"showInward('jwin')"},
 {ico:'🔄',lbl:tr('exch'),sub:tr('exch'),cl:'c-a',fn:"showInward('exch')"},
-],cols:2},
-{title:'🧾 '+tr('sales'),btns:[
+],cols:2}]:[]),
+/* Sales — only for users with sales permission */
+...(isAdmin||hasPerm('sales_view')||hasPerm('sales_order')?[{title:'🧾 '+tr('sales'),btns:[
 {ico:'🧾',lbl:tr('new_order'),sub:tr('create_ord'),cl:'c-p',fn:'openNewOrder()'},
 {ico:'📋',lbl:'New Invoice',sub:'Create Tax Invoice',cl:'c-p',fn:'newBill()'},
 {ico:'📋',lbl:'Pending Report',sub:'Open orders & payments due',cl:'c-r',fn:"setNav('sales');setTimeout(()=>salesTab('pend',document.querySelector('#s-sales .tbb:nth-child(3)')),100)"},
-],cols:2},
-{title:'⚙️ Job Work',btns:[
+],cols:2}]:[]),
+/* Job Work — only for users with jw permission */
+...(isAdmin||hasPerm('jw')?[{title:'⚙️ Job Work',btns:[
 {ico:'🏪',lbl:tr('shop_jw'),sub:tr('from_stk'),cl:'c-a',fn:"showJWForm('s2j')"},
 {ico:'✅',lbl:tr('recv_jw'),sub:tr('mark_recv'),cl:'c-g',fn:"setNav('jw')"},
-],cols:2},
-{title:'📦 '+tr('stat_stock'),btns:[
+],cols:2}]:[]),
+/* Stat Stock — admin only */
+...(isAdmin?[{title:'📦 '+tr('stat_stock'),btns:[
 {ico:'📦',lbl:tr('opening_stk'),sub:tr('set_init'),cl:'c-t',fn:'openOpening()'},
 {ico:'📊',lbl:tr('stk_adj'),sub:tr('corr_var'),cl:'c-t',fn:'openAdjust()'},
 {ico:'🔀',lbl:'Transfer Stock',sub:'Convert / Move takas',cl:'c-a',fn:'openTransferHub()'},
-],cols:2},
-{title:'🗂️ '+tr('masters'),btns:[
+],cols:2}]:[]),
+/* Masters — admin only */
+...(isAdmin?[{title:'🗂️ '+tr('masters'),btns:[
 {ico:'🧵',lbl:tr('new_item'),sub:'Add item type',cl:'c-x',fn:'openItem()'},
 {ico:'🎨',lbl:'New Range',sub:'Add range to item',cl:'c-p',fn:'openQuickRange()'},
 {ico:'🖌️',lbl:'New Colour',sub:'Add colour to range',cl:'c-p',fn:'openQuickColour()'},
 {ico:'👥',lbl:tr('new_cust'),sub:tr('add_buyer'),cl:'c-x',fn:'openCust()'},
 {ico:'🏭',lbl:tr('new_sup'),sub:tr('add_mill'),cl:'c-x',fn:"showMod('m-sup')"},
 {ico:'🤝',lbl:tr('new_brk'),sub:tr('add_agent'),cl:'c-x',fn:"showMod('m-brk')"},
-],cols:2},
-];
-c.innerHTML=groups.map(g=>{
-const btnsHtml=g.btns.map(b=>'<button class="sc-btn '+b.cl+'" onclick="'+b.fn+'"><div class="sc-ico">'+b.ico+'</div><div class="sc-txt"><div class="sc-lbl">'+b.lbl+'</div><div class="sc-sub">'+b.sub+'</div></div></button>').join('');
+],cols:2}]:[]),
+];'" onclick="'+b.fn+'"><div class="sc-ico">'+b.ico+'</div><div class="sc-txt"><div class="sc-lbl">'+b.lbl+'</div><div class="sc-sub">'+b.sub+'</div></div></button>').join('');
 return '<div class="sc-grp"><div class="sc-grp-title">'+g.title+'</div><div class="sc-row col'+g.cols+'">'+btnsHtml+'</div></div>';
 }).join('');
 }
