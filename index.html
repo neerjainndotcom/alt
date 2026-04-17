@@ -8256,7 +8256,7 @@ openStaffTypeMgr();
 toast('Staff type deleted','ok');
 }
 function openWA(phone, msg){
-let ph=(phone||'').replace(/\D/g,'');
+let ph=(String(phone||'')).replace(/\D/g,'');
 if(!ph){
 toast('No phone number available','er');
 return;
@@ -9907,7 +9907,9 @@ function setLeadStatus(id,status){
 function renderDashTaskWidget(){
   const c=el('dash-task-widget');if(!c)return;
   const td=today(),myId=STATE.user?.id,isAdmin=STATE.user?.role==='admin';
-  const allInst=(STATE.taskInstances||[]).filter(t=>!t._deleted&&(t.generatedDate===td||(t.status==='Pending'&&t.generatedDate<td)));
+  const _allInstRaw=(STATE.taskInstances||[]).filter(t=>!t._deleted&&(t.generatedDate===td||(t.status==='Pending'&&t.generatedDate<td)));
+  const _dashSeen=new Set();
+  const allInst=[..._allInstRaw].sort((a,b)=>(a.generatedDate||'').localeCompare(b.generatedDate||'')).filter(t=>{if(!t.templateId||t.templateId==='manual')return true;if(_dashSeen.has(t.templateId))return false;_dashSeen.add(t.templateId);return true;});
   const mine=allInst.filter(t=>t.assignedUserId===myId||(t.assignedUserName&&STATE.user?.name&&t.assignedUserName.toLowerCase()===STATE.user.name.toLowerCase()));
   const staffColors=['#4F46E5','#0891B2','#D97706','#059669','#DC2626','#7C3AED','#B45309','#0F766E','#BE185D','#1D4ED8','#047857','#9333EA','#C2410C','#0369A1','#A16207','#4338CA','#DB2777','#15803D','#7E22CE','#EA580C'];
   let h='';
