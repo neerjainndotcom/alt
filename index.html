@@ -1006,9 +1006,10 @@ const hdr=document.createElement('div');
 hdr.className='sih';
 hdr.innerHTML=
 '<h4>'+item.name+' <span style="font-weight:400;font-size:11px;color:var(--t3)">'+item.colours.length+' colours</span></h4>'+
-'<div><span class="mono fw7 cP">'+totT+'T</span> <span class="xs ct3">'+fmtN(totT*STATE.settings.avgMtrPerTaka)+'m</span></div>';
+'<div style="display:flex;align-items:center;gap:6px"><span class="mono fw7 cP">'+totT+'T</span><span class="xs ct3">'+fmtN(totT*STATE.settings.avgMtrPerTaka)+'m</span><span class="stk-chv" style="font-size:10px;color:var(--t3);transition:transform .2s;display:inline-block;transform:'+(q?'rotate(90deg)':'')+'">▶</span></div>';
 const body=document.createElement('div');
-hdr.onclick=()=>{body.style.display=body.style.display==='none'?'':'none';};
+body.style.display=q?'':'none';
+hdr.onclick=()=>{const open=body.style.display==='none';body.style.display=open?'':'none';const c=hdr.querySelector('.stk-chv');if(c)c.style.transform=open?'rotate(90deg)':'';};
 card.appendChild(hdr);
 const colsToShow=q
 ? item.colours.filter(col=>col.name.toLowerCase().includes(q)||col.sku.toLowerCase().includes(q)||(col.code||'').toLowerCase().includes(q)||col.range.toLowerCase().includes(q)||item.name.toLowerCase().includes(q))
@@ -1027,9 +1028,10 @@ rDiv.style.cssText='border-bottom:1px solid var(--br)';
 const rHdr=document.createElement('div');
 rHdr.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border-left:3px solid var(--P);cursor:pointer;-webkit-tap-highlight-color:transparent';
 rHdr.innerHTML='<div style="font-size:13px;font-weight:900;color:var(--Pd)">'+rangeName+' <span style="font-size:11px;font-weight:500;color:var(--t3)">('+rangeCols.length+')</span></div>'+
-'<div style="font-size:12px;font-weight:700;color:var(--P)">'+rangeT+'T</div>';
+'<div style="display:flex;align-items:center;gap:6px"><span style="font-size:12px;font-weight:700;color:var(--P)">'+rangeT+'T</span><span class="rng-chv" style="font-size:10px;color:var(--Pd);transition:transform .2s;display:inline-block;transform:'+(q?'rotate(90deg)':'')+'">▶</span></div>';
 const rBody=document.createElement('div');
-rHdr.onclick=()=>{rBody.style.display=rBody.style.display==='none'?'':'none';};
+rBody.style.display=q?'':'none';
+rHdr.onclick=()=>{const open=rBody.style.display==='none';rBody.style.display=open?'':'none';const c=rHdr.querySelector('.rng-chv');if(c)c.style.transform=open?'rotate(90deg)':'';};
 rDiv.appendChild(rHdr);
 rangeCols.forEach(col=>{
 const cIdx=item.colours.indexOf(col);
