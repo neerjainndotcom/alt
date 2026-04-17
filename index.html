@@ -2372,15 +2372,16 @@ const defRate=el('od-lot-'+lid+'-qrate')?.value||el('od-def-rate')?.value||'';
 body.innerHTML='';
 const thead=document.createElement('div');
 thead.style.cssText=
-'display:grid;grid-template-columns:26px 1fr 42px 58px 66px 78px;gap:6px;'+
 'background:linear-gradient(135deg,#1e1b4b,#312e81);padding:8px 10px;border-bottom:2px solid #4F46E5';
 thead.innerHTML=
-'<div></div>'+
-'<div style="font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.8px">Colour</div>'+
-'<div style="font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.5px;text-align:center">Stk</div>'+
-'<div style="font-size:8px;font-weight:800;color:#FBBF24;text-transform:uppercase;letter-spacing:.5px;text-align:center">Pcs</div>'+
-'<div style="font-size:8px;font-weight:800;color:#FBBF24;text-transform:uppercase;letter-spacing:.5px;text-align:center">Rate</div>'+
-'<div style="font-size:8px;font-weight:800;color:#6EE7B7;text-transform:uppercase;letter-spacing:.5px;text-align:right">Amount</div>';
+'<div style="display:flex;align-items:center;gap:6px">'+
+'<div style="width:38px"></div>'+
+'<div style="flex:1;font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.8px">Colour</div>'+
+'<div style="font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.5px;text-align:center;width:38px">Stk</div>'+
+'<div style="font-size:8px;font-weight:800;color:#FBBF24;text-transform:uppercase;letter-spacing:.5px;text-align:center;width:52px">Pcs</div>'+
+'<div style="font-size:8px;font-weight:800;color:#FBBF24;text-transform:uppercase;letter-spacing:.5px;text-align:center;width:58px">Rate</div>'+
+'<div style="font-size:8px;font-weight:800;color:#6EE7B7;text-transform:uppercase;letter-spacing:.5px;text-align:right;width:62px">Amount</div>'+
+'</div>';
 body.appendChild(thead);
 const selAll=document.createElement('div');
 selAll.style.cssText=
@@ -2399,34 +2400,30 @@ const stkColor=stk===0?'#EF4444':stk<5?'#F59E0B':'#10B981';
 const stkBg=stk===0?'#FEE2E2':stk<5?'#FEF3C7':'#D1FAE5';
 const rowBg=ci%2===0?'#FFFFFF':'#F8F7FF';
 const row=document.createElement('div');
+row.id='od-lot-'+lidconst row=document.createElement('div');
 row.id='od-lot-'+lid+'-row-'+idx;
 row.style.cssText=
-'display:grid;grid-template-columns:26px 1fr 42px 58px 66px 78px;gap:6px;align-items:center;'+
-'padding:8px 10px;border-bottom:1px solid #E5E4F0;background:'+rowBg+';transition:.15s';
+'padding:8px 10px;border-bottom:1px solid #E5E4F0;background:'+rowBg+';transition:.15s;border-left:3px solid transparent';
 row.innerHTML=
-'<input type="checkbox" id="od-lot-'+lid+'-ck-'+idx+'" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer" onchange="ordLotClrToggle('+lid+','+idx+')"/>'+
-'<div style="min-width:0">'+
-'<div style="display:flex;align-items:center;gap:4px">'+
+/* Line 1: checkbox + colour dot + full colour name + stk badge */
+'<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'+
+'<input type="checkbox" id="od-lot-'+lid+'-ck-'+idx+'" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer;flex-shrink:0" onchange="ordLotClrToggle('+lid+','+idx+')"/>'+
 '<span style="width:14px;height:14px;border-radius:50%;background:'+(col.hex||'#ccc')+';display:inline-block;flex-shrink:0;border:1.5px solid rgba(0,0,0,.1);box-shadow:0 1px 3px rgba(0,0,0,.12)"></span>'+
-'<span style="font-size:11px;font-weight:700;color:#0F0E1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+col.name+'</span>'+
+'<span style="font-size:11px;font-weight:700;color:#0F0E1A;flex:1;min-width:0;word-break:break-word">'+col.name+'</span>'+
+'<span style="font-size:9px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:2px 5px;border-radius:5px;white-space:nowrap;flex-shrink:0">'+stk+'T</span>'+
 '</div>'+
-'<div style="font-size:8px;color:#9897B0;font-family:monospace;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+col.sku+'</div>'+
-'</div>'+
-'<div style="text-align:center">'+
-'<span style="font-size:9px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:2px 4px;border-radius:5px;white-space:nowrap">'+stk+'T</span>'+
-'</div>'+
-'<div style="display:flex;flex-direction:column;align-items:center;gap:0">'+
+/* Line 2: sku + pcs input + rate input + amount */
+'<div style="display:flex;align-items:center;gap:6px">'+
+'<div style="font-size:8px;color:#9897B0;font-family:monospace;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+col.sku+'</div>'+
+'<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">'+
 '<input type="number" id="od-lot-'+lid+'-p-'+idx+'" step="1" min="1" value="'+defPcs+'" oninput="calcOrdLot('+lid+')" disabled '+
-'style="width:100%;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;'+
-'background:#F3F4F6;color:#9CA3AF;transition:.15s;box-sizing:border-box"/>'+
+'style="width:52px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;transition:.15s;box-sizing:border-box"/>'+
 '<div id="od-lot-'+lid+'-tk-'+idx+'" style="font-size:8px;font-weight:700;color:#6366F1;min-height:10px;letter-spacing:.2px;white-space:nowrap;overflow:hidden"></div>'+
 '</div>'+
 '<input type="number" id="od-lot-'+lid+'-rt-'+idx+'" step="0.01" value="'+defRate+'" oninput="calcOrdLot('+lid+')" disabled '+
-'style="width:100%;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;'+
-'background:#F3F4F6;color:#9CA3AF;transition:.15s;box-sizing:border-box"/>'+
-'<div id="od-lot-'+lid+'-amt-'+idx+'" style="text-align:right;font-size:11px;font-weight:800;color:#9897B0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">&#x2014;</div>';
-row.addEventListener('click', e=>{
-if(e.target.tagName==='INPUT') return;
+'style="width:58px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;transition:.15s;box-sizing:border-box"/>'+
+'<div id="od-lot-'+lid+'-amt-'+idx+'" style="width:62px;text-align:right;font-size:11px;font-weight:800;color:#9897B0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">&#x2014;</div>'+
+'</div>';PUT') return;
 const chk=el('od-lot-'+lid+'-ck-'+idx);
 if(chk){chk.checked=!chk.checked; ordLotClrToggle(lid,idx);}
 });
