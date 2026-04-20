@@ -2702,8 +2702,9 @@ if(o.status==='fulfilled'){
   if(ordBills.length) btns.appendChild(mk('bp','&#x1F9FE; View Bills',()=>showOrderDetail(o.id)));
 }else if(isOpen&&o.status!=='cancelled'){
   btns.appendChild(mk('bp','&#x1F4CB; Programme Lot',()=>openProgModal(o.id)));
-  const pendingProgs=(o.programmes||[]).filter(p=>p.status!=='billed'&&!p.billId);
-  if(pendingProgs.length) btns.appendChild(mk('bs','&#x1F9FE; Bill Lot ('+pendingProgs.length+')',()=>openBillLotSelector(o.id)));
+  const pendingProgs=(o.programmes||[]).filter(p=>p.status!=='billed');
+  const pendingLotGrps=new Set(pendingProgs.map(p=>p.lotGroupId||p.id));
+  if(pendingLotGrps.size) btns.appendChild(mk('bs','&#x1F9FE; Bill Lot ('+pendingLotGrps.size+')',()=>openBillLotSelector(o.id)));
 }else{
   if(o.status!=='cancelled') btns.appendChild(mk('bp','&#x1F9FE; Bill',()=>createBill(o.id)));
 }
@@ -3076,7 +3077,7 @@ async function saveProgramme(){
       const pcs=parseInt(el('pl-'+lid+'-p-'+colIdx)?.value)||0;
       if(!pcs) return; /* skip if 0 qty */
       const rate=parseFloat(el('pl-'+lid+'-r-'+colIdx)?.value)||0;
-      toSave.push({itemId,item,colIdx,col,pcs,cut,rate,date,remark,range:actualRng});
+      toSave.push({lotDivId:lid,itemId,item,colIdx,col,pcs,cut,rate,date,remark,range:actualRng});
     });
     if(!anyChecked){toast(lbl+'Check at least one colour','er');return;}
   }
@@ -3094,10 +3095,15 @@ async function saveProgramme(){
 
   if(!o.programmes) o.programmes=[];
   const savedProgs=[];
+  /* Group lotGroupId per lot card so all colours from same card bill together */
+  const _lgMap={};let _lgCtr=Math.max(0,...(o.programmes||[]).map(p=>p.lotNum||0));
+  toSave.forEach(l=>{if(!_lgMap[l.lotDivId]){_lgCtr++;_lgMap[l.lotDivId]={id:uid(),num:_lgCtr};}});
   toSave.forEach(l=>{
     const progId=uid();
     const amount=l.rate>0?Math.round(l.pcs*l.cut*l.rate):0;
-    o.programmes.push({id:progId,date:l.date,itemId:l.itemId,range:l.range,colIdx:l.colIdx,sku:l.col.sku,colourName:l.col.name,pcs:l.pcs,cut:l.cut,rate:l.rate,amount,remark:l.remark,status:'pending',billId:null});
+    const grp=_lgMap[l.lotDivId]||{id:uid(),num:_lgCtr||1};
+    const itemName=l.item?.name||STATE.items.find(x=>x.id===l.itemId)?.name||'';
+    o.programmes.push({id:progId,lotGroupId:grp.id,lotNum:grp.num,date:l.date,itemId:l.itemId,itemName,range:l.range,colIdx:l.colIdx,sku:l.col.sku,colourName:l.col.name,pcs:l.pcs,cut:l.cut,rate:l.rate,amount,remark:l.remark,status:'pending',billId:null,billedPcs:0,bills:[]});
     savedProgs.push({progId,col:l.col,pcs:l.pcs});
   });
   o.total=(o.programmes||[]).reduce((s,p)=>s+(p.amount||0),0);
@@ -3126,17 +3132,32 @@ function openBillLotSelector(ordId){
   _progOrdId=ordId;
   if(el('prog-ord-no')) el('prog-ord-no').textContent=o.orderNo;
   if(el('prog-cust')) el('prog-cust').textContent=o.custName;
-  const pending=(o.programmes||[]).filter(p=>p.status!=='billed'&&!p.billId);
+  const pending=(o.programmes||[]).filter(p=>p.status!=='billed');
   if(!pending.length){toast('No pending lots to bill','er');return;}
-
+  /* Group by lotGroupId (new data) or treat each prog as its own group (old data) */
+  const _grps={};const _grpOrder=[];
+  pending.slice().reverse().forEach(p=>{
+    const gid=p.lotGroupId||p.id;
+    if(!_grps[gid]){_grps[gid]={gid,lotNum:p.lotNum||'',date:p.date,progs:[]};_grpOrder.push(gid);}
+    _grps[gid].progs.push(p);
+  });
   let bod='<div style="font-size:11px;font-weight:800;color:var(--Pd);text-transform:uppercase;margin-bottom:12px">Select Lots to Bill</div>';
-  pending.slice().reverse().forEach((p,i)=>{
-    bod+='<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border-radius:10px;margin-bottom:8px;cursor:pointer">'+
-      '<input type="checkbox" id="bls-'+p.id+'" value="'+p.id+'" style="width:18px;height:18px;accent-color:var(--P)" '+(i===0?'checked':'')+'>'+
+  _grpOrder.forEach((gid,i)=>{
+    const g=_grps[gid];
+    const totalPcs=g.progs.reduce((s,p)=>s+(p.pcs||0),0);
+    const billedPcs=g.progs.reduce((s,p)=>s+(p.billedPcs||0),0);
+    const remaining=totalPcs-billedPcs;
+    const isPartial=billedPcs>0;
+    const clrNames=g.progs.map(p=>p.colourName).join(', ');
+    bod+='<label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--s2);border-radius:10px;margin-bottom:8px;cursor:pointer">'+
+      '<input type="checkbox" id="bls-'+gid+'" value="'+gid+'" style="width:18px;height:18px;accent-color:var(--P);flex-shrink:0;margin-top:3px" '+(i===0?'checked':'')+'>'+
       '<div style="flex:1;min-width:0">'+
-        '<div class="fw7 sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.colourName+' <span class="sku" style="font-size:9px">'+p.sku+'</span></div>'+
-        '<div class="xs ct3">'+fmtDate(p.date)+(p.remark?' \u00B7 '+p.remark:'')+'</div>'+
-        '<div class="xs mono ct3">'+fmtN(p.pcs)+' pcs'+(p.rate?' \u00B7 \u20B9'+p.rate+'/mtr':'')+'</div>'+
+        (g.lotNum?'<div style="font-size:10px;font-weight:800;color:var(--Pd);margin-bottom:1px">Lot '+g.lotNum+'</div>':'')+
+        '<div class="fw7 sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+g.progs.length+' colour'+(g.progs.length>1?'s':'')+' \u00B7 '+clrNames+'</div>'+
+        (isPartial
+          ?'<div class="xs" style="color:#D97706;font-weight:700;margin-top:2px">\u26A0\uFE0F Partial: '+billedPcs+' of '+totalPcs+' pcs dispatched \u00B7 <b>'+remaining+' remaining</b></div>'
+          :'<div class="xs ct3">'+fmtDate(g.date)+' \u00B7 '+fmtN(totalPcs)+' pcs'+(g.progs[0]?.rate?' \u00B7 \u20B9'+g.progs[0].rate+'/mtr':'')+'</div>'
+        )+
       '</div>'+
       '</label>';
   });
@@ -3151,12 +3172,22 @@ function confirmBillLots(ordId){
   const o=STATE.orders.find(x=>x.id===ordId); if(!o) return;
   const checked=[...document.querySelectorAll('[id^="bls-"]:checked')];
   if(!checked.length){toast('Select at least one lot','er');return;}
-  const progs=checked.map(cb=>(o.programmes||[]).find(p=>p.id===cb.value)).filter(Boolean);
+  const selectedGids=checked.map(cb=>cb.value);
+  /* Collect all programmes belonging to selected lot groups */
+  const progs=(o.programmes||[]).filter(p=>{
+    const gid=p.lotGroupId||p.id;
+    return selectedGids.includes(gid)&&p.status!=='billed';
+  });
   if(!progs.length) return;
   _billOrdId=ordId;
-  _billRows=progs.map(p=>({_progId:p.id}));
+  _billRows=progs.map(p=>{
+    const prevBilled=(p.billedPcs||0)||(p.bills||[]).reduce((s,b)=>s+(b.pcs||0),0);
+    const remaining=Math.max(0,(p.pcs||0)-prevBilled);
+    const item=STATE.items.find(x=>x.id===p.itemId);
+    return {_progId:p.id,itemId:p.itemId,itemName:p.itemName||(item?.name||''),colIdx:p.colIdx,colourName:p.colourName,sku:p.sku,pcs:remaining,cut:p.cut||6,rate:p.rate||'',_orderedPcs:p.pcs,_billedPcs:prevBilled,_isProgLot:true};
+  });
   hideMod('m-prog');
-  buildBillBody(o);
+  buildBillBody({...o,ordId:o.id});
   showMod('m-bill');
 }
 
@@ -3164,10 +3195,12 @@ function billProgramme(ordId,progId){
   const o=STATE.orders.find(x=>x.id===ordId); if(!o) return;
   const prog=o.programmes?.find(p=>p.id===progId); if(!prog) return;
   if(prog.status==='billed'){toast('This lot is already billed','er');return;}
-  const item=STATE.items.find(i=>i.id===prog.itemId); if(!item) return;
+  const item=STATE.items.find(i=>i.id===prog.itemId);
+  const prevBilled=(prog.billedPcs||0)||(prog.bills||[]).reduce((s,b)=>s+(b.pcs||0),0);
+  const remaining=Math.max(0,(prog.pcs||0)-prevBilled);
   _billOrdId=ordId;
-  _billRows=[{_progId:progId}];
-  buildBillBody(o);
+  _billRows=[{_progId:progId,itemId:prog.itemId,itemName:prog.itemName||(item?.name||''),colIdx:prog.colIdx,colourName:prog.colourName,sku:prog.sku,pcs:remaining,cut:prog.cut||6,rate:prog.rate||'',_orderedPcs:prog.pcs,_billedPcs:prevBilled,_isProgLot:true}];
+  buildBillBody({...o,ordId:o.id});
   showMod('m-bill');
 }
 function waOrd(id){
@@ -3293,7 +3326,7 @@ function remBillRow(i){_billRows.splice(i,1);renderBillRows();}
 function renderBillRows(){
 el('bl-rows').innerHTML=_billRows.map((row,i)=>{
 const partialInfo=(row._orderedPcs!=null)
-  ?'<div style="font-size:10px;color:var(--t3);margin-bottom:4px">Ordered: <b>'+row._orderedPcs+'</b> pcs'+(row._billedPcs>0?' · Already dispatched: <b>'+row._billedPcs+'</b> pcs · Remaining: <b>'+(row._orderedPcs-row._billedPcs)+'</b>':'')+' pcs</div>'
+  ?'<div style="font-size:10px;color:var(--t3);margin-bottom:4px">'+(row._isProgLot?'Programmed':'Ordered')+': <b>'+row._orderedPcs+'</b> pcs'+(row._billedPcs>0?' \u00B7 Already dispatched: <b>'+row._billedPcs+'</b> pcs \u00B7 Remaining: <b>'+(row._orderedPcs-row._billedPcs)+'</b>':'')+' pcs</div>'
   :'';
 return '<div class="sr su"><div class="srh"><span>Item '+(i+1)+'</span>'+(i>0?'<button onclick="remBillRow('+i+')" class="btn bd bxs">✕</button>':'')+'</div>'+
 (row.itemId?'<div class="flx ic g8" style="margin-bottom:4px"><span class="sku">'+row.sku+'</span><span class="fw7 sm">'+row.itemName+' - '+row.colourName+'</span><span class="stk ok">'+getStk(row.itemId,row.colIdx)+'T</span></div>':buildCascade('bl'+i,true))+
@@ -3543,10 +3576,11 @@ if(row.itemId){iid=row.itemId;cIdx=row.colIdx;sku=row.sku;iName=row.itemName;cNa
 else{const sel=getSel('bl'+i);if(!sel) continue;iid=sel.itemId;cIdx=sel.colIdx;sku=sel.col.sku;iName=sel.item.name;cName=sel.col.name;}
 const p=parseInt(el('bl'+i+'-p')?.value)||0, r=parseFloat(el('bl'+i+'-r')?.value)||0;
 if(!p) continue;
-const taka=Math.round(p*4.5/STATE.settings.avgMtrPerTaka);
+const cut=row.cut||6;
+const taka=Math.round(p*cut/STATE.settings.avgMtrPerTaka);
 const ok=await checkAdj(iid,cIdx,taka); if(!ok) continue;
 deductStock(iid,cIdx,taka,'sale',cust.name,bno);
-items.push({itemId:iid,colIdx:cIdx,sku,itemName:iName,colourName:cName,pcs:p,rate:r,amount:p*r,mtrs:Math.round(p*4.5),taka});
+items.push({itemId:iid,colIdx:cIdx,sku,itemName:iName,colourName:cName,pcs:p,cut,rate:r,amount:p*r,mtrs:Math.round(p*cut),taka,_progId:row._progId||null});
 }
 }
 if(!items.length){toast('Add at least one item','er');return;}
@@ -3588,13 +3622,23 @@ const totalBilled=liveBills()
   .reduce((s,b)=>s+b.items.reduce((ss,i)=>ss+(i.dispQty||i.pcs||0),0),0);
 o.status=totalBilled>=ordTotal?'fulfilled':'billed';
 }
-/* Mark all programme lots as billed if this bill came from programme lot(s) */
-const savedBillId=STATE.bills[STATE.bills.length-1]?.id||'';
+/* Mark programme lots billed/partial based on actual dispatched qty */
+const savedBillId=newBill.id||'';
+const savedBillNo=newBill.billNo||bno;
 let anyProgBilled=false;
-_billRows.forEach(row=>{
+_billRows.forEach((row,rIdx)=>{
   if(row._progId&&o){
     const prog=(o.programmes||[]).find(p=>p.id===row._progId);
-    if(prog){prog.status='billed';prog.billId=savedBillId;anyProgBilled=true;}
+    if(prog){
+      const billItem=newBill.items?.find(it=>it._progId===row._progId);
+      const dispPcs=billItem?.pcs||row.pcs||0;
+      if(!prog.bills) prog.bills=[];
+      prog.bills.push({billId:savedBillId,billNo:savedBillNo,pcs:dispPcs,date:newBill.date});
+      prog.billedPcs=(prog.billedPcs||0)+dispPcs;
+      if(prog.billedPcs>=prog.pcs){prog.status='billed';prog.billId=savedBillId;}
+      else prog.status='partial';
+      anyProgBilled=true;
+    }
   }
 });
 if(anyProgBilled&&o){const stat=calcProgStats(o);if(stat.remaining<=0)o.status='fulfilled';}
@@ -5296,17 +5340,29 @@ if(o.type==='open'){
     (progs.length?
       '<div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Programme Lots ('+progs.length+')</div>'+
       '<div style="border-radius:10px;overflow:hidden;border:1px solid var(--br)">'+
-      progs.slice().reverse().map(p=>
-        '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--br)">'+
-        '<span class="bdg '+(p.status==='billed'?'bg-g':'bg-a')+'" style="flex-shrink:0;font-size:9px">'+p.status.toUpperCase()+'</span>'+
-        '<div style="flex:1;min-width:0">'+
-          '<div class="fw7 sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.colourName+' <span class="sku" style="font-size:9px">'+p.sku+'</span></div>'+
-          '<div class="xs ct3">'+fmtDate(p.date)+' \u00B7 '+fmtN(p.pcs)+' pcs \u00B7 Cut:'+(p.cut||6)+'m'+(p.remark?' \u00B7 '+p.remark:'')+'</div>'+
-        '</div>'+
-        '<div class="mono fw8" style="flex-shrink:0">'+(p.amount?fmtRs(p.amount):'')+'</div>'+
-        (p.status!=='billed'?'<button onclick="hideMod(\'m-ord-det\');billProgramme(\''+o.id+'\',\''+p.id+'\')" class="btn bp bxs" style="font-size:10px;flex-shrink:0">Bill</button>':'<span class="bdg bg-g bxs" style="font-size:9px">Billed</span>')+
-        '</div>'
-      ).join('')+
+      progs.slice().reverse().map(p=>{
+        const billedPcs=p.billedPcs||(p.status==='billed'?p.pcs:0);
+        const remaining=Math.max(0,(p.pcs||0)-billedPcs);
+        const isPartial=p.status==='partial'||(billedPcs>0&&p.status!=='billed');
+        const statusCls=p.status==='billed'?'bg-g':isPartial?'bg-a':'bg-y';
+        const statusLbl=p.status==='billed'?'BILLED':isPartial?'PARTIAL':'PENDING';
+        return '<div style="border-bottom:1px solid var(--br)">'+
+          '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px">'+
+          '<span class="bdg '+statusCls+'" style="flex-shrink:0;font-size:9px">'+statusLbl+'</span>'+
+          '<div style="flex:1;min-width:0">'+
+            '<div class="fw7 sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.colourName+' <span class="sku" style="font-size:9px">'+p.sku+'</span>'+(p.lotNum?' <span style="font-size:9px;color:var(--t3)">Lot '+p.lotNum+'</span>':'')+'</div>'+
+            '<div class="xs ct3">'+fmtDate(p.date)+' \u00B7 '+fmtN(p.pcs)+' pcs \u00B7 Cut:'+(p.cut||6)+'m'+(p.remark?' \u00B7 '+p.remark:'')+'</div>'+
+          '</div>'+
+          '<div class="mono fw8" style="flex-shrink:0">'+(p.amount?fmtRs(p.amount):'')+'</div>'+
+          (remaining>0?'<button onclick="hideMod(\'m-ord-det\');billProgramme(\''+o.id+'\',\''+p.id+'\')" class="btn bp bxs" style="font-size:10px;flex-shrink:0">Bill</button>':'<span class="bdg bg-g bxs" style="font-size:9px">\u2713 Done</span>')+
+          '</div>'+
+          ((p.bills||[]).length?
+            '<div style="padding:4px 12px 8px;background:var(--s2)">'+
+            (p.bills||[]).map(b=>'<div class="xs ct3">\uD83D\uDCC4 '+b.billNo+' \u2014 '+fmtN(b.pcs)+' pcs dispatched on '+fmtDate(b.date)+'</div>')+
+            (isPartial?'<div class="xs" style="color:#D97706;font-weight:700">\u26A0\uFE0F '+fmtN(remaining)+' pcs still remaining</div>':'')+
+            '</div>':'')+
+          '</div>'+
+      }).join('')+
       '</div>'
     :'<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px;background:var(--s2);border-radius:8px">No programme lots yet \u2014 tap \u201CProgramme Lot\u201D to add</div>')+
     '</div>';
@@ -5318,8 +5374,9 @@ const mk=(cls,txt,fn)=>{const b=document.createElement('button');b.className='bt
 foot.appendChild(mk('wa','&#x1F4F2; WhatsApp',()=>waOrd(o.id)));
 if(o.type==='open'&&o.status!=='cancelled'){
   foot.appendChild(mk('bp bfl','&#x1F4CB; Programme Lot',()=>{hideMod('m-ord-det');openProgModal(o.id);}));
-  const pendingProgs=(o.programmes||[]).filter(p=>p.status!=='billed'&&!p.billId);
-  if(pendingProgs.length) foot.appendChild(mk('bs bfl','&#x1F9FE; Bill Lot ('+pendingProgs.length+')',()=>{hideMod('m-ord-det');openBillLotSelector(o.id);}));
+  const pendingProgs=(o.programmes||[]).filter(p=>p.status!=='billed');
+  const pendingLotGroups=new Set(pendingProgs.map(p=>p.lotGroupId||p.id));
+  if(pendingLotGroups.size) foot.appendChild(mk('bs bfl','&#x1F9FE; Bill Lot ('+pendingLotGroups.size+')',()=>{hideMod('m-ord-det');openBillLotSelector(o.id);}));
 }else if(o.status!=='fulfilled'&&o.status!=='cancelled'){
 foot.appendChild(mk('bp bfl','&#x1F9FE; Dispatch Bill',()=>{hideMod('m-ord-det');openDispatch(o.id);}));
 }
