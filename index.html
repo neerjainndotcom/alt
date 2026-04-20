@@ -8880,6 +8880,23 @@ const isAdmin=STATE.user?.role==='admin';
 generateTodayRecurringTasks();
 const recs=(STATE.recurringLeads||[]).filter(r=>!r._deleted);
 if(isAdmin){
+/* Visit coverage stats for today */
+const _todayStr=today();
+const _todayRecs=recs.filter(r=>isScheduledToday(r));
+const _todayLogs=_todayRecs.filter(r=>(r.visitLog||[]).some(vl=>vl.date===_todayStr));
+const _visitedNoReq=_todayRecs.filter(r=>(r.visitLog||[]).some(vl=>vl.date===_todayStr&&vl.outcome==='no_req')).length;
+const _visitedHasReq=_todayRecs.filter(r=>(r.visitLog||[]).some(vl=>vl.date===_todayStr&&vl.outcome==='has_req')).length;
+const _couldnt=_todayRecs.filter(r=>(r.visitLog||[]).some(vl=>vl.date===_todayStr&&vl.outcome==='couldnt')).length;
+const _statsHtml=_todayRecs.length>0?(
+'<div style="background:#EEF2FF;border:1.5px solid #C7D2FE;border-radius:12px;padding:12px;margin-bottom:12px">'
++'<div style="font-size:12px;font-weight:800;color:#3730A3;margin-bottom:8px">\uD83D\uDCCA Today\'s Visit Coverage \u2014 '+_todayLogs.length+'/'+_todayRecs.length+' logged</div>'
++'<div style="display:flex;gap:10px;flex-wrap:wrap">'
++'<div style="flex:1;min-width:60px;text-align:center;background:white;border-radius:8px;padding:6px"><div style="font-size:18px;font-weight:900;color:#059669">'+_visitedNoReq+'</div><div style="font-size:10px;color:var(--t3)">Visited</div></div>'
++'<div style="flex:1;min-width:60px;text-align:center;background:white;border-radius:8px;padding:6px"><div style="font-size:18px;font-weight:900;color:#D97706">'+_visitedHasReq+'</div><div style="font-size:10px;color:var(--t3)">Has Req</div></div>'
++'<div style="flex:1;min-width:60px;text-align:center;background:white;border-radius:8px;padding:6px"><div style="font-size:18px;font-weight:900;color:#DC2626">'+_couldnt+'</div><div style="font-size:10px;color:var(--t3)">Couldn\'t</div></div>'
++'<div style="flex:1;min-width:60px;text-align:center;background:white;border-radius:8px;padding:6px"><div style="font-size:18px;font-weight:900;color:#9CA3AF">'+(_todayRecs.length-_todayLogs.length)+'</div><div style="font-size:10px;color:var(--t3)">Not Logged</div></div>'
++'</div></div>'
+):'';
 let html=
 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
 '<div style="font-size:15px;font-weight:800">Recurring Schedules</div>'+
@@ -8887,7 +8904,7 @@ let html=
 '</div>'+
 '<button class="wa" style="width:100%;padding:10px;font-size:12px;font-weight:800;border-radius:10px;margin-bottom:14px" onclick="waTodayVisitList()">'+
 '&#x1F4F2; Send Today\'s Visit List to All Salesmen'+
-'</button>';
+'</button>'+_statsHtml;
 if(!recs.length){
 html+='<div class="emp"><div class="emj">&#x1F501;</div><h3>No Recurring Schedules</h3><p>Set up automatic follow-up schedules for key parties</p></div>';
 c.innerHTML=html; return;
@@ -8919,10 +8936,29 @@ return '<div style="padding:8px 14px;font-size:12px;color:var(--t2)">'+
 '</div>';
 })()+
 (r.interest?'<div style="padding:0 14px 8px;font-size:11px;color:var(--t3)">'+r.interest+'</div>':'')+
+(function(){
+/* Show last 2 visit logs */
+const logs=(r.visitLog||[]).slice(-3).reverse();
+if(!logs.length) return '';
+return '<div style="padding:6px 14px 8px;border-top:1px solid var(--br)">'
++'<div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:4px">Recent Visits</div>'
++logs.map(vl=>{
+const outcomeColor=vl.outcome==='has_req'?'#059669':vl.outcome==='no_req'?'#6366F1':'#DC2626';
+const outcomeIcon=vl.outcome==='has_req'?'\uD83D\uDD25':vl.outcome==='no_req'?'\u2705':'\u274C';
+const outcomeLabel=vl.outcome==='has_req'?'Has Requirement':vl.outcome==='no_req'?'Visited \u2014 No Requirement':'Could not Visit';
+return '<div style="font-size:11px;display:flex;align-items:flex-start;gap:6px;margin-bottom:4px">'
++'<span style="color:'+outcomeColor+';flex-shrink:0">'+outcomeIcon+'</span>'
++'<div><span style="font-weight:700;color:'+outcomeColor+'">'+outcomeLabel+'</span>'
++' <span style="color:var(--t3)">\u2014 '+fmtDate(vl.date)+(vl.smName?' by '+vl.smName:'')+'</span>'
++(vl.note?'<div style="color:var(--t2);font-size:11px;margin-top:2px">'+vl.note+'</div>':'')
++'</div></div>';}).join('')
++'</div>';
+})()+
 '<div style="display:flex;border-top:1px solid var(--br)">'+
-'<button onclick="editRecurringLead(\''+r.id+'\')" style="flex:1;padding:8px;border:none;background:transparent;font-size:11px;font-weight:700;color:#4F46E5;cursor:pointer">Edit</button>'+
-'<button onclick="waRecurringToSalesman(\''+r.id+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid var(--br);font-size:11px;font-weight:700;color:#25D366;cursor:pointer">&#x1F4F2; WA Salesman</button>'+
-'<button onclick="deleteRecurringLead(\''+r.id+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid var(--br);font-size:11px;font-weight:700;color:#DC2626;cursor:pointer">Delete</button>'+
+'<button onclick="openVisitLogModal(\''+r.id+'\')" style="flex:1;padding:8px;border:none;background:#EEF2FF;font-size:11px;font-weight:700;color:#4F46E5;cursor:pointer">\uD83D\uDCCD Log Visit</button>'+
+'<button onclick="editRecurringLead(\''+r.id+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid var(--br);font-size:11px;font-weight:700;color:#4F46E5;cursor:pointer">Edit</button>'+
+'<button onclick="waRecurringToSalesman(\''+r.id+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid var(--br);font-size:11px;font-weight:700;color:#25D366;cursor:pointer">&#x1F4F2; WA</button>'+
+'<button onclick="deleteRecurringLead(\''+r.id+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid var(--br);font-size:11px;font-weight:700;color:#DC2626;cursor:pointer">Del</button>'+
 '</div>'+
 '</div>';
 });
@@ -8960,7 +8996,7 @@ html+=
 '<div style="display:flex;border-top:1px solid #FCD34D">'+
 (r.phone?'<a href="tel:'+r.phone+'" style="flex:1;padding:8px;text-align:center;text-decoration:none;font-size:11px;font-weight:700;color:#D97706">&#x1F4DE; Call</a>':'<div style="flex:1"></div>')+
 (r.wa?'<button onclick="openWA(\''+r.wa+'\',\'Hi, I am visiting you today from '+STATE.settings.companyName+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid #FCD34D;font-size:11px;font-weight:700;color:#25D366;cursor:pointer">&#x1F4F2; WA</button>':'<div style="flex:1"></div>')+
-'<button onclick="updateRecVisitReport(\''+r.id+'\')" style="flex:1;padding:8px;border:none;background:#D97706;color:white;border-left:1px solid #FCD34D;font-size:11px;font-weight:800;cursor:pointer">Write Report</button>'+
+'<button onclick="openVisitLogModal(\''+r.id+'\')" style="flex:1;padding:8px;border:none;background:#D97706;color:white;border-left:1px solid #FCD34D;font-size:11px;font-weight:800;cursor:pointer">\uD83D\uDCCD Log Visit</button>'+
 '</div>'+
 '</div>';
 });
@@ -9076,6 +9112,89 @@ el('lead-title').textContent='Report: '+r.name;
 el('lead-note').focus();
 },100);
 }
+function openVisitLogModal(rid){
+const r=(STATE.recurringLeads||[]).find(x=>x.id===rid); if(!r) return;
+const isAdmin=STATE.user?.role==='admin';
+const logs=(r.visitLog||[]).slice(-5).reverse();
+const logsHtml=logs.length?logs.map(vl=>{
+const oc=vl.outcome==='has_req'?{color:'#059669',icon:'\uD83D\uDD25',label:'Has Requirement'}:vl.outcome==='no_req'?{color:'#6366F1',icon:'\u2705',label:'Visited — No Req'}:{color:'#DC2626',icon:'\u274C',label:'Couldn\'t Visit'};
+return '<div style="font-size:11px;display:flex;gap:6px;margin-bottom:5px;padding:6px 8px;background:#F9FAFB;border-radius:7px">'
++'<span style="color:'+oc.color+'">'+oc.icon+'</span>'
++'<div><strong style="color:'+oc.color+'">'+oc.label+'</strong> — '+fmtDate(vl.date)+(vl.smName?' by '+vl.smName:'')+(vl.note?'<br><span style="color:var(--t2)">'+vl.note+'</span>':'')+'</div></div>';
+}).join(''):'<div style="font-size:12px;color:var(--t3);text-align:center;padding:8px">No visits logged yet</div>';
+/* Build modal in m-visit-log if exists, else create inline with appConfirm pattern */
+const existing=document.getElementById('m-visit-log');
+const wrap=existing||document.createElement('div');
+wrap.id='m-visit-log';
+wrap.className='ov';
+wrap.onclick=(e)=>{if(e.target===wrap)wrap.remove();};
+wrap.innerHTML=
+'<div class="sh" style="max-width:480px">'
++'<div class="hdl"></div>'
++'<div class="shh"><div class="hr"><div><h3>📍 Log Visit</h3><p class="sub">'+r.name+'</p></div>'
++'<button class="btn bgh bsm" onclick="document.getElementById(\'m-visit-log\').remove()">✕</button></div></div>'
++'<div class="shb">'
++'<div style="margin-bottom:14px">'
++'<div style="font-size:13px;font-weight:800;margin-bottom:8px">Outcome *</div>'
++'<div style="display:flex;flex-direction:column;gap:6px">'
++'<label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;cursor:pointer;font-size:13px" id="vl-lbl-no_req">'
++'<input type="radio" name="vl-outcome" value="no_req" onchange="vlHighlightOutcome(\'no_req\')" style="accent-color:#6366F1"> ✅ Visited — No Requirement <span style="font-size:11px;color:var(--t3);margin-left:auto">Not a lost lead</span></label>'
++'<label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;cursor:pointer;font-size:13px" id="vl-lbl-has_req">'
++'<input type="radio" name="vl-outcome" value="has_req" onchange="vlHighlightOutcome(\'has_req\')" style="accent-color:#059669"> 🔥 Visited — Has Requirement <span style="font-size:11px;color:#059669;margin-left:auto">Create lead</span></label>'
++'<label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:10px;cursor:pointer;font-size:13px" id="vl-lbl-couldnt">'
++'<input type="radio" name="vl-outcome" value="couldnt" onchange="vlHighlightOutcome(\'couldnt\')" style="accent-color:#DC2626"> ❌ Couldn\'t Visit</label>'
++'</div></div>'
++'<div style="margin-bottom:14px">'
++'<div style="font-size:13px;font-weight:800;margin-bottom:6px">Notes / Update</div>'
++'<textarea id="vl-note" rows="3" placeholder="What happened? Any update on requirement, price discussed, next visit plan..." style="width:100%;padding:8px;border:1.5px solid #E5E4F0;border-radius:8px;font-size:12px;resize:none;font-family:inherit"></textarea>'
++'</div>'
++(isAdmin?'<div style="margin-bottom:10px"><div style="font-size:13px;font-weight:800;margin-bottom:6px">Logging for Salesman</div>'
++'<div style="padding:8px 12px;background:#F3F4F6;border-radius:8px;font-size:13px;font-weight:700">'+r.smName+'</div></div>':'')
++'<div style="font-size:13px;font-weight:800;margin-bottom:8px">Recent Visits</div>'
++logsHtml
++'</div>'
++'<div class="shf" style="gap:8px">'
++'<button class="btn bsuc bfl" onclick="saveVisitLog(\''+rid+'\')">Save Visit Log</button>'
++'<button class="btn bgh bfl" onclick="document.getElementById(\'m-visit-log\').remove()">Cancel</button>'
++'</div></div>';
+if(!existing) document.body.appendChild(wrap);
+wrap.style.display='flex';
+}
+function vlHighlightOutcome(val){
+['no_req','has_req','couldnt'].forEach(v=>{
+const lbl=document.getElementById('vl-lbl-'+v);
+if(!lbl) return;
+const colors={no_req:'#6366F1',has_req:'#059669',couldnt:'#DC2626'};
+lbl.style.border='1.5px solid '+(v===val?colors[v]:'#E5E7EB');
+lbl.style.background=v===val?(v==='no_req'?'#EEF2FF':v==='has_req'?'#ECFDF5':'#FEF2F2'):'';
+});
+}
+function saveVisitLog(rid){
+const r=(STATE.recurringLeads||[]).find(x=>x.id===rid); if(!r) return;
+const outcomeEl=document.querySelector('input[name="vl-outcome"]:checked');
+if(!outcomeEl){toast('Please select an outcome','er');return;}
+const outcome=outcomeEl.value;
+const note=(document.getElementById('vl-note')?.value||'').trim();
+if(!r.visitLog) r.visitLog=[];
+const entry={id:'vl_'+Date.now(),date:today(),outcome,note,smId:r.smId,smName:r.smName,loggedById:STATE.user.id,loggedByName:STATE.user.name,ts:new Date().toISOString()};
+r.visitLog.push(entry);
+r.latestNote=note||(outcome==='has_req'?'Has Requirement — '+today():outcome==='no_req'?'Visited, no req — '+today():'Could not visit — '+today());
+r._ts=Date.now();
+persist();
+document.getElementById('m-visit-log')?.remove();
+renderRecurringLeads();
+if(outcome==='has_req'){
+/* Prompt to also create a lead */
+toast('Visit logged \u2705 \u2014 Party has requirement!','ok');
+setTimeout(async()=>{
+const ok=await appConfirm('\uD83D\uDD25 Requirement Found!',r.name+' has a requirement. Do you want to open a lead for them now?','\uD83D\uDD25','Yes, Create Lead','bp');
+if(ok) updateRecVisitReport(rid);
+},400);
+}else{
+toast('Visit logged \u2705','ok');
+}
+autoSyncFirebase();
+}
 const TASK_PRIORITY_COLORS={High:'#DC2626',Medium:'#D97706',Low:'#16A34A'};
 const TASK_CAT_ICONS={Accounting:'📊',Dispatch:'📦','Mill/Stock':'🧵',Sales:'🎯',Admin:'🛡',Compliance:'📋',Other:'📌'};
 function initTasksScreen(){
@@ -9114,7 +9233,17 @@ if(t==='my') renderMyTasks();
 else if(t==='all') renderAllTasks();
 else if(t==='templates') renderTaskTemplates();
 else if(t==='leave') renderLeaveList();
-else if(t==='rep') renderTaskReport();
+else if(t==='rep'){
+/* Auto-set default date range to current week if not yet set */
+const fromEl=document.getElementById('trep-from'),toEl=document.getElementById('trep-to');
+if(fromEl&&!fromEl.value){
+const now=new Date();
+const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
+fromEl.value=mon.toISOString().split('T')[0];
+}
+if(toEl&&!toEl.value) toEl.value=today();
+renderTaskReport();
+}
 });
 }
 function generateTaskInstances(dateStr){
@@ -9255,13 +9384,50 @@ task.completedByUserId=STATE.user.id;
 task.completedByName=STATE.user.name;
 task.isOnTime=now<=deadline;
 task._ts=Date.now();
-if(task.completedByUserId!==task.assignedUserId){
-task.note=STATE.user.name+' completed on behalf of '+task.assignedUserName;
+if(!task.comments) task.comments=[];
+/* Migrate legacy note to first comment */
+if(task.ote&&!task.comments.find(c=>c.isLegacy)){
+task.comments.unshift({id:'c_leg_'+task.id,userId:task.assignedUserId,userName:task.assignedUserName,role:'staff',text:task.note,ts:task.generatedDate+'T08:00:00.000Z',isLegacy:true});
 }
+let completionText='\u2705 Marked complete'+(now<=deadline?' \u2014 On Time':' \u2014 Late');
+if(task.completedByUserId!==task.assignedUserId) completionText+=' (by '+STATE.user.name+' on behalf of '+task.assignedUserName+')';
+task.comments.push({id:'c_done_'+Date.now(),userId:STATE.user.id,userName:STATE.user.name,role:STATE.user.role,text:completionText,ts:now.toISOString(),isCompletion:true});
 lsSave('vs_task_instances',STATE.taskInstances);
 renderMyTasks(); renderAllTasks();
 autoSyncFirebase();
 toast('Task marked done \u2705','ok');
+}
+function addTaskComment(instanceId,text){
+const task=(STATE.taskInstances||[]).find(t=>t.id===instanceId); if(!task||!text.trim()) return;
+if(!task.comments) task.comments=[];
+if(task.note&&!task.comments.find(c=>c.isLegacy)){
+task.comments.unshift({id:'c_leg_'+task.id,userId:task.assignedUserId,userName:task.assignedUserName,role:'staff',text:task.nate,ts:task.generatedDate+'T08:00:00.000Z',isLegacy:true});
+}
+task.comments.push({id:'c_'+Date.now(),userId:STATE.user.id,userName:STATE.user.name,role:STATE.user.role||'staff',text:text.trim(),ts:new Date().toISOString()});
+task._ts=Date.now();
+lsSave('vs_task_instances',STATE.taskInstances);
+autoSyncFirebase();
+}
+function renderTaskComments(task){
+const comments=task.comments||[];
+/* Fallback: show legacy note */
+const legacyNote=(task.note&&!comments.length)?[{id:'leg',userId:task.assignedUserId,userName:task.assignedUserName,role:'staff',text:task.note,ts:task.generatedDate+'T08:00:00.000Z',isLegacy:true}]:[];
+const all=[...legacyNote,...comments];
+if(!all.length) return '<div style="color:var(--t3);font-size:12px;text-align:center;padding:10px">No messages yet</div>';
+return all.map(c=>{
+const isAdmin2=c.role==='admin';
+const isMine=c.userId===STATE_user?.id;
+const bg=c.isCompletion?'#ECFDF5':isAdmin2?'#EEF2FF':'#F9FAFB';
+const border=c.isCompletion?'#059669':isAdmin2?'#4F46E5':'#E5E7EB';
+const nameColor=c.isCompletion?'#059669':isAdmin2?'#4F46E5':'#374151';
+const ts=c.ts?new Date(c.ts).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+return '<div style="background:'+bg+';border:1.5px solid '+border+';border-radius:10px;padding:10px 12px;margin-bottom:8px">'+
+'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
+'<span style="font-size:11px;font-weight:800;color:'+nameColor+'">'+
+(isAdmin2?'\uD83D\uDC51 ':isMine?'\uD83D\uDC64 ':'\uD83D\uDC65 ')+c.userName+(isAdmin2?' (Admin)':'')+'</span>'+
+'<span style="font-size:10px;color:var(/--t3)">'+ts+'</span></div>'+
+'<div style="font-size:13px;color:#111827;white-space:pre-wrap">'+c.text+'</div></div>';
+}).join('');
 }
 function openTaskInst(id){
 const task=(STATE.taskInstances||[]).find(t=>t.id===id); if(!task) return;
@@ -9269,6 +9435,7 @@ const isAdmin=STATE.user?.role==='admin';
 const isMyTask=task.assignedUserId===STATE.user?.id;
 const isStaffCreated=task.templateId==='manual'&&task.createdBy===STATE.user?.id;
 const canEdit=isAdmin||isStaffCreated;
+const canComment=isAdmin||isMyTask;
 const pc=TASK_PRIORITY_COLORS[task.priority]||'#6366F1';
 el('tinst-title').textContent=task.taskName;
 el('tinst-sub').textContent=task.category+' \u2022 '+task.priority+' Priority';
@@ -9286,32 +9453,26 @@ let bodyHtml=
 '<div class="brow"><span>Completed At</span><span>'+new Date(task.completedAt).toLocaleString()+'</span></div>'+
 '<div class="brow"><span>On Time?</span><span style="color:'+(task.isOnTime?'#059669':'#DC2626')+';font-weight:700">'+(task.isOnTime?'\u2705 Yes':'\u26A0 Late')+'</span></div>'
 :'')+
-(task.note?'<div class="brow"><span>Note</span><span>'+task.note+'</span></div>':'')+
+'</div>'+
+'<div style="margin-top:14px">'+
+'<div style="font-size:13px;font-weight:800;color:#374151;margin-bottom:8px">\uD83D\uDCAC Messages / Notes</div>'+
+'<div id="tinst-comments" style="max-height:220px;overflow-y:auto;margin-bottom:10px">'+renderTaskComments(task)+'</div>'+
+(canComment?
+'<div style="display:flex;gap:6px;align-items:flex-end">'+
+'<textarea id="tinst-msg" rows="2" placeholder="'+(isAdmin?'Reply to staff, give instructions...':'Report update, ask question, flag issue...')+'" style="flex:1;padding:8px;border:1.5px solid '+(isAdmin?'#4F46E5':'#E5E4F0')+';border-radius:8px;font-size:12px;resize:none;font-family:inherit"></textarea>'+
+'<button onclick="(function(){const txt=document.getElementById(\'tinst-msg\')?.value||\'\';if(!txt.trim())return;addTaskComment(\''+id+'\',txt);document.getElementById(\'tinst-msg\').value=\'\';document.getElementById(\'tinst-comments\').innerHTML=renderTaskComments((STATE.taskInstances||[]).find(t=>t.id===\''+id+'\'));toast(\'Message sent\',\'ok\');})()" style="background:'+(isAdmin?'#4F46E5':'#059669')+';color:white;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap">Send</button>'+
+'</div>'
+:'')+
 '</div>';
-if(task.status==='Pending'&&!isAdmin&&isMyTask){
-bodyHtml+='<div style="margin-top:12px"><div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:4px">Add Note / Report Problem</div>'+
-'<textarea id="tinst-note" rows="2" placeholder="Write any update, problem, or note here..." style="width:100%;padding:8px;border:1.5px solid #E5E4F0;border-radius:8px;font-size:12px;resize:none;font-family:inherit">'+(task.note||'')+'</textarea></div>';
-}
 el('tinst-body').innerHTML=bodyHtml;
 const foot=el('tinst-foot'); foot.innerHTML='';
 if(task.status==='Pending'){
-if(!isAdmin&&isMyTask){
-const saveNote=document.createElement('button');
-saveNote.className='btn bs bfl';
-saveNote.innerHTML='Save Note';
-saveNote.onclick=()=>{
-const n=(document.getElementById('tinst-note')?.value||'').trim();
-task.note=n;task._ts=Date.now();
-lsSave('vs_task_instances',STATE.taskInstances);
-toast('Note saved','ok');autoSyncFirebase();
-};
-foot.appendChild(saveNote);
-}
 const doneBtn=document.createElement('button');
 doneBtn.className='btn bsuc bfl';
 doneBtn.innerHTML='\u2713 Mark Complete';
 doneBtn.onclick=()=>{
-if(!isAdmin&&isMyTask){const n=(document.getElementById('tinst-note')?.value||'').trim();if(n)task.note=n;}
+const msg=(document.getElementById('tinst-msg')?.value||'').trim();
+if(msg) addTaskComment(id,msg);
 markTaskDone(id);hideMod('m-task-inst');
 };
 foot.appendChild(doneBtn);
@@ -10143,21 +10304,47 @@ function autoDeleteOldCompletedTasks(){
   }
 }
 // ═══ TASK REPORT ═════════════════════════════════════════════════
+function setTaskReportRange(preset){
+  const now=new Date();
+  const fromEl=document.getElementById('trep-from'),toEl=document.getElementById('trep-to');
+  if(!fromEl||!toEl) return;
+  if(preset==='today'){fromEl.value=today();toEl.value=today();}
+  else if(preset==='week'){
+    const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
+    fromEl.value=mon.toISOString().split('T')[0]; toEl.value=today();
+  }else if(preset==='month'){
+    fromEl.value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-01'; toEl.value=today();
+  }else if(preset==='all'){fromEl.value='';toEl.value='';}
+  renderTaskReport();
+}
 function renderTaskReport(){
   const c=el('task-report-body');if(!c)return;
   const from=el('trep-from')?.value,to=el('trep-to')?.value;
-  const fil=(STATE.taskInstances||[]).filter(t=>(!from||t.generatedDate>=from)&&(!to||t.generatedDate<=to));
-  if(!fil.length){c.innerHTML='<div class="emp"><h3>No tasks in selected range</h3></div>';return;}
+  const allInst=(STATE.taskInstances||[]).filter(t=>!t._deleted);
+  const fil=allInst.filter(t=>(!from||t.generatedDate>=from)&&(!to||t.generatedDate<=to));
+  /* Quick-select row always shown above results */
+  const qrow='<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">'+
+    ['Today','This Week','This Month','All Time'].map((lbl,i)=>{
+      const preset=['today','week','month','all'][i];
+      return '<button onclick="setTaskReportRange(\''+preset+'\')" style="flex:1;min-width:70px;padding:6px 8px;border:1.5px solid #4F46E5;border-radius:8px;background:white;color:#4F46E5;font-size:11px;font-weight:800;cursor:pointer">'+lbl+'</button>';
+    }).join('')+'</div>';
+  if(!fil.length){
+    const hint=from||to?'No tasks found for the selected dates. Try a different range or click All Time.':'No task data yet.';
+    c.innerHTML=qrow+'<div class="emp"><h3>'+hint+'</h3></div>';return;
+  }
   const total=fil.length,done2=fil.filter(t=>t.status==='Done').length;
   const onT=fil.filter(t=>t.isOnTime).length,pct=total?Math.round(done2/total*100):0;
+  const rangeLabel=from?(fmtDate(from)+(to&&to!==from?' \u2192 '+fmtDate(to):'')):'All Time';
   const sM={};
   fil.forEach(t=>{
     if(!sM[t.assignedUserId])sM[t.assignedUserId]={name:t.assignedUserName,total:0,done:0,onTime:0,late:0,pending:0};
     const s=sM[t.assignedUserId];s.total++;
     if(t.status==='Done'){s.done++;t.isOnTime?s.onTime++:s.late++;}else s.pending++;
   });
-  let h='<div style="background:linear-gradient(135deg,#1e1b4b,#4F46E5);border-radius:14px;padding:16px;margin-bottom:14px;color:white">'
-    +'<div style="font-size:16px;font-weight:900;margin-bottom:10px">Task Report'+(from?' — '+fmtDate(from)+(to?' to '+fmtDate(to):''):'')+'</div>'
+  let h=qrow;
+  h+='<div style="background:linear-gradient(135deg,#1e1b4b,#4F46E5);border-radius:14px;padding:16px;margin-bottom:14px;color:white">'
+    +'<div style="font-size:16px;font-weight:900;margin-bottom:4px">Task Report</div>'
+    +'<div style="font-size:12px;opacity:.7;margin-bottom:10px">'+rangeLabel+'</div>'
     +'<div style="display:flex;gap:16px;flex-wrap:wrap">'
     +'<div style="text-align:center"><div style="font-size:28px;font-weight:900">'+total+'</div><div style="font-size:12px;opacity:.7">Total</div></div>'
     +'<div style="text-align:center"><div style="font-size:28px;font-weight:900;color:#4ADE80">'+done2+'</div><div style="font-size:12px;opacity:.7">Done</div></div>'
@@ -10170,9 +10357,10 @@ function renderTaskReport(){
   h+='<div style="font-size:15px;font-weight:800;margin-bottom:10px">Staff Performance</div>';
   Object.values(sM).sort((a,b)=>b.total-a.total).forEach(s=>{
     const p=s.total?Math.round(s.done/s.total*100):0;
+    const grade=p===100?'🏆':p>=80?'✅':p>=60?'⚠️':'❌';
     h+='<div style="border:1.5px solid #E5E7EB;border-radius:12px;padding:12px 14px;margin-bottom:8px;background:white">'
       +'<div style="display:flex;justify-content:space-between;margin-bottom:6px">'
-      +'<div style="font-size:14px;font-weight:800">'+s.name+'</div>'
+      +'<div style="font-size:14px;font-weight:800">'+grade+' '+s.name+'</div>'
       +'<div style="font-size:12px;color:var(--t3)">'+s.done+'/'+s.total+' ('+p+'%)</div></div>'
       +'<div style="background:#F3F4F6;border-radius:5px;height:7px;overflow:hidden;margin-bottom:8px">'
       +'<div style="background:'+(p===100?'#059669':'#4F46E5')+';height:100%;width:'+p+'%"></div></div>'
