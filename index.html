@@ -2615,7 +2615,7 @@ const items=[];
 _ordLots.forEach(lot=>{
 const iid=el('od-lot-'+lot.id+'-i')?.value;
 const rng=el('od-lot-'+lot.id+'-r')?.value;
-const item=STATE.items.find(x=>x.id===iid); if(!item||!rng) return;
+const item=STATE.items.find(x=>x.id===iid); if(!item) return;
 const cut=parseFloat(el('od-lot-'+lot.id+'-cut')?.value)||6;
 item.colours.filter(c=>c.range===rng).forEach(col=>{
 const idx=item.colours.indexOf(col);
@@ -5605,7 +5605,7 @@ const o=STATE.orders.find(x=>x.id===ordId); if(!o) return;
 el('disp-ordno').textContent=o.orderNo;
 const lots=[]; const lotMap={};
 (o.items||[]).forEach(item=>{
-const key=(item.itemName||'')+'|||'+(item.range||'');
+const key=item.lotIndex!==undefined?('li'+item.lotIndex):(item.itemName||'')+'|||'+(item.range||'');
 if(!lotMap[key]){
 const obj={lotNum:lots.length+1,key,itemName:item.itemName||'',range:item.range||'',cut:item.cut||6,items:[]};
 lots.push(obj); lotMap[key]=obj;
@@ -5652,7 +5652,7 @@ html+=
 '</div>'+
 '<div style="text-align:center;font-size:12px;font-weight:700;color:#454460">'+item.pcs+'</div>'+
 '<div style="text-align:center;font-size:11px;font-weight:600;color:'+(alreadySent>0?'#10B981':'#9897B0')+'">'+alreadySent+'</div>'+
-'<input type="number" id="disp-qty-'+item.sku+'" step="1" min="0" max="'+remaining+'" value="'+remaining+'" '+
+'<input type="number" id="disp-qty-'+(item.lotIndex!==undefined?item.sku+'-li'+item.lotIndex:item.sku)+'" step="1" min="0" max="'+remaining+'" value="'+remaining+'" '+
 'data-sku="'+item.sku+'" data-rate="'+item.rate+'" data-cut="'+item.cut+'" '+
 'oninput="calcDispTotal()" '+
 'style="width:100%;text-align:center;border:2px solid #F59E0B;border-radius:7px;padding:4px 2px;font-size:14px;font-weight:800;font-family:monospace;background:#FFFBEB;color:#92400E"/>'+
@@ -5809,7 +5809,7 @@ const dispItems=[];
 let sub=0;
 /* ── Process primary order ── */
 for(const item of o.items){
-const inp=el('disp-qty-'+item.sku); if(!inp) continue;
+const inp=el('disp-qty-'+(item.lotIndex!==undefined?item.sku+'-li'+item.lotIndex:item.sku)); if(!inp) continue;
 const qty=parseInt(inp.value)||0; if(!qty) continue;
 const rate=item.rate||0, cut=item.cut||6;
 const amt=Math.round(qty*cut*rate);
