@@ -2677,7 +2677,7 @@ if(isOpen){
   subLine2='<div class="esub" style="margin-top:2px">'+
     '<span style="font-size:10px;font-weight:800;color:var(--Ad)">OPEN ORDER</span>'+
     ' &bull; Total: '+fmtN(stat.total)+
-    ' &bull; Dispatched: <span style="color:var(--Gd);font-weight:700">'+fmtN(stat.dispatched)+'</span>'+
+    (stat.pending>0?' &bull; Prog Pending: <span style="color:var(--Od);font-weight:700">'+fmtN(stat.pending)+'</span>':'')+(stat.billed>0?' &bull; Dispatched Sarees: <span style="color:var(--Gd);font-weight:700">'+fmtN(stat.billed)+'</span>':'')+
     ' &bull; Remaining: <span style="color:'+(stat.remaining>0?'var(--Rd)':'var(--Gd)')+';font-weight:700">'+fmtN(stat.remaining)+'</span>'+
     (stat.total>0?' ('+pct+'%)':'')+'</div>';
 } else {
@@ -2772,7 +2772,8 @@ function remOpenItem(id){
 function calcProgStats(o){
   const total=(o.openItems||[]).reduce((s,i)=>s+(i.totalPcs||0),0);
   const dispatched=(o.programmes||[]).reduce((s,p)=>s+(p.pcs||0),0);
-  return {total,dispatched,remaining:Math.max(0,total-dispatched)};
+  const billed=(o.programmes||[]).reduce((s,p)=>s+(p.billedPcs||(p.status==='billed'?p.pcs:0)||0),0);
+  return {total,dispatched,billed,pending:Math.max(0,dispatched-billed),remaining:Math.max(0,total-dispatched)};
 }
 
 function openProgModal(ordId){
