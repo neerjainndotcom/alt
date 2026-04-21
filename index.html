@@ -3764,6 +3764,7 @@ editBtn.style.cssText='padding:3px 7px;font-size:10px;margin-top:4px;display:blo
 editBtn.innerHTML='&#x270E; Edit';
 editBtn.onclick=e=>{e.stopPropagation();openEditBill(b.id);};
 erDiv.appendChild(editBtn);
+if(b.payStatus!=='paid'){const payBtn=document.createElement('button');payBtn.className='btn bxs';payBtn.style.cssText='padding:3px 7px;font-size:10px;margin-top:4px;display:block;width:100%;background:#D1FAE5;color:#065F46;border:1px solid #6EE7B7';payBtn.innerHTML='Pay';payBtn.onclick=e=>{e.stopPropagation();openPay(b.id);};erDiv.appendChild(payBtn);}
 const cancelBtn=document.createElement('button');
 cancelBtn.className='btn bd bxs';
 cancelBtn.style.cssText='padding:3px 7px;font-size:10px;margin-top:4px;display:block;width:100%';
@@ -5812,7 +5813,7 @@ const inp=el('disp-qty-'+item.sku); if(!inp) continue;
 const qty=parseInt(inp.value)||0; if(!qty) continue;
 const rate=item.rate||0, cut=item.cut||6;
 const amt=Math.round(qty*cut*rate);
-const taka=Math.round(qty*cut/STATE.settings.avgMtrPerTaka);
+const taka=Math.floor(Math.round(qty*cut*10)/10/STATE.settings.avgMtrPerTaka);
 const ok=await checkAdj(item.itemId,item.colIdx,taka);
 if(!ok) continue;
 deductStock(item.itemId,item.colIdx,taka,'sale',o.custName,billNo);
@@ -5830,7 +5831,7 @@ const inp=el('disp-e'+idx+'-qty-'+item.sku); if(!inp) continue;
 const qty=parseInt(inp.value)||0; if(!qty) continue;
 const rate=item.rate||0, cut=item.cut||6;
 const amt=Math.round(qty*cut*rate);
-const taka=Math.round(qty*cut/STATE.settings.avgMtrPerTaka);
+const taka=Math.floor(Math.round(qty*cut*10)/10/STATE.settings.avgMtrPerTaka);
 const ok=await checkAdj(item.itemId,item.colIdx,taka);
 if(!ok) continue;
 deductStock(item.itemId,item.colIdx,taka,'sale',eo.custName,billNo);
