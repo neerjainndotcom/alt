@@ -5656,7 +5656,7 @@ html+=
 'data-sku="'+item.sku+'" data-rate="'+item.rate+'" data-cut="'+item.cut+'" '+
 'oninput="calcDispTotal()" '+
 'style="width:100%;text-align:center;border:2px solid #F59E0B;border-radius:7px;padding:4px 2px;font-size:14px;font-weight:800;font-family:monospace;background:#FFFBEB;color:#92400E"/>'+
-'<div id="disp-amt-'+item.sku+'" style="text-align:right;font-size:12px;font-weight:700;color:#9897B0">\u2014</div>'+
+'<div id="disp-amt-'+(item.lotIndex!==undefined?item.sku+'-li'+item.lotIndex:item.sku)+'" style="text-align:right;font-size:12px;font-weight:700;color:#9897B0">\u2014</div>'+
 '</div>';
 });
 html+='</div>';
@@ -5759,11 +5759,11 @@ const disc=cust?.discount!=null?cust.discount:STATE.settings.discount||0;
 let sub=0;
 /* Primary order items */
 o.items.forEach(item=>{
-const inp=el('disp-qty-'+item.sku); if(!inp) return;
+const inp=el('disp-qty-'+(item.lotIndex!==undefined?item.sku+'-li'+item.lotIndex:item.sku)); if(!inp) return;
 const qty=parseInt(inp.value)||0;
 const rate=item.rate||0; const cut=item.cut||6;
 const amt=Math.round(qty*cut*rate);
-const amtEl=el('disp-amt-'+item.sku);
+const amtEl=el('disp-amt-'+(item.lotIndex!==undefined?item.sku+'-li'+item.lotIndex:item.sku));
 if(amtEl){ amtEl.textContent=amt>0?('\u20B9'+fmtN(amt)):'\u2014'; amtEl.style.color=amt>0?'var(--P)':'#9897B0'; }
 sub+=amt;
 });
