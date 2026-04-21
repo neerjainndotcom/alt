@@ -3145,8 +3145,7 @@ function openBillLotSelector(ordId){
   let bod='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'+
     '<div style="font-size:11px;font-weight:800;color:var(--Pd);text-transform:uppercase">Select Lots to Bill</div>'+
     '<label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--P);cursor:pointer">'+
-    '<input type="checkbox" id="bls-all" checked style="width:16px;height:16px;accent-color:var(--P)" '+
-    'onchange="document.querySelectorAll('[id^=&quot;bls-&quot;]').forEach(c=>{if(c.id!=='bls-all')c.checked=this.checked})">'+
+    '<input type="checkbox" id="bls-all" checked style="width:16px;height:16px;accent-color:var(--P)">'+
     'All ('+nLots+')</label></div>';
   _grpOrder.forEach((gid,i)=>{
     const g=_grps[gid];
@@ -3170,6 +3169,8 @@ function openBillLotSelector(ordId){
       '</label>';
   });
   el('prog-bod').innerHTML=bod;
+  const bAllCb=document.getElementById('bls-all');
+  if(bAllCb) bAllCb.onchange=function(){document.querySelectorAll('[id^="bls-"]').forEach(function(c){if(c.id!=='bls-all')c.checked=this.checked;},this);};
   /* Switch footer button to bill mode */
   const sb=document.querySelector('#m-prog .shf .btn.bp');
   if(sb){sb.innerHTML='\uD83E\uDDFE Create Bill for Selected';sb.onclick=()=>confirmBillLots(ordId);}
