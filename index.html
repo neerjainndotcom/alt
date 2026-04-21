@@ -5426,7 +5426,7 @@ if(o.type==='open'){
           '<div style="display:flex;gap:4px;flex-shrink:0">'+
           (remaining>0?'<button onclick="hideMod(\'m-ord-det\');billProgramme(\''+o.id+'\',\''+p.id+'\')" class="btn bp bxs" style="font-size:10px">Bill</button>':'<span class="bdg bg-g bxs" style="font-size:9px">\u2713</span>')+
           '<button onclick="editProgEntry(\''+o.id+'\',\''+p.id+'\')" class="btn bs bxs" style="font-size:10px;padding:4px 7px" title="Edit">\u270F\uFE0F</button>'+
-          (p.status!==\'billed\'&&!(p.billedPcs>0)&&!(p.bills||[]).length?'<button onclick="deleteProg(\''+o.id+'\',\''+p.id+'\')" class="btn bd bxs" style="font-size:10px;padding:4px 7px" title="Delete">\uD83D\uDDD1\uFE0F</button>':'')+
+          (p.status!=='billed'&&!(p.billedPcs>0)&&!(p.bills||[]).length?'<button onclick="deleteProg(\''+o.id+'\',\''+p.id+'\')" class="btn bd bxs" style="font-size:10px;padding:4px 7px" title="Delete">\uD83D\uDDD1\uFE0F</button>':'')+
           '</div>'+
           '</div>'+
           ((p.bills||[]).length?
