@@ -5758,13 +5758,12 @@ const gstT=gstType(cust?.gstin||'');
 const disc=cust?.discount!=null?cust.discount:STATE.settings.discount||0;
 let sub=0;
 /* Primary order items */
-o.items.forEach(item=>{
-const inp=el('disp-qty-'+(item.lotIndex!==undefined?item.sku+'-li'+item.lotIndex:item.sku)); if(!inp) return;
+document.querySelectorAll('[id^="disp-qty-"]').forEach(inp=>{
 const qty=parseInt(inp.value)||0;
-const rate=item.rate||0; const cut=item.cut||6;
+const rate=parseFloat(inp.dataset.rate)||0; const cut=parseFloat(inp.dataset.cut)||6;
 const amt=Math.round(qty*cut*rate);
-const amtEl=el('disp-amt-'+(item.lotIndex!==undefined?item.sku+'-li'+item.lotIndex:item.sku));
-if(amtEl){ amtEl.textContent=amt>0?('\u20B9'+fmtN(amt)):'\u2014'; amtEl.style.color=amt>0?'var(--P)':'#9897B0'; }
+const amtEl=document.getElementById(inp.id.replace('disp-qty-','disp-amt-'));
+if(amtEl){amtEl.textContent=amt>0?('₹'+fmtN(amt)):'—';}
 sub+=amt;
 });
 /* Extra orders */
