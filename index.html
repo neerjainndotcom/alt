@@ -3164,7 +3164,7 @@ function openBillLotSelector(ordId){
         '<div class="fw7 sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+g.progs.length+' colour'+(g.progs.length>1?'s':'')+' \u00B7 '+escHtml(clrNames)+'</div>'+
         (isPartial
           ?'<div class="xs" style="color:#D97706;font-weight:700;margin-top:2px">\u26A0\uFE0F Partial: '+billedPcs+' of '+totalPcs+' pcs dispatched \u00B7 <b>'+remaining+' remaining</b></div>'
-          :'<div class="xs ct3">'+fmtDate(g.date)+' \u00B7 '+fmtN(totalPcs)+' pcs'+(g.progs[0]?.rate?' \u00B7 \u20B9'+g.progs[0].rate+'/saree':'')+'</div>'
+          :'<div class="xs ct3">'+fmtDate(g.date)+' \u00B7 '+fmtN(totalPcs)+' pcs'+(g.progs[0]?.rate?' \u00B7 \u20B9'+g.progs[0].rate+'/mtr':'')+'</div>'
         )+
       '</div>'+
       '</label>';
@@ -3189,14 +3189,25 @@ function confirmBillLots(ordId){
   });
   if(!progs.length) return;
   _billOrdId=ordId;
-  _billRows=progs.map(p=>{
-    const prevBilled=(p.billedPcs||0)||(p.bills||[]).reduce((s,b)=>s+(b.pcs||0),0);
-    const remaining=Math.max(0,(p.pcs||0)-prevBilled);
-    const item=STATE.items.find(x=>x.id===p.itemId);
-    return {_progId:p.id,itemId:p.itemId,itemName:p.itemName||(item?.name||''),colIdx:p.colIdx,colourName:p.colourName,sku:p.sku,pcs:remaining,cut:p.cut||6,rate:p.rate||'',_orderedPcs:p.pcs,_billedPcs:prevBilled,_isProgLot:true};
+  _billRows=[];
+  _billLots=[];
+  _billLotId=0;
+  _billFromProgLot=true;
+  _progLotMap={};
+  /* Group progs by itemId+range combination so each group becomes one lot card */
+  const grpMap={};const grpOrder=[];
+  progs.forEach(p=>{
+    const key=(p.itemId||'')+'||'+(p.range||'');
+    if(!grpMap[key]){grpMap[key]={itemId:p.itemId,range:p.range,cut:p.cut||6,progs:[]};grpOrder.push(key);}
+    grpMap[key].progs.push(p);
+  });
+  grpOrder.forEach(key=>{
+    _billLotId++;
+    const g=grpMap[key];
+    _billLots.push({id:_billLotId,_prefill:{itemId:g.itemId,range:g.range,cut:g.cut,progs:g.progs}});
   });
   hideMod('m-prog');
-  buildBillBody({custId:o.custId,custName:o.custName,orderNo:o.orderNo,ordId:ordId});
+  buildBillBody({custId:o.custId,custName:o.custName,orderNo:o.orderNo,ordId:ordId,fromProgLot:true});
   showMod('m-bill');
 }
 function billProgramme(ordId,progId){
@@ -3281,7 +3292,8 @@ async function deleteProg(ordId,progId){
   toast('Lot deleted','ok');
 }
 let _billRows=[{}], _billOrdId=null, _editBillId=null;
-function closeBillMod(){_editBillId=null;hideMod('m-bill');}
+let _billFromProgLot=false, _progLotMap={}; // {lotId: {colIdx: progId}}
+function closeBillMod(){_editBillId=null;_billFromProgLot=false;_progLotMap={};hideMod('m-bill');}
 function openEditBill(billId){
   const bill=STATE.bills.find(b=>b.id===billId);
   if(!bill)return;
@@ -3319,7 +3331,7 @@ const maxNum=nums.length?Math.max(...nums):startNo-1;
 return pfx+String(maxNum+1).padStart(padLen,'0');
 }
 function createStandaloneBill(custId){
-_billOrdId=null; _billRows=[]; _billLots=[]; _billLotId=0;
+_billOrdId=null; _billRows=[]; _billLots=[]; _billLotId=0; _billFromProgLot=false; _progLotMap={};
 const cust=STATE.customers.find(c=>c.id===custId);
 buildBillBody(cust?{custId,custName:cust.name}:null);
 showMod('m-bill');
@@ -3371,15 +3383,15 @@ el('billbod').innerHTML=
 grpBillHtml+
 (custGrp?'':'<div class="fg"><label>Customer *</label><select class="sel" id="bl-c" onchange="detBillGST()"><option value="">Select...</option>'+co+'</select></div>')+
 '<div id="bl-gi" class="xs ct3" style="margin:-8px 0 10px;padding-left:2px"></div>'+
-'<div class="ir2"><div class="fg"><label>Broker</label><select class="sel" id="bl-b"><option value="">No broker</option>'+bo+'</select></div><div class="fg"><label>Discount %</label><input class="inp mono" type="number" id="bl-disc" step="0.1" min="0" max="100" placeholder="0" value="'+(STATE.settings.discount||0)+'" oninput="'+(pre?.ordId?'calcBillTot()':'calcBillLotTotal()')+'"/></div></div>'+
-'<div class="stl" style="padding:8px 0;font-size:10px">Bill Items</div>'+(pre?.ordId?'<div id="bl-rows"></div><button class="btn bs bfl mt8" onclick="addBillRow()">+ Add Item</button>':'<div id="bl-lots"></div><button class="btn bp bfl mt8" onclick="addBillLot()">+ Add Item / LOT</button>')+
+'<div class="ir2"><div class="fg"><label>Broker</label><select class="sel" id="bl-b"><option value="">No broker</option>'+bo+'</select></div><div class="fg"><label>Discount %</label><input class="inp mono" type="number" id="bl-disc" step="0.1" min="0" max="100" placeholder="0" value="'+(STATE.settings.discount||0)+'" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal())+'"/></div></div>'+
+'<div class="stl" style="padding:8px 0;font-size:10px">Bill Items</div>'+((pre?.ordId&&!pre?.fromProgLot)?'<div id="bl-rows"></div><button class="btn bs bfl mt8" onclick="addBillRow()">+ Add Item</button>':'<div id="bl-lots"></div><button class="btn bp bfl mt8" onclick="addBillLot()">+ Add Item / LOT</button>')+
 '<div id="bl-sum" class="bsum mt12"></div>'+
 '<div class="fg mt12"><label>Notes</label><textarea class="ta" id="bl-nt" rows="2" placeholder="Payment terms, delivery notes..."></textarea></div>';
 if(pre?.custId) setTimeout(()=>{
   if(!custGrp&&el('bl-c')) el('bl-c').value=pre.custId;
   detBillGST();
 },50);
-if(pre?.ordId){renderBillRows();}else{_billLots=[];_billLotId=0;setTimeout(()=>addBillLot(),50);}
+if(pre?.ordId&&!pre?.fromProgLot){renderBillRows();}else{if(!pre?.fromProgLot){_billLots=[];_billLotId=0;}setTimeout(()=>{if(pre?.fromProgLot)prefillProgLots();else addBillLot();},80);}
 }
 function detBillGST(){
 const cust=STATE.customers.find(c=>c.id===el('bl-c')?.value);
@@ -3422,6 +3434,36 @@ const s=el('bl-sum');if(s)s.innerHTML='<div class="brow"><span>Subtotal</span><s
 }
 /* ── BILL LOT CARD SYSTEM (standalone bills without an order) ── */
 let _billLots=[],_billLotId=0;
+function prefillProgLots(){
+_billLots.forEach((lot,li)=>{
+  appendBillLotCard(lot,li);
+  const pf=lot._prefill;if(!pf)return;
+  const iSel=el('bl-lot-'+lot.id+'-i');
+  if(iSel&&pf.itemId){iSel.value=pf.itemId;billLotItemChange(lot.id);}
+  setTimeout(()=>{
+    const rSel=el('bl-lot-'+lot.id+'-r');
+    if(rSel&&pf.range){rSel.value=pf.range;billLotRangeChange(lot.id);}
+    const cutI=el('bl-lot-'+lot.id+'-cut');
+    if(cutI&&pf.cut)cutI.value=pf.cut;
+    setTimeout(()=>{
+      const item=STATE.items.find(x=>x.id===pf.itemId);if(!item)return;
+      if(!_progLotMap[lot.id])_progLotMap[lot.id]={};
+      pf.progs.forEach(p=>{
+        const colIdx=p.colIdx;
+        const col=item.colours[colIdx];if(!col)return;
+        const chk=el('bl-lot-'+lot.id+'-ck-'+colIdx);
+        if(chk&&!chk.checked){chk.checked=true;billLotClrToggle(lot.id,colIdx,true);}
+        const prevBilled=(p.billedPcs||0)||(p.bills||[]).reduce((s,b)=>s+(b.pcs||0),0);
+        const remaining=Math.max(0,(p.pcs||0)-prevBilled);
+        const pI=el('bl-lot-'+lot.id+'-p-'+colIdx);if(pI){pI.value=remaining;}
+        const rI=el('bl-lot-'+lot.id+'-r-'+colIdx);if(rI){rI.value=p.rate||'';}
+        _progLotMap[lot.id][colIdx]=p.id;
+      });
+      calcBillLot(lot.id);
+    },100);
+  },60);
+});
+}
 function addBillLot(){
 _billLotId++;const lot={id:_billLotId};_billLots.push(lot);
 appendBillLotCard(lot,_billLots.length-1);
@@ -3677,7 +3719,7 @@ if(editingBill){
 }else{
   STATE.bills.push(newBill);
 }
-_editBillId=null;
+_editBillId=null;_billFromProgLot=false;_progLotMap={};
 if(_billOrdId){
 const o=STATE.orders.find(x=>x.id===_billOrdId);
 if(o){
@@ -3711,6 +3753,7 @@ _billRows.forEach((row,rIdx)=>{
     }
   }
 });
+if(_billFromProgLot&&Object.keys(_progLotMap).length>0&&o){for(const lot of _billLots){const progMap=_progLotMap[lot.id]||{};for(const [colIdxStr,progId] of Object.entries(progMap)){const prog=(o.programmes||[]).find(p=>p.id===progId);if(!prog)continue;const colIdx=parseInt(colIdxStr);const billItem=newBill.items&&newBill.items.find(it=>it.itemId===prog.itemId&&it.colIdx===colIdx);if(!billItem)continue;const dispPcs=billItem.pcs||0;if(!prog.bills)prog.bills=[];prog.bills.push({billId:savedBillId,billNo:savedBillNo,pcs:dispPcs,date:newBill.date});prog.billedPcs=(prog.billedPcs||0)+dispPcs;if(prog.billedPcs>=prog.pcs){prog.status='billed';prog.billId=savedBillId;}else prog.status='partial';anyProgBilled=true;}}}
 if(anyProgBilled&&o){const stat=calcProgStats(o);if(stat.remaining<=0)o.status='fulfilled';}
 lsSave('vs_orders',STATE.orders);
 }
