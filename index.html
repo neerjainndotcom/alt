@@ -3383,7 +3383,7 @@ el('billbod').innerHTML=
 grpBillHtml+
 (custGrp?'':'<div class="fg"><label>Customer *</label><select class="sel" id="bl-c" onchange="detBillGST()"><option value="">Select...</option>'+co+'</select></div>')+
 '<div id="bl-gi" class="xs ct3" style="margin:-8px 0 10px;padding-left:2px"></div>'+
-'<div class="ir2"><div class="fg"><label>Broker</label><select class="sel" id="bl-b"><option value="">No broker</option>'+bo+'</select></div><div class="fg"><label>Discount %</label><input class="inp mono" type="number" id="bl-disc" step="0.1" min="0" max="100" placeholder="0" value="'+(STATE.settings.discount||0)+'" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal())+'"/></div></div>'+
+'<div class="ir2"><div class="fg"><label>Broker</label><select class="sel" id="bl-b"><option value="">No broker</option>'+bo+'</select></div><div class="fg"><label>Discount %</label><input class="inp mono" type="number" id="bl-disc" step="0.1" min="0" max="100" placeholder="0" value="'+(STATE.settings.discount||0)+'" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'"/></div></div>'+
 '<div class="stl" style="padding:8px 0;font-size:10px">Bill Items</div>'+((pre?.ordId&&!pre?.fromProgLot)?'<div id="bl-rows"></div><button class="btn bs bfl mt8" onclick="addBillRow()">+ Add Item</button>':'<div id="bl-lots"></div><button class="btn bp bfl mt8" onclick="addBillLot()">+ Add Item / LOT</button>')+
 '<div id="bl-sum" class="bsum mt12"></div>'+
 '<div class="fg mt12"><label>Notes</label><textarea class="ta" id="bl-nt" rows="2" placeholder="Payment terms, delivery notes..."></textarea></div>';
