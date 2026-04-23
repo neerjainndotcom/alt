@@ -223,7 +223,7 @@ function isDuplicate(collection, matchField, value, editId){
     return itemVal===val;
   });
 }
-const today = () => new Date().toISOString().split('T')[0];
+const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
 const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '';
 const fmtN = n => Math.round(n||0).toLocaleString('en-IN');
 const fmtRs = n => '\u20B9'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -9425,11 +9425,9 @@ if(!STATE.taskTemplates||!STATE.taskTemplates.length) return;
 /* Check ALL instances (including deleted) to avoid regenerating deleted tasks */
 const existing=(STATE.taskInstances||[]).filter(t=>t.generatedDate===dateStr);
 const existingTplIds=new Set(existing.map(t=>t.templateId));
-/* Skip templates that already have a pending overdue instance from a previous day — prevents same task piling up across days */
-const pendingPastTplIds=new Set((STATE.taskInstances||[]).filter(t=>!t._deleted&&t.status==='Pending'&&t.generatedDate<dateStr).map(t=>t.templateId));
 const newInst=[];
 STATE.taskTemplates.filter(t=>t.active&&!t._deleted).forEach(tmpl=>{
-if(existingTplIds.has(tmpl.id)||pendingPastTplIds.has(tmpl.id)) return;
+if(existingTplIds.has(tmpl.id)) return;
 try{ if(!isTaskScheduledOn(tmpl,dateStr)) return; }catch(e){ return; }
 const leave=getActiveLeave(tmpl.assignedUserId,dateStr);
 const assignTo=leave&&leave.substituteId
@@ -9478,7 +9476,7 @@ const myName=(STATE.user?.name||'').toLowerCase();
 const _myRaw=(STATE.taskInstances||[]).filter(t=>!t._deleted
   &&(t.assignedUserId===myId||(myName&&(t.assignedUserName||'').toLowerCase()===myName))
   &&(t.generatedDate===today_s||(t.status==='Pending'&&t.generatedDate<today_s)));
-_myRaw.sort((a,b)=>(a.generatedDate||'').localeCompare(b.generatedDate||''));
+_myRaw.sort((a,b)=>(b.generatedDate||'').localeCompare(a.generatedDate||''));/* newest first — today's instance wins deduplication */
 const _mySeen=new Set();
 let tasks=_myRaw.filter(t=>{if(!t.templateId||t.templateId==='manual')return true;if(_mySeen.has(t.templateId))return false;_mySeen.add(t.templateId);return true;});
 if(query){tasks=tasks.filter(t=>(t.taskName||'').toLowerCase().includes(query)||(t.category||'').toLowerCase().includes(query)||(t.priority||'').toLowerCase().includes(query)||(t.note||'').toLowerCase().includes(query));}
@@ -10622,6 +10620,21 @@ function verifyStockIntegrity(){
 // Run integrity check 10 seconds after load, then every 2 minutes
 setTimeout(()=>{try{verifyStockIntegrity();}catch(e){}},10000);
 setInterval(()=>{if(!window._saveLock&&!window._syncRunning){try{verifyStockIntegrity();}catch(e){}}},120000);
+function mergeTaskInstances(local,remote){
+  if(!remote||!remote.length)return local||[];
+  if(!local||!local.length)return remote.slice();
+  const map=new Map();
+  (local||[]).forEach(item=>map.set(item.id,item));
+  (remote||[]).forEach(item=>{
+    const existing=map.get(item.id);
+    if(!existing){map.set(item.id,item);return;}
+    /* Always keep Done — prevents race condition overwriting Done with Pending */
+    if(existing.status==='Done'&&item.status!=='Done')return;
+    if(item.status==='Done'&&existing.status!=='Done'){map.set(item.id,item);return;}
+    if((item._ts||0)>(existing._ts||0))map.set(item.id,item);
+  });
+  return Array.from(map.values());
+}
 function applyCloudData(d,force=false){
   if(!d)return;
   // Skip if cloud data is not newer than what we already have (unless forced)
@@ -10643,7 +10656,10 @@ function applyCloudData(d,force=false){
   if(localCount<=1){
     keys.forEach(k=>{if(d[k]!==undefined)STATE[k]=d[k];});
   }else{
-    keys.forEach(k=>{if(d[k]!==undefined)STATE[k]=smartMerge(STATE[k],d[k],uniqueKeys[k]);});
+    keys.forEach(k=>{
+      if(d[k]===undefined)return;
+      STATE[k]=k==='taskInstances'?mergeTaskInstances(STATE[k],d[k]):smartMerge(STATE[k],d[k],uniqueKeys[k]);
+    });
   }
   keys.forEach(k=>{STATE[k]=cleanupDeleted(STATE[k]);});
   // Defensive: ensure every item has a colours array — corrupt/partial records from Firebase can omit it
