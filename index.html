@@ -9473,15 +9473,23 @@ const today_s=today();
 const myId=STATE.user?.id;
 const query=(q||el('task-search')?.value||'').trim().toLowerCase();
 const myName=(STATE.user?.name||'').toLowerCase();
-const _myRaw=(STATE.taskInstances||[]).filter(t=>!t._deleted
+/* Today's tasks */
+const todayTasks=(STATE.taskInstances||[]).filter(t=>!t._deleted
   &&(t.assignedUserId===myId||(myName&&(t.assignedUserName||'').toLowerCase()===myName))
-  &&(t.generatedDate===today_s||(t.status==='Pending'&&t.generatedDate<today_s)));
-_myRaw.sort((a,b)=>(b.generatedDate||'').localeCompare(a.generatedDate||''));/* newest first — today's instance wins deduplication */
-const _mySeen=new Set();
-let tasks=_myRaw.filter(t=>{if(!t.templateId||t.templateId==='manual')return true;if(_mySeen.has(t.templateId))return false;_mySeen.add(t.templateId);return true;});
+  &&t.generatedDate===today_s);
+/* Overdue from past days — only if no today's instance exists for same template */
+const todayTplIds=new Set(todayTasks.map(t=>t.templateId).filter(Boolean));
+const overduePast=(STATE.taskInstances||[]).filter(t=>!t._deleted
+  &&(t.assignedUserId===myId||(myName&&(t.assignedUserName||'').toLowerCase()===myName))
+  &&t.status==='Pending'&&t.generatedDate<today_s
+  &&(!t.templateId||!todayTplIds.has(t.templateId)));
+overduePast.sort((a,b)=>(b.generatedDate||'').localeCompare(a.generatedDate||''));
+const _pastSeen=new Set();
+const overdueUniq=overduePast.filter(t=>{if(!t.templateId||t.templateId==='manual')return true;if(_pastSeen.has(t.templateId))return false;_pastSeen.add(t.templateId);return true;});
+let tasks=[...todayTasks,...overdueUniq];
 if(query){tasks=tasks.filter(t=>(t.taskName||'').toLowerCase().includes(query)||(t.category||'').toLowerCase().includes(query)||(t.priority||'').toLowerCase().includes(query)||(t.note||'').toLowerCase().includes(query));}
 if(!tasks.length){
-c.innerHTML='<div class="emp"><div class="emj">\u2705</div><h3>No Tasks Today</h3><p>You have no tasks assigned for today</p></div>';
+c.innerHTML='<div class="emp"><div class="emj">✅</div><h3>No Tasks Today</h3><p>You have no tasks assigned for today</p></div>';
 return;
 }
 const pending=tasks.filter(t=>t.status==='Pending');
@@ -9489,27 +9497,32 @@ const done=tasks.filter(t=>t.status==='Done');
 let html=
 '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">'+
 '<div class="card" style="text-align:center;padding:10px">'+
-'<div style="font-size:20px;font-weight:900;color:var(--P)">'+tasks.length+'</div>'+
-'<div style="font-size:10px;color:var(--t3)">Total</div>'+
+'<div style="font-size:20px;font-weight:900;color:var(--P)">'+todayTasks.length+'</div>'+
+'<div style="font-size:10px;color:var(--t3)">Today</div>'+
 '</div>'+
 '<div class="card" style="text-align:center;padding:10px;background:#FEF3C7">'+
-'<div style="font-size:20px;font-weight:900;color:#D97706">'+pending.length+'</div>'+
+'<div style="font-size:20px;font-weight:900;color:#D97706">'+todayTasks.filter(t=>t.status==="Pending").length+'</div>'+
 '<div style="font-size:10px;color:#92400E">Pending</div>'+
 '</div>'+
 '<div class="card" style="text-align:center;padding:10px;background:#D1FAE5">'+
 '<div style="font-size:20px;font-weight:900;color:#059669">'+done.length+'</div>'+
 '<div style="font-size:10px;color:#065F46">Done</div>'+
 '</div>'+
-'</div>';
+'</div>'+
+(overdueUniq.length?'<div style="background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#DC2626;font-weight:700">⚠️ '+overdueUniq.length+' missed task'+(overdueUniq.length>1?'s':'')+' from previous days — complete or mark done below</div>':'');
 ['High','Medium','Low'].forEach(pri=>{
-const priTasks=tasks.filter(t=>t.priority===pri);
+const priTasks=todayTasks.filter(t=>t.priority===pri);
 if(!priTasks.length) return;
 const pc=TASK_PRIORITY_COLORS[pri]||'#6366F1';
-html+='<div style="font-size:11px;font-weight:800;color:'+pc+';text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px">\u25cf '+pri+' PRIORITY</div>';
-priTasks.forEach(task=>{
-html+=taskCard(task);
+html+='<div style="font-size:11px;font-weight:800;color:'+pc+';text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px">● '+pri+' PRIORITY</div>';
+priTasks.forEach(task=>{html+=taskCard(task);});
 });
+if(overdueUniq.length){
+html+='<div style="font-size:11px;font-weight:800;color:#DC2626;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px">⚠ Missed from Previous Days</div>';
+overdueUniq.forEach(task=>{
+html+='<div style="margin-bottom:4px"><div style="font-size:9px;font-weight:700;color:#DC2626;margin-bottom:2px">📅 From '+fmtDate(task.generatedDate)+'</div>'+taskCard(task)+'</div>';
 });
+}
 c.innerHTML=html;
 updateTaskDot();
 }
