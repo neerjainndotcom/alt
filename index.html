@@ -1888,9 +1888,9 @@ if(qv) ents=ents.filter(e=>(e.itemName||'').toLowerCase().includes(qv)||(e.colou
 const grpMap=new Map();
 ents.forEach(e=>{
 const key=e.voucherNo||(e.date+'|'+e.type+'|'+(e.party||''));
-if(!grpMap.has(key)) grpMap.set(key,{voucherNo:e.voucherNo||'',date:e.date,type:e.type,party:e.party||'',entries:[],totalTaka:0,maxTs:0});
+if(!grpMap.has(key)) grpMap.set(key,{voucherNo:e.voucherNo||'',date:e.date,type:e.type,party:e.party||'',ref:'',entries:[],totalTaka:0,maxTs:0});
 const g=grpMap.get(key);
-g.entries.push(e); g.totalTaka+=e.taka||0;
+g.entries.push(e); g.totalTaka+=e.taka||0; if(e.ref&&!g.ref) g.ref=e.ref;
 if((e._ts||0)>g.maxTs) g.maxTs=e._ts||0;
 if(e.date>g.date) g.date=e.date;
 });
@@ -1903,6 +1903,7 @@ c.innerHTML=groups.map((g,gi)=>{
 const ico=icons[g.type]||'📥';
 const tlbl=typeLabels[g.type]||g.type;
 const vno=g.voucherNo||'—';
+const ref=g.ref||'';
 const uniqItems=[...new Set(g.entries.map(e=>e.itemName).filter(Boolean))];
 const summary=uniqItems.slice(0,2).join(', ')+(uniqItems.length>2?' +more':'');
 const ids=JSON.stringify(g.entries.map(e=>e.id));
@@ -1910,7 +1911,7 @@ return '<div class="inw-vrow" id="ivr-'+gi+'">'+
 '<div class="et" style="cursor:pointer;border-radius:10px 10px 0 0;margin-bottom:0;border-bottom:none" onclick="toggleInwVoucher('+gi+')">'+
 '<div class="ei" style="background:var(--Gl);color:var(--Gd)">'+ico+'</div>'+
 '<div class="eb">'+
-'<div class="etit"><span class="mono fw8 cP">'+vno+'</span><span class="bdg" style="margin-left:6px;background:var(--Pl);color:var(--Pd);font-size:9px">'+tlbl+'</span></div>'+
+'<div class="etit"><span class="mono fw8 cP">'+vno+'</span><span class="bdg" style="margin-left:6px;background:var(--Pl);color:var(--Pd);font-size:9px">'+tlbl+'</span>'+(ref?'<span class="bdg" style="margin-left:4px;background:var(--Tl);color:var(--Td);font-size:9px">Ref: '+ref+'</span>':'')+'</div>'+
 '<div class="esub">'+g.party+' · '+fmtDate(g.date)+'</div>'+
 '<div style="font-size:10px;color:var(--t3);margin-top:2px">'+g.entries.length+(g.entries.length===1?' item':' items')+(summary?' · '+summary:'')+'</div>'+
 '</div>'+
