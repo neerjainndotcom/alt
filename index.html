@@ -1884,15 +1884,16 @@ const wrapper=tw.parentElement;
 if(!el('ir'+i+'-mw')){
 const tog=document.createElement('div');
 tog.className='sg2'; tog.style.cssText='margin:4px 0 8px';
-tog.innerHTML='<button class="sw on" onclick="setIRM(\'t\','+i+',this)">📦 Taka</button><button class="sw" onclick="setIRM(\'m\','+i+',this)">📏 Meters</button>';
+tog.innerHTML='<button class="sw" onclick="setIRM(\'t\','+i+',this)">📦 Taka</button><button class="sw on" onclick="setIRM(\'m\','+i+',this)">📏 Meters</button>';
 wrapper.insertBefore(tog,tw);
 // Wrap taka fg div
 const tDiv=document.createElement('div');
 tDiv.id='ir'+i+'-tw';
 wrapper.insertBefore(tDiv,tw); tDiv.appendChild(tw);
+tDiv.style.display='none';
 // Add meters div
 const mDiv=document.createElement('div');
-mDiv.id='ir'+i+'-mw'; mDiv.style.display='none';
+mDiv.id='ir'+i+'-mw'; mDiv.style.display='';
 mDiv.innerHTML='<div class="fg"><label>Finish Meters</label><input class="inp big mono" type="number" id="ir'+i+'-m" step="1" min="0" placeholder="0" oninput="updIRCM('+i+')"/><div class="cb" id="ir'+i+'-mcalc">— m ÷ '+STATE.settings.avgMtrPerTaka+' = — T</div></div>';
 tDiv.after(mDiv);
 }
