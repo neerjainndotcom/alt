@@ -8104,12 +8104,10 @@ function startFirebaseRealtime(){
     const onData=e=>{
       try{
         if(window._saveLock||window._syncRunning)return;
-        if(window._lastSaveAt&&Date.now()-window._lastSaveAt<4000)return;
         /* Firebase sends partial patch events — don't rely on patch payload.
            Instead fetch the full dataset so nothing gets dropped. */
         clearTimeout(window._fbPullTimer);
         window._fbPullTimer=setTimeout(async()=>{
-          if(window._lastSaveAt&&Date.now()-window._lastSaveAt<4000)return;
           if(window._saveLock||window._syncRunning){return;}
           try{
             const fu=fbUrl('data');if(!fu)return;
@@ -10829,6 +10827,7 @@ function applyCloudData(d,force=false){
   try{renderJWLists();}catch(e){}
   try{renderStock();}catch(e){}
   try{applyRoleUI();}catch(e){}
+  try{renderLedger();}catch(e){}
 }
 function _followupDue(l,td){const eff=_effFollowup(l.followupDate);if(!eff||eff>td)return false;if(eff===td&&l.followupTime){const p=l.followupTime.split(':');const due=new Date();due.setHours(+p[0],+p[1],0,0);return new Date()>=due;}return true;}
 function getLeadsNeedingFollowup(){
