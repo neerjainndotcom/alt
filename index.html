@@ -6694,7 +6694,7 @@ const today_s=today();
 const query=(q||el('lead-search')?.value||'').trim().toLowerCase();
 if(query){leads=leads.filter(l=>(l.name||'').toLowerCase().includes(query)||(l.phone||'').includes(query)||(l.status||'').toLowerCase().includes(query)||(l.assignedName||'').toLowerCase().includes(query)||(l.market||'').toLowerCase().includes(query)||(l.address||'').toLowerCase().includes(query)||(l.interest||'').toLowerCase().includes(query)||(l.source||'').toLowerCase().includes(query));}
 if(tab==='mine'&&STATE.user) leads=leads.filter(l=>l.assignedId===STATE.user.id&&l.status!=='Won'&&l.status!=='Lost');
-else if(tab==='today') leads=leads.filter(l=>(l.followupDate===today_s||l.followupDate<today_s)&&l.status!=='Won'&&l.status!=='Lost'&&l.status!=='Closed');
+else if(tab==='today') leads=leads.filter(l=>(_effFollowup(l.followupDate)<=today_s)&&l.status!=='Won'&&l.status!=='Lost'&&l.status!=='Closed');
 else if(tab==='won') leads=leads.filter(l=>l.status==='Won'||l.status==='Lost');
 else if(tab==='all') leads=leads.filter(l=>l.status!=='Won'&&l.status!=='Lost');
 const c=el('lead-lst-'+tab)||el('lead-lst-all');
@@ -6703,7 +6703,7 @@ if(!leads.length){c.innerHTML='<div class="emp"><div class="emj">&#x1F3AF;</div>
 c.innerHTML='';
 leads.sort((a,b)=>new Date(b.updatedAt||b.createdAt)-new Date(a.updatedAt||a.createdAt)).forEach(lead=>{
 const sc=LEAD_STATUS_COLORS[lead.status]||'#6366F1';
-const overdue=lead.followupDate&&lead.followupDate<today_s&&lead.status!=='Won'&&lead.status!=='Lost'&&lead.status!=='Closed';
+const overdue=lead.followupDate&&_effFollowup(lead.followupDate)<today_s&&lead.status!=='Won'&&lead.status!=='Lost'&&lead.status!=='Closed';
 const row=document.createElement('div');
 row.style.cssText='background:white;border:1.5px solid #E5E4F0;border-radius:12px;margin-bottom:8px;overflow:hidden;cursor:pointer';
 if(overdue) row.style.borderColor='#EF4444';
@@ -9523,7 +9523,9 @@ renderTaskReport();
 }
 });
 }
-function generateTaskInstances(dateStr){
+function _effFollowup(d){if(!d)return d;const hols=STATE.settings?.holidays||[];let dt=new Date(d+'T00:00:00');while(dt.getDay()===0||hols.includes(dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'))){dt.setDate(dt.getDate()+1);}return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
+function generateTaskInstances(dateStr){const _gti_d=new Date(dateStr+'T00:00:00');if(_gti_d.getDay()===0||(STATE.settings?.holidays||[]).includes(dateStr)) return;
+
 if(!STATE.taskTemplates||!STATE.taskTemplates.length) return;
 /* Check ALL instances (including deleted) to avoid regenerating deleted tasks */
 const existing=(STATE.taskInstances||[]).filter(t=>t.generatedDate===dateStr);
@@ -10830,7 +10832,7 @@ function applyCloudData(d,force=false){
 function getLeadsNeedingFollowup(){
   var td=today();
   return(STATE.leads||[]).filter(function(l){
-    return !l._deleted&&l.status!=='Won'&&l.status!=='Lost'&&l.status!=='Closed'&&l.followupDate&&l.followupDate<=td;
+    return !l._deleted&&l.status!=='Won'&&l.status!=='Lost'&&l.status!=='Closed'&&l.followupDate&&_effFollowup(l.followupDate)<=td;
   });
 }
 function renderFollowupAlert(){
@@ -10897,7 +10899,7 @@ const totalActive=totalLeads-totalWon-totalLost;
 const convRate=totalLeads?Math.round(totalWon/totalLeads*100):0;
 const totalSamples=filtered.filter(l=>['Sample Sent','Sent Sample Sets'].includes(l.status)||l.notes?.some(n=>n.activityType==='Sample Sent')).length;
 const neverContacted=filtered.filter(l=>!l.notes||!l.notes.length).length;
-const overdue=filtered.filter(l=>l.followupDate&&l.followupDate<today()&&l.status!=='Won'&&l.status!=='Lost').length;
+const overdue=filtered.filter(l=>l.followupDate&&_effFollowup(l.followupDate)<today()&&l.status!=='Won'&&l.status!=='Lost').length;
 
 let h='';
 
