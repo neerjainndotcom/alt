@@ -6740,7 +6740,7 @@ if(canEdit) b+='<button onclick="event.stopPropagation();editLead(\''+lead.id+'\
 if(lead.assignedId) b+='<button onclick="event.stopPropagation();waLeadToSalesman(\''+lead.id+'\')" '+lbtn+' style="flex:1;padding:8px 4px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#4F46E5;cursor:pointer">WA SM</button>';
 if(lead.brokerId) b+='<button onclick="event.stopPropagation();waLeadToBroker(\''+lead.id+'\')" '+lbtn+' style="flex:1;padding:8px 4px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#D97706;cursor:pointer">WA Broker</button>';
 if(isAdmin&&lead.status!=='Won'&&lead.status!=='Closed') b+='<button onclick="event.stopPropagation();convertLead(\''+lead.id+'\')" '+lbtn+' style="flex:1;padding:8px 4px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#10B981;cursor:pointer">Convert</button>';
-if((lead.status==='Won'||lead.status==='Lost'||lead.status==='Closed')&&(isAdmin||hasPerm('leads_edit'))) b+='<button onclick="event.stopPropagation();if(confirm(\'Delete this lead?\'))deleteLead(\''+lead.id+'\')" '+lbtn+' style="flex:1;padding:8px 4px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#EF4444;cursor:pointer">🗑 Delete</button>';
+if((lead.status==='Won'||lead.status==='Lost'||lead.status==='Closed')&&(isAdmin||hasPerm('leads_edit'))) b+='<button onclick="event.stopPropagation();deleteLead(\''+lead.id+'\')" '+lbtn+' style="flex:1;padding:8px 4px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#EF4444;cursor:pointer">🗑 Delete</button>';
 return b;
 })()+
 '</div>';
