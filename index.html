@@ -1833,6 +1833,7 @@ _inRows.forEach((row,i)=>{
   if(row._tp){ const tp=el('ir'+i+'-tp'); if(tp) tp.value=row._tp; }
   if(row._taka||row._tp) updIRC(i);
 });
+if(_inType==='mill') applyMillMode();
 }
 function updIRC(i){
 const t=parseInt(el('ir'+i+'-t')?.value)||0;
@@ -1851,7 +1852,10 @@ const fullNote=gpNo?('GP: '+gpNo+(notes?' | '+notes:'')):notes;
 let saved=0;
 for(let i=0;i<_inRows.length;i++){
 const sel=getSel('ir'+i); if(!sel) continue;
-const taka=parseInt(el('ir'+i+'-t')?.value)||0;
+const _mw=el('ir'+i+'-mw');
+const _mMode=_inType==='mill'&&_mw&&_mw.style.display!=='none';
+const _mVal=_mMode?(parseInt(el('ir'+i+'-m')?.value)||0):0;
+const taka=_mMode?Math.round(_mVal/(STATE.settings.avgMtrPerTaka||90)):(parseInt(el('ir'+i+'-t')?.value)||0);
 const tpCount=parseInt(el('ir'+i+'-tp')?.value)||0;
 const avgT=STATE.settings.avgMtrPerTaka||90;
 const avgTP=STATE.settings.avgMtrPerTP||45;
@@ -1870,6 +1874,43 @@ persist(); hideMod('m-inw'); renderDash(); renderInRec();
 toast(vno+' saved - '+saved+' SKU(s)','ok');
 api('saveEntry',{entries:STATE.entries,items:STATE.items});
 }
+function applyMillMode(){
+const n=_inRows.length;
+for(let i=0;i<n;i++){
+const tw=el('ir'+i+'-t')?.closest('.fg');
+if(!tw) continue;
+const wrapper=tw.parentElement;
+// Add toggle buttons before taka fg div if not already added
+if(!el('ir'+i+'-mw')){
+const tog=document.createElement('div');
+tog.className='sg2'; tog.style.cssText='margin:4px 0 8px';
+tog.innerHTML='<button class="sw on" onclick="setIRM(\'t\','+i+',this)">📦 Taka</button><button class="sw" onclick="setIRM(\'m\','+i+',this)">📏 Meters</button>';
+wrapper.insertBefore(tog,tw);
+// Wrap taka fg div
+const tDiv=document.createElement('div');
+tDiv.id='ir'+i+'-tw';
+wrapper.insertBefore(tDiv,tw); tDiv.appendChild(tw);
+// Add meters div
+const mDiv=document.createElement('div');
+mDiv.id='ir'+i+'-mw'; mDiv.style.display='none';
+mDiv.innerHTML='<div class="fg"><label>Finish Meters</label><input class="inp big mono" type="number" id="ir'+i+'-m" step="1" min="0" placeholder="0" oninput="updIRCM('+i+')"/><div class="cb" id="ir'+i+'-mcalc">— m ÷ '+STATE.settings.avgMtrPerTaka+' = — T</div></div>';
+tDiv.after(mDiv);
+}
+}
+}
+function setIRM(mode,i,btn){
+const tw=el('ir'+i+'-tw'),mw=el('ir'+i+'-mw'); if(!tw||!mw) return;
+tw.style.display=mode==='t'?'':'none';
+mw.style.display=mode==='m'?'':'none';
+btn.closest('.sg2').querySelectorAll('.sw').forEach(b=>b.classList.remove('on')); btn.classList.add('on');
+}
+function updIRCM(i){
+const m=parseInt(el('ir'+i+'-m')?.value)||0;
+const avgT=STATE.settings.avgMtrPerTaka||90;
+const t=Math.round(m/avgT);
+const cd=el('ir'+i+'-mcalc');
+if(cd) cd.textContent=m+'m ÷ '+avgT+' = '+t+' T';
+}
 function renderInRec(q){
 const c=el('inrec'); if(!c) return;
 const icons={mill:'🏭',jobwork:'⚙️',exchange:'🔄',transfer:'↩️'};
@@ -1884,7 +1925,7 @@ if(dfrom) ents=ents.filter(e=>e.date>=dfrom);
 if(dto) ents=ents.filter(e=>e.date<=dto);
 if(fparty) ents=ents.filter(e=>(e.party||'').toLowerCase().includes(fparty));
 if(ftype) ents=ents.filter(e=>e.type===ftype);
-if(qv) ents=ents.filter(e=>(e.itemName||'').toLowerCase().includes(qv)||(e.colourName||'').toLowerCase().includes(qv)||(e.party||'').toLowerCase().includes(qv)||(e.sku||'').toLowerCase().includes(qv)||(e.voucherNo||'').toLowerCase().includes(qv));
+if(qv) ents=ents.filter(e=>(e.itemName||'').toLowerCase().includes(qv)||(e.colourName||'').toLowerCase().includes(qv)||(e.party||'').toLowerCase().includes(qv)||(e.sku||'').toLowerCase().includes(qv)||(e.voucherNo||'').toLowerCase().includes(qv)||(e.ref||'').toLowerCase().includes(qv));
 const grpMap=new Map();
 ents.forEach(e=>{
 const key=e.voucherNo||(e.date+'|'+e.type+'|'+(e.party||''));
