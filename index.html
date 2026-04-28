@@ -54,7 +54,7 @@
 </div></div>
 <div class="ov" id="m-rjw" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Receive from Job Work</h3><button class="btn bgh bsm" onclick="hideMod('m-rjw')">✕</button></div></div><div class="shb" id="rjwbod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-rjw')">Cancel</button><button class="btn bsuc bfl" onclick="saveRecvJW()">Confirm Receipt</button></div>
 </div></div>
-<div class="ov" id="m-ord" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px" id="ordtit">New Sale Order</p><div style="font-size:28px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace;letter-spacing:-0.5px;line-height:1" id="ordno">—</div></div><div style="display:flex;gap:6px"><button class="btn bs bsm" onclick="showScan()">📷 Scan</button><button class="btn bgh bsm" onclick="hideMod('m-ord')">✕</button></div></div></div><div class="shb" id="ordbod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-ord')">Cancel</button><button class="btn bp bfl" onclick="saveOrd()">Save Order</button></div>
+<div class="ov" id="m-ord" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px" id="ordtit">New Sale Order</p><div style="font-size:28px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace;letter-spacing:-0.5px;line-height:1" id="ordno">—</div></div><div style="display:flex;gap:6px"><button class="btn bs bsm" onclick="showScan()">📷 Scan</button><button class="btn bgh bsm" onclick="hideMod('m-ord')">✕</button></div></div></div><div class="shb" id="ordbod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-ord')">Cancel</button><button class="btn bt bfl" onclick="openDirectBillFromOrder()" style="margin-right:4px;">⚡ Direct Bill</button><button class="btn bp bfl" onclick="saveOrd()">Save Order</button></div>
 </div></div>
 <div class="ov" id="m-bill" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="billtit">New Tax Invoice</h3><button class="btn bgh bsm" onclick="closeBillMod()">✕</button></div></div><div class="shb" id="billbod"></div><div class="shf"><button class="btn bgh bfl" onclick="closeBillMod()">Cancel</button><button class="btn bp bfl" id="bill-save-btn" onclick="saveBill()">Create Bill</button></div>
 </div></div>
@@ -256,10 +256,10 @@ staffTypes:[
 permPresets:{
 salesman:       {dash:1,sales_view:1,sales_order:1,sales_bill:0,sales_wa:1,inward:0,jw:0,masters_view:1,masters_edit:0,admin:0},
 jr_accountant:  {dash:1,sales_view:1,sales_order:1,sales_bill:1,sales_wa:1,inward:1,jw:0,masters_view:1,masters_edit:0,admin:0},
-sr_accountant:  {dash:1,sales_view:1,sales_order:1,sales_bill:1,sales_wa:1,inward:1,jw:1,masters_view:1,masters_edit:1,admin:0},
+sr_accountant:  {dash:1,sales_view:1,sales_order:1,sales_bill:1,sales_wa:1,inward:1,jw:1,masters_view:1,masters_edit:1,admin:0,delete_entry:1},
 store_manager:  {dash:1,sales_view:1,sales_order:0,sales_bill:0,sales_wa:0,inward:1,jw:1,masters_view:1,masters_edit:1,admin:0},
 mkt_coordinator: {dash:1,sales_view:0,sales_order:1,sales_bill:0,sales_wa:0,inward:0,jw:0,masters_view:0,masters_edit:0,admin:0,leads_edit:1,leads_view:1,reports:1,research:1},
-admin:          {dash:1,sales_view:1,sales_order:1,sales_bill:1,sales_wa:1,inward:1,jw:1,masters_view:1,masters_edit:1,admin:1}
+admin:          {dash:1,sales_view:1,sales_order:1,sales_bill:1,sales_wa:1,inward:1,jw:1,masters_view:1,masters_edit:1,admin:1,delete_entry:1}
 }
 }
 };
@@ -981,7 +981,7 @@ function saveMarketPrice(){
   if(!prod||!rateVal){alert('Enter product and market rate');return;}
   if(!STATE.marketPrices)STATE.marketPrices=[];
   STATE.marketPrices.push({id:Date.now().toString(),product:prod,rate:parseFloat(rateVal),ours:parseFloat(oursVal||0),color:color,note:note,date:today(),by:STATE.user?STATE.user.name:''});
-  saveState();renderResearch();
+  persist();renderResearch();
 }
 function renderResCusts(body){
   var sales=STATE.sales||[];
@@ -2409,6 +2409,40 @@ const card=el('od-lot-'+id);
 if(card) card.remove();
 calcOrdTot();
 }
+function dupOrdLot(srcId){
+  const niSel=el('od-lot-'+srcId+'-i'); if(!niSel) return;
+  const iVal=niSel.value;
+  const rSel=el('od-lot-'+srcId+'-r'); const rVal=rSel?rSel.value:'';
+  const cutEl=el('od-lot-'+srcId+'-cut'); const cVal=cutEl?cutEl.value:'';
+  const rows=[];
+  for(let i=0;;i++){
+    const ck=el('od-lot-'+srcId+'-ck-'+i); if(!ck) break;
+    const pEl=el('od-lot-'+srcId+'-p-'+i);
+    const rtEl=el('od-lot-'+srcId+'-rt-'+i);
+    rows.push({checked:ck.checked,pcs:pEl?pEl.value:'',rate:rtEl?rtEl.value:''});
+  }
+  _lotId++;const newId=_lotId;_ordLots.push({id:newId});
+  const c=el('od-lots'); if(!c) return;
+  appendOrdLotCard({id:newId},_ordLots.length-1,c);
+  setTimeout(()=>{
+    const ni=el('od-lot-'+newId+'-i');
+    if(ni&&iVal){ni.value=iVal;ni.dispatchEvent(new Event('change'));}
+    setTimeout(()=>{
+      const nr=el('od-lot-'+newId+'-r');
+      if(nr&&rVal){nr.value=rVal;nr.dispatchEvent(new Event('change'));}
+      const nc=el('od-lot-'+newId+'-cut'); if(nc&&cVal) nc.value=cVal;
+      setTimeout(()=>{
+        rows.forEach((row,i)=>{
+          const ck=el('od-lot-'+newId+'-ck-'+i); if(ck) ck.checked=row.checked;
+          const pEl=el('od-lot-'+newId+'-p-'+i); if(pEl) pEl.value=row.pcs;
+          const rtEl=el('od-lot-'+newId+'-rt-'+i); if(rtEl) rtEl.value=row.rate;
+        });
+        calcOrdTot();
+        const card=el('od-lot-'+newId); if(card) card.scrollIntoView({behavior:'smooth',block:'nearest'});
+      },300);
+    },200);
+  },150);
+}
 function updateOrdDefCalc(){
 const pcs=parseInt(el('od-def-pcs')?.value)||0;
 const cut=parseFloat(el('od-def-cut')?.value)||6;
@@ -2511,6 +2545,7 @@ row1.innerHTML=
 '<input type="number" step="0.25" id="od-lot-'+lot.id+'-cut" value="'+(parseFloat(el('od-def-cut')?.value)||6)+'" oninput="calcOrdLot('+lot.id+')" style="width:50px;text-align:center;border:1.5px solid '+lc.border+';border-radius:7px;padding:4px 4px;font-size:13px;font-weight:800;font-family:monospace;color:'+lc.label+';background:white"/>'+
 '<span style="font-size:10px;font-weight:700;color:'+lc.label+'">m</span>'+
 '</div>'+
+'<button onclick="dupOrdLot('+lot.id+')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(14,165,233,.15);color:#0EA5E9;font-size:15px;cursor:pointer;flex-shrink:0;margin-right:4px;" title="Duplicate lot">⊕</button>'+
 (li>0?'<button onclick="remOrdLot('+lot.id+')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(220,38,38,.15);color:#DC2626;font-size:13px;cursor:pointer;flex-shrink:0;font-weight:700">&#x2715;</button>':'');
 hdr.appendChild(row1);
 const iSel=row1.querySelector('#od-lot-'+lot.id+'-i');
@@ -2772,6 +2807,7 @@ t.innerHTML=
 '<span style="font-size:13px;font-weight:700;color:#3730A3">&#x1F4CB; Total Sarees Ordered</span>'+
 '<span style="font-size:22px;font-weight:900;color:#4F46E5;font-family:monospace">'+fmtN(totalSarees)+' pcs</span>'+
 '</div>'+
+(()=>{if(!_ordId)return '';const _bp=(STATE.bills||[]).filter(b=>b.ordId===_ordId).reduce((s,b)=>s+(b.items||[]).reduce((ss,it)=>ss+(it.pcs||0),0),0);const _pp=Math.max(0,totalSarees-_bp);return _bp>0?'<div class="brow" style="margin-bottom:4px"><span class="fw7" style="font-size:12px;color:var(--t3)">Billed</span><span class="mono fw7" style="font-size:14px;color:#E65100">'+fmtN(_bp)+'</span> <span class="fw7" style="font-size:12px;color:var(--t3)">Pending</span><span class="mono fw7" style="font-size:14px;color:#27AE60">'+fmtN(_pp)+'</span></div>':'';})()+
 '<div class="brow" style="margin-bottom:6px"><span class="fw7">Total Meters</span><span class="mono fw7" style="font-size:14px;color:#0891B2">'+fmtN(totalMtrs)+' m</span></div>'+
 (grandTotal>0?'<div class="brow"><span class="fw7">Taxable Amount</span><span class="mono fw7" style="font-size:16px">\u20B9'+fmtN(grandTotal)+'</span></div>':'')+
 '<div style="margin-top:8px;padding:8px;background:var(--Pl);border-radius:8px">'+
@@ -3396,6 +3432,7 @@ function openBillLotSelector(ordId){
 }
 function confirmBillLots(ordId){
   const o=STATE.orders.find(x=>x.id===ordId); if(!o) return;
+  if(_billFromProgLot){toast('Save or cancel the open bill form first','er');return;}
   const checked=[...document.querySelectorAll('[id^="bls-"]:checked')].filter(c=>c.id!=='bls-all');
   if(!checked.length){toast('Select at least one lot','er');return;}
   const selectedGids=checked.map(cb=>cb.value);
@@ -3426,6 +3463,7 @@ function confirmBillLots(ordId){
   hideMod('m-prog');
   buildBillBody({custId:o.custId,custName:o.custName,orderNo:o.orderNo,ordId:ordId,fromProgLot:true});
   showMod('m-bill');
+  toast('Bill form ready – check items and tap Save Bill','ok');
 }
 function billProgramme(ordId,progId){
   const o=STATE.orders.find(x=>x.id===ordId); if(!o) return;
@@ -3511,6 +3549,14 @@ async function deleteProg(ordId,progId){
 let _billRows=[{}], _billOrdId=null, _editBillId=null;
 let _billFromProgLot=false, _progLotMap={}; // {lotId: {colIdx: progId}}
 function closeBillMod(){_editBillId=null;_billFromProgLot=false;_progLotMap={};hideMod('m-bill');}
+function openDirectBillFromOrder(){
+  if(!_ordId){toast('Save the order first before creating a bill','er');return;}
+  const o=STATE.orders.find(x=>x.id===_ordId); if(!o) return;
+  buildBillBody({custId:o.custId,custName:o.custName,orderNo:o.orderNo,ordId:_ordId});
+  hideMod('m-ord');
+  showMod('m-bill');
+  toast('Direct bill form ready – add items and Save Bill','ok');
+}
 function openEditBill(billId){
   const bill=STATE.bills.find(b=>b.id===billId);
   if(!bill)return;
@@ -3619,15 +3665,26 @@ if(cust?.defaultBrokerId){const bs=el('bl-b');if(bs)bs.value=cust.defaultBrokerI
 const discFld=el('bl-disc');
 if(discFld){const d=cust?.discount!=null?cust.discount:STATE.settings.discount||0;discFld.value=d;}
 if(_billOrdId) calcBillTot(); else calcBillLotTotal();
+const _bbl=el('bl-b');if(_bbl&&cust&&cust.defaultBrokerId){_bbl.value=cust.defaultBrokerId;}
 }
 function addBillRow(){_billRows.push({});renderBillRows();}
 function remBillRow(i){_billRows.splice(i,1);renderBillRows();}
+function dupBillRow(i){
+  const row=_billRows[i]; if(row==null) return;
+  const pEl=el('bl'+i+'-p'), rEl=el('bl'+i+'-r');
+  const copy=Object.assign({},row);
+  if(pEl) copy.pcs=pEl.value;
+  if(rEl) copy.rate=rEl.value;
+  _billRows.splice(i+1,0,copy);
+  renderBillRows();
+}
 function renderBillRows(){
 el('bl-rows').innerHTML=_billRows.map((row,i)=>{
 const partialInfo=(row._orderedPcs!=null)
   ?'<div style="font-size:10px;color:var(--t3);margin-bottom:4px">'+(row._isProgLot?'Programmed':'Ordered')+': <b>'+row._orderedPcs+'</b> pcs'+(row._billedPcs>0?' \u00B7 Already dispatched: <b>'+row._billedPcs+'</b> pcs \u00B7 Remaining: <b>'+(row._orderedPcs-row._billedPcs)+'</b>':'')+' pcs</div>'
   :'';
-return '<div class="sr su"><div class="srh"><span>Item '+(i+1)+'</span>'+(i>0?'<button onclick="remBillRow('+i+')" class="btn bd bxs">✕</button>':'')+'</div>'+
+return '<div class="sr su"><div class="srh"><span>Item '+(i+1)+'</span>'+'<button onclick="dupBillRow('+i+')" class="btn bt bxs" title="Duplicate row" style="font-size:11px;padding:2px 6px;">⊕</button>'+
+(i>0?'<button onclick="remBillRow('+i+')" class="btn bd bxs">✕</button>':'')+'</div>'+
 (row.itemId?'<div class="flx ic g8" style="margin-bottom:4px"><span class="sku">'+row.sku+'</span><span class="fw7 sm">'+row.itemName+' - '+row.colourName+'</span><span class="stk ok">'+getStk(row.itemId,row.colIdx)+'T</span></div>':buildCascade('bl'+i,true))+
 partialInfo+
 '<div class="ir2"><div class="fg"><label>Dispatch Now (Sarees)</label><input class="inp big mono" type="number" id="bl'+i+'-p" step="1" value="'+(row.pcs||'')+'" oninput="calcBillRow('+i+')"/></div><div class="fg"><label>Rate \u20B9/Saree</label><input class="inp" type="number" id="bl'+i+'-r" step="0.01" value="'+(row.rate||'')+'" oninput="calcBillRow('+i+')"/></div></div>'+
@@ -11342,7 +11399,7 @@ function saveSKUDirect(itemId,colIdx){
   col.name=newColName;
   col.code=newCode;
   col.sku=genSKU(item.name,newRange,newColName,newCode);
-  saveState();
+  persist();
   var ov=document.getElementById('sku-edit-ov');
   if(ov)ov.remove();
   renderAllSKUs();
