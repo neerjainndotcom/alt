@@ -1603,7 +1603,7 @@ const id=el('itm-id').value;
 if(!id&&isDuplicate(STATE.items,'name',name)){toast('Item "'+name+'" already exists','er');return;}
 if(id){
 const item=STATE.items.find(i=>i.id===id);
-if(item){item.name=name;item.hsn=el('itm-hsn').value.trim();item.colours.forEach(c=>{c.sku=genSKU(name,c.range,c.name,c.code);});}
+if(item){const oldName=item.name;item.name=name;item.hsn=el('itm-hsn').value.trim();item.colours.forEach(c=>{c.sku=genSKU(name,c.range,c.name,c.code);});if(oldName&&oldName!==name){['bills','orders','jobWork'].forEach(function(arr){(STATE[arr]||[]).forEach(function(rec){(rec.items||[]).forEach(function(it){if(it.product===oldName)it.product=name;if(it.name===oldName)it.name=name;});});});(STATE.entries||[]).forEach(function(e){if(e.product===oldName)e.product=name;});}}
 }else{
 const item={id:uid(),name,hsn:el('itm-hsn').value.trim(),colours:[]};
 (window._pRng||[]).forEach(({rName,cols})=>{cols.forEach(c=>{c.sku=genSKU(name,rName,c.name,c.code);item.colours.push(c);});});
