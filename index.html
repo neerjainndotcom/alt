@@ -3053,7 +3053,7 @@ function openProgModal(ordId){
   if(progs.length){
     bod+='<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 6px">Previous Lots</div>';
     bod+='<div style="border-radius:10px;overflow:hidden;border:1px solid var(--br)">';
-    let _cLot=null;progs.slice().sort((a,b)=>(a.lotNum||1)-(b.lotNum||1)).forEach(p=>{const _ln=p.lotNum||1;if(_ln!==_cLot){_cLot=_ln;const _lh=document.createElement('div');_lh.className='xs fw7 cP';_lh.style.cssText='padding:6px 4px 2px;margin-top:8px;border-top:2px solid var(--P)';_lh.textContent='LOT '+_ln;wrap.appendChild(_lh);}
+    let _cLot=null;progs.slice().sort((a,b)=>(a.lotNum||1)-(b.lotNum||1)).forEach(p=>{const _ln=p.lotNum||1;if(_ln!==_cLot){_cLot=_ln;bod+='<div class="xs fw7 cP" style="padding:6px 4px 2px;margin-top:8px;border-top:2px solid var(--P)">LOT '+_ln+'</div>';}
       bod+='<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--br)">'+
         '<span class="bdg '+(p.status==='billed'?'bg-g':'bg-a')+'" style="flex-shrink:0;font-size:9px">'+p.status.toUpperCase()+'</span>'+
         '<div style="flex:1;min-width:0">'+
