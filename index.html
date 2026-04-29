@@ -3570,6 +3570,7 @@ function openEditBill(billId){
   buildBillBody(o||{custId:bill.custId,custName:bill.custName,orderNo:bill.ordNo});
   /* Pre-fill header fields after the modal DOM is built */
   setTimeout(()=>{
+    _editBillId=bill.id;
     if(el('billtit'))el('billtit').textContent='Edit Invoice';
     if(el('bill-save-btn'))el('bill-save-btn').textContent='Update Bill';
     if(el('bl-bno'))el('bl-bno').value=bill.billNo;
@@ -3591,7 +3592,7 @@ const startNo=parseInt(STATE.settings.billStartNo)||1;
 const nums=STATE.bills.map(b=>{
   const n=parseInt((b.billNo||'').replace(pfx,''))||0; return n;
 }).filter(n=>n>0);
-const maxNum=nums.length?Math.max(...nums):startNo-1;
+const maxNum=Math.max(nums.length?Math.max(...nums):0,startNo-1);
 return pfx+String(maxNum+1).padStart(padLen,'0');
 }
 function createStandaloneBill(custId){
@@ -3934,7 +3935,7 @@ if(editingBill){
 }
 if(!bno){toast('Enter invoice number','er');return;}
 /* Duplicate number check — another device may have created same number simultaneously */
-if(STATE.bills.find(b=>b.billNo===bno)){bno=nextBillNo();}
+if(STATE.bills.find(b=>b.billNo===bno&&b.id!==_editBillId)){bno=nextBillNo();}
 if(!_billOrdId||_billLots.length>0){
 /* Standalone or programme bill — read from lot cards */
 for(const lot of _billLots){
@@ -6234,7 +6235,7 @@ o.status=totalDispatched>=totalOrdered?'fulfilled':'billed';
 o._ts=Date.now();
 }
 persist(); renderBills(); renderOrders(); renderDash();
-toast('Bill '+bill.billNo+' deleted'+(v?' - stock returned':''),'ok');
+toast('Bill '+bill.billNo+' deleted'+(v?' - stock returned':'')+(o?' — order returned to Pending':''),'ok');
 res();
 };
 el('cy').onclick=()=>done(true);
