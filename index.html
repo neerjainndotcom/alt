@@ -4145,7 +4145,7 @@ function _recheckOrderStatuses(){
 let changed=false;
 STATE.orders.filter(o=>!o._deleted).forEach(o=>{
 if(o.status!=='pending'&&o.status!=='billed') return;
-const totalOrdered=(o.items||[]).reduce((s,i)=>s+(i.pcs||0),0);
+const totalOrdered=(o.items||o.openItems||[]).reduce((s,i)=>s+(i.pcs||i.totalPcs||0),0);
 const activeBills=(o.bills||[]).filter(b=>b.status!=='cancelled'&&!b._deleted);
 if(!activeBills.length) return;
 const totalDispatched=activeBills.reduce((s,b)=>s+(b.items||[]).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
@@ -4154,7 +4154,7 @@ if(totalDispatched>=totalOrdered){o.status='fulfilled';o._ts=Date.now();changed=
 /* Also check STATE.bills for orders that have all items billed */
 STATE.orders.filter(o=>!o._deleted).forEach(o=>{
 if(o.status!=='pending'&&o.status!=='billed') return;
-const totalOrdered=(o.items||[]).reduce((s,i)=>s+(i.pcs||0),0);
+const totalOrdered=(o.items||o.openItems||[]).reduce((s,i)=>s+(i.pcs||i.totalPcs||0),0);
 const extBills=liveBills().filter(b=>b.ordId===o.id&&b.status!=='cancelled');
 if(!extBills.length) return;
 const totalDispatched=extBills.reduce((s,b)=>s+(b.items||[]).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
@@ -6179,7 +6179,7 @@ payStatus:'unpaid',amtPaid:0,status:'active',by:STATE.user?.name||'',fy:STATE.se
 if(!o.bills) o.bills=[];
 o.bills.push(bill);
 STATE.bills.push(bill);
-const totalOrdered=(o.items||[]).reduce((s,i)=>s+(i.pcs||0),0);
+const totalOrdered=(o.items||o.openItems||[]).reduce((s,i)=>s+(i.pcs||i.totalPcs||0),0);
 const totalDispatched=o.bills.filter(b=>b.status!=='cancelled').reduce((s,b)=>s+(b.items||[]).filter(bi=>bi.srcOrdId===o.id||!bi.srcOrdId).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
 o.status=totalDispatched>=totalOrdered?'fulfilled':'billed';
 /* ── Update each extra order ── */
@@ -6225,7 +6225,7 @@ o.bills=(o.bills||[]).filter(b=>b.id!==billId);
 const activeBills=STATE.bills.filter(b=>b.ordId===bill.ordId&&!b._deleted&&b.status!=='cancelled'&&b.status!=='deleted');
 if(activeBills.length===0) o.status='pending';
 else {
-const totalOrdered=(o.items||[]).reduce((s,i)=>s+(i.pcs||0),0);
+const totalOrdered=(o.items||o.openItems||[]).reduce((s,i)=>s+(i.pcs||i.totalPcs||0),0);
 const totalDispatched=activeBills.reduce((s,b)=>s+(b.items||[]).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
 o.status=totalDispatched>=totalOrdered?'fulfilled':'billed';
 }
@@ -6273,7 +6273,7 @@ if(o&&o.status!=='cleared'){
 const activeBills=liveBills().filter(b=>b.ordId===bill.ordId&&b.status!=='cancelled');
 if(activeBills.length===0) o.status='pending';
 else {
-const totalOrdered=(o.items||[]).reduce((s,i)=>s+(i.pcs||0),0);
+const totalOrdered=(o.items||o.openItems||[]).reduce((s,i)=>s+(i.pcs||i.totalPcs||0),0);
 const totalDispatched=activeBills.reduce((s,b)=>s+(b.items||[]).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
 o.status=totalDispatched>=totalOrdered?'fulfilled':'billed';
 }
