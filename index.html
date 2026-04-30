@@ -3580,6 +3580,7 @@ function openEditBill(billId){
     if(el('bl-b'))el('bl-b').value=bill.brkId||'';
     if(el('bl-disc'))el('bl-disc').value=bill.discountPct||0;
     if(el('bl-nt'))el('bl-nt').value=bill.notes||'';
+    const _rr=_billRows.slice();if(_rr.length>0){const _gg={};_rr.forEach(r=>{const k=(r.itemId||'')+('|'+(r.range||''));if(!_gg[k])_gg[k]={itemId:r.itemId,range:r.range,cut:r.cut||0,items:[]};_gg[k].items.push(r);});Object.values(_gg).forEach((g,gi)=>{const lid=gi+1;if(gi>0)addBillLot();const is=el('bl-lot-'+lid+'-i');if(is){is.value=g.itemId;billLotItemChange(lid);}setTimeout(()=>{const rs=el('bl-lot-'+lid+'-r');if(rs){rs.value=g.range;billLotRangeChange(lid);}const ct=el('bl-lot-'+lid+'-cut');if(ct)ct.value=g.cut;setTimeout(()=>{g.items.forEach(row=>{const ck=el('bl-lot-'+lid+'-ck-'+row.colIdx);const pe=el('bl-lot-'+lid+'-p-'+row.colIdx);const re=el('bl-lot-'+lid+'-r-'+row.colIdx);if(ck&&!ck.checked){ck.checked=true;ck.dispatchEvent(new Event('change',{bubbles:true}));}if(pe){pe.value=row.pcs;pe.dispatchEvent(new Event('input'));}if(re){re.value=row.rate;re.dispatchEvent(new Event('input'));}});detBillGST();},200);},100);});}
     detBillGST();
   },80);
   showMod('m-bill');
@@ -3589,7 +3590,7 @@ const pfx=STATE.settings.billPrefix||'INV-';
 const padLen=parseInt(STATE.settings.billPadLen)||4;
 const startNo=parseInt(STATE.settings.billStartNo)||1;
 /* Include ALL bills (even cancelled/deleted) to avoid number reuse across devices */
-const nums=STATE.bills.map(b=>{
+const nums=STATE.bills.filter(b=>!b._deleted).map(b=>{
   const n=parseInt((b.billNo||'').replace(pfx,''))||0; return n;
 }).filter(n=>n>0);
 const maxNum=Math.max(nums.length?Math.max(...nums):0,startNo-1);
@@ -3935,7 +3936,7 @@ if(editingBill){
 }
 if(!bno){toast('Enter invoice number','er');return;}
 /* Duplicate number check — another device may have created same number simultaneously */
-if(STATE.bills.find(b=>b.billNo===bno&&b.id!==_editBillId)){bno=nextBillNo();}
+if(STATE.bills.find(b=>b.billNo===bno&&b.id!==_editBillId&&!b._deleted)){bno=nextBillNo();}
 if(!_billOrdId||_billLots.length>0){
 /* Standalone or programme bill — read from lot cards */
 for(const lot of _billLots){
