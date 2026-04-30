@@ -3548,7 +3548,7 @@ async function deleteProg(ordId,progId){
   toast('Lot deleted','ok');
 }
 let _billRows=[{}], _billOrdId=null, _editBillId=null;
-let _billFromProgLot=false, _progLotMap={}; // {lotId: {colIdx: progId}}
+let _billFromProgLot=false, _progLotMap={}, _savingBill=false; // {lotId: {colIdx: progId}}
 function closeBillMod(){window._billSingleProg=null;_editBillId=null;_billFromProgLot=false;_progLotMap={};hideMod('m-bill');}
 function openDirectBillFromOrder(){
   if(!_ordId){toast('Save the order first before creating a bill','er');return;}
@@ -3923,7 +3923,8 @@ if(cust?.gstin){const t=gstType(cust.gstin),gA=Math.round(afterDisc*0.05);grand=
 const s=el('bl-sum');if(s)s.innerHTML='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>'+(discAmt>0?'<div class="brow" style="color:#059669"><span>Discount ('+disc+'%)</span><span class="mono">- '+fmtRs(discAmt)+'</span></div><div class="brow"><span>After Discount</span><span class="mono">'+fmtRs(afterDisc)+'</span></div>':'')+gH+'<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div>';
 }
 async function saveBill(){
-const cId=el('bl-c')?.value; if(!cId){toast('Select customer','er');return;}
+if(_savingBill){return;}_savingBill=true;
+const cId=el('bl-c')?.value; if(!cId){_savingBill=false;toast('Select customer','er');return;}
 const cust=STATE.customers.find(c=>c.id===cId);
 const brkId=el('bl-b')?.value, brk=STATE.brokers.find(b=>b.id===brkId);
 const items=[]; let bno=(el('bl-bno')?.value||'').trim()||nextBillNo();
@@ -4034,9 +4035,9 @@ if(_billFromProgLot&&Object.keys(_progLotMap).length>0&&o){for(const lot of _bil
 if(anyProgBilled&&o){const stat=calcProgStats(o);if(stat.remaining<=0)o.status='fulfilled';}
 lsSave('vs_orders',STATE.orders);
 }
-if(window._billSingleProg){const _spx=(STATE.programmes||[]).find(p=>p.id===window._billSingleProg);if(_spx){const _ordBills=(STATE.bills||[]).filter(b=>!b._deleted&&b.ordId===_billOrdId);const _tot=_ordBills.reduce((s,b)=>s+(b.items||[]).reduce((ss,it)=>ss+(Number(it.pcs)||0),0),0);_spx.billedPcs=_tot;if(_spx.billedPcs>=(_spx.pcs||1)){_spx.status='billed';}else if(_spx.billedPcs>0){_spx.status='partial';}}window._billSingleProg=null;}persist(); closeBillMod(); renderBills(); renderOrders(); renderDash();
+if(window._billSingleProg){const _spx=(STATE.programmes||[]).find(p=>p.id===window._billSingleProg);if(_spx){const _ordBills=(STATE.bills||[]).filter(b=>!b._deleted&&b.ordId===_billOrdId);const _tot=_ordBills.reduce((s,b)=>s+(b.items||[]).reduce((ss,it)=>ss+(Number(it.pcs)||0),0),0);_spx.billedPcs=_tot;if(_spx.billedPcs>=(_spx.pcs||1)){_spx.status='billed';}else if(_spx.billedPcs>0){_spx.status='partial';}}window._billSingleProg=null;}_savingBill=false;persist(); closeBillMod(); renderBills(); renderOrders(); renderDash();
 const isEdit=!!editingBill;
-toast('Bill '+bno+(isEdit?' updated':' created'),'ok'); api('saveBill',{bills:STATE.bills,entries:STATE.entries,items:STATE.items});
+toast('Bill '+bno+(isEdit?' updated':' created'),'ok'); api('saveBill',{bills:STATE.bills,entries:STATE.entries,items:STATE.items,orders:STATE.orders});
 }
 function renderBills(q=''){
 const c=el('billst')||el('billlst'); if(!c) return;
