@@ -2062,7 +2062,7 @@ const vno=g.voucherNo||'—';
 const ref=g.ref||'';
 const uniqItems=[...new Set(g.entries.map(e=>e.itemName).filter(Boolean))];
 const summary=uniqItems.slice(0,2).join(', ')+(uniqItems.length>2?' +more':'');
-const ids=JSON.stringify(g.entries.map(e=>e.id));
+const ids=g.entries.map(e=>e.id).join('|');
 return '<div class="inw-vrow" id="ivr-'+gi+'">'+
 '<div class="et" style="cursor:pointer;border-radius:10px 10px 0 0;margin-bottom:0;border-bottom:none" onclick="toggleInwVoucher('+gi+')">'+
 '<div class="ei" style="background:var(--Gl);color:var(--Gd)">'+ico+'</div>'+
@@ -2095,7 +2095,8 @@ x.classList.toggle('hid',!isHid);
 const row=el('ivr-'+gi);
 if(row){const mainRow=row.querySelector('.et');if(mainRow) mainRow.style.borderRadius=isHid?'10px 10px 0 0':'10px';}
 }
-async function deleteVoucherGroup(ids,gi){
+async function deleteVoucherGroup(idsStr,gi){
+const ids=typeof idsStr==='string'?idsStr.split('|'):idsStr;
 if(!hasPerm('delete_entry')&&!hasPerm('inward')){toast('No permission to delete entries','er');return;}
 const ok=await appConfirm('Delete Voucher?','All '+ids.length+' line item(s) in this voucher will be removed. Stock will NOT auto-correct.','?','Delete','dr');
 if(!ok) return;
