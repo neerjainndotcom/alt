@@ -3394,7 +3394,7 @@ function openBillLotSelector(ordId){
   /* Group by lotGroupId (new data) or by date (old data fallback) */
   const _grps={};const _grpOrder=[];
   pending.slice().reverse().forEach(p=>{
-    const gid=p.lotGroupId||('d_'+(p.date||'0'));
+    const gid=p.lotGroupId||(p.lotNum?'lot_'+p.lotNum:p.id);
     if(!_grps[gid]){_grps[gid]={gid,lotNum:p.lotNum||'',date:p.date,progs:[]};_grpOrder.push(gid);}
     _grps[gid].progs.push(p);
   });
@@ -3441,7 +3441,7 @@ function confirmBillLots(ordId){
   const selectedGids=checked.map(cb=>cb.value);
   /* Collect all programmes belonging to selected lot groups */
   const progs=(o.programmes||[]).filter(p=>{
-    const gid=p.lotGroupId||('d_'+(p.date||'0'));
+    const gid=p.lotGroupId||(p.lotNum?'lot_'+p.lotNum:p.id);
     return selectedGids.includes(gid)&&p.status!=='billed';
   });
   if(!progs.length) return;
@@ -3684,7 +3684,7 @@ else {const t=gstType(cust.gstin);info.textContent=t==='same'?'Gujarat \u2192 SG
 if(cust?.defaultBrokerId){const bs=el('bl-b');if(bs)bs.value=cust.defaultBrokerId;}
 const discFld=el('bl-disc');
 if(discFld){const d=cust?.discount!=null?cust.discount:STATE.settings.discount||0;discFld.value=d;}
-if(_billOrdId) calcBillTot(); else calcBillLotTotal();
+if(_billOrdId&&!_billFromProgLot) calcBillTot(); else calcBillLotTotal();
 const _bbl=el('bl-b');if(_bbl&&cust&&cust.defaultBrokerId){_bbl.value=cust.defaultBrokerId;}
 }
 function addBillRow(){_billRows.push({});renderBillRows();}
@@ -4021,13 +4021,17 @@ if(o){
   if(!editingBill){if(!o.bills)o.bills=[];o.bills.push(newBill);}
   else{const bi=o.bills?o.bills.findIndex(b=>b.id===billId):-1;if(bi>=0)o.bills[bi]=newBill;else{if(!o.bills)o.bills=[];o.bills.push(newBill);}}
 }
-if(o){
-const ordTotal=o.items.reduce((s,i)=>s+(i.pcs||0),0);
-/* Count cumulative pcs billed — use dispQty||pcs to handle both dispatch-style and classic bills. */
+if(o&&o.type!=='open'){
+/* Fixed orders: compare billed pcs vs ordered pcs */
+const ordTotal=(o.items||[]).reduce((s,i)=>s+(i.pcs||0),0);
 const totalBilled=liveBills()
   .filter(b=>b.ordId===_billOrdId&&b.status!=='cancelled')
   .reduce((s,b)=>s+b.items.reduce((ss,i)=>ss+(i.dispQty||i.pcs||0),0),0);
 o.status=totalBilled>=ordTotal?'fulfilled':'billed';
+}
+if(o&&o.type==='open'){
+/* Open/programme orders: billed status until all lots are dispatched+billed */
+o.status='billed';
 }
 /* Mark programme lots billed/partial based on actual dispatched qty */
 const savedBillId=newBill.id||'';
@@ -4049,7 +4053,7 @@ _billRows.forEach((row,rIdx)=>{
   }
 });
 if(_billFromProgLot&&Object.keys(_progLotMap).length>0&&o){for(const lot of _billLots){const progMap=_progLotMap[lot.id]||{};for(const [colIdxStr,progId] of Object.entries(progMap)){const prog=(o.programmes||[]).find(p=>p.id===progId);if(!prog)continue;const colIdx=parseInt(colIdxStr);const billItem=newBill.items&&newBill.items.find(it=>it.itemId===prog.itemId&&it.colIdx===colIdx);if(!billItem)continue;const dispPcs=billItem.pcs||0;if(!prog.bills)prog.bills=[];prog.bills.push({billId:savedBillId,billNo:savedBillNo,pcs:dispPcs,date:newBill.date});prog.billedPcs=(prog.billedPcs||0)+dispPcs;if(prog.billedPcs>=prog.pcs){prog.status='billed';prog.billId=savedBillId;}else prog.status='partial';anyProgBilled=true;}}}
-if(anyProgBilled&&o){const stat=calcProgStats(o);if(stat.remaining<=0)o.status='fulfilled';}
+if(anyProgBilled&&o){const stat=calcProgStats(o);if(stat.remaining<=0&&stat.pending<=0)o.status='fulfilled';else if(stat.remaining<=0)o.status='billed';}
 lsSave('vs_orders',STATE.orders);
 }
 if(window._billSingleProg){const _spx=(STATE.programmes||[]).find(p=>p.id===window._billSingleProg);if(_spx){const _ordBills=(STATE.bills||[]).filter(b=>!b._deleted&&b.ordId===_billOrdId);const _tot=_ordBills.reduce((s,b)=>s+(b.items||[]).reduce((ss,it)=>ss+(Number(it.pcs)||0),0),0);_spx.billedPcs=_tot;if(_spx.billedPcs>=(_spx.pcs||1)){_spx.status='billed';}else if(_spx.billedPcs>0){_spx.status='partial';}}window._billSingleProg=null;}const _refreshOrdId=_billOrdId;_savingBill=false;persist(); closeBillMod(); renderBills(); renderOrders(); renderDash();if(_refreshOrdId){const _det=el('m-ord-det');if(_det&&_det.style.display&&_det.style.display!=='none')showOrderDetail(_refreshOrdId);}
