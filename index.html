@@ -1930,6 +1930,7 @@ _inRows.forEach((row,i)=>{
   row._cIdx=el('ir'+i+'-c')?.value||row._cIdx||'';
   row._taka=el('ir'+i+'-t')?.value||row._taka||'';
   row._tp=el('ir'+i+'-tp')?.value||row._tp||'';
+     row._mtrs=el('ir'+i+'-m')?.value||row._mtrs||'';
 });
 }
 function addInRow(){captureInRows();_inRows.push({});renderInRows();}
@@ -1947,7 +1948,7 @@ _inRows.forEach((row,i)=>{
   if(row._tp){ const tp=el('ir'+i+'-tp'); if(tp) tp.value=row._tp; }
   if(row._taka||row._tp) updIRC(i);
 });
-if(_inType==='mill') applyMillMode();
+if(_inType==='mill'){applyMillMode();_inRows.forEach((row,i)=>{if(row._mtrs){const m=el('ir'+i+'-m');if(m){m.value=row._mtrs;updIRCM(i);}}});};
 }
 function updIRC(i){
 const t=parseInt(el('ir'+i+'-t')?.value)||0;
