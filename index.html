@@ -2075,7 +2075,7 @@ return '<div class="inw-vrow" id="ivr-'+gi+'">'+
 '<div class="ev in" style="margin-bottom:4px">+'+g.totalTaka+'T</div>'+
 '<div style="display:flex;gap:4px">'+
 '<button class="btn bp bxs" onclick="event.stopPropagation();toggleInwVoucher('+gi+')" title="View">👁</button>'+
-(hasPerm('delete_entry')?'<button class="btn bd bxs" onclick="event.stopPropagation();deleteVoucherGroup('+ids+','+gi+')" title="Delete">🗑</button>':'')+
+((hasPerm('delete_entry')||hasPerm('inward'))?'<button class="btn bd bxs" onclick="event.stopPropagation();deleteVoucherGroup('+ids+','+gi+')" title="Delete voucher">🗑</button>':'')+
 '</div></div></div>'+
 '<div class="inw-expand hid" id="ivx-'+gi+'" style="background:var(--bg2,#f7f7fb);border:1px solid var(--br);border-top:none;border-radius:0 0 10px 10px;margin-bottom:8px;overflow:hidden">'+
 g.entries.map(e=>'<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--br)">'+
@@ -2096,7 +2096,7 @@ const row=el('ivr-'+gi);
 if(row){const mainRow=row.querySelector('.et');if(mainRow) mainRow.style.borderRadius=isHid?'10px 10px 0 0':'10px';}
 }
 async function deleteVoucherGroup(ids,gi){
-if(!hasPerm('delete_entry')){toast('No permission to delete entries','er');return;}
+if(!hasPerm('delete_entry')&&!hasPerm('inward')){toast('No permission to delete entries','er');return;}
 const ok=await appConfirm('Delete Voucher?','All '+ids.length+' line item(s) in this voucher will be removed. Stock will NOT auto-correct.','?','Delete','dr');
 if(!ok) return;
 ids.forEach(id=>{const e=STATE.entries.find(x=>x.id===id);if(e){e._deleted=true;e._ts=Date.now();}});
@@ -10962,7 +10962,10 @@ function applyCloudData(d,force=false){
   if(d.settings){
     // Deep-merge dashConfigPerUser so every staff member's personal layout survives sync
     const mergedPerUser={...(STATE.settings.dashConfigPerUser||{}), ...(d.settings.dashConfigPerUser||{})};
+    const _localNextInward=STATE.settings.nextInwardNo||1;
     STATE.settings={...STATE.settings,...d.settings,...keep};
+    // Never let sync go backwards on the inward counter
+    STATE.settings.nextInwardNo=Math.max(_localNextInward,STATE.settings.nextInwardNo||1);
     if(Object.keys(mergedPerUser).length) STATE.settings.dashConfigPerUser=mergedPerUser;
   }
   /* Keep cloud's lastSync (not current time) so future syncs from other devices still pass the timestamp check */
