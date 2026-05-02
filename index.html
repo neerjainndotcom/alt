@@ -5778,9 +5778,9 @@ if(o.type==='open'){
             '</div>'+
             '<div class="mono fw8" style="flex-shrink:0">'+(p.amount?fmtRs(p.amount):'')+'</div>'+
             '<div style="display:flex;gap:4px;flex-shrink:0">'+
-            (remaining>0?'<button onclick="hideMod('m-ord-det');billProgramme(''+o.id+'',''+p.id+'')" class="btn bp bxs" style="font-size:10px">Bill</button>':'<span class="bdg bg-g bxs" style="font-size:9px">✓</span>')+
-            '<button onclick="editProgEntry(''+o.id+'',''+p.id+'')" class="btn bs bxs" style="font-size:10px;padding:4px 7px" title="Edit">✏️</button>'+
-            (p.status!=='billed'&&!(p.billedPcs>0)&&!(p.bills||[]).length?'<button onclick="deleteProg(''+o.id+'',''+p.id+'')" class="btn bd bxs" style="font-size:10px;padding:4px 7px" title="Delete">🗑️</button>':'')+
+            (remaining>0?'<button onclick="hideMod(\'m-ord-det\');billProgramme(\''+o.id+'\',\''+p.id+'\');" class="btn bp bxs" style="font-size:10px">Bill</button>':'<span class="bdg bg-g bxs" style="font-size:9px">✓</span>')+
+            '<button onclick="editProgEntry(\''+o.id+'\',\''+p.id+'\')" class="btn bs bxs" style="font-size:10px;padding:4px 7px" title="Edit">✏️</button>'+
+            (p.status!=='billed'&&!(p.billedPcs>0)&&!(p.bills||[]).length?'<button onclick="deleteProg(\''+o.id+'\',\''+p.id+'\')" class="btn bd bxs" style="font-size:10px;padding:4px 7px" title="Delete">🗑️</button>':'')+
             '</div>'+
             '</div>'+
             ((p.bills||[]).length?
