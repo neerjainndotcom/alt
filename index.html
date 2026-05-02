@@ -5970,13 +5970,18 @@ lotMap[key].items.push(item);
 /* Use liveBills() (canonical source) — o.bills can be stale after sync or delete */
 const dispatched={};
 liveBills().filter(b=>b.ordId===ordId&&b.status!=='cancelled').forEach(bill=>{
-(bill.items||[]).forEach(bi=>{ dispatched[bi.sku]=(dispatched[bi.sku]||0)+(bi.dispQty||bi.pcs||0); });
+(bill.items||[]).forEach(bi=>{
+const k=bi._lotIdx!==undefined?bi.sku+'-li'+bi._lotIdx:bi.sku;
+dispatched[k]=(dispatched[k]||0)+(bi.dispQty||bi.pcs||0);
+});
 });
 const lotColors=['#EEF2FF','#F0FDF4','#FFF7ED','#FDF4FF','#FEFCE8','#F0F9FF'];
 const lotBorders=['#818CF8','#4ADE80','#FB923C','#C084FC','#FACC15','#38BDF8'];
 const lotLabels=['#3730A3','#166534','#7C2D12','#581C87','#713F12','#0C4A6E'];
+/* Only show lots that still have pending dispatch qty */
+const pendingLots=lots.filter(lot=>lot.items.some(item=>{const k=item.lotIndex!==undefined?item.sku+'-li'+item.lotIndex:item.sku;return Math.max(0,(item.pcs||0)-(dispatched[k]||0))>0;}));
 let html='';
-lots.forEach((lot,li)=>{
+pendingLots.forEach((lot,li)=>{
 const lc=lotColors[li%lotColors.length];
 const border=lotBorders[li%lotBorders.length];
 const label=lotLabels[li%lotLabels.length];
@@ -5996,7 +6001,7 @@ html+=
 '<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:right;text-transform:uppercase">Amount</div>'+
 '</div>';
 lot.items.forEach((item,ci)=>{
-const alreadySent=dispatched[item.sku]||0;
+const alreadySent=dispatched[item.lotIndex!==undefined?item.sku+'-li'+item.lotIndex:item.sku]||0;
 const remaining=Math.max(0,(item.pcs||0)-alreadySent);
 const bg=ci%2===0?'#fff':lc;
 html+=
@@ -6086,7 +6091,7 @@ html+='<div style="margin-bottom:8px;border:2px solid '+border+';border-radius:1
 '<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:right;text-transform:uppercase">Amount</div>'+
 '</div>';
 lot.items.forEach((item,ci)=>{
-const alreadySent=dispatched[item.sku]||0;
+const alreadySent=dispatched[item.lotIndex!==undefined?item.sku+'-li'+item.lotIndex:item.sku]||0;
 const remaining=Math.max(0,(item.pcs||0)-alreadySent);
 const bg=ci%2===0?'#fff':lc;
 html+='<div style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;align-items:center;padding:7px 10px;background:'+bg+';border-top:1px solid #E5E4F0">'+
