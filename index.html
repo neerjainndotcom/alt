@@ -3472,12 +3472,15 @@ function billProgramme(ordId,progId){
   const o=STATE.orders.find(x=>x.id===ordId); if(!o) return;
   const prog=o.programmes?.find(p=>p.id===progId); if(!prog) return;
   if(prog.status==='billed'){toast('This lot is already billed','er');return;}
-  const item=STATE.items.find(i=>i.id===prog.itemId);
-  const prevBilled=(prog.billedPcs||0)||(prog.bills||[]).reduce((s,b)=>s+(b.pcs||0),0);
-  const remaining=Math.max(0,(prog.pcs||0)-prevBilled);
   _billOrdId=ordId;
-  _billRows=[{_progId:progId,itemId:prog.itemId,itemName:prog.itemName||(item?.name||''),colIdx:prog.colIdx,colourName:prog.colourName,sku:prog.sku,pcs:remaining,cut:prog.cut||6,rate:prog.rate||'',_orderedPcs:prog.pcs,_billedPcs:prevBilled,_isProgLot:true}];
-  buildBillBody({custId:o.custId,custName:o.custName,orderNo:o.orderNo,ordId:ordId});
+  _billRows=[];
+  _billLots=[];
+  _billLotId=0;
+  _billFromProgLot=true;
+  _progLotMap={};
+  _billLotId++;
+  _billLots.push({id:_billLotId,_prefill:{itemId:prog.itemId,range:prog.range,cut:prog.cut||6,progs:[prog]}});
+  buildBillBody({custId:o.custId,custName:o.custName,orderNo:o.orderNo,ordId:ordId,fromProgLot:true});
   window._billSingleProg=prog.id;showMod('m-bill');
 }
 function waOrd(id){
@@ -5753,33 +5756,42 @@ if(o.type==='open'){
     (progs.length?
       '<div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Programme Lots ('+progs.length+')</div>'+
       '<div style="border-radius:10px;overflow:hidden;border:1px solid var(--br)">'+
-      progs.slice().reverse().map(p=>{
-        const billedPcs=p.billedPcs||(p.status==='billed'?p.pcs:0);
-        const remaining=Math.max(0,(p.pcs||0)-billedPcs);
-        const isPartial=p.status==='partial'||(billedPcs>0&&p.status!=='billed');
-        const statusCls=p.status==='billed'?'bg-g':isPartial?'bg-a':'bg-y';
-        const statusLbl=p.status==='billed'?'BILLED':isPartial?'PARTIAL':'PENDING';
-        return '<div style="border-bottom:1px solid var(--br)">'+
-          '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px">'+
-          '<span class="bdg '+statusCls+'" style="flex-shrink:0;font-size:9px">'+statusLbl+'</span>'+
-          '<div style="flex:1;min-width:0">'+
-            '<div class="fw7 sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.colourName+' <span class="sku" style="font-size:9px">'+p.sku+'</span>'+(p.lotNum?' <span style="font-size:9px;color:var(--t3)">Lot '+p.lotNum+'</span>':'')+'</div>'+
-            '<div class="xs ct3">'+fmtDate(p.date)+' \u00B7 '+fmtN(p.pcs)+' pcs \u00B7 Cut:'+(p.cut||6)+'m'+(p.remark?' \u00B7 '+p.remark:'')+'</div>'+
-          '</div>'+
-          '<div class="mono fw8" style="flex-shrink:0">'+(p.amount?fmtRs(p.amount):'')+'</div>'+
-          '<div style="display:flex;gap:4px;flex-shrink:0">'+
-          (remaining>0?'<button onclick="hideMod(\'m-ord-det\');billProgramme(\''+o.id+'\',\''+p.id+'\')" class="btn bp bxs" style="font-size:10px">Bill</button>':'<span class="bdg bg-g bxs" style="font-size:9px">\u2713</span>')+
-          '<button onclick="editProgEntry(\''+o.id+'\',\''+p.id+'\')" class="btn bs bxs" style="font-size:10px;padding:4px 7px" title="Edit">\u270F\uFE0F</button>'+
-          (p.status!=='billed'&&!(p.billedPcs>0)&&!(p.bills||[]).length?'<button onclick="deleteProg(\''+o.id+'\',\''+p.id+'\')" class="btn bd bxs" style="font-size:10px;padding:4px 7px" title="Delete">\uD83D\uDDD1\uFE0F</button>':'')+
-          '</div>'+
-          '</div>'+
-          ((p.bills||[]).length?
-            '<div style="padding:4px 12px 8px;background:var(--s2)">'+
-            (p.bills||[]).map(b=>'<div class="xs ct3">\uD83D\uDCC4 '+b.billNo+' \u2014 '+fmtN(b.pcs)+' pcs dispatched on '+fmtDate(b.date)+'</div>')+
-            (isPartial?'<div class="xs" style="color:#D97706;font-weight:700">\u26A0\uFE0F '+fmtN(remaining)+' pcs still remaining</div>':'')+
-            '</div>':'')+
-          '</div>';
-      }).join('')+
+      (()=>{
+        const lotColors=['#818CF8','#4ADE80','#FB923C','#C084FC','#FACC15','#38BDF8'];
+        const lotLabels=['#3730A3','#166534','#7C2D12','#581C87','#713F12','#0C4A6E'];
+        const sorted=progs.slice().sort((a,b)=>(a.lotNum||1)-(b.lotNum||1));
+        let _curLot=null,_lotIdx=-1,out='';
+        sorted.forEach(p=>{
+          const ln=p.lotNum||1;
+          if(ln!==_curLot){_curLot=ln;_lotIdx++;const lc=lotColors[_lotIdx%lotColors.length];const ll=lotLabels[_lotIdx%lotLabels.length];out+='<div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:'+lc+'20;border-bottom:2px solid '+lc+'"><span style="background:'+lc+';color:white;font-size:9px;font-weight:900;padding:2px 8px;border-radius:5px;letter-spacing:.5px">LOT '+ln+'</span><span style="font-size:10px;font-weight:700;color:'+ll+'">'+progs.filter(x=>(x.lotNum||1)===ln).length+' colour(s)</span></div>';}
+          const billedPcs=p.billedPcs||(p.status==='billed'?p.pcs:0);
+          const remaining=Math.max(0,(p.pcs||0)-billedPcs);
+          const isPartial=p.status==='partial'||(billedPcs>0&&p.status!=='billed');
+          const statusCls=p.status==='billed'?'bg-g':isPartial?'bg-a':'bg-y';
+          const statusLbl=p.status==='billed'?'BILLED':isPartial?'PARTIAL':'PENDING';
+          out+='<div style="border-bottom:1px solid var(--br)">'+
+            '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px">'+
+            '<span class="bdg '+statusCls+'" style="flex-shrink:0;font-size:9px">'+statusLbl+'</span>'+
+            '<div style="flex:1;min-width:0">'+
+              '<div class="fw7 sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.colourName+' <span class="sku" style="font-size:9px">'+p.sku+'</span></div>'+
+              '<div class="xs ct3">'+fmtDate(p.date)+' · '+fmtN(p.pcs)+' pcs · Cut:'+(p.cut||6)+'m'+(p.remark?' · '+p.remark:'')+'</div>'+
+            '</div>'+
+            '<div class="mono fw8" style="flex-shrink:0">'+(p.amount?fmtRs(p.amount):'')+'</div>'+
+            '<div style="display:flex;gap:4px;flex-shrink:0">'+
+            (remaining>0?'<button onclick="hideMod('m-ord-det');billProgramme(''+o.id+'',''+p.id+'')" class="btn bp bxs" style="font-size:10px">Bill</button>':'<span class="bdg bg-g bxs" style="font-size:9px">✓</span>')+
+            '<button onclick="editProgEntry(''+o.id+'',''+p.id+'')" class="btn bs bxs" style="font-size:10px;padding:4px 7px" title="Edit">✏️</button>'+
+            (p.status!=='billed'&&!(p.billedPcs>0)&&!(p.bills||[]).length?'<button onclick="deleteProg(''+o.id+'',''+p.id+'')" class="btn bd bxs" style="font-size:10px;padding:4px 7px" title="Delete">🗑️</button>':'')+
+            '</div>'+
+            '</div>'+
+            ((p.bills||[]).length?
+              '<div style="padding:4px 12px 8px;background:var(--s2)">'+
+              (p.bills||[]).map(b=>'<div class="xs ct3">📄 '+b.billNo+' — '+fmtN(b.pcs)+' pcs dispatched on '+fmtDate(b.date)+'</div>')+
+              (isPartial?'<div class="xs" style="color:#D97706;font-weight:700">⚠️ '+fmtN(remaining)+' pcs still remaining</div>':'')+
+              '</div>':'')+
+            '</div>';
+        });
+        return out;
+      })()+
       '</div>'
     :'<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px;background:var(--s2);border-radius:8px">No programme lots yet \u2014 tap \u201CProgramme Lot\u201D to add</div>')+
     '</div>';
