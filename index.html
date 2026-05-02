@@ -5971,7 +5971,7 @@ lotMap[key].items.push(item);
 const dispatched={};
 liveBills().filter(b=>b.ordId===ordId&&b.status!=='cancelled').forEach(bill=>{
 (bill.items||[]).forEach(bi=>{
-const k=bi._lotIdx!==undefined?bi.sku+'-li'+bi._lotIdx:bi.sku;
+const lotI=bi._lotIdx!==undefined?bi._lotIdx:bi.lotIndex;const k=lotI!==undefined?bi.sku+'-li'+lotI:bi.sku;
 dispatched[k]=(dispatched[k]||0)+(bi.dispQty||bi.pcs||0);
 });
 });
