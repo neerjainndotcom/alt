@@ -5655,11 +5655,12 @@ el('ord-det-title').textContent=o.orderNo;
 el('ord-det-sub').textContent=fmtDate(o.date)+' - '+o.custName;
 const lots=[];
 const lotMap={};
-(o.items||[]).forEach(item=>{
-const key=(item.itemName||'')+'|||'+(item.range||'');
+const hasLotIndex=(o.items||[]).some(it=>it.lotIndex!=null);
+(o.items||[]).slice().sort((a,b)=>(a.lotIndex||0)-(b.lotIndex||0)).forEach(item=>{
+const key=hasLotIndex?String(item.lotIndex):((item.itemName||'')+'|||'+(item.range||''));
 if(!lotMap[key]){
 const lotNum=lots.length+1;
-const obj={lotNum,key,itemName:item.itemName||'',range:item.range||'',items:[],remark:item.remark||''};
+const obj={lotNum,key,itemName:item.itemName||'',range:item.range||'',cut:item.cut||6,items:[],remark:item.remark||''};
 lots.push(obj); lotMap[key]=obj;
 }
 lotMap[key].items.push(item);
