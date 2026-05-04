@@ -3815,15 +3815,24 @@ function billLotItemChange(lid){
 const iid=el('bl-lot-'+lid+'-i')?.value,rSel=el('bl-lot-'+lid+'-r'),body=el('bl-lot-'+lid+'-body');
 if(!iid||!rSel){if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range above</div>';return;}
 const item=STATE.items.find(x=>x.id===iid);if(!item)return;
-const rngs=[...new Set(item.colours.map(c=>c.range))];
-rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+r+'">'+r+'</option>').join('');
-rSel.disabled=false;
-if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Now select a range</div>';
+const namedRngs=[...new Set(item.colours.filter(c=>c.range!=='').map(c=>c.range))];
+const hasDefault=item.colours.some(c=>c.range===''&&!c.discontinued);
+if(hasDefault&&namedRngs.length===0){
+  rSel.innerHTML='<option value="__norange__">—</option>';rSel.disabled=true;rSel.value='__norange__';
+  billLotRangeChange(lid);
+}else{
+  let opts=hasDefault?'<option value="__norange__">(No Range)</option>':'';
+  opts+=namedRngs.map(r=>'<option value="'+r+'">'+r+'</option>').join('');
+  rSel.innerHTML='<option value="">Range...</option>'+opts;
+  rSel.disabled=false;
+  if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Now select a range</div>';
+}
 }
 function billLotRangeChange(lid){
 const iid=el('bl-lot-'+lid+'-i')?.value,rng=el('bl-lot-'+lid+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid),body=el('bl-lot-'+lid+'-body');
-if(!item||!rng||!body)return;
+if(!item||(rng!=='__norange__'&&!rng)||!body)return;
+const actualRng=rng==='__norange__'?'':rng;
 const li=_billLots.findIndex(l=>l.id===lid);
 const lotColors=[
 {bg:'#EEF2FF',border:'#818CF8',label:'#3730A3',hdr:'#C7D2FE'},
@@ -3834,7 +3843,7 @@ const lotColors=[
 {bg:'#F0F9FF',border:'#38BDF8',label:'#0C4A6E',hdr:'#BAE6FD'},
 ];
 const lc=lotColors[(li<0?0:li)%lotColors.length];
-const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued);
+const cols=item.colours.filter(c=>c.range===actualRng&&!c.discontinued);
 body.innerHTML='';
 const thead=document.createElement('div');
 thead.style.cssText='display:grid;grid-template-columns:26px 1fr 48px 64px 80px 80px;gap:4px;background:linear-gradient(135deg,#1e1b4b,#312e81);padding:8px 10px';
@@ -3876,8 +3885,8 @@ body.appendChild(row);
 function billLotToggleAll(lid){
 const allChk=el('bl-lot-'+lid+'-all');
 const iid=el('bl-lot-'+lid+'-i')?.value,rng=el('bl-lot-'+lid+'-r')?.value;
-const item=STATE.items.find(x=>x.id===iid);if(!item||!rng)return;
-item.colours.filter(c=>c.range===rng&&!c.discontinued).forEach(col=>{
+const item=STATE.items.find(x=>x.id===iid);if(!item||(rng!=='__norange__'&&!rng))return;const actualRng=rng==='__norange__'?'':rng;
+item.colours.filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('bl-lot-'+lid+'-ck-'+idx);if(!chk)return;
 chk.checked=allChk.checked;billLotClrToggle(lid,idx,true);
@@ -3898,8 +3907,9 @@ if(!skipCalc)calcBillLot(lid);
 function applyBillLotDefaults(lid){
 const qp=el('bl-lot-'+lid+'-qpcs')?.value,qr=el('bl-lot-'+lid+'-qrate')?.value;
 const iid=el('bl-lot-'+lid+'-i')?.value,rng=el('bl-lot-'+lid+'-r')?.value;
-const item=STATE.items.find(x=>x.id===iid);if(!item||!rng)return;
-item.colours.filter(c=>c.range===rng&&!c.discontinued).forEach(col=>{
+const item=STATE.items.find(x=>x.id===iid);if(!item||(rng!=='__norange__'&&!rng))return;
+const actualRng=rng==='__norange__'?'':rng;
+item.colours.filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('bl-lot-'+lid+'-ck-'+idx);if(!chk?.checked)return;
 if(qp){const p=el('bl-lot-'+lid+'-p-'+idx);if(p)p.value=qp;}
@@ -3909,8 +3919,8 @@ calcBillLot(lid);
 }
 function calcBillLot(lid){
 const iid=el('bl-lot-'+lid+'-i')?.value,rng=el('bl-lot-'+lid+'-r')?.value;
-const item=STATE.items.find(x=>x.id===iid);if(!item||!rng)return;
-item.colours.filter(c=>c.range===rng&&!c.discontinued).forEach(col=>{
+const item=STATE.items.find(x=>x.id===iid);if(!item||(rng!=='__norange__'&&!rng))return;const actualRng=rng==='__norange__'?'':rng;
+item.colours.filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('bl-lot-'+lid+'-ck-'+idx);if(!chk?.checked)return;
 const p=parseInt(el('bl-lot-'+lid+'-p-'+idx)?.value)||0;
@@ -3927,8 +3937,9 @@ const cust=STATE.customers.find(c=>c.id===el('bl-c')?.value);
 let sub=0;
 _billLots.forEach(lot=>{
 const iid=el('bl-lot-'+lot.id+'-i')?.value,rng=el('bl-lot-'+lot.id+'-r')?.value;
-const item=STATE.items.find(x=>x.id===iid);if(!item||!rng)return;
-item.colours.filter(c=>c.range===rng&&!c.discontinued).forEach(col=>{
+const item=STATE.items.find(x=>x.id===iid);if(!item||(rng!=='__norange__'&&!rng))return;
+const actualRng=rng==='__norange__'?'':rng;
+item.colours.filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('bl-lot-'+lot.id+'-ck-'+idx);if(!chk?.checked)return;
 const cut=parseFloat(el('bl-lot-'+lot.id+'-cut')?.value)||6;
@@ -3963,8 +3974,8 @@ if(!_billOrdId||_billLots.length>0){
 for(const lot of _billLots){
 const iid=el('bl-lot-'+lot.id+'-i')?.value;
 const item=STATE.items.find(x=>x.id===iid);if(!item)continue;
-const rng=el('bl-lot-'+lot.id+'-r')?.value;if(!rng)continue;
-for(const col of item.colours.filter(c=>c.range===rng&&!c.discontinued)){
+const rng=el('bl-lot-'+lot.id+'-r')?.value;if(rng!=='__norange__'&&!rng)continue;const actualRng=rng==='__norange__'?'':rng;
+for(const col of item.colours.filter(c=>c.range===actualRng&&!c.discontinued)){
 const idx=item.colours.indexOf(col);
 const chk=el('bl-lot-'+lot.id+'-ck-'+idx);if(!chk?.checked)continue;
 const p=parseInt(el('bl-lot-'+lot.id+'-p-'+idx)?.value)||0;
