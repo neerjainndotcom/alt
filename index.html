@@ -2076,7 +2076,7 @@ return '<div class="inw-vrow" id="ivr-'+gi+'">'+
 '<div class="ev in" style="margin-bottom:4px">+'+g.totalTaka+'T</div>'+
 '<div style="display:flex;gap:4px">'+
 '<button class="btn bp bxs" onclick="event.stopPropagation();toggleInwVoucher('+gi+')" title="View">👁</button>'+
-((hasPerm('delete_entry')||hasPerm('inward'))?'<button class="btn bd bxs" onclick="event.stopPropagation();deleteVoucherGroup('+ids+','+gi+')" title="Delete voucher">🗑</button>':'')+
+((hasPerm('delete_entry')||hasPerm('inward'))?'<button class="btn bd bxs" onclick="event.stopPropagation();deleteVoucherGroup(\''+ids+'\','+gi+')" title="Delete voucher">🗑</button>':'')+
 '</div></div></div>'+
 '<div class="inw-expand hid" id="ivx-'+gi+'" style="background:var(--bg2,#f7f7fb);border:1px solid var(--br);border-top:none;border-radius:0 0 10px 10px;margin-bottom:8px;overflow:hidden">'+
 g.entries.map(e=>'<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--br)">'+
