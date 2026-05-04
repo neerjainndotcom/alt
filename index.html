@@ -3568,7 +3568,7 @@ function openDirectBillFromOrder(){
 function openEditBill(billId){
   const bill=STATE.bills.find(b=>b.id===billId);
   if(!bill)return;
-  if(STATE.user?.role!=='admin'&&!hasPerm('cancel_bill')){toast('No permission to edit bills','er');return;}
+  if(STATE.user?.role!=='admin'&&!hasPerm('cancel_bill')&&!hasPerm('edit_bill')){toast('No permission to edit bills','er');return;}
   _editBillId=bill.id;
   _billOrdId=bill.ordId||null;
   _billRows=bill.items.map(i=>({...i,_orderedPcs:i.pcs,_billedPcs:0}));
@@ -5659,6 +5659,7 @@ const PERM_DEFS=[
 {id:'sales_order', grp:'Sales',     lbl:'Create Orders',      desc:'Create & edit sale orders'},
 {id:'sales_edit',  grp:'Sales',     lbl:'Edit Orders',        desc:'Edit existing sale orders'},
 {id:'sales_bill',  grp:'Sales',     lbl:'Create Invoices',    desc:'Create dispatch bills / tax invoices'},
+{id:'edit_bill',   grp:'Sales',     lbl:'Edit Invoices',      desc:'Edit existing sales bills / tax invoices'},
 {id:'sales_delete',grp:'Sales',     lbl:'Delete Orders',      desc:'Permanently delete orders'},
 {id:'sales_cancel',grp:'Sales',     lbl:'Cancel Bills',       desc:'Cancel dispatched bills'},
 {id:'sales_wa',    grp:'Sales',     lbl:'WhatsApp Share',     desc:'Share orders/bills via WhatsApp'},
@@ -5685,7 +5686,7 @@ const PERM_DEFS=[
 {id:'cancel_bill', grp:'Ledger',    lbl:'Cancel Bills',       desc:'Cancel dispatched bills (stock reversal)'},
 {id:'flag_entry',  grp:'Ledger',    lbl:'Flag Wrong Entries', desc:'Flag entries for admin review'},
 ];
-const DEFAULT_PERMS={dash:0,sales_view:0,sales_order:0,sales_edit:0,sales_bill:0,sales_delete:0,sales_cancel:0,sales_wa:0,inward_view:0,inward:0,inward_delete:0,manual_stock:0,jw:0,jw_delete:0,masters_view:0,masters_edit:0,masters_delete:0,reports:0,rep_stock:0,rep_vsorder:0,rep_daily:0,rep_topsku:0,reports_wa:0,leads_view:0,leads_edit:0,leads_assign:0,ledger_view:0,delete_entry:0,cancel_bill:0,flag_entry:0};
+const DEFAULT_PERMS={dash:0,sales_view:0,sales_order:0,sales_edit:0,sales_bill:0,sales_delete:0,sales_cancel:0,sales_wa:0,inward_view:0,inward:0,inward_delete:0,manual_stock:0,jw:0,jw_delete:0,masters_view:0,masters_edit:0,masters_delete:0,reports:0,rep_stock:0,rep_vsorder:0,rep_daily:0,rep_topsku:0,reports_wa:0,leads_view:0,leads_edit:0,leads_assign:0,ledger_view:0,delete_entry:0,cancel_bill:0,edit_bill:0,flag_entry:0};
 function getStaffTypes(){
 return [...((STATE.settings||{}).staffTypes||[]),{id:'admin',name:'Admin',color:'#E11D48'}];
 }
@@ -11249,6 +11250,45 @@ const neverContacted=filtered.filter(l=>!l.notes||!l.notes.length).length;
 const overdue=filtered.filter(l=>l.followupDate&&_effFollowup(l.followupDate)<today()&&l.status!=='Won'&&l.status!=='Lost').length;
 
 let h='';
+
+/* ── WA Pending Leads Panel (admin only) ─────────────────────── */
+if(isAdmin){
+  const activeLeads=leads.filter(l=>l.status!=='Won'&&l.status!=='Lost'&&l.status!=='Closed'&&l.assignedId);
+  const smPending={};
+  activeLeads.forEach(l=>{
+    const sid=l.assignedId;
+    if(!smPending[sid]) smPending[sid]={name:l.assignedName||'Unknown',leads:[],user:STATE.users.find(u=>u.id===sid&&!u._deleted)};
+    smPending[sid].leads.push(l);
+  });
+  const smEntries=Object.values(smPending).filter(s=>s.leads.length>0).sort((a,b)=>b.leads.length-a.leads.length);
+  if(smEntries.length){
+    h+='<div style="background:#EFF6FF;border:2px solid #BFDBFE;border-radius:14px;padding:14px;margin-bottom:16px">';
+    h+='<div style="font-size:11px;font-weight:800;color:#1E40AF;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📲 Send Pending Leads to Salesman</div>';
+    smEntries.forEach(sm=>{
+      const overdue=sm.leads.filter(l=>l.followupDate&&l.followupDate<today()).length;
+      const phone=(sm.user?.whatsapp||sm.user?.phone||'').replace(/\D/g,'');
+      const pendingLines=sm.leads.map(l=>{
+        const fu=l.followupDate?'Follow-up: '+fmtDate(l.followupDate):'No follow-up set';
+        const note=l.lastNote?'  Note: '+l.lastNote:'';
+        return '- '+l.name+(l.company?' ('+l.company+')':'')+(l.phone?' | '+l.phone:'')+' | '+(l.status||'-')+' | '+fu+note;
+      }).join('\n');
+      const msg='Hi '+sm.name+',\n\nYour pending leads today:\n\n'+pendingLines+'\n\nTotal: '+sm.leads.length+' leads'+(overdue?' ('+overdue+' overdue)':'')+'\n\n- '+(STATE.settings.companyName||'ALT');
+      const waUrl=phone?'https://wa.me/91'+phone+'?text='+encodeURIComponent(msg):'';
+      h+='<div style="background:white;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #DBEAFE">';
+      h+='<div style="flex:1;min-width:0">';
+      h+='<div style="font-size:13px;font-weight:800;color:#1E40AF">'+escHtml(sm.name)+'</div>';
+      h+='<div style="font-size:11px;color:var(--t3);margin-top:2px">'+sm.leads.length+' pending'+(overdue?' · <span style="color:#DC2626;font-weight:700">'+overdue+' overdue</span>':'')+'</div>';
+      h+='</div>';
+      if(waUrl){
+        h+='<a href="'+waUrl+'" target="_blank" style="flex-shrink:0;background:#25D366;color:white;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap">📲 WA</a>';
+      } else {
+        h+='<span style="flex-shrink:0;background:#E5E7EB;color:#9CA3AF;padding:8px 12px;border-radius:8px;font-size:11px;font-weight:700">No Phone</span>';
+      }
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+}
 
 /* Date range picker */
 h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">'+
