@@ -3449,6 +3449,7 @@ function confirmBillLots(ordId){
   _billRows=[];
   _billLots=[];
   _billLotId=0;
+  _mixSareLots=[];_mixSareLotId=0;
   _billFromProgLot=true;
   _progLotMap={};
   /* Group progs by itemId+range combination so each group becomes one lot card */
@@ -3476,6 +3477,7 @@ function billProgramme(ordId,progId){
   _billRows=[];
   _billLots=[];
   _billLotId=0;
+  _mixSareLots=[];_mixSareLotId=0;
   _billFromProgLot=true;
   _progLotMap={};
   _billLotId++;
@@ -3581,7 +3583,7 @@ function openEditBill(billId){
       if(!_eg[k]){_eg[k]={itemId:r.itemId,range:r.range,cut:r.cut||6,progs:[]};_eo.push(k);}
       _eg[k].progs.push({itemId:r.itemId,colIdx:r.colIdx,pcs:r.pcs,rate:r.rate,billedPcs:0,bills:[],status:'pending'});
     });
-    _billLots=[];_billLotId=0;
+    _billLots=[];_billLotId=0;_mixSareLots=[];_mixSareLotId=0;
     _eo.forEach(k=>{_billLotId++;_billLots.push({id:_billLotId,_prefill:_eg[k]});});
     buildBillBody({custId:bill.custId,custName:bill.custName,orderNo:bill.ordNo,fromProgLot:true});
   }else{
@@ -3617,7 +3619,7 @@ const maxNum=Math.max(nums.length?Math.max(...nums):0,startNo-1);
 return pfx+String(maxNum+1).padStart(padLen,'0');
 }
 function createStandaloneBill(custId){
-_billOrdId=null; _billRows=[]; _billLots=[]; _billLotId=0; _billFromProgLot=false; _progLotMap={};
+_billOrdId=null; _billRows=[]; _billLots=[]; _billLotId=0; _mixSareLots=[]; _mixSareLotId=0; _billFromProgLot=false; _progLotMap={};
 const cust=STATE.customers.find(c=>c.id===custId);
 buildBillBody(cust?{custId,custName:cust.name}:null);
 showMod('m-bill');
@@ -3670,14 +3672,14 @@ grpBillHtml+
 (custGrp?'':'<div class="fg"><label>Customer *</label><select class="sel" id="bl-c" onchange="detBillGST()"><option value="">Select...</option>'+co+'</select></div>')+
 '<div id="bl-gi" class="xs ct3" style="margin:-8px 0 10px;padding-left:2px"></div>'+
 '<div class="ir2"><div class="fg"><label>Broker</label><select class="sel" id="bl-b"><option value="">No broker</option>'+bo+'</select></div><div class="fg"><label>Discount %</label><input class="inp mono" type="number" id="bl-disc" step="0.1" min="0" max="100" placeholder="0" value="'+(STATE.settings.discount||0)+'" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'"/></div></div>'+
-'<div class="stl" style="padding:8px 0;font-size:10px">Bill Items</div>'+((pre?.ordId&&!pre?.fromProgLot)?'<div id="bl-rows"></div><button class="btn bs bfl mt8" onclick="addBillRow()">+ Add Item</button>':'<div id="bl-lots"></div><button class="btn bp bfl mt8" onclick="addBillLot()">+ Add Item / LOT</button>')+
+'<div class="stl" style="padding:8px 0;font-size:10px">Bill Items</div>'+((pre?.ordId&&!pre?.fromProgLot)?'<div id="bl-rows"></div><button class="btn bs bfl mt8" onclick="addBillRow()">+ Add Item</button>':'<div id="bl-lots"></div><button class="btn bp bfl mt8" onclick="addBillLot()">+ Add Item / LOT</button><div id="bl-mix-lots" style="margin-top:10px"></div><button class="btn bfl mt4" onclick="addMixSareLot()" style="background:var(--Gl);color:var(--Gd);border:2px dashed var(--Gs);font-weight:700">🎨 Add Mixed Sarees</button>')+
 '<div id="bl-sum" class="bsum mt12"></div>'+
 '<div class="fg mt12"><label>Notes</label><textarea class="ta" id="bl-nt" rows="2" placeholder="Payment terms, delivery notes..."></textarea></div>';
 if(pre?.custId) setTimeout(()=>{
   if(!custGrp&&el('bl-c')) el('bl-c').value=pre.custId;
   detBillGST();
 },50);
-if(pre?.ordId&&!pre?.fromProgLot){renderBillRows();}else{if(!pre?.fromProgLot){_billLots=[];_billLotId=0;}setTimeout(()=>{if(pre?.fromProgLot)prefillProgLots();else addBillLot();},80);}
+if(pre?.ordId&&!pre?.fromProgLot){renderBillRows();}else{if(!pre?.fromProgLot){_billLots=[];_billLotId=0;_mixSareLots=[];_mixSareLotId=0;}setTimeout(()=>{if(pre?.fromProgLot)prefillProgLots();else addBillLot();},80);}
 }
 function detBillGST(){
 const cust=STATE.customers.find(c=>c.id===el('bl-c')?.value);
@@ -3731,6 +3733,7 @@ const s=el('bl-sum');if(s)s.innerHTML='<div class="brow"><span>Subtotal</span><s
 }
 /* ── BILL LOT CARD SYSTEM (standalone bills without an order) ── */
 let _billLots=[],_billLotId=0;
+let _mixSareLots=[],_mixSareLotId=0;
 function prefillProgLots(){
 _billLots.forEach((lot,li)=>{
   appendBillLotCard(lot,li);
@@ -3769,6 +3772,86 @@ setTimeout(()=>{const c=el('bl-lot-'+_billLotId);if(c)c.scrollIntoView({behavior
 function remBillLot(id){
 _billLots=_billLots.filter(l=>l.id!==id);const card=el('bl-lot-'+id);if(card)card.remove();calcBillLotTotal();
 }
+
+function addMixSareLot(){
+  _mixSareLotId++;
+  const lot={id:_mixSareLotId};
+  _mixSareLots.push(lot);
+  appendMixSareLotCard(lot,_mixSareLots.length-1);
+  setTimeout(()=>{const c=el('bl-mix-lot-'+_mixSareLotId);if(c)c.scrollIntoView({behavior:'smooth',block:'nearest'});},100);
+}
+function remMixSareLot(id){
+  _mixSareLots=_mixSareLots.filter(l=>l.id!==id);
+  const card=el('bl-mix-lot-'+id);if(card)card.remove();
+  calcBillLotTotal();
+}
+function appendMixSareLotCard(lot,li){
+  const c=el('bl-mix-lots');if(!c)return;
+  const avail=active(STATE.mixedSarees||[]).filter(b=>(b.totalSarees||0)-(b.sareesSold||0)>0);
+  const card=document.createElement('div');
+  card.id='bl-mix-lot-'+lot.id;
+  card.style.cssText='border:2px solid #10B981;border-radius:14px;overflow:hidden;margin-bottom:12px;box-shadow:0 2px 8px rgba(16,185,129,0.12)';
+  const hdr=document.createElement('div');
+  hdr.style.cssText='background:#D1FAE5;padding:8px 12px';
+  const row1=document.createElement('div');
+  row1.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap';
+  const batchOpts=avail.map(b=>{
+    const rem=(b.totalSarees||0)-(b.sareesSold||0);
+    const src=(b.sourceItems||[]).map(r=>r.colourName).join(', ');
+    return '<option value="'+b.id+'">'+b.ref+' — '+rem+' pcs ('+src+')</option>';
+  }).join('');
+  row1.innerHTML=
+    '<div style="background:#10B981;color:white;font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;letter-spacing:.5px;flex-shrink:0">🎨 MIX</div>'+
+    '<select id="bl-mix-lot-'+lot.id+'-batch" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid #10B981;border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="onMixSareLotBatchChange('+lot.id+')">'+
+    '<option value="">— Select Batch —</option>'+batchOpts+'</select>'+
+    '<button onclick="remMixSareLot('+lot.id+')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(220,38,38,.15);color:#DC2626;font-size:13px;cursor:pointer;flex-shrink:0;font-weight:700">&#x2715;</button>';
+  hdr.appendChild(row1);
+  const qf=document.createElement('div');
+  qf.style.cssText='display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:end;margin-top:8px;padding:6px 8px;background:rgba(0,0,0,.06);border-radius:8px';
+  qf.innerHTML=
+    '<div><div style="font-size:9px;font-weight:800;color:#065F46;letter-spacing:.3px">PIECES</div>'+
+    '<input class="inp mono" type="number" step="1" min="1" id="bl-mix-lot-'+lot.id+'-pcs" placeholder="—" oninput="calcMixSareLot('+lot.id+')" style="text-align:center;padding:5px 4px;font-size:13px;font-weight:800;border:1.5px solid #10B981;border-radius:7px"/></div>'+
+    '<div><div style="font-size:9px;font-weight:800;color:#065F46;letter-spacing:.3px">RATE ₹/PC</div>'+
+    '<input class="inp mono" type="number" step="0.01" id="bl-mix-lot-'+lot.id+'-rate" placeholder="—" oninput="calcMixSareLot('+lot.id+')" style="text-align:center;padding:5px 4px;font-size:13px;font-weight:800;border:1.5px solid #10B981;border-radius:7px"/></div>'+
+    '<div id="bl-mix-lot-'+lot.id+'-amt" style="text-align:right;font-size:18px;font-weight:900;color:#059669;padding-bottom:2px">—</div>';
+  hdr.appendChild(qf);
+  const info=document.createElement('div');
+  info.id='bl-mix-lot-'+lot.id+'-info';
+  info.style.cssText='padding:8px 12px;background:#F0FDF4;font-size:11px;color:#065F46;display:none';
+  card.appendChild(hdr);card.appendChild(info);
+  c.appendChild(card);
+  if(!avail.length){
+    const warn=document.createElement('div');
+    warn.style.cssText='padding:10px 12px;text-align:center;font-size:12px;color:#059669;font-weight:600';
+    warn.textContent='No mixed saree batches available. Use Transfer Stock → Convert to Mixed Sarees first.';
+    card.appendChild(warn);
+  }
+}
+function onMixSareLotBatchChange(lid){
+  const batchId=el('bl-mix-lot-'+lid+'-batch')?.value;
+  const info=el('bl-mix-lot-'+lid+'-info'); if(!info) return;
+  if(!batchId){info.style.display='none';return;}
+  const batch=(STATE.mixedSarees||[]).find(b=>b.id===batchId); if(!batch){info.style.display='none';return;}
+  const rem=(batch.totalSarees||0)-(batch.sareesSold||0);
+  const src=(batch.sourceItems||[]).map(r=>'<span class="sku">'+r.sku+'</span> '+r.colourName+' ('+r.taka+'T)').join(' · ');
+  info.innerHTML='<b>'+batch.ref+'</b> · Available: <b>'+rem+' pcs</b> · Date: '+fmtDate(batch.date)+(batch.note?' · '+batch.note:'')+'<br>Sources: '+src;
+  info.style.display='block';
+  calcMixSareLot(lid);
+}
+function calcMixSareLot(lid){
+  const batchId=el('bl-mix-lot-'+lid+'-batch')?.value;
+  const pcs=parseInt(el('bl-mix-lot-'+lid+'-pcs')?.value)||0;
+  const rate=parseFloat(el('bl-mix-lot-'+lid+'-rate')?.value)||0;
+  const amtEl=el('bl-mix-lot-'+lid+'-amt');
+  if(batchId&&pcs>0&&rate>0){
+    const amt=pcs*rate;
+    if(amtEl){amtEl.textContent='₹'+fmtN(Math.round(amt));amtEl.style.color='#059669';}
+  } else {
+    if(amtEl){amtEl.textContent='—';amtEl.style.color='#9CA3AF';}
+  }
+  calcBillLotTotal();
+}
+
 function appendBillLotCard(lot,li){
 const lotColors=[
 {bg:'#EEF2FF',border:'#818CF8',label:'#3730A3',hdr:'#C7D2FE'},
@@ -3935,6 +4018,11 @@ calcBillLotTotal();
 function calcBillLotTotal(){
 const cust=STATE.customers.find(c=>c.id===el('bl-c')?.value);
 let sub=0;
+_mixSareLots.forEach(lot=>{
+const pcs=parseInt(el('bl-mix-lot-'+lot.id+'-pcs')?.value)||0;
+const rate=parseFloat(el('bl-mix-lot-'+lot.id+'-rate')?.value)||0;
+sub+=pcs*rate;
+});
 _billLots.forEach(lot=>{
 const iid=el('bl-lot-'+lot.id+'-i')?.value,rng=el('bl-lot-'+lot.id+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid);if(!item||(rng!=='__norange__'&&!rng))return;
@@ -3963,7 +4051,13 @@ const items=[]; let bno=(el('bl-bno')?.value||'').trim()||nextBillNo();
 const editingBill=_editBillId?STATE.bills.find(b=>b.id===_editBillId):null;
 if(editingBill){
   editingBill.items.forEach(item=>{
-    addStock(item.itemId,item.colIdx,item.taka,'adjustment','Bill Edit - Return',editingBill.billNo,'Editing bill '+editingBill.billNo);
+    if(item.isMixSaree){
+      /* Reverse mixed saree sale */
+      const b=(STATE.mixedSarees||[]).find(x=>x.id===item.mixBatchId);
+      if(b){b.sareesSold=Math.max(0,(b.sareesSold||0)-(item.pcs||0));stamp(b);}
+    } else {
+      addStock(item.itemId,item.colIdx,item.taka,'adjustment','Bill Edit - Return',editingBill.billNo,'Editing bill '+editingBill.billNo);
+    }
   });
 }
 if(!bno){toast('Enter invoice number','er');return;}
@@ -4003,6 +4097,21 @@ const ok=await checkAdj(iid,cIdx,taka); if(!ok) continue;
 deductStock(iid,cIdx,taka,'sale',cust.name,bno);
 items.push({itemId:iid,colIdx:cIdx,sku,itemName:iName,colourName:cName,pcs:p,cut,rate:r,amount:p*r,mtrs:Math.round(p*cut),taka,_progId:row._progId||null});
 }
+}
+/* Mixed Saree lots */
+const mixSareItemsToRecord=[];
+for(const lot of _mixSareLots){
+  const batchId=el('bl-mix-lot-'+lot.id+'-batch')?.value;
+  const pcs=parseInt(el('bl-mix-lot-'+lot.id+'-pcs')?.value)||0;
+  const rate=parseFloat(el('bl-mix-lot-'+lot.id+'-rate')?.value)||0;
+  if(!batchId||!pcs){continue;}
+  const batch=(STATE.mixedSarees||[]).find(b=>b.id===batchId);
+  if(!batch){toast('Invalid mixed sarees batch','er');_savingBill=false;return;}
+  const avail=(batch.totalSarees||0)-(batch.sareesSold||0);
+  if(pcs>avail){toast('Only '+avail+' pcs available in '+batch.ref,'er');_savingBill=false;return;}
+  const src=(batch.sourceItems||[]).map(r=>r.colourName).join(', ');
+  items.push({isMixSaree:true,mixBatchId:batchId,mixBatchRef:batch.ref,itemName:'Mixed Sarees',colourName:src,pcs,rate,amount:pcs*rate,mtrs:0,taka:0,sku:batch.ref});
+  mixSareItemsToRecord.push({batchId,pcs});
 }
 if(!items.length){toast('Add at least one item','er');return;}
 const sub=items.reduce((s,i)=>s+i.amount,0);
@@ -4072,7 +4181,13 @@ lsSave('vs_orders',STATE.orders);
 }
 if(window._billSingleProg){const _spx=(STATE.programmes||[]).find(p=>p.id===window._billSingleProg);if(_spx){const _ordBills=(STATE.bills||[]).filter(b=>!b._deleted&&b.ordId===_billOrdId);const _tot=_ordBills.reduce((s,b)=>s+(b.items||[]).reduce((ss,it)=>ss+(Number(it.pcs)||0),0),0);_spx.billedPcs=_tot;if(_spx.billedPcs>=(_spx.pcs||1)){_spx.status='billed';}else if(_spx.billedPcs>0){_spx.status='partial';}}window._billSingleProg=null;}const _refreshOrdId=_billOrdId;_savingBill=false;persist(); closeBillMod(); renderBills(); renderOrders(); renderDash();if(_refreshOrdId){const _det=el('m-ord-det');if(_det&&_det.style.display&&_det.style.display!=='none')showOrderDetail(_refreshOrdId);}
 const isEdit=!!editingBill;
-toast('Bill '+bno+(isEdit?' updated':' created'),'ok'); api('saveBill',{bills:STATE.bills,entries:STATE.entries,items:STATE.items,orders:STATE.orders});
+/* Commit mixed saree sales */
+mixSareItemsToRecord.forEach(r=>{
+  const b=(STATE.mixedSarees||[]).find(x=>x.id===r.batchId);
+  if(b){b.sareesSold=(b.sareesSold||0)+r.pcs;stamp(b);}
+});
+if(mixSareItemsToRecord.length){lsSave('vs_mixed_sarees',STATE.mixedSarees);}
+toast('Bill '+bno+(isEdit?' updated':' created'),'ok'); api('saveBill',{bills:STATE.bills,entries:STATE.entries,items:STATE.items,orders:STATE.orders,mixedSarees:STATE.mixedSarees});
 }
 function renderBills(q=''){
 const c=el('billst')||el('billlst'); if(!c) return;
@@ -6345,7 +6460,7 @@ el('cn').className='cno dr';
 function waBillMsg(bill){
 const cust=STATE.customers.find(c=>c.id===bill.custId);
 const gL=bill.gstType==='same'?'SGST: \u20B9'+fmtN(Math.round(bill.gstAmt/2))+'\nCGST: \u20B9'+fmtN(Math.round(bill.gstAmt/2)):bill.gstType==='diff'?'IGST: \u20B9'+fmtN(Math.round(bill.gstAmt)):'';
-const lines=(bill.items||[]).map(i=>'- '+i.itemName+' '+i.colourName+' \u2014 '+(i.dispQty||i.pcs)+' pcs x '+(i.cut||6)+'m = '+(i.mtrs||0)+'m @ \u20B9'+(i.rate||0)+'/m = \u20B9'+fmtN(i.amount||0)).join('\n');
+const lines=(bill.items||[]).map(i=>i.isMixSaree?'- '+i.itemName+' ('+i.colourName+') \u2014 '+i.pcs+' pcs @ \u20B9'+i.rate+'/pc = \u20B9'+fmtN(i.amount||0)+'  \U0001f3a8 Mixed Sarees':'- '+i.itemName+' '+i.colourName+' \u2014 '+(i.dispQty||i.pcs)+' pcs x '+(i.cut||6)+'m = '+(i.mtrs||0)+'m @ \u20B9'+(i.rate||0)+'/m = \u20B9'+fmtN(i.amount||0)).join('\n');
 const msg='*'+STATE.settings.companyName+'*\nGSTIN: '+STATE.settings.gstin+'\n'+STATE.settings.address+'\n\n*INVOICE: '+bill.billNo+'*\nDate: '+fmtDate(bill.date)+'\nOrder: '+(bill.ordNo||'')+'\nParty: '+bill.custName+'\nGSTIN: '+(bill.custGstin||'N/A')+'\n\n'+lines+'\n\nSubtotal: \u20B9'+fmtN(Math.round(bill.subtotal||0))+'\n'+gL+'\n*Grand Total: \u20B9'+fmtN(Math.round(bill.grandTotal||0))+'*';
 openWA(cust?.whatsapp||'',msg);
 }
@@ -7630,7 +7745,7 @@ let html='<div style="padding:4px 0">'+
 html+='<div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;margin-bottom:6px">Items</div>';
 (b.items||[]).forEach(it=>{
 html+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #F3F4F6;font-size:12px">'+
-'<div>'+it.itemName+' - '+it.colourName+'<br><span class="xs ct3">'+(it.dispQty||it.pcs)+' pcs x '+(it.cut||6)+'m x \u20B9'+it.rate+'</span></div>'+
+'<div>'+it.itemName+' - '+it.colourName+'<br>'+(it.isMixSaree?'<span class="xs ct3">'+it.pcs+' pcs × ₹'+it.rate+'/pc <span style="background:#D1FAE5;color:#065F46;padding:1px 5px;border-radius:4px;margin-left:4px">🎨 Mixed</span></span>':'<span class="xs ct3">'+(it.dispQty||it.pcs)+' pcs x '+(it.cut||6)+'m x ₹'+it.rate+'</span>')+'</div>'+
 '<div class="mono fw7">'+fmtRs(it.amount)+'</div></div>';
 });
 html+='<div style="margin-top:10px;padding:10px;background:var(--Pl);border-radius:8px">'+
