@@ -4189,6 +4189,51 @@ mixSareItemsToRecord.forEach(r=>{
 if(mixSareItemsToRecord.length){lsSave('vs_mixed_sarees',STATE.mixedSarees);}
 toast('Bill '+bno+(isEdit?' updated':' created'),'ok'); api('saveBill',{bills:STATE.bills,entries:STATE.entries,items:STATE.items,orders:STATE.orders,mixedSarees:STATE.mixedSarees});
 }
+function linkBillToOrder(billId){
+  const bill=STATE.bills.find(b=>b.id===billId);if(!bill)return;
+  const matchOrds=(STATE.orders||[]).filter(o=>!o._deleted&&o.status!=='cancelled'
+    &&(o.custId===bill.custId||(STATE.customers.find(c=>c.id===o.custId)?.name||'').toLowerCase()===(bill.custName||'').toLowerCase())
+    &&!(STATE.bills||[]).some(b=>b.ordId===o.id&&!b._deleted&&b.id!==billId));
+  if(!matchOrds.length){toast('No unlinked pending orders found for this customer','er');return;}
+  const div=document.createElement('div');div.id='m-link-ord';
+  div.style.cssText='position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
+  div.innerHTML='<div style="background:white;border-radius:16px 16px 0 0;width:min(960px,100%);padding:16px;max-height:80vh;overflow-y:auto">'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:14px">'
+    +'<div><h3 style="margin:0;font-size:17px;font-weight:800">🔗 Link Bill to Order</h3>'
+    +'<p style="margin:4px 0 0;font-size:12px;color:var(--t3)">Bill '+escHtml(bill.billNo)+' • '+escHtml(bill.custName)+'</p></div>'
+    +'<button onclick="rmEl(\'m-link-ord\')" style="background:none;border:none;font-size:24px;cursor:pointer">&times;</button></div>'
+    +matchOrds.map(o=>{
+      const tot=(o.items||[]).reduce((s,i)=>s+(i.pcs||i.taka||0),0);
+      return '<div onclick="saveBillOrderLink(\''+billId+'\',\''+o.id+'\')" style="border:1.5px solid var(--br);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:.15s" onmouseenter="this.style.background=\'var(--Pl)\'" onmouseleave="this.style.background=\'\'">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center">'
+        +'<div><div style="font-size:14px;font-weight:800;color:var(--P)">'+escHtml(o.orderNo||o.id)+'</div>'
+        +'<div style="font-size:12px;color:var(--t2);margin-top:2px">'+escHtml(o.custName||'')+(o.date?' • '+fmtDate(o.date):'')+'</div>'
+        +(o.items&&o.items.length?'<div style="font-size:11px;color:var(--t3);margin-top:3px">'+(o.items||[]).slice(0,3).map(i=>(i.itemName||'')+(i.colourName?' '+i.colourName:'')+' • '+(i.pcs||i.taka||0)+' pcs').join(' | ')+'</div>':'')
+        +'</div><div style="text-align:right;flex-shrink:0">'
+        +'<span class="bdg "style="background:#EDE9FE;color:#5B21B6">'+escHtml(o.status||'pending')+'</span>'
+        +'<div style="font-size:12px;font-weight:700;color:var(--P);margin-top:4px">'+fmtN(tot)+' pcs</div>'
+        +'</div></div></div>';
+    }).join('')
+    +'</div>';
+  document.body.appendChild(div);
+}
+function saveBillOrderLink(billId,ordId){
+  const bill=STATE.bills.find(b=>b.id===billId);if(!bill)return;
+  const ord=STATE.orders.find(o=>o.id===ordId);if(!ord)return;
+  bill.ordId=ordId;
+  /* Update order status */
+  if(ord.type!=='open'){
+    const ordTotal=(ord.items||[]).reduce((s,i)=>s+(i.pcs||0),0);
+    const totalBilled=(STATE.bills||[]).filter(b=>b.ordId===ordId&&b.status!=='cancelled'&&!b._deleted).reduce((s,b)=>s+b.items.reduce((ss,i)=>ss+(i.dispQty||i.pcs||0),0),0);
+    ord.status=totalBilled>=ordTotal?'fulfilled':'billed';
+  } else {
+    ord.status='billed';
+  }
+  rmEl('m-link-ord');
+  persist();renderBills();renderOrders();renderDash();
+  toast('Bill '+bill.billNo+' linked to Order '+ord.orderNo,'ok');
+  autoSyncFirebase();
+}
 function renderBills(q=''){
 const c=el('billst')||el('billlst'); if(!c) return;
 const f=liveBills().filter(b=>!q||b.billNo.includes(q)||b.custName.toLowerCase().includes(q.toLowerCase()));
@@ -4242,6 +4287,7 @@ cancelBtn.style.cssText='padding:3px 7px;font-size:10px;margin-top:4px;display:b
 cancelBtn.innerHTML='&#x274C; Cancel';
 cancelBtn.onclick=e=>{e.stopPropagation();cancelBill(b.id);};
 erDiv.appendChild(cancelBtn);
+if(!b.ordId){const linkBtn=document.createElement('button');linkBtn.className='btn bxs';linkBtn.style.cssText='padding:3px 7px;font-size:10px;margin-top:4px;display:block;width:100%;background:#F0FDF4;color:#065F46;border:1px solid #6EE7B7';linkBtn.innerHTML='🔗 Link Order';linkBtn.onclick=e=>{e.stopPropagation();linkBillToOrder(b.id);};erDiv.appendChild(linkBtn);}
 }
 const delBtn=document.createElement('button');
 delBtn.className='btn bd bxs';
