@@ -213,6 +213,44 @@ function smartMerge(local,remote,uniqueKey){
   });
   return Array.from(map.values());
 }
+/* Colour-level merge for items — preserves individual colour edits even when the
+   parent item is "newer" on the remote (e.g. another device or GAS script pushed it).
+   Each colour is compared by its own _ts so a renamed colour always survives sync. */
+function mergeColours(local,remote){
+  if(!remote||!remote.length)return local||[];
+  if(!local||!local.length)return remote.slice();
+  const map=new Map();
+  // Key: SKU if present, else fallback to name+code to handle colour renames
+  const colKey=c=>c.sku||(c.name+'::'+c.code);
+  local.forEach(c=>map.set(colKey(c),c));
+  remote.forEach(c=>{
+    const k=colKey(c);
+    const existing=map.get(k);
+    if(!existing){map.set(k,c);return;}
+    if((c._ts||0)>(existing._ts||0))map.set(k,c);
+  });
+  return Array.from(map.values());
+}
+function mergeItems(local,remote){
+  if(!remote||!remote.length)return local||[];
+  if(!local||!local.length)return remote.slice();
+  const map=new Map();
+  local.forEach(item=>map.set(item.id,item));
+  remote.forEach(remItem=>{
+    const id=remItem.id;
+    const locItem=map.get(id);
+    if(!locItem){map.set(id,remItem);return;}
+    const remTs=remItem._ts||0;
+    const locTs=locItem._ts||0;
+    /* Whichever item is newer wins for metadata (name, range list, etc.)
+       but colours are ALWAYS merged at colour level so no single rename is lost */
+    const base=remTs>locTs?{...remItem}:{...locItem};
+    base.colours=mergeColours(locItem.colours||[],remItem.colours||[]);
+    base._ts=Math.max(remTs,locTs);
+    map.set(id,base);
+  });
+  return Array.from(map.values());
+}
 // Returns true if duplicate found (and shows toast). Use before every save.
 function isDuplicate(collection, matchField, value, editId){
   if(!value||!collection)return false;
@@ -365,8 +403,14 @@ function autoSyncFirebase(){
   /* Lock immediately so sync poll can't pull stale data before push completes */
   window._saveLock=true;
   window._autoSyncTimer=setTimeout(async()=>{
-    if(window._syncRunning){window._saveLock=false;return;}
+    if(window._syncRunning){
+      /* Another push is in flight — flag for retry, keep _saveLock=true so the
+         poll can't sneak in and overwrite local changes with stale cloud data */
+      window._needsResync=true;
+      return;
+    }
     window._syncRunning=true;
+    window._needsResync=false;
     try{
       if(!window._initialPullDone&&!window._dataPulledFromServer){window._syncRunning=false;window._saveLock=false;return;}
       const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;
@@ -400,6 +444,8 @@ function autoSyncFirebase(){
     }catch(e){console.warn('autoSync error:',e);}
     window._syncRunning=false;
     window._saveLock=false;
+    /* If a save was requested while we were pushing, fire another push now */
+    if(window._needsResync){window._needsResync=false;setTimeout(autoSyncFirebase,100);}
   },250);
 }
 let _tt;
@@ -11208,7 +11254,7 @@ function applyCloudData(d,force=false){
   }else{
     keys.forEach(k=>{
       if(d[k]===undefined)return;
-      STATE[k]=k==='taskInstances'?mergeTaskInstances(STATE[k],d[k]):smartMerge(STATE[k],d[k],uniqueKeys[k]);
+      STATE[k]=k==='items'?mergeItems(STATE[k],d[k]):k==='taskInstances'?mergeTaskInstances(STATE[k],d[k]):smartMerge(STATE[k],d[k],uniqueKeys[k]);
     });
   }
   keys.forEach(k=>{STATE[k]=cleanupDeleted(STATE[k]);});
