@@ -107,7 +107,7 @@ function makeSearchable(selectEl){
 if(!selectEl||selectEl.dataset.searchable) return;
 selectEl.dataset.searchable='1';
 const wrap=document.createElement('div');
-wrap.style.cssText='position:relative;width:100%';
+wrap.style.cssText='position:relative;flex:1;min-width:0';
 selectEl.parentNode.insertBefore(wrap,selectEl);
 wrap.appendChild(selectEl);
 selectEl.style.display='none';
@@ -2337,7 +2337,7 @@ sortSelectAlpha(el('od-c')); sortSelectAlpha(el('od-b')); sortSelectAlpha(el('od
 makeSearchable(el('od-c')); makeSearchable(el('od-b'));
 }
 function editCustFromOrder(){ const cId=el('od-c')?.value; if(!cId) return; window._returnToOrder=true; editCust(cId); }
-function openBrkFromOrder(){ window._returnToBroker=true; el('brk-id').value=''; el('brk-name').value=''; el('brk-ph').value=''; el('brk-cm').value=''; showMod('m-brk'); }
+function openBrkFromOrder(){ window._returnToBroker=true; el('brk-id').value=''; el('brk-name').value=''; el('brk-ph').value=''; el('brk-cm').value=''; showMod('m-brk'); const _bm=el('m-brk'); if(_bm){_bm.style.zIndex='600';} setTimeout(()=>{const n=el('brk-name');if(n)n.focus();},300); }
 function editBrkFromOrder(){ const bId=el('od-b')?.value; if(!bId) return; window._returnToBroker=true; editBrk(bId); }
 function onOrderCustChange(){
 const cId=el('od-c')?.value;
@@ -2478,8 +2478,8 @@ const idx=item.colours.indexOf(col);
 const chk=el('od-lot-'+lot.id+'-ck-'+idx); if(!chk?.checked) return;
 const pcsFld=el('od-lot-'+lot.id+'-p-'+idx);
 const rateFld=el('od-lot-'+lot.id+'-rt-'+idx);
-if(pcsFld&&pcsFld.value==='') pcsFld.value=defPcs;
-if(rateFld&&rateFld.value==='') rateFld.value=defRate;
+if(pcsFld&&defPcs) pcsFld.value=defPcs;
+if(rateFld&&defRate) rateFld.value=defRate;
 });
 calcOrdLot(lot.id);
 });
