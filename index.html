@@ -1127,9 +1127,10 @@ const body=document.createElement('div');
 body.style.display=q?'':'none';
 hdr.onclick=()=>{const open=body.style.display==='none';body.style.display=open?'':'none';const c=hdr.querySelector('.stk-chv');if(c)c.style.transform=open?'rotate(90deg)':'';};
 card.appendChild(hdr);
-const colsToShow=q
-? item.colours.filter(col=>col.name.toLowerCase().includes(q)||col.sku.toLowerCase().includes(q)||(col.code||'').toLowerCase().includes(q)||col.range.toLowerCase().includes(q)||item.name.toLowerCase().includes(q))
-: item.colours;
+const colsToShow=(q
+? item.colours.filter(col=>!col.discontinued&&(col.name.toLowerCase().includes(q)||col.sku.toLowerCase().includes(q)||(col.code||'').toLowerCase().includes(q)||col.range.toLowerCase().includes(q)||item.name.toLowerCase().includes(q)))
+: item.colours.filter(col=>!col.discontinued));
+if(!colsToShow.length) return;
 const rangeMap={};
 colsToShow.forEach(col=>{
 const r=col.range||'Default';
@@ -7944,6 +7945,17 @@ if(stk===0) outStock.push({itemName:item.name,range:col.range||'',colName:col.na
 else if(stk>0&&stk<lowThresh) lowStock.push({itemName:item.name,range:col.range||'',colName:col.name,sku:col.sku,hex:col.hex,stk});
 });
 });
+// Build 30-day velocity map for fast-mover sorting
+const _cutoff30=(()=>{const d=new Date();d.setDate(d.getDate()-30);return d.toISOString().split('T')[0];})();
+const _velMap={};
+(STATE.bills||[]).filter(b=>b.date>=_cutoff30&&b.status!=='cancelled').forEach(b=>{
+  (b.items||[]).forEach(it=>{if(it.sku)_velMap[it.sku]=(_velMap[it.sku]||0)+(it.pcs||it.taka||0);});
+});
+(STATE.entries||[]).filter(e=>e.direction==='out'&&e.date>=_cutoff30&&e.type!=='opening').forEach(e=>{
+  if(e.sku)_velMap[e.sku]=(_velMap[e.sku]||0)+(e.taka||0);
+});
+outStock.sort((a,b)=>(_velMap[b.sku]||0)-(_velMap[a.sku]||0));
+lowStock.sort((a,b)=>(_velMap[b.sku]||0)-(_velMap[a.sku]||0));
 const shortStock=[];
 const skuStk={};
 STATE.items.filter(item=>!item._deleted).forEach(item=>item.colours.forEach(col=>{
