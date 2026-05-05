@@ -617,6 +617,8 @@ renderDBSetup();
         }catch(e){}
       }
       if(!d)return;
+      /* Re-check saveLock — a save may have started while we were fetching */
+      if(window._saveLock||window._syncRunning)return;
       const cloudSync=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
       const localSync=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
       const hasNewItems=(d.items||[]).some(ci=>!(STATE.items||[]).find(li=>li.id===ci.id));
@@ -8515,6 +8517,8 @@ function startFirebaseRealtime(){
             const fu=fbUrl('data');if(!fu)return;
             const r=await fetch(fu);if(!r.ok)return;
             const d=await r.json();if(!d||!d.items)return;
+            /* Re-check saveLock — a save may have started while we were fetching */
+            if(window._saveLock||window._syncRunning)return;
             const cT=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
             const lT=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
             const hasNew=(d.items||[]).some(ci=>!(STATE.items||[]).find(li=>li.id===ci.id));
@@ -8773,7 +8777,7 @@ async function saveEditClr(){
   col.code=newCode;
   col.hex=newHex;
   col.sku=newSku;
-  stamp(col);
+  stamp(col); stamp(item);
   // Update all existing entries that referenced the old SKU
   let patchedEntries=0;
   (STATE.entries||[]).forEach(e=>{
