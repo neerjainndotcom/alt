@@ -7170,13 +7170,16 @@ c.appendChild(btn);
 function getLeadStatus(){ const active=[...document.querySelectorAll('#lead-status-btns button')].find(b=>b.dataset.active); return active?.textContent||'New'; }
 function refreshLeadSalesmanDropdown(selId){
 const sel=el('lead-sm'); if(!sel) return;
+const admins=STATE.users.filter(u=>u.active!==false&&!u._deleted&&u.role==='admin');
 const staff=STATE.users.filter(u=>u.active!==false&&!u._deleted&&u.role==='staff');
 staff.sort((a,b)=>{
 const aIsSM=(a.staffTypeId||'').toLowerCase().includes('salesman')?0:1;
 const bIsSM=(b.staffTypeId||'').toLowerCase().includes('salesman')?0:1;
 return aIsSM-bIsSM||(a.name||'').localeCompare(b.name||'');
 });
-sel.innerHTML='<option value="">Unassigned</option>'+staff.map(u=>'<option value="'+u.id+'"'+(u.id===selId?' selected':'')+'>'+u.name+'</option>').join('');
+const adminOpts=admins.map(u=>'<option value="'+u.id+'"'+(u.id===selId?' selected':'')+'>&#x1F451; '+u.name+' (Admin)</option>').join('');
+const staffOpts=staff.map(u=>'<option value="'+u.id+'"'+(u.id===selId?' selected':'')+'>'+u.name+'</option>').join('');
+sel.innerHTML='<option value="">Unassigned</option>'+adminOpts+(adminOpts&&staffOpts?'<option disabled>──────</option>':'')+staffOpts;
 }
 function saveLead(){
 const name=(el('lead-name')?.value||'').trim(); if(!name){toast('Enter lead name','er');return;}
@@ -10322,12 +10325,22 @@ populateTplUserDropdowns(t.assignedUserId,t.substituteUserId);
 showMod('m-task-tpl');
 }
 function populateTplUserDropdowns(selId,subId){
-const users=STATE.users.filter(u=>u.active!==false&&!u._deleted);
+const allUsers=STATE.users.filter(u=>u.active!==false&&!u._deleted);
+const admins=allUsers.filter(u=>u.role==='admin');
+const staff=allUsers.filter(u=>u.role!=='admin');
+const tod=today();
 ['tpl-user','tpl-sub'].forEach((sid,idx)=>{
 const sel=el(sid); if(!sel) return;
 const def=idx===0?'<option value="">Unassigned</option>':'<option value="">No substitute</option>';
 const selVal=idx===0?selId:subId;
-sel.innerHTML=def+users.map(u=>'<option value="'+u.id+'"'+(u.id===selVal?' selected':'')+'>'+u.name+'</option>').join('');
+const mkOpt=u=>{
+  const lv=getActiveLeave(u.id,tod);
+  const lbl=(u.role==='admin'?'👑 ':'')+u.name+(u.role==='admin'?' (Admin)':'')+(lv?' 🛑 On Leave':'');
+  return '<option value="'+u.id+'"'+(u.id===selVal?' selected':'')+'>'+lbl+'</option>';
+};
+const aOpts=admins.map(mkOpt).join('');
+const sOpts=staff.map(mkOpt).join('');
+sel.innerHTML=def+aOpts+(aOpts&&sOpts?'<option disabled>──────</option>':'')+sOpts;
 });
 }
 function onTplFreqChange(){
@@ -10516,8 +10529,16 @@ dot.style.display=myPending.length>0?'':'none';
 function openNewTaskInstance(){
 const isAdmin=STATE.user?.role==='admin';
 if(isAdmin){openNewTaskTemplate();el('tpl-title').textContent='Add One-Off Task';el('tpl-subtitle').textContent='One-time task';el('tpl-save-btn').textContent='Save Task';el('tpl-freq').value='once';onTplFreqChange();return;}
-const users=STATE.users.filter(u=>u.active!==false&&!u._deleted);
-const uO=users.map(u=>'<option value="'+u.id+'"'+(u.id===STATE.user?.id?' selected':'')+'>'+u.name+'</option>').join('');
+const allTiUsers=STATE.users.filter(u=>u.active!==false&&!u._deleted);
+const tiAdmins=allTiUsers.filter(u=>u.role==='admin');
+const tiStaff=allTiUsers.filter(u=>u.role!=='admin');
+const tiTod=today();
+const mkTiOpt=u=>{
+  const lv=getActiveLeave(u.id,tiTod);
+  const lbl=(u.role==='admin'?'👑 ':'')+u.name+(u.role==='admin'?' (Admin)':'')+(lv?' 🛑 On Leave':'');
+  return '<option value="'+u.id+'"'+(u.id===STATE.user?.id?' selected':'')+'>'+lbl+'</option>';
+};
+const uO=tiAdmins.map(mkTiOpt).join('')+(tiAdmins.length&&tiStaff.length?'<option disabled>──────</option>':'')+tiStaff.map(mkTiOpt).join('');
 const pO=['High','Medium','Low'].map(p=>'<option'+(p==='Medium'?' selected':'')+'>'+p+'</option>').join('');
 const catO=['Accounting','Dispatch','Mill/Stock','Sales','Admin','Compliance','Other'].map(c=>'<option>'+c+'</option>').join('');
 const div=document.createElement('div');div.id='m-newtask';
