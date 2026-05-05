@@ -10432,11 +10432,14 @@ c.innerHTML=html;
 }
 function openNewLeave(){
 el('lv-id').value=''; el('lv-from').value=today(); el('lv-to').value=today();
-const users=STATE.users.filter(u=>u.active!==false&&u.role!=='admin');
+const allU=STATE.users.filter(u=>u.active!==false&&!u._deleted);
+const admU=allU.filter(u=>u.role==='admin');
+const stfU=allU.filter(u=>u.role!=='admin');
+const mkLvOpt=u=>'<option value="'+u.id+'">'+(u.role==='admin'?'👑 ':'')+u.name+(u.role==='admin'?' (Admin)':'')+'</option>';
+const opts=admU.map(mkLvOpt).join('')+(admU.length&&stfU.length?'<option disabled>──────</option>':'')+stfU.map(mkLvOpt).join('');
 ['lv-user','lv-sub'].forEach((sid,idx)=>{
 const sel=el(sid); if(!sel) return;
-sel.innerHTML=(idx===0?'<option value="">Select staff</option>':'<option value="">No substitute</option>')+
-users.map(u=>'<option value="'+u.id+'">'+u.name+'</option>').join('');
+sel.innerHTML=(idx===0?'<option value="">Select staff</option>':'<option value="">No substitute</option>')+opts;
 });
 showMod('m-leave');
 }
