@@ -10808,8 +10808,12 @@ function editTaskInstance(id){
   const isAdmin=STATE.user?.role==='admin';
   const isStaffCreated=task.templateId==='manual'&&task.createdBy===STATE.user?.id;
   if(!isAdmin&&!isStaffCreated){toast('Cannot edit admin tasks','er');return;}
-  const users=STATE.users.filter(u=>u.active!==false&&!u._deleted);
-  const uO=users.map(u=>'<option value="'+u.id+'"'+(u.id===task.assignedUserId?' selected':'')+'>'+u.name+'</option>').join('');
+  const tod2=today();
+  const allUsr=STATE.users.filter(u=>u.active!==false&&!u._deleted);
+  const admUsr=allUsr.filter(u=>u.role==='admin');
+  const stfUsr=allUsr.filter(u=>u.role!=='admin');
+  const mkUO=u=>{const lv=getActiveLeave(u.id,tod2);const lbl=(u.role==='admin'?'👑 ':'')+u.name+(u.role==='admin'?' (Admin)':'')+(lv?' 🛑 On Leave':'');return '<option value="'+u.id+'"'+(u.id===task.assignedUserId?' selected':'')+'>'+lbl+'</option>';};
+  const uO=admUsr.map(mkUO).join('')+(admUsr.length&&stfUsr.length?'<option disabled>──────</option>':'')+stfUsr.map(mkUO).join('');
   const pO=['High','Medium','Low'].map(p=>'<option'+(p===task.priority?' selected':'')+'>'+p+'</option>').join('');
   const div=document.createElement('div');div.id='m-etit';
   div.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
