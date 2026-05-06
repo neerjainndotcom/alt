@@ -3726,9 +3726,9 @@ grpBillHtml+
 
 '<div style="background:var(--Pl);border-radius:10px;padding:10px 12px;margin-bottom:10px">'
 +'<div style="font-size:10px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Adjustment (after discount, before GST)</div>'
-+'<div class="ir2"><div class="fg"><label>Label</label>'<input class="inp" id="bl-brok-lbl" placeholder="e.g. Brokerage / Freight / Rounding" value="">'
-+'</div><div class="fg"><label>Amount % <span style=\"font-weight:400;color:var(--t3)\">+add / −deduct</span></label>'<input class="inp mono" type="number" id="bl-brok-pct" step="0.01" placeholder="0" value="0" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'\" ></div></div>'
-+'<div class="fg"><label>Flat ₹ Amount <span style=\"font-weight:400;color:var(--t3)\">+add / −deduct (for freight, rounding etc.)</span></label>'<input class="inp mono" type="number" id="bl-brok-flat" step="0.01" placeholder="0" value="0" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'\" ></div>'
++'<div class="ir2"><div class="fg"><label>Label</label><input class="inp" id="bl-brok-lbl" placeholder="e.g. Brokerage / Freight / Rounding" value="">'
++'</div><div class="fg"><label>Amount % <span style=\"font-weight:400;color:var(--t3)\">+add / −deduct</span></label><input class="inp mono" type="number" id="bl-brok-pct" step="0.01" placeholder="0" value="0" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'\" ></div></div>'
++'<div class="fg"><label>Flat ₹ Amount <span style=\"font-weight:400;color:var(--t3)\">+add / −deduct (for freight, rounding etc.)</span></label><input class="inp mono" type="number" id="bl-brok-flat" step="0.01" placeholder="0" value="0" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'\" ></div>'
 +'</div>'
 '<div id="bl-sum" class="bsum mt12"></div>'+
 '<div class="fg mt12"><label>Notes</label><textarea class="ta" id="bl-nt" rows="2" placeholder="Payment terms, delivery notes..."></textarea></div>';
