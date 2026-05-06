@@ -3651,7 +3651,8 @@ function openEditBill(billId){
     if(el('bl-disc'))el('bl-disc').value=bill.discountPct||0;
     if(el('bl-nt'))el('bl-nt').value=bill.notes||'';
     if(el('bl-brok-pct'))el('bl-brok-pct').value=bill.brokeragePct||0;
-    if(el('bl-brok-lbl'))el('bl-brok-lbl').value=bill.brokerageLabel||'Brokerage';
+    if(el('bl-brok-flat'))el('bl-brok-flat').value=bill.brokerageFlat||0;
+    if(el('bl-brok-lbl'))el('bl-brok-lbl').value=bill.brokerageLabel||'';
     if(!isLotBill){const _rr=_billRows.slice();if(_rr.length>0){const _gg={};_rr.forEach(r=>{const k=(r.itemId||'')+('|'+(r.range||''));if(!_gg[k])_gg[k]={itemId:r.itemId,range:r.range,cut:r.cut||0,items:[]};_gg[k].items.push(r);});Object.values(_gg).forEach((g,gi)=>{const lid=gi+1;if(gi>0)addBillLot();const is=el('bl-lot-'+lid+'-i');if(is){is.value=g.itemId;billLotItemChange(lid);}setTimeout(()=>{const rs=el('bl-lot-'+lid+'-r');if(rs){rs.value=g.range;billLotRangeChange(lid);}const ct=el('bl-lot-'+lid+'-cut');if(ct)ct.value=g.cut;setTimeout(()=>{g.items.forEach(row=>{const ck=el('bl-lot-'+lid+'-ck-'+row.colIdx);const pe=el('bl-lot-'+lid+'-p-'+row.colIdx);const re=el('bl-lot-'+lid+'-r-'+row.colIdx);if(ck&&!ck.checked){ck.checked=true;ck.dispatchEvent(new Event('change',{bubbles:true}));}if(pe){pe.value=row.pcs;pe.dispatchEvent(new Event('input'));}if(re){re.value=row.rate;re.dispatchEvent(new Event('input'));}});detBillGST();},200);},100);});}}
     detBillGST();
   },80);
@@ -3723,7 +3724,12 @@ grpBillHtml+
 '<div id="bl-gi" class="xs ct3" style="margin:-8px 0 10px;padding-left:2px"></div>'+
 '<div class="ir2"><div class="fg"><label>Broker</label><select class="sel" id="bl-b"><option value="">No broker</option>'+bo+'</select></div><div class="fg"><label>Discount %</label><input class="inp mono" type="number" id="bl-disc" step="0.1" min="0" max="100" placeholder="0" value="'+(STATE.settings.discount||0)+'" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'"/></div></div>'+
 
-'<div class="ir2"><div class="fg"><label>Deduction After Disc %</label><input class="inp mono" type="number" id="bl-brok-pct" step="0.01" min="0" placeholder="0" value="0" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'"></div><div class="fg"><label>Deduction Label</label><input class="inp" id="bl-brok-lbl" placeholder="e.g. Brokerage" value="Brokerage"></div></div>'+'<div class="stl" style="padding:8px 0;font-size:10px">Bill Items</div>'+((pre?.ordId&&!pre?.fromProgLot)?'<div id="bl-rows"></div><button class="btn bs bfl mt8" onclick="addBillRow()">+ Add Item</button>':'<div id="bl-lots"></div><button class="btn bp bfl mt8" onclick="addBillLot()">+ Add Item / LOT</button><div id="bl-mix-lots" style="margin-top:10px"></div><button class="btn bfl mt4" onclick="addMixSareLot()" style="background:var(--Gl);color:var(--Gd);border:2px dashed var(--Gs);font-weight:700">🎨 Add Mixed Sarees</button>')+
+'<div style="background:var(--Pl);border-radius:10px;padding:10px 12px;margin-bottom:10px">'
++'<div style="font-size:10px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Adjustment (after discount, before GST)</div>'
++'<div class="ir2"><div class="fg"><label>Label</label>'<input class="inp" id="bl-brok-lbl" placeholder="e.g. Brokerage / Freight / Rounding" value="">'
++'</div><div class="fg"><label>Amount % <span style=\"font-weight:400;color:var(--t3)\">+add / −deduct</span></label>'<input class="inp mono" type="number" id="bl-brok-pct" step="0.01" placeholder="0" value="0" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'\" ></div></div>'
++'<div class="fg"><label>Flat ₹ Amount <span style=\"font-weight:400;color:var(--t3)\">+add / −deduct (for freight, rounding etc.)</span></label>'<input class="inp mono" type="number" id="bl-brok-flat" step="0.01" placeholder="0" value="0" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'\" ></div>'
++'</div>'
 '<div id="bl-sum" class="bsum mt12"></div>'+
 '<div class="fg mt12"><label>Notes</label><textarea class="ta" id="bl-nt" rows="2" placeholder="Payment terms, delivery notes..."></textarea></div>';
 if(pre?.custId) setTimeout(()=>{
@@ -3779,14 +3785,16 @@ const disc=parseFloat(el('bl-disc')?.value)||0;
 const discAmt=disc>0?Math.round(sub*disc/100):0;
 const afterDisc=sub-discAmt;
 const brokPct=parseFloat(el('bl-brok-pct')?.value)||0;
-const brokLbl=(el('bl-brok-lbl')?.value||'Brokerage').trim()||'Brokerage';
-const brokAmt=brokPct>0?Math.round(afterDisc*brokPct/100):0;
-const netTaxable=afterDisc-brokAmt;
+const brokFlat=parseFloat(el('bl-brok-flat')?.value)||0;
+const brokLbl=(el('bl-brok-lbl')?.value||'').trim();
+const brokAdj=brokPct!==0?Math.round(afterDisc*brokPct/100):0;
+const brokAmt=brokAdj+Math.round(brokFlat);/* positive=add, negative=deduct */
+const netTaxable=afterDisc+brokAmt;
 let gH='',grand=netTaxable;
 if(cust?.gstin){const t=gstType(cust.gstin),gA=Math.round(netTaxable*0.05);
 grand=netTaxable+gA;
 gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
-const s=el('bl-sum');if(s)s.innerHTML='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>'+(discAmt>0?'<div class="brow" style="color:#059669"><span>Discount ('+disc+'%)</span><span class="mono">- '+fmtRs(discAmt)+'</span></div><div class="brow"><span>After Discount</span><span class="mono">'+fmtRs(afterDisc)+'</span></div>':'')+(brokAmt>0?'<div class="brow" style="color:#DC2626"><span>'+brokLbl+' ('+brokPct+'%)</span><span class="mono">- '+fmtRs(brokAmt)+'</span></div><div class="brow"><span>Net Taxable</span><span class="mono">'+fmtRs(netTaxable)+'</span></div>':'')+gH+'<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div>';
+const s=el('bl-sum');if(s)s.innerHTML='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>'+(discAmt>0?'<div class="brow" style="color:#059669"><span>Discount ('+disc+'%)</span><span class="mono">- '+fmtRs(discAmt)+'</span></div><div class="brow"><span>After Discount</span><span class="mono">'+fmtRs(afterDisc)+'</span></div>':'')+(brokAmt!==0&&brokLbl?'<div class="brow" style="color:'+(brokAmt<0?'#DC2626':'#059669')+'"><span>'+brokLbl+(brokPct!==0?' ('+brokPct+'%)':'')+'</span><span class="mono">'+(brokAmt<0?'− '+fmtRs(-brokAmt):'+ '+fmtRs(brokAmt))+'</span></div><div class="brow"><span>Net Taxable</span><span class="mono">'+fmtRs(netTaxable)+'</span></div>':'')+gH+'<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div>';
 }
 /* ── BILL LOT CARD SYSTEM (standalone bills without an order) ── */
 let _billLots=[],_billLotId=0;
@@ -4095,14 +4103,16 @@ const disc=parseFloat(el('bl-disc')?.value)||0;
 const discAmt=disc>0?Math.round(sub*disc/100):0;
 const afterDisc=sub-discAmt;
 const brokPct=parseFloat(el('bl-brok-pct')?.value)||0;
-const brokLbl=(el('bl-brok-lbl')?.value||'Brokerage').trim()||'Brokerage';
-const brokAmt=brokPct>0?Math.round(afterDisc*brokPct/100):0;
-const netTaxable=afterDisc-brokAmt;
+const brokFlat=parseFloat(el('bl-brok-flat')?.value)||0;
+const brokLbl=(el('bl-brok-lbl')?.value||'').trim();
+const brokAdj=brokPct!==0?Math.round(afterDisc*brokPct/100):0;
+const brokAmt=brokAdj+Math.round(brokFlat);/* positive=add, negative=deduct */
+const netTaxable=afterDisc+brokAmt;
 let gH='',grand=netTaxable;
 if(cust?.gstin){const t=gstType(cust.gstin),gA=Math.round(netTaxable*0.05);
 grand=netTaxable+gA;
 gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
-const s=el('bl-sum');if(s)s.innerHTML='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>'+(discAmt>0?'<div class="brow" style="color:#059669"><span>Discount ('+disc+'%)</span><span class="mono">- '+fmtRs(discAmt)+'</span></div><div class="brow"><span>After Discount</span><span class="mono">'+fmtRs(afterDisc)+'</span></div>':'')+(brokAmt>0?'<div class="brow" style="color:#DC2626"><span>'+brokLbl+' ('+brokPct+'%)</span><span class="mono">- '+fmtRs(brokAmt)+'</span></div><div class="brow"><span>Net Taxable</span><span class="mono">'+fmtRs(netTaxable)+'</span></div>':'')+gH+'<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div>';
+const s=el('bl-sum');if(s)s.innerHTML='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>'+(discAmt>0?'<div class="brow" style="color:#059669"><span>Discount ('+disc+'%)</span><span class="mono">- '+fmtRs(discAmt)+'</span></div><div class="brow"><span>After Discount</span><span class="mono">'+fmtRs(afterDisc)+'</span></div>':'')+(brokAmt!==0&&brokLbl?'<div class="brow" style="color:'+(brokAmt<0?'#DC2626':'#059669')+'"><span>'+brokLbl+(brokPct!==0?' ('+brokPct+'%)':'')+'</span><span class="mono">'+(brokAmt<0?'− '+fmtRs(-brokAmt):'+ '+fmtRs(brokAmt))+'</span></div><div class="brow"><span>Net Taxable</span><span class="mono">'+fmtRs(netTaxable)+'</span></div>':'')+gH+'<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div>';
 }
 async function saveBill(){
 if(_savingBill){return;}_savingBill=true;
@@ -4182,9 +4192,11 @@ const discPct=parseFloat(el('bl-disc')?.value)||0;
 const discAmt=Math.round(sub*discPct/100);
 const afterDisc=sub-discAmt;
 const brokeragePct=parseFloat(el('bl-brok-pct')?.value)||0;
-const brokerageLabel=(el('bl-brok-lbl')?.value||'Brokerage').trim()||'Brokerage';
-const brokerageAmt=brokeragePct>0?Math.round(afterDisc*brokeragePct/100):0;
-const netTaxable=afterDisc-brokerageAmt;
+const brokerageFlat=parseFloat(el('bl-brok-flat')?.value)||0;
+const brokerageLabel=(el('bl-brok-lbl')?.value||'').trim();
+const _brokAdj=brokeragePct!==0?Math.round(afterDisc*brokeragePct/100):0;
+const brokerageAmt=_brokAdj+Math.round(brokerageFlat);
+const netTaxable=afterDisc+brokerageAmt;
 const gt=gstType(cust.gstin||''), gA=cust.gstin?Math.round(netTaxable*0.05):0;
 const grandTotal=netTaxable+gA;
 /* Capture order party if bill-to is a different group member */
@@ -4196,7 +4208,7 @@ const isCrossGroupBill=(ordCustId&&ordCustId!==cId);
 const billId=editingBill?editingBill.id:uid();
 const payStatus=editingBill?.payStatus||'unpaid';
 const amtPaid=editingBill?.amtPaid||0;
-const newBill={id:billId,billNo:bno,date:el('bl-d')?.value,dueDate:el('bl-due')?.value,custId:cId,custName:cust.name,custGstin:cust.gstin||'',brkId,brkName:brk?.name||'',ordId:_billOrdId||'',ordCustId:isCrossGroupBill?ordCustId:'',ordCustName:isCrossGroupBill?ordCustName:'',items,subtotal:sub,discountPct:discPct,discountAmt:discAmt,afterDiscount:afterDisc,brokeragePct,brokerageLabel,brokerageAmt,netTaxable,gstAmt:gA,gstType:gt,grandTotal,notes:el('bl-nt')?.value,payStatus,amtPaid,by:STATE.user?.name||'',fy:STATE.settings.currentFY||getCurrentFY()};
+const newBill={id:billId,billNo:bno,date:el('bl-d')?.value,dueDate:el('bl-due')?.value,custId:cId,custName:cust.name,custGstin:cust.gstin||'',brkId,brkName:brk?.name||'',ordId:_billOrdId||'',ordCustId:isCrossGroupBill?ordCustId:'',ordCustName:isCrossGroupBill?ordCustName:'',items,subtotal:sub,discountPct:discPct,discountAmt:discAmt,afterDiscount:afterDisc,brokeragePct,brokerageFlat,brokerageLabel,brokerageAmt,netTaxable,gstAmt:gA,gstType:gt,grandTotal,notes:el('bl-nt')?.value,payStatus,amtPaid,by:STATE.user?.name||'',fy:STATE.settings.currentFY||getCurrentFY()};
 if(editingBill){
   /* Replace the existing bill in-place */
   const idx=STATE.bills.findIndex(b=>b.id===billId);
@@ -7868,7 +7880,7 @@ html+='<div style="display:flex;justify-content:space-between;padding:5px 0;bord
 html+='<div style="margin-top:10px;padding:10px;background:var(--Pl);border-radius:8px">'+
 '<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>Subtotal</span><span class="mono">'+fmtRs(b.subtotal||b.grandTotal)+'</span></div>'+
 (b.discountAmt?'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--Gd)"><span>Discount ('+b.discountPct+'%)</span><span class="mono">-'+fmtRs(b.discountAmt)+'</span></div>':'')+
-(b.brokerageAmt?'<div style="display:flex;justify-content:space-between;font-size:12px;color:#DC2626"><span>'+(b.brokerageLabel||'Brokerage')+' ('+b.brokeragePct+'%)</span><span class="mono">-'+fmtRs(b.brokerageAmt)+'</span></div><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700"><span>Net Taxable</span><span class="mono">'+fmtRs(b.netTaxable||b.afterDiscount-b.brokerageAmt)+'</span></div>':'')+
+(b.brokerageAmt&&b.brokerageLabel?'<div style="display:flex;justify-content:space-between;font-size:12px;color:'+(b.brokerageAmt<0?'#DC2626':'#059669')+'"><span>'+b.brokerageLabel+(b.brokeragePct?'  ('+b.brokeragePct+'%)':'')+'</span><span class="mono">'+(b.brokerageAmt<0?'− '+fmtRs(-b.brokerageAmt):'+ '+fmtRs(b.brokerageAmt))+'</span></div><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700"><span>Net Taxable</span><span class="mono">'+fmtRs(b.netTaxable||b.afterDiscount+b.brokerageAmt)+'</span></div>':'')+
 (b.gstAmt?'<div style="display:flex;justify-content:space-between;font-size:12px"><span>GST</span><span class="mono">+'+fmtRs(b.gstAmt)+'</span></div>':'')+
 '<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:900;margin-top:4px;padding-top:4px;border-top:1px solid var(--br)"><span>Grand Total</span><span class="mono">'+fmtRs(b.grandTotal)+'</span></div>'+
 (b.amtPaid?'<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--Gd);margin-top:4px"><span>Paid</span><span class="mono">'+fmtRs(b.amtPaid)+'</span></div>':'')+
