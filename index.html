@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="ALT Stock"/>
 <meta name="mobile-web-app-capable" content="yes"/>
-<meta name="theme-color" content="#1e1b4b"/>h
+<meta name="theme-color" content="#1e1b4b"/>hh
 <meta name="msapplication-TileColor" content="#1e1b4b"/>
 <meta name="description" content="Stock Management — Amrit Laxmi Textile, Surat"/>
 <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkFMVCBTdG9jayDigJQgQW1yaXQgTGF4bWkgVGV4dGlsZSIsCiAgInNob3J0X25hbWUiOiAiQUxUIFN0b2NrIiwKICAiZGVzY3JpcHRpb24iOiAiU3RvY2sgTWFuYWdlbWVudCBmb3IgQW1yaXQgTGF4bWkgVGV4dGlsZSwgU3VyYXQiLAogICJzdGFydF91cmwiOiAiLi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxZTFiNGIiLAogICJ0aGVtZV9jb2xvciI6ICIjMWUxYjRiIiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiCn0="/>
@@ -3730,7 +3730,8 @@ grpBillHtml+
 +'</div><div class="fg"><label>Amount % <span style=\"font-weight:400;color:var(--t3)\">+add / −deduct</span></label><input class="inp mono" type="number" id="bl-brok-pct" step="0.01" placeholder="0" value="0" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'\" ></div></div>'
 +'<div class="fg"><label>Flat ₹ Amount <span style=\"font-weight:400;color:var(--t3)\">+add / −deduct (for freight, rounding etc.)</span></label><input class="inp mono" type="number" id="bl-brok-flat" step="0.01" placeholder="0" value="0" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'\" ></div>'
 +'</div>'
-'<div id="bl-sum" class="bsum mt12"></div>'+
++'<div style="margin:12px 0 4px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:10px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.5px">Lots / SKUs</span><button type="button" onclick="addBillLot()" style="font-size:11px;padding:3px 10px;background:var(--P);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700">+ Add Lot</button></div><div id="bl-lots"></div></div>'
+ '<div id="bl-sum" class="bsum mt12"></div>'+
 '<div class="fg mt12"><label>Notes</label><textarea class="ta" id="bl-nt" rows="2" placeholder="Payment terms, delivery notes..."></textarea></div>';
 if(pre?.custId) setTimeout(()=>{
   if(!custGrp&&el('bl-c')) el('bl-c').value=pre.custId;
