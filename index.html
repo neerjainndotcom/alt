@@ -3731,7 +3731,7 @@ grpBillHtml+
 +'<div class="fg"><label>Flat ₹ Amount <span style=\"font-weight:400;color:var(--t3)\">+add / −deduct (for freight, rounding etc.)</span></label><input class="inp mono" type="number" id="bl-brok-flat" step="0.01" placeholder="0" value="0" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'\" ></div>'
 +'</div>'
 +'<div style="margin:12px 0 4px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:10px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.5px">Lots / SKUs</span><button type="button" onclick="addBillLot()" style="font-size:11px;padding:3px 10px;background:var(--P);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700">+ Add Lot</button></div><div id="bl-lots"></div></div>'
- '<div id="bl-sum" class="bsum mt12"></div>'+
+ +'<div id="bl-sum" class="bsum mt12"></div>'+
 '<div class="fg mt12"><label>Notes</label><textarea class="ta" id="bl-nt" rows="2" placeholder="Payment terms, delivery notes..."></textarea></div>';
 if(pre?.custId) setTimeout(()=>{
   if(!custGrp&&el('bl-c')) el('bl-c').value=pre.custId;
