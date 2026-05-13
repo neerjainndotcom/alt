@@ -818,7 +818,7 @@ const groups=[
 {ico:'📊',lbl:tr('stk_adj'),sub:tr('corr_var'),cl:'c-t',fn:'openAdjust()'},
 {ico:'🔀',lbl:'Transfer Stock',sub:'Convert / Move takas',cl:'c-a',fn:'openTransferHub()'},
 ],cols:2}]:[]),
-...(isAdmin?[{title:'🗂️ '+tr('masters'),btns:[
+...(isAdmin||hasPerm('masters_edit')?[{title:'🗂️ '+tr('masters'),btns:[
 {ico:'🧵',lbl:tr('new_item'),sub:'Add item type',cl:'c-x',fn:'openItem()'},
 {ico:'🎨',lbl:'New Range',sub:'Add range to item',cl:'c-p',fn:'openQuickRange()'},
 {ico:'🖌️',lbl:'New Colour',sub:'Add colour to range',cl:'c-p',fn:'openQuickColour()'},
