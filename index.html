@@ -2166,35 +2166,58 @@ let _jwType='s2j', _jwRows=[{}], _rjwId=null;
 function nextJWRef(){ return 'JW-'+String(STATE.jobWork.length+1).padStart(3,'0'); }
 function nextInwardVoucher(){ const pfx=(STATE.settings.inwardPrefix||'GRN/').trim(); const n=(STATE.settings.nextInwardNo||1); return pfx+String(n).padStart(4,'0'); }
 /* ===== EXCHANGE MODULE ===== */
-let _exchF={skus:[{}]};
+let _exchF={skus:[{itemId:'',rangeName:'',colIdx:'',pcs:'',cut:''}]};
 function nextExVoucher(){
   const pfx=(STATE.settings.exchPrefix||'EX/').replace(/-$/,'/');
   const n=STATE.settings.nextExchNo||1;
   return pfx+String(n).padStart(3,'0');
 }
 function openExchange(){
-  _exchF={skus:[{}]};
+  _exchF={skus:[{itemId:'',rangeName:'',colIdx:'',pcs:'',cut:''}]};
   buildExchangeForm(); showMod('m-exch');
 }
 function buildExchangeForm(){
   const vno=nextExVoucher();
-  let skuHtml=''; _exchF.skus.forEach((_,i)=>{skuHtml+=exSkuRowHtml(i);});
+  let skuHtml=''; _exchF.skus.forEach((sk,i)=>{skuHtml+=exSkuRowHtml(i,sk);});
   el('exch-form-body').innerHTML='<div class="ir2"><div class="fg"><label>Voucher No</label><input class="inp mono" id="ex-vno" value="'+vno+'" readonly></div><div class="fg"><label>Date</label><input class="inp" type="date" id="ex-date" value="'+today()+'"></div></div><div class="ir2"><div class="fg"><label>Party Name (Customer)</label><input class="inp" id="ex-party" placeholder="Customer name"></div><div class="fg"><label>Khata Name</label><input class="inp" id="ex-khata" placeholder="Khata / Ledger name"></div></div><div class="ir2"><div class="fg"><label>Rep Name</label><input class="inp" id="ex-rep" placeholder="Representative name"></div><div class="fg"><label>Rep Phone</label><input class="inp" type="tel" id="ex-phone" placeholder="10-digit mobile"></div></div><div class="stl" style="margin:12px 0 6px">Items to Exchange</div><div id="ex-sku-list">'+skuHtml+'</div><button class="btn-sec" onclick="addExSkuRow()" style="margin-top:6px">+ Add Item</button>';
 }
-function exSkuRowHtml(i){
-  return '<div class="sr su" id="ex-sku-'+i+'">'
-    +'<div class="srh"><span>Item '+(i+1)+'</span>'+(i>0?'<button onclick="removeExRow('+i+')" class="btn bd bxs">\u2715</button>':'')+'</div>'
-    +buildCascade('ex-sk-'+i,false)
-    +'<div class="ir2" style="margin-top:6px">'
-    +'<div class="fg"><label>Pcs (No. of Sarees)</label><input class="inp" type="number" id="ex-pcs-'+i+'" min="1" placeholder="0"></div>'
-    +'<div class="fg"><label>Cut (Mtrs/Saree)</label><input class="inp" type="number" step="0.01" id="ex-cut-'+i+'" placeholder="0.00"></div>'
-    +'</div></div>';
+function exSkuRowHtml(i,sk){
+  const items=STATE.items||[];
+  const itemOpts=items.map(it=>'<option value="'+it.id+'"'+(sk.itemId===it.id?' selected':'')+'>'+it.name+'</option>').join('');
+  let rangeOpts='<option value="">-- Range --</option>';
+  let colOpts='<option value="">-- Colour --</option>';
+  if(sk.itemId){
+    const it=items.find(x=>x.id===sk.itemId);
+    if(it){
+      const ranges=[...new Set((it.colours||[]).map(c=>c.range))];
+      rangeOpts=ranges.map(r=>'<option value="'+r+'"'+(sk.rangeName===r?' selected':'')+'>'+r+'</option>').join('');
+      if(sk.rangeName){
+        const cols=(it.colours||[]).filter(c=>c.range===sk.rangeName);
+        colOpts=cols.map(c=>'<option value="'+c.code+'"'+(String(sk.colIdx)===String(c.code)?' selected':'')+'>'+c.name+'</option>').join('');
+      }
+    }
+  }
+  return '<div class="ex-sku-row" id="ex-sku-'+i+'" style="border:1px solid var(--bdr);border-radius:8px;padding:10px;margin-bottom:8px;position:relative"><span style="position:absolute;top:6px;right:8px;cursor:pointer;font-size:16px" onclick="removeExRow('+i+')">&times;</span><div class="ir3"><div class="fg"><label>Item</label><select class="inp" id="ex-item-'+i+'" onchange="exItemChg('+i+',this.value)"><option value="">-- Item --</option>'+itemOpts+'</select></div><div class="fg"><label>Range</label><select class="inp" id="ex-range-'+i+'" onchange="exRangeChg('+i+',this.value)"><option value="">-- Range --</option>'+rangeOpts+'</select></div><div class="fg"><label>Colour</label><select class="inp" id="ex-col-'+i+'"><option value="">-- Colour --</option>'+colOpts+'</select></div></div><div class="ir2" style="margin-top:6px"><div class="fg"><label>Pcs (No. of Sarees)</label><input class="inp" type="number" id="ex-pcs-'+i+'" min="1" placeholder="0" value="'+(sk.pcs||'')+'"></div><div class="fg"><label>Cut (Mtrs/Saree)</label><input class="inp" type="number" step="0.01" id="ex-cut-'+i+'" placeholder="0.00" value="'+(sk.cut||'')+'"></div></div></div>';
+}
+function exItemChg(i,itemId){
+  _exchF.skus[i]={itemId,rangeName:'',colIdx:'',pcs:el('ex-pcs-'+i)?el('ex-pcs-'+i).value:'',cut:el('ex-cut-'+i)?el('ex-cut-'+i).value:''};
+  const it=(STATE.items||[]).find(x=>x.id===itemId);
+  const ranges=it?[...new Set((it.colours||[]).map(c=>c.range))]:[];
+  el('ex-range-'+i).innerHTML='<option value="">-- Range --</option>'+ranges.map(r=>'<option value="'+r+'">'+r+'</option>').join('');
+  el('ex-col-'+i).innerHTML='<option value="">-- Colour --</option>';
+}
+function exRangeChg(i,rangeName){
+  const itemId=el('ex-item-'+i)?el('ex-item-'+i).value:'';
+  _exchF.skus[i].rangeName=rangeName;
+  const it=(STATE.items||[]).find(x=>x.id===itemId);
+  const cols=it?(it.colours||[]).filter(c=>c.range===rangeName):[];
+  el('ex-col-'+i).innerHTML='<option value="">-- Colour --</option>'+cols.map(c=>'<option value="'+c.code+'">'+c.name+'</option>').join('');
 }
 function addExSkuRow(){
-  const i=_exchF.skus.length;
-  _exchF.skus.push({});
+  _exchF.skus.push({itemId:'',rangeName:'',colIdx:'',pcs:'',cut:''});
+  const i=_exchF.skus.length-1;
   const d=document.createElement('div');
-  d.innerHTML=exSkuRowHtml(i);
+  d.innerHTML=exSkuRowHtml(i,_exchF.skus[i]);
   el('ex-sku-list').appendChild(d.firstElementChild);
 }
 function removeExRow(i){const r=el('ex-sku-'+i);if(r)r.remove();_exchF.skus[i]=null;}
@@ -2208,12 +2231,18 @@ function saveExchange(){
   if(!phone||!/^\d{10}$/.test(phone)){toast('Enter valid 10-digit rep phone','er');return;}
   const skuList=[];
   (_exchF.skus||[]).forEach((sk,i)=>{
-    if(sk===null)return;
-    const sel=getSel('ex-sk-'+i); if(!sel)return;
-    const pcs=parseFloat(el('ex-pcs-'+i)?.value||0)||0;
-    const cut=parseFloat(el('ex-cut-'+i)?.value||0)||0;
-    if(!pcs||!cut)return;
-    skuList.push({skuId:sel.col.sku,itemId:sel.itemId,itemName:sel.item.name,rangeName:sel.col.range||'',colourName:sel.col.name,colCode:sel.col.code||'',colIdx:sel.colIdx,pcs,cut,reusable:0,mtrs:0});
+    if(!sk)return;
+    const itemId=el('ex-item-'+i)?el('ex-item-'+i).value:'';
+    const rangeName=el('ex-range-'+i)?el('ex-range-'+i).value:'';
+    const colCode=el('ex-col-'+i)?el('ex-col-'+i).value:'';
+    const pcs=parseFloat(el('ex-pcs-'+i)?el('ex-pcs-'+i).value:0)||0;
+    const cut=parseFloat(el('ex-cut-'+i)?el('ex-cut-'+i).value:0)||0;
+    if(!itemId||!colCode||!pcs||!cut)return;
+    const it=(STATE.items||[]).find(x=>x.id===itemId);
+    const cIdx=it?(it.colours||[]).findIndex(c=>c.code===colCode):-1;
+    const col=cIdx>-1?it.colours[cIdx]:null;
+    if(!col)return;
+    skuList.push({skuId:col.sku,itemId,itemName:it.name,rangeName,colourName:col.name,colCode,pcs,cut,reusable:0,mtrs:0});
   });
   if(!skuList.length){toast('Add at least one valid item with pcs and cut','er');return;}
   const vno=el('ex-vno')?el('ex-vno').value:nextExVoucher();
@@ -2264,7 +2293,7 @@ function saveExchReusable(id){
     s.mtrs=mtrs;
     if(s.reusable>0){
       const it=(STATE.items||[]).find(x=>x.id===s.itemId);
-      const cIdx=s.colIdx!=null?s.colIdx:(it?(it.colours||[]).findIndex(c=>c.code===s.colCode):-1);
+      const cIdx=it?(it.colours||[]).findIndex(c=>c.code===s.colCode):-1;
       STATE.entries.push({id:uid(),date:e.date,type:'exchange_return',direction:'in',party:e.party,ref:e.vno,itemId:s.itemId,itemName:s.itemName,colIdx:cIdx,colourName:s.colourName,sku:s.skuId,taka:0,mtrs,note:'Exchange reusable '+s.reusable+' pcs x '+s.cut+'m',by:(STATE.user?STATE.user.name:''),_ts:Date.now(),voucherNo:e.vno,fy:STATE.settings.curFY||''});
       if(it&&cIdx>-1){it.colours[cIdx].stock_mtrs=(it.colours[cIdx].stock_mtrs||0)+mtrs;it._ts=Date.now();}
     }
