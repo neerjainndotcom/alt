@@ -1577,7 +1577,7 @@ return '<div onclick="openEditClr(\''+item.id+'\','+cIdx+')" style="display:flex
 }).join('')+
 '</div>';
 }).join('');
-if(item.colours&&item.colours.length>1){html+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--br)"><button class="btn bs bfl" onclick="openMergeSku(\''+item.id+'\')">&#8652; Merge SKUs</button></div>';}
+html+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--br)"><button class="btn bs bfl" onclick="openMergeSku(\''+item.id+'\')">&#8652; Merge SKUs</button></div>';
 c.innerHTML=html;
 }
 function openAddRange(){
