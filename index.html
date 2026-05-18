@@ -406,8 +406,40 @@ if(STATE.taskInstances) lsSave('vs_task_instances',STATE.taskInstances);
 if(STATE.staffLeave) lsSave('vs_staff_leave',STATE.staffLeave);
 if(STATE.mixedSarees) lsSave('vs_mixed_sarees',STATE.mixedSarees);
 if(STATE.exchanges)lsSave('vs_exchanges',STATE.exchanges);
-autoSyncFirebase();
+autoSyncGAS();
 }
+function autoSyncGAS(){
+  if(!GAS_URL){return;}
+  clearTimeout(window._gasWriteTimer);
+  window._gasWriteTimer=setTimeout(async function(){
+    try{
+      const payload={
+        action:'save',
+        items:STATE.items,
+        entries:STATE.entries,
+        customers:STATE.customers,
+        brokers:STATE.brokers,
+        suppliers:STATE.suppliers,
+        users:STATE.users||[],
+        orders:STATE.orders||[],
+        bills:STATE.bills||[],
+        jobWork:STATE.jobWork||[],
+        leads:STATE.leads||[],
+        flaggedEntries:STATE.flaggedEntries||[],
+        exchanges:STATE.exchanges||[],
+        mixedSarees:STATE.mixedSarees||[],
+        settings:STATE.settings,
+        syncedAt:new Date().toISOString()
+      };
+      await fetch(GAS_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
+    }catch(e){console.warn('GAS write error:',e);}
+  },1500);
+}
+
 function autoSyncFirebase(){
   clearTimeout(window._autoSyncTimer);
   /* Lock immediately so sync poll can't pull stale data before push completes */
@@ -686,8 +718,7 @@ renderDBSetup();
     }catch(e){}
   },15000);/* Poll every 15s as safety net — SSE handles real-time, this catches anything SSE misses */
   scheduleWAReminder();
-  startFirebaseRealtime();
-  try{autoDeleteOldCompletedTasks();}catch(e){}
+  /* Firebase removed — GAS only */  try{autoDeleteOldCompletedTasks();}catch(e){}
 }
 async function syncAPI(){
 if(window._saveLock) return;
