@@ -406,40 +406,8 @@ if(STATE.taskInstances) lsSave('vs_task_instances',STATE.taskInstances);
 if(STATE.staffLeave) lsSave('vs_staff_leave',STATE.staffLeave);
 if(STATE.mixedSarees) lsSave('vs_mixed_sarees',STATE.mixedSarees);
 if(STATE.exchanges)lsSave('vs_exchanges',STATE.exchanges);
-autoSyncGAS();
+autoSyncFirebase();
 }
-function autoSyncGAS(){
-  if(!GAS_URL){return;}
-  clearTimeout(window._gasWriteTimer);
-  window._gasWriteTimer=setTimeout(async function(){
-    try{
-      const payload={
-        action:'save',
-        items:STATE.items,
-        entries:STATE.entries,
-        customers:STATE.customers,
-        brokers:STATE.brokers,
-        suppliers:STATE.suppliers,
-        users:STATE.users||[],
-        orders:STATE.orders||[],
-        bills:STATE.bills||[],
-        jobWork:STATE.jobWork||[],
-        leads:STATE.leads||[],
-        flaggedEntries:STATE.flaggedEntries||[],
-        exchanges:STATE.exchanges||[],
-        mixedSarees:STATE.mixedSarees||[],
-        settings:STATE.settings,
-        syncedAt:new Date().toISOString()
-      };
-      await fetch(GAS_URL,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(payload)
-      });
-    }catch(e){console.warn('GAS write error:',e);}
-  },1500);
-}
-
 function autoSyncFirebase(){
   clearTimeout(window._autoSyncTimer);
   /* Lock immediately so sync poll can't pull stale data before push completes */
@@ -668,18 +636,7 @@ renderDBSetup();
       }catch(e){}
     }
     // Fallback to Google Sheets
-    if(!pulled&&GAS_URL){
-      try{
-        const ctrl=new AbortController();
-        const tid=setTimeout(()=>ctrl.abort(),10000);
-        const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'}),signal:ctrl.signal});
-        clearTimeout(tid);
-        const d=await r.json();
-        if(d&&typeof d==='object'&&(d.items||d.users||d.customers)){
-          applyCloudData(d);setLiveStatus('live');pulled=true;
-        }
-      }catch(e){}
-    }
+    
   }catch(e){console.warn('initApp pull:',e);}
   window._initialPullDone=true;
 })();
@@ -694,16 +651,7 @@ renderDBSetup();
       let d=null;
       const fu=fbUrl('data');
       if(fu){try{const r=await fetch(fu);if(r.ok){const j=await r.json();if(j&&typeof j==='object'&&(j.items||j.users))d=j;}}catch(e){}}
-      if(!d&&GAS_URL){
-        try{
-          const ctrl=new AbortController();
-          const tid=setTimeout(()=>ctrl.abort(),10000);
-          const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'}),signal:ctrl.signal});
-          clearTimeout(tid);
-          const j=await r.json();
-          if(j&&typeof j==='object'&&(j.items||j.users))d=j;
-        }catch(e){}
-      }
+      
       if(!d)return;
       /* Re-check saveLock — a save may have started while we were fetching */
       if(window._saveLock||window._syncRunning)return;
@@ -718,7 +666,7 @@ renderDBSetup();
     }catch(e){}
   },15000);/* Poll every 15s as safety net — SSE handles real-time, this catches anything SSE misses */
   scheduleWAReminder();
-  /* Firebase removed — GAS only */  try{autoDeleteOldCompletedTasks();}catch(e){}
+  startFirebaseRealtime();  try{autoDeleteOldCompletedTasks();}catch(e){}
 }
 async function syncAPI(){
 if(window._saveLock) return;
@@ -726,6 +674,38 @@ const d=await api('getAll'); if(!d) return;
 applyCloudData(d);
 toast('Synced with Google Sheets','ok');
 }
+/* ===== GOOGLE SHEETS BACKUP / RESTORE ===== */
+async function backupToSheets(){
+  if(!GAS_URL){toast('No GAS URL set in Settings','er');return;}
+  if(!confirm('Push ALL current data to Google Sheets?\nThis overwrites the existing Sheets backup.'))return;
+  toast('Backing up...','info');
+  try{
+    const payload={action:'save',items:STATE.items,entries:STATE.entries,customers:STATE.customers,brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users||[],orders:STATE.orders||[],bills:STATE.bills||[],jobWork:STATE.jobWork||[],leads:STATE.leads||[],exchanges:STATE.exchanges||[],mixedSarees:STATE.mixedSarees||[],settings:STATE.settings,syncedAt:new Date().toISOString()};
+    const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(r.ok){toast('Backup to Google Sheets done!','ok');}
+    else{toast('Backup failed — check GAS has doPost handler','er');}
+  }catch(e){toast('Backup error: '+e.message,'er');}
+}
+async function restoreFromSheets(){
+  if(!GAS_URL){toast('No GAS URL set in Settings','er');return;}
+  if(!confirm('Restore data FROM Google Sheets into Firebase?\n\nThis overwrites current data. Are you sure?'))return;
+  toast('Fetching from Google Sheets...','info');
+  try{
+    const ctrl=new AbortController();
+    const tid=setTimeout(()=>ctrl.abort(),15000);
+    const r=await fetch(GAS_URL,{signal:ctrl.signal});
+    clearTimeout(tid);
+    if(!r.ok){toast('Could not read Google Sheets','er');return;}
+    const d=await r.json();
+    if(!d||typeof d!=='object'){toast('Invalid data from Sheets','er');return;}
+    applyCloudData(d);
+    persist();
+    await syncToFirebase(false);
+    toast('Restore complete — data back in Firebase!','ok');
+  }catch(e){toast('Restore error: '+e.message,'er');}
+}
+/* ===== END GOOGLE SHEETS BACKUP / RESTORE ===== */
+
 function setNav(tab){
 document.body.style.overflow='';/* clear stuck modal-overflow on nav */
 document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
@@ -5488,6 +5468,10 @@ c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Compa
 '<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Control which widgets appear on the dashboard and their order. Click the gear icon on the Dashboard to customize.</div>'+
 '<button class="btn bs bfl" onclick="openDashConfig()">Customize Dashboard Layout</button></div>'+
 '<div class="card mt12" style="background:#F9FAFB;text-align:center"><div style="font-size:11px;color:var(--t3)">ALT Stock v'+APP_VERSION+' | Build: '+APP_BUILD_DATE+'</div></div>'+
+'<div class="card mt12" style="border:2px solid var(--acc);border-radius:12px"><div class="fw8" style="margin-bottom:4px">&#128196; Google Sheets Backup</div>'+
+'<div class="xs ct3" style="margin-bottom:12px">Firebase is your live database. Use Sheets for manual backup &amp; restore only.</div>'+
+'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bs" onclick="backupToSheets()">&#8593; Backup to Sheets</button>'+
+'<button class="btn bs" onclick="restoreFromSheets()">&#8595; Restore from Sheets</button></div></div>'+
 '<button class="btn bp bfl mt16" onclick="saveSettings()">Save Settings</button>'+
 '<button class="btn bd bfl mt8" onclick="logout()">Logout</button>'+
 '<div style="height:20px"></div>';
