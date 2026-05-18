@@ -8692,7 +8692,12 @@ renderFlaggedTab(); renderDash(); renderRecentAct();
 function renderDbTab(){
 const c=el('dbbod'); if(!c) return;
 const lastSync=STATE.settings.lastSync||'Never';
+const dbMode=STATE.settings.dbMode||'firebase';
 c.innerHTML=
+'<div style="display:flex;gap:8px;margin-bottom:14px">'+
+'<button class="btn bfl" id="dbt-fb" onclick="setDbMode(\'firebase\')" style="flex:1">&#x1F525; Firebase</button>'+
+'<button class="btn bfl" id="dbt-gs" onclick="setDbMode(\'sheets\')" style="flex:1">&#x1F4CA; Google Sheets</button>'+
+'</div>'+
 '<div style="background:linear-gradient(135deg,#065F46,#059669);border-radius:12px;padding:14px;margin-bottom:12px">'+
 '<div style="font-size:13px;font-weight:900;color:white;margin-bottom:4px">&#x1F504; Switch / Migrate Database</div>'+
 '<div style="font-size:11px;color:rgba(255,255,255,.85);margin-bottom:10px">Move from Firebase to Google Sheets (or vice versa) without losing any data. Works mid-year too.</div>'+
@@ -8707,7 +8712,7 @@ c.innerHTML=
 '</div>'+
 '<input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"/>'+
 '</div>'+
-'<div style="background:linear-gradient(135deg,#B45309,#D97706);border-radius:12px;padding:14px;margin-bottom:12px">'+
+'<div style="background:linear-gradient(135deg,#B45309,#D97706);border-radius:12px;padding:14px;margin-bottom:12px;display:'+(dbMode==='firebase'?'block':'none')+'">'+
 '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
 '<span style="font-size:20px">&#x1F525;</span>'+
 '<div>'+
@@ -8748,7 +8753,7 @@ c.innerHTML=
 '<strong>Step 10:</strong> Click <strong>"Save"</strong> &#x2192; Then <strong>"Test"</strong> &#x2192; Then <strong>"Push ALL data to Firebase"</strong><br>'+
 '<div style="margin-top:8px;padding:8px;background:rgba(255,255,255,.6);border-radius:8px;font-weight:700">&#x2705; Done! Your data will now sync automatically across all devices.</div>'+
 '</div>'+
-'<div style="background:var(--Pl);border-radius:12px;padding:14px;margin-bottom:12px">'+
+'<div style="background:var(--Pl);border-radius:12px;padding:14px;margin-bottom:12px;display:'+(dbMode==='sheets'?'block':'none')+'">'+
 '<div style="font-size:14px;font-weight:900;color:var(--Pd);margin-bottom:4px">&#x1F4CA; Google Sheets (Optional Backup)</div>'+
 '<div style="font-size:11px;color:var(--t3);margin-bottom:10px">This is optional. Firebase alone is enough. Use this only if you also want data in Google Sheets.</div>'+
 '<input class="inp mono" id="gas-url" value="'+(STATE.settings.gasUrl||'')+'" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:11px;margin-bottom:8px"/>'+
@@ -8772,6 +8777,7 @@ c.innerHTML=
 '</div>'+
 '</div>';
 }
+function setDbMode(mode){if(!STATE.settings)STATE.settings={};STATE.settings.dbMode=mode;persist();renderDbTab();}
 function forceRepairStock(){
   if(!STATE.items||!STATE.entries){toast('No data loaded yet','er');return;}
   recalcStockFromEntries();
