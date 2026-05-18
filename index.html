@@ -1577,8 +1577,7 @@ return '<div onclick="openEditClr(\''+item.id+'\','+cIdx+')" style="display:flex
 }).join('')+
 '</div>';
 }).join('');
-html+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--br)"><button class="btn bs bfl" onclick="openMergeSku(\''+item.id+'\')">&#8652; Merge SKUs</button></div>';
-c.innerHTML=html;
+c.innerHTML='<div style="margin-bottom:10px"><button class="btn bs bfl" onclick="openMergeSku(\''+item.id+'\')">⇌ Merge SKUs</button></div>'+html;
 }
 function openAddRange(){
 const id=el('itm-id').value;
