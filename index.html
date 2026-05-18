@@ -8776,7 +8776,10 @@ c.innerHTML=
 '5. Click <strong>"Deploy"</strong> &#x2192; Copy the URL &#x2192; Paste above &#x2192; Save &#x2192; Test'+
 '</div>'+
 '</div>';
-}
+
+var _fb=c.querySelector('#dbt-fb'),_gb=c.querySelector('#dbt-gs');
+if(_fb){_fb.style.background=dbMode==='firebase'?'var(--g2)':'';_fb.style.color=dbMode==='firebase'?'white':''}
+if(_gb){_gb.style.background=dbMode==='sheets'?'var(--g2)':'';_gb.style.color=dbMode==='sheets'?'white':''}}
 function setDbMode(mode){if(!STATE.settings)STATE.settings={};STATE.settings.dbMode=mode;persist();renderDbTab();}
 function forceRepairStock(){
   if(!STATE.items||!STATE.entries){toast('No data loaded yet','er');return;}
