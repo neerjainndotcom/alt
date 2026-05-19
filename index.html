@@ -5489,7 +5489,11 @@ c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Compa
 '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
 '<button class="btn bga" onclick="downloadBackup()">&#8659; Download Backup</button>'+
 '<button class="btn bs" onclick="restoreBackup()">&#8657; Restore from Backup</button>'+
-'</div></div>'+
+'</div></div>'+'<div class="card"><div class="fw8" style="margin-bottom:14px">⏰ Task Settings</div>'+
+'<div class="fg"><label>Daily Task Refresh Time</label><input type="time" class="inp" id="s-trt" value="'+(s.taskRefreshTime||'09:30')+'" ></div>'+
+'<p class="ct3 sm" style="margin:6px 0 0">Tasks generate at this time every day — Sundays always off</p>'+
+'</div>'+
+
 '<button class="btn bp bfl mt16" onclick="saveSettings()">Save Settings</button>'+
 '<button class="btn bd bfl mt8" onclick="logout()">Logout</button>'+
 '<div style="height:20px"></div>';
@@ -5518,7 +5522,8 @@ discountDays:si('s-dd',STATE.settings.discountDays),
 nettDays:si('s-nd',STATE.settings.nettDays),
 avgMtrPerTaka:nA, avgMtrPerTP:sf('s-avgtp',STATE.settings.avgMtrPerTP),
 autoDeleteCompletedDays:si('s-autodel',STATE.settings.autoDeleteCompletedDays||0),
-mixedSareesCut:sf('s-mixcut',STATE.settings.mixedSareesCut||6)
+mixedSareesCut:sf('s-mixcut',STATE.settings.mixedSareesCut||6),
+taskRefreshTime:sv('s-trt')||'09:30'
 };
 STATE.items.forEach(item=>item.colours.forEach(c=>{c.stock_mtrs=Math.round((c.stock_taka||0)*nA);}));
 persist(); renderDash(); renderSettingsForm(); toast('Settings saved','ok');
@@ -10345,7 +10350,7 @@ renderTaskReport();
 }
 function _effFollowup(d){if(!d)return d;const hols=STATE.settings?.holidays||[];let dt=new Date(d+'T00:00:00');while(dt.getDay()===0||hols.includes(dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'))){dt.setDate(dt.getDate()+1);}return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
 function generateTaskInstances(dateStr){const _gti_d=new Date(dateStr+'T00:00:00');if(_gti_d.getDay()===0||(STATE.settings?.holidays||[]).includes(dateStr)) return;
-const _now=new Date();if(dateStr===_now.toISOString().split('T')[0]&&(_now.getHours()<9||(_now.getHours()===9&&_now.getMinutes()<30)))return;
+const _now=new Date();if(dateStr===_now.toISOString().split('T')[0]&&((function(){var _rt=(STATE.settings&&STATE.settings.taskRefreshTime)||'09:30';var _rp=_rt.split(':');var _rh=parseInt(_rp[0]);var _rm=parseInt(_rp[1])||0;return _now.getHours()<_rh||(_now.getHours()===_rh&&_now.getMinutes()<_rm);})()))return;
 
 if(!STATE.taskTemplates||!STATE.taskTemplates.length) return;
 /* Check ALL instances (including deleted) to avoid regenerating deleted tasks */
