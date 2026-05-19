@@ -270,7 +270,7 @@ function isDuplicate(collection, matchField, value, editId){
     return itemVal===val;
   });
 }
-const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+const today = () => { const _tz=(typeof STATE!=='undefined'&&STATE.settings&&STATE.settings.officeTimezone)||'Asia/Calcutta'; return new Intl.DateTimeFormat('en-CA',{timeZone:_tz}).format(new Date()); };
 const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '';
 const fmtN = n => Math.round(n||0).toLocaleString('en-IN');
 const fmtRs = n => '\u20B9'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -5492,6 +5492,8 @@ c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Compa
 '</div></div>'+'<div class="card"><div class="fw8" style="margin-bottom:14px">⏰ Task Settings</div>'+
 '<div class="fg"><label>Daily Task Refresh Time</label><input type="time" class="inp" id="s-trt" value="'+(s.taskRefreshTime||'09:30')+'" ></div>'+
 '<p class="ct3 sm" style="margin:6px 0 0">Tasks generate at this time every day — Sundays always off</p>'+
+'<div class="fg" style="margin-top:12px"><label>Office Timezone</label><select class="inp" id="s-otz"><option value="Asia/Calcutta"'+(s.officeTimezone==="Asia/Calcutta"||!s.officeTimezone?' selected':'')+'>India — IST (Asia/Calcutta)</option><option value="America/New_York"'+(s.officeTimezone==="America/New_York"?' selected':'')+'>US East — EST/EDT</option><option value="America/Los_Angeles"'+(s.officeTimezone==="America/Los_Angeles"?' selected':'')+'>US West — PST/PDT</option><option value="Europe/London"'+(s.officeTimezone==="Europe/London"?' selected':'')+'>UK — GMT/BST</option><option value="Asia/Dubai"'+(s.officeTimezone==="Asia/Dubai"?' selected':'')+'>UAE — GST</option></select></div>'+
+'<p class="ct3 sm" style="margin:4px 0 8px">All task logic uses office time, even when you travel</p>'+
 '</div>'+
 
 '<button class="btn bp bfl mt16" onclick="saveSettings()">Save Settings</button>'+
@@ -5523,7 +5525,8 @@ nettDays:si('s-nd',STATE.settings.nettDays),
 avgMtrPerTaka:nA, avgMtrPerTP:sf('s-avgtp',STATE.settings.avgMtrPerTP),
 autoDeleteCompletedDays:si('s-autodel',STATE.settings.autoDeleteCompletedDays||0),
 mixedSareesCut:sf('s-mixcut',STATE.settings.mixedSareesCut||6),
-taskRefreshTime:sv('s-trt')||'09:30'
+taskRefreshTime:sv('s-trt')||'09:30',
+officeTimezone:sv('s-otz')||'Asia/Calcutta'
 };
 STATE.items.forEach(item=>item.colours.forEach(c=>{c.stock_mtrs=Math.round((c.stock_taka||0)*nA);}));
 persist(); renderDash(); renderSettingsForm(); toast('Settings saved','ok');
@@ -10350,7 +10353,7 @@ renderTaskReport();
 }
 function _effFollowup(d){if(!d)return d;const hols=STATE.settings?.holidays||[];let dt=new Date(d+'T00:00:00');while(dt.getDay()===0||hols.includes(dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'))){dt.setDate(dt.getDate()+1);}return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
 function generateTaskInstances(dateStr){const _gti_d=new Date(dateStr+'T00:00:00');if(_gti_d.getDay()===0||(STATE.settings?.holidays||[]).includes(dateStr)) return;
-const _now=new Date();if(dateStr===_now.toISOString().split('T')[0]&&((function(){var _rt=(STATE.settings&&STATE.settings.taskRefreshTime)||'09:30';var _rp=_rt.split(':');var _rh=parseInt(_rp[0]);var _rm=parseInt(_rp[1])||0;return _now.getHours()<_rh||(_now.getHours()===_rh&&_now.getMinutes()<_rm);})()))return;
+const _now=new Date();const _tz=(STATE.settings&&STATE.settings.officeTimezone)||'Asia/Calcutta';const _todayTZ=new Intl.DateTimeFormat('en-CA',{timeZone:_tz}).format(_now);const _tparts=new Intl.DateTimeFormat('en-US',{timeZone:_tz,hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(_now);const _th=parseInt((_tparts.find(p=>p.type==='hour')||{value:'0'}).value);const _tm=parseInt((_tparts.find(p=>p.type==='minute')||{value:'0'}).value);const _rt=(STATE.settings&&STATE.settings.taskRefreshTime)||'09:30';const _rp=_rt.split(':');const _rh=parseInt(_rp[0]);const _rm=parseInt(_rp[1])||0;if(dateStr===_todayTZ&&(_th<_rh||(_th===_rh&&_tm<_rm)))return;
 
 if(!STATE.taskTemplates||!STATE.taskTemplates.length) return;
 /* Check ALL instances (including deleted) to avoid regenerating deleted tasks */
