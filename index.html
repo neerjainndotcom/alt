@@ -10345,6 +10345,7 @@ renderTaskReport();
 }
 function _effFollowup(d){if(!d)return d;const hols=STATE.settings?.holidays||[];let dt=new Date(d+'T00:00:00');while(dt.getDay()===0||hols.includes(dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'))){dt.setDate(dt.getDate()+1);}return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
 function generateTaskInstances(dateStr){const _gti_d=new Date(dateStr+'T00:00:00');if(_gti_d.getDay()===0||(STATE.settings?.holidays||[]).includes(dateStr)) return;
+const _now=new Date();if(dateStr===_now.toISOString().split('T')[0]&&(_now.getHours()<9||(_now.getHours()===9&&_now.getMinutes()<30)))return;
 
 if(!STATE.taskTemplates||!STATE.taskTemplates.length) return;
 /* Check ALL instances (including deleted) to avoid regenerating deleted tasks */
