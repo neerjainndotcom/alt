@@ -10502,11 +10502,13 @@ task.comments.unshift({id:'c_leg_'+task.id,userId:task.assignedUserId,userName:t
 let completionText='\u2705 Marked complete'+(now<=deadline?' \u2014 On Time':' \u2014 Late');
 if(task.completedByUserId!==task.assignedUserId) completionText+=' (by '+STATE.user.name+' on behalf of '+task.assignedUserName+')';
 task.comments.push({id:'c_done_'+Date.now(),userId:STATE.user.id,userName:STATE.user.name,role:STATE.user.role,text:completionText,ts:now.toISOString(),isCompletion:true});
+if(task.templateId){var _td=new Date().toISOString().split('T')[0];(STATE.taskInstances||[]).forEach(function(_t){if(_t.templateId===task.templateId&&_t.id!==task.id&&_t.status!=='Done'&&_t.generatedDate<_td){_t.status='Done';_t.completedAt=now.toISOString();_t.completedByUserId=STATE.user.id;_t.completedByName=STATE.user.name;_t.isOnTime=false;}});}
 lsSave('vs_task_instances',STATE.taskInstances);
 renderMyTasks(); renderAllTasks();
 autoSyncFirebase();
 toast('Task marked done \u2705','ok');
-}
+}function clearStaleTaskInstances(){var today=new Date().toISOString().split('T')[0];var cnt=0;(STATE.taskInstances||[]).forEach(function(t){if(t.status!=='Done'&&t.generatedDate&&t.generatedDate<today){t.status='Done';t.completedAt=new Date().toISOString();t.completedByUserId=(STATE.user&&STATE.user.id)||'admin';t.completedByName='Admin (Cleared)';t.isOnTime=false;cnt++;}});if(cnt===0){toast('No old pending tasks','ok');return;}lsSave('vs_task_instances',STATE.taskInstances);renderMyTasks();renderAllTasks();autoSyncFirebase();toast('Cleared '+cnt+' old pending tasks ✓','ok');}
+
 function addTaskComment(instanceId,text){
 const task=(STATE.taskInstances||[]).find(t=>t.id===instanceId); if(!task||!text.trim()) return;
 if(!task.comments) task.comments=[];
@@ -10729,6 +10731,7 @@ html+='<div style="background:#F0FDF4;border-left:4px solid #22C55E;border-radiu
 done2.forEach(t=>{html+=taskCard(t);});
 }
 if(!filtered.length) html+='<div class="emp"><div class="emj">📋</div><h3>No tasks</h3></div>';
+var _sc=(STATE.taskInstances||[]).filter(function(t){return t.status!=='Done'&&t.generatedDate&&t.generatedDate<new Date().toISOString().split('T')[0];}).length;if(_sc>0)html='<div style="margin-bottom:12px;padding:10px 14px;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;display:flex;align-items:center;justify-content:space-between"><span style="color:#991b1b;font-size:13px;font-weight:600">⚠️ '+_sc+' old tasks from past days</span><button class="btn bs" onclick="clearStaleTaskInstances()" style="background:#dc2626;color:white;font-size:12px;padding:6px 12px">🧹 Clear All</button></div>'+html;
 c.innerHTML=html;
 }
 function renderTaskTemplates(){
