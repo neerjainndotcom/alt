@@ -7833,6 +7833,7 @@ if(lead.brokerId) foot.appendChild(mk('bs','WA Broker',()=>waLeadToBroker(id)));
 if(canEdit) foot.appendChild(mk('bs bfl','Edit',()=>{hideMod('m-lead-det');editLead(id);}));
 if(isAdmin&&lead.status!=='Won'&&lead.status!=='Closed') foot.appendChild(mk('bsuc bfl','Convert',()=>{hideMod('m-lead-det');convertLead(id);}));
 if(isAdmin||hasPerm('delete_entry'))foot.appendChild(mk('bd','Delete',()=>deleteLead(id)));
+foot.appendChild(mk('bfl','ð Print',()=>printLeadPdf(id)));
 foot.appendChild(mk('bgh bfl','Close',()=>hideMod('m-lead-det')));
 showMod('m-lead-det');
 }
@@ -8285,6 +8286,61 @@ function printBillPdf(id){
   html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;•&nbsp; Invoice '+b.billNo+' &nbsp;•&nbsp; Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
   _printWin(html,'Invoice '+b.billNo);
 }
+function printLeadPdf(id){
+  const lead=(STATE.leads||[]).find(l=>l.id===id); if(!lead) return;
+  const sc='#4F46E5';
+  let html=_pdfHead('Lead: '+lead.name);
+  html+=_pdfCo();
+  html+='<div class="hdr"><div><div class="doc-lbl">Lead Profile</div><div class="doc-no">'+lead.name+'</div><div class="doc-date">'+(lead.company||'')+'</div></div><div><span class="bdg" style="background:'+sc+'22;color:'+sc+'">'+lead.status+'</span></div></div>';
+  html+='<div class="meta">';
+  if(lead.phone) html+='<div><div class="ml">Phone</div><div class="mv">'+lead.phone+'</div></div>';
+  if(lead.market) html+='<div><div class="ml">Market</div><div class="mv">'+lead.market+'</div></div>';
+  if(lead.assignedName) html+='<div><div class="ml">Assigned To</div><div class="mv">'+lead.assignedName+'</div></div>';
+  if(lead.source) html+='<div><div class="ml">Source</div><div class="mv">'+lead.source+'</div></div>';
+  if(lead.rateGiven) html+='<div><div class="ml">Rate Given</div><div class="mv">â¹'+lead.rateGiven+'/mtr</div></div>';
+  if(lead.followupDate) html+='<div><div class="ml">Follow-up</div><div class="mv">'+fmtDate(lead.followupDate)+'</div></div>';
+  if(lead.interest) html+='<div><div class="ml">Interest</div><div class="mv">'+lead.interest+'</div></div>';
+  if(lead.address) html+='<div><div class="ml">Address</div><div class="mv">'+lead.address+'</div></div>';
+  html+='</div>';
+  if(lead.notes&&lead.notes.length){
+    html+='<h2 style="font-size:13px;font-weight:800;color:#374151;margin:14px 0 8px;border-bottom:2px solid #4F46E5;padding-bottom:4px">Contact History ('+lead.notes.length+')</h2>';
+    html+='<table><tr><th>Date</th><th>By</th><th>Status</th><th>Note</th></tr>';
+    lead.notes.slice().reverse().forEach(n=>{
+      html+='<tr><td>'+fmtDate(n.date)+'</td><td>'+(n.by||'')+'</td><td>'+(n.status||n.activityType||'')+'</td><td>'+(n.note||'')+(n.outcome?'<br><em style="color:#059669">â '+n.outcome+'</em>':'')+(n.nextFollowup?'<br><span style="color:#D97706">ð '+fmtDate(n.nextFollowup)+'</span>':'')+'</td></tr>';
+    });
+    html+='</table>';
+  }
+  html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;â¢&nbsp; Lead: '+lead.name+' &nbsp;â¢&nbsp; Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
+  _printWin(html,'Lead - '+lead.name);
+}
+function printTaskPdf(id){
+  const task=(STATE.taskInstances||[]).find(t=>t.id===id); if(!task) return;
+  const pc='#4F46E5';
+  const isDone=task.status==='Done';
+  let html=_pdfHead('Task: '+task.taskName);
+  html+=_pdfCo();
+  html+='<div class="hdr"><div><div class="doc-lbl">Task Details</div><div class="doc-no">'+task.taskName+'</div><div class="doc-date">'+task.category+' &nbsp;â¢&nbsp; '+task.priority+' Priority</div></div><div><span class="bdg '+(isDone?'bdg-g':'bdg-o')+'">'+task.status+'</span></div></div>';
+  html+='<div class="meta">';
+  html+='<div><div class="ml">Assigned To</div><div class="mv">'+task.assignedUserName+(task.isSubstitute?' (Substitute)':'')+'</div></div>';
+  html+='<div><div class="ml">Deadline</div><div class="mv">'+new Date(task.deadline).toLocaleString([],{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})+'</div></div>';
+  if(isDone){
+    html+='<div><div class="ml">Completed By</div><div class="mv">'+task.completedByName+'</div></div>';
+    html+='<div><div class="ml">On Time</div><div class="mv">'+(task.isOnTime?'â Yes':'â ï¸ Late')+'</div></div>';
+  }
+  html+='</div>';
+  if(task.description) html+='<div style="background:#F3F4F6;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;color:#374151">'+task.description+'</div>';
+  const comments=(task.comments||[]);
+  if(comments.length){
+    html+='<h2 style="font-size:13px;font-weight:800;color:#374151;margin:14px 0 8px;border-bottom:2px solid #4F46E5;padding-bottom:4px">Messages ('+comments.length+')</h2>';
+    html+='<table><tr><th>Time</th><th>By</th><th>Message</th></tr>';
+    comments.forEach(c=>{
+      html+='<tr><td style="white-space:nowrap">'+new Date(c.ts||c.date||0).toLocaleString([],{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})+'</td><td>'+(c.by||c.userName||'')+'</td><td>'+(c.text||c.note||'')+'</td></tr>';
+    });
+    html+='</table>';
+  }
+  html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;â¢&nbsp; Task: '+task.taskName+' &nbsp;â¢&nbsp; Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
+  _printWin(html,'Task - '+task.taskName);
+}
 /* ===== END PDF / PRINT EXPORT ===== */
 /* ===== MERGE SKU MODULE ===== */
 function openMergeSku(itemId){
@@ -8390,7 +8446,7 @@ html+='<div style="margin-top:10px;padding:10px;background:var(--Pl);border-radi
 /* Show in a modal overlay */
 const ov=document.createElement('div');
 ov.className='ov'; ov.id='m-bill-view'; ov.onclick=e=>{if(e.target===ov)ov.remove();};
-ov.innerHTML='<div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Bill '+b.billNo+'</h3><p class="sub">'+b.custName+'</p></div><button class="btn bgh bsm" onclick="document.getElementById(\'m-bill-view\').remove()">&#x2715;</button></div></div><div class="shb">'+html+'</div><div class="shf"><button class="wa" style="flex:1;padding:10px;font-size:13px;border-radius:10px" onclick="waBillMsg(STATE.bills.find(x=>x.id===\''+b.id+'\'));document.getElementById(\'m-bill-view\').remove()">&#x1F4F2; Share via WA</button><button class="btn bgh bfl" onclick="document.getElementById(\'<button class="btn bfl" style="background:#059669;color:#fff;border:none;flex:1;padding:10px;font-size:13px;border-radius:10px" onclick="printBillPdf('"+b.id+"')">&#x1F4C4; Print/PDF</button>m-bill-view\').remove()">Close</button></div></div>';
+ov.innerHTML='<div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Bill '+b.billNo+'</h3><p class="sub">'+b.custName+'</p></div><button class="btn bgh bsm" onclick="document.getElementById(\'m-bill-view\').remove()">&#x2715;</button></div></div><div class="shb">'+html+'</div><div class="shf"><button class="wa" style="flex:1;padding:10px;font-size:13px;border-radius:10px" onclick="waBillMsg(STATE.bills.find(x=>x.id===\''+b.id+'\'));document.getElementById(\'m-bill-view\').remove()">&#x1F4F2; Share via WA</button><button class="btn bfl" style="background:#059669;color:#fff;border:none;flex:1;padding:10px;font-size:13px;border-radius:10px" onclick="printBillPdf(\''+b.id+'\')" >&#x1F4C4; Print/PDF</button><button class="btn bgh bfl" onclick="document.getElementById(\'m-bill-view\').remove()">Close</button></div></div>';
 document.body.appendChild(ov);
 }
 function renderNewInvTab(){
@@ -10789,6 +10845,10 @@ const closeBtn=document.createElement('button');
 closeBtn.className='btn bgh bfl';
 closeBtn.textContent='Close';
 closeBtn.onclick=()=>hideMod('m-task-inst');
+const printTaskBtn=document.createElement('button');
+printTaskBtn.className='btn bfl';printTaskBtn.style.cssText='background:#059669;color:#fff;border:none';
+printTaskBtn.innerHTML='ð Print';printTaskBtn.onclick=()=>printTaskPdf(id);
+foot.appendChild(printTaskBtn);
 foot.appendChild(closeBtn);
 showMod('m-task-inst');
 }
