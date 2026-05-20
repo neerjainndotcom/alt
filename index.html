@@ -2162,6 +2162,7 @@ return '<div class="inw-vrow" id="ivr-'+gi+'">'+
 '<div class="ev in" style="margin-bottom:4px">+'+g.totalTaka+'T</div>'+
 '<div style="display:flex;gap:4px">'+
 '<button class="btn bp bxs" onclick="event.stopPropagation();toggleInwVoucher('+gi+')" title="View">👁</button>'+
+(g.voucherNo?'<button class="btn bxs" style="background:#059669;color:#fff;border:none" onclick="event.stopPropagation();printInwardVoucher(\''+g.voucherNo+'\')" title="Print PDF">📄</button>':'')+
 ((hasPerm('delete_entry')||hasPerm('inward'))?'<button class="btn bd bxs" onclick="event.stopPropagation();deleteVoucherGroup(\''+ids+'\','+gi+')" title="Delete voucher">🗑</button>':'')+
 '</div></div></div>'+
 '<div class="inw-expand hid" id="ivx-'+gi+'" style="background:var(--bg2,#f7f7fb);border:1px solid var(--br);border-top:none;border-radius:0 0 10px 10px;margin-bottom:8px;overflow:hidden">'+
@@ -2229,7 +2230,8 @@ function buildExchangeForm(){
   (f.skus||[]).forEach((sk,i)=>{rows+=exSkuRowHtml(i,sk,skuOpts,status);});
   const badge=status==='checking'?'<span style="background:#3498db;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Checking</span>':status==='ready'?'<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Ready ✓</span>':'<span style="background:#f39c12;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Pending</span>';
   const waBtn=status==='ready'?'<button class="btn" style="background:#25D366;color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer" onclick="sendExWA()">📱 WhatsApp Rep</button>':'';
-  el('exch-form-body').innerHTML='<div class="ir2"><div class="fg"><label>Voucher No</label><input class="inp mono" id="ex-vno" value="'+(f.vno||nextExVoucher())+'" readonly></div><div class="fg"><label>Date</label><input class="inp" type="date" id="ex-date" value="'+(f.date||today())+'"></div></div><div class="ir2"><div class="fg"><label>Party Name (Customer)</label><input class="inp" id="ex-party" placeholder="Customer name" value="'+(f.party||'')+'"></div><div class="fg"><label>Khata Name</label><input class="inp" id="ex-khata" placeholder="Khata / Ledger name" value="'+(f.khata||'')+'"></div></div><div class="ir2"><div class="fg"><label>Rep Name</label><input class="inp" id="ex-rep" placeholder="Representative name" value="'+(f.rep||'')+'"></div><div class="fg"><label>Rep Phone</label><input class="inp" id="ex-phone" type="tel" placeholder="10-digit mobile" value="'+(f.phone||'')+'"></div></div><div style="margin:16px 0 8px;display:flex;align-items:center;gap:10px"><span style="font-weight:600;font-size:13px;color:#444">ITEMS TO EXCHANGE</span>'+badge+'</div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#f8f8f8"><th style="text-align:left;padding:8px 6px;border-bottom:2px solid #ddd;min-width:220px">SKU</th><th style="padding:8px 6px;border-bottom:2px solid #ddd;min-width:90px;color:#e67e22;text-align:center">Damage<br><small>Sarees</small></th><th style="padding:8px 6px;border-bottom:2px solid #ddd;min-width:90px;color:#27ae60;text-align:center">Re-use<br><small>Sarees</small></th><th style="padding:8px 6px;border-bottom:2px solid #ddd;min-width:90px;color:#2980b9;text-align:center">Exchange<br><small>Sarees</small></th><th style="width:36px"></th></tr></thead><tbody id="exch-sku-body">'+rows+'</tbody></table></div><button class="btn bgl" onclick="addExchSku()" style="margin-top:8px;font-size:12px">+ Add SKU</button><div style="display:flex;gap:8px;margin-top:20px;padding-top:12px;border-top:1px solid var(--br);justify-content:flex-end;flex-wrap:wrap">'+waBtn+'<button class="btn bgl" onclick="hideMod(&#39;m-exch&#39;)">Cancel</button><button class="btn bgp" onclick="saveExchange()">'+(isEdit?'Update':'Save Exchange')+'</button></div>';
+  const printBtn=f.id?'<button class="btn" style="background:#059669;color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer" onclick="printExchangeSlip()">📄 Print/PDF</button>':'';
+  el('exch-form-body').innerHTML='<div class="ir2"><div class="fg"><label>Voucher No</label><input class="inp mono" id="ex-vno" value="'+(f.vno||nextExVoucher())+'" readonly></div><div class="fg"><label>Date</label><input class="inp" type="date" id="ex-date" value="'+(f.date||today())+'"></div></div><div class="ir2"><div class="fg"><label>Party Name (Customer)</label><input class="inp" id="ex-party" placeholder="Customer name" value="'+(f.party||'')+'"></div><div class="fg"><label>Khata Name</label><input class="inp" id="ex-khata" placeholder="Khata / Ledger name" value="'+(f.khata||'')+'"></div></div><div class="ir2"><div class="fg"><label>Rep Name</label><input class="inp" id="ex-rep" placeholder="Representative name" value="'+(f.rep||'')+'"></div><div class="fg"><label>Rep Phone</label><input class="inp" id="ex-phone" type="tel" placeholder="10-digit mobile" value="'+(f.phone||'')+'"></div></div><div style="margin:16px 0 8px;display:flex;align-items:center;gap:10px"><span style="font-weight:600;font-size:13px;color:#444">ITEMS TO EXCHANGE</span>'+badge+'</div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#f8f8f8"><th style="text-align:left;padding:8px 6px;border-bottom:2px solid #ddd;min-width:220px">SKU</th><th style="padding:8px 6px;border-bottom:2px solid #ddd;min-width:90px;color:#e67e22;text-align:center">Damage<br><small>Sarees</small></th><th style="padding:8px 6px;border-bottom:2px solid #ddd;min-width:90px;color:#27ae60;text-align:center">Re-use<br><small>Sarees</small></th><th style="padding:8px 6px;border-bottom:2px solid #ddd;min-width:90px;color:#2980b9;text-align:center">Exchange<br><small>Sarees</small></th><th style="width:36px"></th></tr></thead><tbody id="exch-sku-body">'+rows+'</tbody></table></div><button class="btn bgl" onclick="addExchSku()" style="margin-top:8px;font-size:12px">+ Add SKU</button><div style="display:flex;gap:8px;margin-top:20px;padding-top:12px;border-top:1px solid var(--br);justify-content:flex-end;flex-wrap:wrap">'+waBtn+printBtn+'<button class="btn bgl" onclick="hideMod(&#39;m-exch&#39;)">Cancel</button><button class="btn bgp" onclick="saveExchange()">'+(isEdit?'Update':'Save Exchange')+'</button></div>';
 }
 function exSkuRowHtml(i,sk,skuOpts,status){
   const canDmg=!status||status==='pending'||status==='checking';
@@ -2457,7 +2459,7 @@ return new Date(b.date)-new Date(a.date);
 }).map(j=>{
 const tot=j.rows.reduce((s,r)=>s+r.taka,0);
 const over=j.status==='pending'&&j.expDate&&new Date(j.expDate)<new Date();
-return '<div class="et '+(j.status==='pending'?'jwp':'jwr')+'"><div class="ei" style="background:'+(j.status==='pending'?'var(--Al)':'var(--Gl)')+';color:'+(j.status==='pending'?'var(--Ad)':'var(--Gd)')+'">⚙️</div><div class="eb"><div class="etit mono">'+j.ref+' - '+j.jwParty+'</div><div class="esub">'+j.rows.length+' SKU - '+fmtDate(j.date)+(j.millParty?' - '+j.millParty:'')+'</div>'+(over?'<span class="bdg bg-r">OVERDUE</span>':'')+'</div><div class="er"><div class="ev out">'+tot+'T</div><span class="bdg '+(j.status==='pending'?'bg-a':'bg-g')+'">'+j.status+'</span>'+(j.status==='pending'?'<div class="mt4 flx g8"><button class="btn bsuc bxs" onclick="event.stopPropagation();openRecvJW(\''+j.id+'\')">Receive</button><button class="btn bd bxs" onclick="event.stopPropagation();deleteJW(\''+j.id+'\')">Del</button></div>':'')+'</div></div>';
+return '<div class="et '+(j.status==='pending'?'jwp':'jwr')+'"><div class="ei" style="background:'+(j.status==='pending'?'var(--Al)':'var(--Gl)')+';color:'+(j.status==='pending'?'var(--Ad)':'var(--Gd)')+'">⚙️</div><div class="eb"><div class="etit mono">'+j.ref+' - '+j.jwParty+'</div><div class="esub">'+j.rows.length+' SKU - '+fmtDate(j.date)+(j.millParty?' - '+j.millParty:'')+'</div>'+(over?'<span class="bdg bg-r">OVERDUE</span>':'')+'</div><div class="er"><div class="ev out">'+tot+'T</div><span class="bdg '+(j.status==='pending'?'bg-a':'bg-g')+'">'+j.status+'</span>'+'<div class="mt4 flx g8">'+(j.status==='pending'?'<button class="btn bsuc bxs" onclick="event.stopPropagation();openRecvJW(\''+j.id+'\')">Receive</button><button class="btn bd bxs" onclick="event.stopPropagation();deleteJW(\''+j.id+'\')">Del</button>':'')+'<button class="btn bxs" style="background:#059669;color:#fff;border:none" onclick="event.stopPropagation();printJWChallan(\''+j.id+'\')">📄</button></div>'+'</div></div>';
 }).join('');
 }
 function openRecvJW(id){
@@ -8149,6 +8151,141 @@ function downloadFYPdf(fy){
     toast('Popup blocked. Allow popups for this site.','er');
   }
 }
+/* ===== PDF / PRINT EXPORT ===== */
+function _printWin(html,title){
+  const win=window.open('','_blank','width=900,height=700');
+  if(!win){toast('Popup blocked. Allow popups for this site.','er');return;}
+  win.document.write(html);
+  win.document.close();
+  setTimeout(()=>win.print(),600);
+}
+function _pdfHead(title){
+  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+title+'</title>'
+    +'<style>'
+    +'*{box-sizing:border-box;margin:0;padding:0}'
+    +'body{font-family:Arial,sans-serif;padding:24px 28px;color:#1a1a1a;font-size:12px;max-width:860px;margin:0 auto}'
+    +'.co{font-size:18px;font-weight:900;color:#4F46E5;letter-spacing:-0.3px}'
+    +'.sub{font-size:10px;color:#666;margin-top:2px}'
+    +'.dvd{border-bottom:2px solid #4F46E5;margin:10px 0 14px}'
+    +'.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}'
+    +'.doc-lbl{font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.8px}'
+    +'.doc-no{font-size:22px;font-weight:900;color:#4F46E5;font-family:monospace}'
+    +'.doc-date{font-size:12px;color:#444;margin-top:2px}'
+    +'.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;margin:12px 0;background:#F3F4F6;border-radius:8px;padding:12px 14px}'
+    +'.ml{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}'
+    +'.mv{font-size:13px;font-weight:700;color:#111}'
+    +'table{width:100%;border-collapse:collapse;margin:10px 0;font-size:11px}'
+    +'th{background:#4F46E5;color:#fff;padding:6px 9px;text-align:left;font-weight:700}'
+    +'td{padding:6px 9px;border-bottom:1px solid #E5E7EB}'
+    +'tr:nth-child(even) td{background:#F9FAFB}'
+    +'.tr{text-align:right}'
+    +'.tot td{background:#EEF2FF!important;font-weight:700}'
+    +'.bdg{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}'
+    +'.bdg-g{background:#D1FAE5;color:#065F46}'
+    +'.bdg-b{background:#DBEAFE;color:#1D4ED8}'
+    +'.bdg-o{background:#FEF3C7;color:#92400E}'
+    +'.bdg-r{background:#FEE2E2;color:#991B1B}'
+    +'.sumbox{background:#EEF2FF;border-radius:8px;padding:12px 14px;margin-top:10px}'
+    +'.srow{display:flex;justify-content:space-between;padding:3px 0;font-size:12px}'
+    +'.srow.big{font-size:15px;font-weight:900;border-top:1.5px solid #C7D2FE;padding-top:6px;margin-top:4px}'
+    +'.footer{margin-top:24px;text-align:center;color:#aaa;font-size:10px;border-top:1px solid #E5E7EB;padding-top:8px}'
+    +'@media print{@page{margin:1cm}body{padding:0}}'
+    +'</style></head><body>';
+}
+function _pdfCo(){
+  const s=STATE.settings;
+  return '<div class="hdr"><div><div class="co">'+(s.companyName||'ALT Stock')+'</div><div class="sub">'+(s.address||'')+(s.address&&s.phone?' &nbsp;|&nbsp; ':'')+(s.phone?'Ph: '+s.phone:'')+( s.gstin?' &nbsp;|&nbsp; GSTIN: '+s.gstin:'')+'</div></div></div><div class="dvd"></div>';
+}
+function printExchangeSlip(){
+  const f=_exchF; if(!f||!f.vno) return;
+  const statusLbl=f.status==='ready'?'Ready':f.status==='checking'?'Checking':'Pending';
+  const statusCls=f.status==='ready'?'bdg-g':f.status==='checking'?'bdg-b':'bdg-o';
+  let rows='';
+  (f.skus||[]).forEach(sk=>{
+    if(!sk.itemId) return;
+    const item=(STATE.items||[]).find(it=>it.id===sk.itemId);
+    const rng=item?(item.ranges||[]).find(r=>r.name===sk.rangeName):null;
+    const col=rng&&rng.colours?rng.colours[parseInt(sk.colIdx)]:null;
+    const lbl=item?item.name+' – '+(sk.rangeName||'')+(col?' – '+col.name:''):'—';
+    rows+='<tr><td>'+lbl+'</td><td class="tr">'+(sk.damagePcs||0)+'</td><td class="tr">'+(sk.reusePcs||0)+'</td><td class="tr">'+(sk.exchangePcs||0)+'</td></tr>';
+  });
+  let html=_pdfHead('Exchange Slip '+f.vno);
+  html+=_pdfCo();
+  html+='<div class="hdr"><div><div class="doc-lbl">Exchange Slip</div><div class="doc-no">'+f.vno+'</div><div class="doc-date">'+fmtDate(f.date)+'</div></div><div><span class="bdg '+statusCls+'">'+statusLbl+'</span></div></div>';
+  html+='<div class="meta"><div><div class="ml">Party</div><div class="mv">'+(f.party||'—')+'</div></div><div><div class="ml">Khata</div><div class="mv">'+(f.khata||'—')+'</div></div><div><div class="ml">Rep Name</div><div class="mv">'+(f.rep||'—')+'</div></div><div><div class="ml">Rep Phone</div><div class="mv">'+(f.phone||'—')+'</div></div></div>';
+  html+='<table><tr><th>SKU</th><th class="tr">Damage (Pcs)</th><th class="tr">Re-use (Pcs)</th><th class="tr">Exchange (Pcs)</th></tr>'+rows+'</table>';
+  html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;•&nbsp; Exchange Slip '+f.vno+' &nbsp;•&nbsp; Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
+  _printWin(html,'Exchange Slip '+f.vno);
+}
+function printInwardVoucher(vno){
+  const ents=(STATE.entries||[]).filter(e=>!e._deleted&&e.voucherNo===vno);
+  if(!ents.length){toast('Voucher not found','er');return;}
+  const e0=ents[0];
+  const typeLabels={mill:'Mill G.P.',jobwork:'Job Work Receipt',exchange:'Exchange Receipt',transfer:'Transfer'};
+  const typeLbl=typeLabels[e0.type]||e0.type||'Inward';
+  const totalTaka=ents.reduce((s,e)=>s+(e.taka||0),0);
+  let rows='';
+  ents.forEach((e,i)=>{
+    rows+='<tr><td>'+(i+1)+'</td><td>'+(e.itemName||'')+'</td><td>'+(e.colourName||'')+(e.sku?'<br><span style="font-size:10px;color:#888">'+e.sku+'</span>':'')+'</td><td class="tr">'+(e.taka||0)+'</td><td class="tr">'+(e.mtrs||Math.round((e.taka||0)*(STATE.settings.avgMtrPerTaka||90)))+'</td></tr>';
+  });
+  let html=_pdfHead(typeLbl+' '+vno);
+  html+=_pdfCo();
+  html+='<div class="hdr"><div><div class="doc-lbl">'+typeLbl+'</div><div class="doc-no">'+vno+'</div><div class="doc-date">'+fmtDate(e0.date)+'</div></div></div>';
+  html+='<div class="meta"><div><div class="ml">Party</div><div class="mv">'+(e0.party||'—')+'</div></div><div><div class="ml">Ref</div><div class="mv">'+(e0.ref||'—')+'</div></div><div><div class="ml">Type</div><div class="mv">'+typeLbl+'</div></div><div><div class="ml">Total Taka</div><div class="mv">'+totalTaka+' T</div></div></div>';
+  html+='<table><tr><th>#</th><th>Item</th><th>Colour / SKU</th><th class="tr">Taka</th><th class="tr">Meters</th></tr>'+rows+'<tr class="tot"><td colspan="3"><strong>Total</strong></td><td class="tr">'+totalTaka+'</td><td class="tr">'+Math.round(totalTaka*(STATE.settings.avgMtrPerTaka||90))+'</td></tr></table>';
+  html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;•&nbsp; '+vno+' &nbsp;•&nbsp; Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
+  _printWin(html,typeLbl+' '+vno);
+}
+function printJWChallan(id){
+  const j=(STATE.jobWork||[]).find(x=>x.id===id); if(!j) return;
+  const typeLbl=j.type==='mill-to-jw'?'Mill → Job Work Challan':'Shop → Job Work Challan';
+  const tot=j.rows.reduce((s,r)=>s+r.taka,0);
+  const statusCls=j.status==='received'?'bdg-g':'bdg-o';
+  const statusLbl=j.status==='received'?'Received':'Pending';
+  let rows='';
+  j.rows.forEach((r,i)=>{
+    rows+='<tr><td>'+(i+1)+'</td><td>'+r.itemName+'</td><td>'+r.colourName+(r.sku?'<br><span style="font-size:10px;color:#888">'+r.sku+'</span>':'')+'</td><td class="tr">'+r.taka+'</td><td class="tr">'+(r.mtrs||Math.round(r.taka*(STATE.settings.avgMtrPerTaka||90)))+'</td></tr>';
+  });
+  let html=_pdfHead('JW Challan '+j.ref);
+  html+=_pdfCo();
+  html+='<div class="hdr"><div><div class="doc-lbl">Job Work Challan</div><div class="doc-no">'+j.ref+'</div><div class="doc-date">'+fmtDate(j.date)+'</div></div><div><span class="bdg '+statusCls+'">'+statusLbl+'</span></div></div>';
+  html+='<div class="meta"><div><div class="ml">JW Party</div><div class="mv">'+j.jwParty+'</div></div>'+(j.millParty?'<div><div class="ml">Mill Party</div><div class="mv">'+j.millParty+'</div></div>':'<div></div>')+'<div><div class="ml">Type</div><div class="mv">'+typeLbl+'</div></div><div><div class="ml">Sent Date</div><div class="mv">'+(j.sentDate?fmtDate(j.sentDate):fmtDate(j.date))+'</div></div>'+(j.expDate?'<div><div class="ml">Expected Return</div><div class="mv">'+fmtDate(j.expDate)+'</div></div>':'')+(j.notes?'<div><div class="ml">Notes</div><div class="mv">'+j.notes+'</div></div>':'')+'</div>';
+  html+='<table><tr><th>#</th><th>Item</th><th>Colour / SKU</th><th class="tr">Taka</th><th class="tr">Meters</th></tr>'+rows+'<tr class="tot"><td colspan="3"><strong>Total</strong></td><td class="tr">'+tot+'</td><td class="tr">'+Math.round(tot*(STATE.settings.avgMtrPerTaka||90))+'</td></tr></table>';
+  if(j.status==='received'&&j.recDate){html+='<div style="margin-top:10px;padding:10px 14px;background:#D1FAE5;border-radius:8px;font-size:12px"><strong>Received:</strong> '+fmtDate(j.recDate)+(j.recRef?' &nbsp;|&nbsp; Ref: '+j.recRef:'')+'</div>';}
+  html+='<div style="margin-top:36px;display:grid;grid-template-columns:1fr 1fr;gap:30px"><div style="border-top:1.5px solid #ccc;padding-top:6px;text-align:center;font-size:11px;color:#666">Authorised Signatory</div><div style="border-top:1.5px solid #ccc;padding-top:6px;text-align:center;font-size:11px;color:#666">Receiver\'s Signature</div></div>';
+  html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;•&nbsp; Challan '+j.ref+' &nbsp;•&nbsp; Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
+  _printWin(html,'JW Challan '+j.ref);
+}
+function printBillPdf(id){
+  const b=(STATE.bills||[]).find(x=>x.id===id); if(!b) return;
+  const bal=(b.grandTotal||0)-(b.amtPaid||0);
+  const payLbl=b.payStatus==='paid'?'Paid':b.payStatus==='partial'?'Partial':'Unpaid';
+  const payCls=b.payStatus==='paid'?'bdg-g':b.payStatus==='partial'?'bdg-o':'bdg-r';
+  let rows='';
+  (b.items||[]).forEach((it,i)=>{
+    const qty=it.dispQty||it.pcs;
+    const desc=it.isMixSaree?(qty+' pcs × ₹'+it.rate+'/pc [Mixed]'):(qty+' pcs × '+(it.cut||6)+'m × ₹'+it.rate);
+    rows+='<tr><td>'+(i+1)+'</td><td>'+it.itemName+'</td><td>'+it.colourName+'</td><td class="tr">'+desc+'</td><td class="tr">'+fmtRs(it.amount)+'</td></tr>';
+  });
+  let html=_pdfHead('Invoice '+b.billNo);
+  html+=_pdfCo();
+  html+='<div class="hdr"><div><div class="doc-lbl">Tax Invoice</div><div class="doc-no">'+b.billNo+'</div><div class="doc-date">'+fmtDate(b.date)+'</div></div><div><span class="bdg '+payCls+'">'+payLbl+'</span></div></div>';
+  html+='<div class="meta"><div><div class="ml">Bill To</div><div class="mv">'+b.custName+'</div></div>'+(b.custGstin?'<div><div class="ml">GSTIN</div><div class="mv">'+b.custGstin+'</div></div>':'<div></div>')+'</div>';
+  html+='<table><tr><th>#</th><th>Item</th><th>Colour</th><th class="tr">Qty / Rate</th><th class="tr">Amount</th></tr>'+rows+'</table>';
+  html+='<div class="sumbox">';
+  html+='<div class="srow"><span>Subtotal</span><span class="mono">'+fmtRs(b.subtotal||b.grandTotal)+'</span></div>';
+  if(b.discountAmt) html+='<div class="srow" style="color:#059669"><span>Discount ('+b.discountPct+'%)</span><span class="mono">−'+fmtRs(b.discountAmt)+'</span></div>';
+  if(b.brokerageAmt&&b.brokerageLabel) html+='<div class="srow" style="color:'+(b.brokerageAmt<0?'#DC2626':'#059669')+'"><span>'+b.brokerageLabel+(b.brokeragePct?' ('+b.brokeragePct+'%)':'')+'</span><span class="mono">'+(b.brokerageAmt<0?'−'+fmtRs(-b.brokerageAmt):'+'+fmtRs(b.brokerageAmt))+'</span></div>';
+  if(b.gstAmt) html+='<div class="srow"><span>GST</span><span class="mono">+'+fmtRs(b.gstAmt)+'</span></div>';
+  html+='<div class="srow big"><span>Grand Total</span><span class="mono">'+fmtRs(b.grandTotal)+'</span></div>';
+  if(b.amtPaid) html+='<div class="srow" style="color:#059669"><span>Paid</span><span class="mono">'+fmtRs(b.amtPaid)+'</span></div>';
+  if(bal>0) html+='<div class="srow" style="color:#DC2626;font-weight:800"><span>Balance Due</span><span class="mono">'+fmtRs(Math.round(bal))+'</span></div>';
+  html+='</div>';
+  html+='<div style="margin-top:36px;display:grid;grid-template-columns:1fr 1fr;gap:30px"><div style="border-top:1.5px solid #ccc;padding-top:6px;text-align:center;font-size:11px;color:#666">Authorised Signatory</div><div style="border-top:1.5px solid #ccc;padding-top:6px;text-align:center;font-size:11px;color:#666">Receiver\'s Signature</div></div>';
+  html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;•&nbsp; Invoice '+b.billNo+' &nbsp;•&nbsp; Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
+  _printWin(html,'Invoice '+b.billNo);
+}
+/* ===== END PDF / PRINT EXPORT ===== */
 /* ===== MERGE SKU MODULE ===== */
 function openMergeSku(itemId){
   var html='';
@@ -8253,7 +8390,7 @@ html+='<div style="margin-top:10px;padding:10px;background:var(--Pl);border-radi
 /* Show in a modal overlay */
 const ov=document.createElement('div');
 ov.className='ov'; ov.id='m-bill-view'; ov.onclick=e=>{if(e.target===ov)ov.remove();};
-ov.innerHTML='<div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Bill '+b.billNo+'</h3><p class="sub">'+b.custName+'</p></div><button class="btn bgh bsm" onclick="document.getElementById(\'m-bill-view\').remove()">&#x2715;</button></div></div><div class="shb">'+html+'</div><div class="shf"><button class="wa" style="flex:1;padding:10px;font-size:13px;border-radius:10px" onclick="waBillMsg(STATE.bills.find(x=>x.id===\''+b.id+'\'));document.getElementById(\'m-bill-view\').remove()">&#x1F4F2; Share via WA</button><button class="btn bgh bfl" onclick="document.getElementById(\'m-bill-view\').remove()">Close</button></div></div>';
+ov.innerHTML='<div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Bill '+b.billNo+'</h3><p class="sub">'+b.custName+'</p></div><button class="btn bgh bsm" onclick="document.getElementById(\'m-bill-view\').remove()">&#x2715;</button></div></div><div class="shb">'+html+'</div><div class="shf"><button class="wa" style="flex:1;padding:10px;font-size:13px;border-radius:10px" onclick="waBillMsg(STATE.bills.find(x=>x.id===\''+b.id+'\'));document.getElementById(\'m-bill-view\').remove()">&#x1F4F2; Share via WA</button><button class="btn bgh bfl" onclick="document.getElementById(\'<button class="btn bfl" style="background:#059669;color:#fff;border:none;flex:1;padding:10px;font-size:13px;border-radius:10px" onclick="printBillPdf('"+b.id+"')">&#x1F4C4; Print/PDF</button>m-bill-view\').remove()">Close</button></div></div>';
 document.body.appendChild(ov);
 }
 function renderNewInvTab(){
