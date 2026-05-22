@@ -8343,6 +8343,21 @@ function printTaskPdf(id){
 }
 function printTaskTemplatePdf(id){
 const t=(STATE.taskTemplates||[]).find(x=>x.id===id); if(!t) return;
+const mo=document.createElement('div');
+mo.id='m-tpl-pdf-opt';
+mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center';
+mo.innerHTML='<div style="background:#fff;border-radius:14px;padding:24px;width:290px;box-shadow:0 8px 40px rgba(0,0,0,.25)">'
++'<div style="font-weight:800;font-size:15px;margin-bottom:4px">PDF Export</div>'
++'<div style="font-size:12px;color:#6B7280;margin-bottom:20px">Choose what to include in the PDF</div>'
++'<button onclick="_printOneTpl(\''+id+'\');document.getElementById(\'m-tpl-pdf-opt\').remove()" style="width:100%;padding:13px;margin-bottom:10px;background:#4F46E5;color:#fff;border:none;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer">This Template Only</button>'
++'<button onclick="_printAllTpls();document.getElementById(\'m-tpl-pdf-opt\').remove()" style="width:100%;padding:13px;margin-bottom:10px;background:#059669;color:#fff;border:none;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer">All Templates</button>'
++'<button onclick="document.getElementById(\'m-tpl-pdf-opt\').remove()" style="width:100%;padding:11px;background:#F3F4F6;color:#374151;border:none;border-radius:9px;font-size:13px;cursor:pointer">Cancel</button>'
++'</div>';
+mo.onclick=function(e){if(e.target===mo)mo.remove();};
+document.body.appendChild(mo);
+}
+function _printOneTpl(id){
+const t=(STATE.taskTemplates||[]).find(x=>x.id===id); if(!t) return;
 const pc=TASK_PRIORITY_COLORS[t.priority]||'#6366F1';
 const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const schedStr=t.freq==='daily'?'Daily (every day)':t.freq==='weekly'?'Weekly on '+days.filter((_,i)=>(t.days||[]).includes(i)).join(', '):t.freq==='monthly'?'Monthly on '+[...(t.days||t.dates||[])].join(', ')+'th':t.freq||'';
@@ -8358,6 +8373,33 @@ html+='</div>';
 if(t.description) html+='<div style="background:#F3F4F6;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;color:#374151">'+t.description+'</div>';
 html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;&bull;&nbsp; Template: '+t.name+' &nbsp;&bull;&nbsp; Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
 _printWin(html,'Template - '+t.name);
+}
+function _printAllTpls(){
+const tpls=(STATE.taskTemplates||[]);
+if(!tpls.length){toast('No templates found','er');return;}
+const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let html=_pdfHead('All Task Templates');
+html+=_pdfCo();
+html+='<div class="hdr"><div><div class="doc-lbl">Task Templates</div><div class="doc-no">All Templates</div><div class="doc-date">'+new Date().toLocaleDateString('en-IN')+' &nbsp;&bull;&nbsp; '+tpls.length+' Template'+(tpls.length!==1?'s':'')+'</div></div></div>';
+tpls.forEach(function(t,i){
+const pc=TASK_PRIORITY_COLORS[t.priority]||'#6366F1';
+const schedStr=t.freq==='daily'?'Daily':t.freq==='weekly'?'Weekly on '+days.filter(function(_,j){return(t.days||[]).includes(j);}).join(', '):t.freq==='monthly'?'Monthly on '+[...(t.days||t.dates||[])].join(', ')+'th':t.freq||'';
+html+='<div style="border:1px solid #E5E7EB;border-radius:8px;padding:14px;margin-bottom:14px;page-break-inside:avoid">';
+html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">';
+html+='<div><div style="font-weight:700;font-size:14px">'+t.name+'</div><div style="font-size:11px;color:#6B7280;margin-top:2px">'+t.category+' &nbsp;&bull;&nbsp; '+schedStr+'</div></div>';
+html+='<span style="background:'+(t.active?'#D1FAE5':'#F3F4F6')+';color:'+(t.active?'#065F46':'#6B7280')+';padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700">'+(t.active?'Active':'Paused')+'</span>';
+html+='</div>';
+html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;color:#374151">';
+html+='<div><span style="color:#9CA3AF">Assigned: </span>'+t.assignedUserName+'</div>';
+html+='<div><span style="color:#9CA3AF">Priority: </span><span style="background:'+pc+'22;color:'+pc+';padding:1px 6px;border-radius:4px;font-weight:700">'+t.priority+'</span></div>';
+html+='<div><span style="color:#9CA3AF">Deadline: </span>'+t.deadlineTime+'</div>';
+html+='<div><span style="color:#9CA3AF">Status: </span>'+(t.active?'Active':'Paused')+'</div>';
+html+='</div>';
+if(t.description) html+='<div style="margin-top:8px;font-size:11px;color:#374151;background:#F9FAFB;padding:8px;border-radius:6px">'+t.description+'</div>';
+html+='</div>';
+});
+html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;&bull;&nbsp; Task Templates &nbsp;&bull;&nbsp; Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
+_printWin(html,'All Task Templates');
 }
 
 /* ===== END PDF / PRINT EXPORT ===== */
