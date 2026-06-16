@@ -60,7 +60,7 @@
 </div></div>
 <div class="ov" id="m-prd" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Product</h3><button class="btn bgh bsm" onclick="hideMod('m-prd')">✕</button></div></div><div class="shb"><input type="hidden" id="prd-id"/><div class="fg"><label>Name *</label><input class="inp" id="prd-name"/></div><div class="fg"><label>Description</label><textarea class="ta" id="prd-desc" rows="2"></textarea></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-prd')">Cancel</button><button class="btn bp bfl" onclick="savePrd()">Save</button></div>
 </div></div>
-<div class="ov" id="m-usr" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="usr-title">User Account</h3><p class="sub" id="usr-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-usr')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="usr-id"/><div class="ir2"><div class="fg"><label>Full Name *</label><input class="inp" id="usr-name"/></div><div class="fg"><label>Username *</label><input class="inp" id="usr-un" placeholder="e.g. ramesh"/></div></div><div class="ir2"><div class="fg"><label>Password</label><input class="inp" type="password" id="usr-pw" placeholder="Leave blank to keep"/></div><div class="fg"><label>Status</label><select class="sel" id="usr-act"><option value="1">Active</option><option value="0">Disabled</option></select></div></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="usr-wa" type="tel"/></div><div class="fg"><label>Order Prefix</label><input class="inp" id="usr-pfx" placeholder="B/"/></div></div><div class="fg"><label>Staff Type</label><div class="fi"><select class="sel" id="usr-stype" onchange="onStaffTypeChange()"><option value="">Select type...</option><option value="admin">Admin</option></select><button class="ai" onclick="openStaffTypeMgr()">+ Type</button></div></div><div class="fg"><label>System Role</label><select class="sel" id="usr-role"><option value="staff">Staff</option><option value="admin">Admin (full access)</option></select></div><div class="mt8"><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Permissions</div><div id="usr-perms" style="background:var(--bg);border-radius:12px;padding:12px;border:1px solid var(--br)"></div></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-usr')">Cancel</button><button class="btn bp bfl" onclick="saveUsr()">Save User</button></div>
+<div class="ov" id="m-usr" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="usr-title">User Account</h3><p class="sub" id="usr-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-usr')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="usr-id"/><div class="ir2"><div class="fg"><label>Full Name *</label><input class="inp" id="usr-name"/></div><div class="fg"><label>Username *</label><input class="inp" id="usr-un" placeholder="e.g. ramesh"/></div></div><div class="ir2"><div class="fg"><label>Password</label><input class="inp" type="password" id="usr-pw" placeholder="Leave blank to keep"/></div><div class="fg"><label>Status</label><select class="sel" id="usr-act"><option value="1">Active</option><option value="0">Disabled</option></select></div></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="usr-wa" type="tel"/></div><div class="fg"><label>Order Prefix</label><input class="inp" id="usr-pfx" placeholder="B/"/></div></div><div class="fg"><label>Staff Type</label><div class="fi"><select class="sel" id="usr-stype" onchange="onStaffTypeChange()"><option value="">Select type...</option><option value="admin">Admin</option></select><button class="ai" onclick="openStaffTypeMgr()">+ Type</button></div></div><div class="fg"><label>System Role</label><select class="sel" id="usr-role"><option value="staff">Staff</option><option value="admin">Admin (full access)</option></select></div><div class="fg" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--Pl);border-radius:10px;margin-top:4px"><input type="checkbox" id="usr-show-in-lead-assign" style="width:18px;height:18px;cursor:pointer"/><label for="usr-show-in-lead-assign" style="font-size:13px;font-weight:600;color:var(--t1);cursor:pointer">Show in &#34;Assign to Salesman&#34; dropdown when creating leads</label></div><div class="mt8"><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Permissions</div><div id="usr-perms" style="background:var(--bg);border-radius:12px;padding:12px;border:1px solid var(--br)"></div></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-usr')">Cancel</button><button class="btn bp bfl" onclick="saveUsr()">Save User</button></div>
 </div></div>
 <div class="ov" id="m-stafftype" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Staff Types</h3><p class="sub">Define roles &amp; permissions</p></div><button class="btn bgh bsm" onclick="hideMod('m-stafftype')">&#x2715;</button></div></div><div class="shb"><div id="stafftype-list"></div><div class="dvd"></div><div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:10px">&#x2795; New Staff Type</div><div class="ir2"><div class="fg"><label>Type Name *</label><input class="inp" id="st-name" placeholder="e.g. Store Keeper"/></div><div class="fg"><label>Colour</label><input type="color" id="st-color" value="#4F46E5" style="width:100%;height:42px;border-radius:10px;border:1.5px solid var(--br);cursor:pointer;padding:3px"/></div></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;margin-top:4px">Default Permissions for this Type</div><div id="st-perms" style="background:var(--bg);border-radius:12px;padding:12px;border:1px solid var(--br)"></div><button class="btn bp bfl mt12" onclick="addStaffType()">Add Staff Type</button></div>
 </div></div>
@@ -201,11 +201,53 @@ function softDelete(arr,id){
   const item=arr.find(x=>x.id===id);
   if(item){item._deleted=true;item._ts=Date.now();}
 }
+function pushNotification(targetUserId,targetUserName,title,body,type,refId){
+  if(!STATE.notifications) STATE.notifications=[];
+  const notif={id:uid(),targetUserId,targetUserName,title,body,type,refId,ts:Date.now(),read:false};
+  STATE.notifications.unshift(notif);
+  /* Keep last 100 notifications */
+  if(STATE.notifications.length>100) STATE.notifications=STATE.notifications.slice(0,100);
+  lsSave('vs_notifications',STATE.notifications);
+  renderNotifBadge();
+  /* Show toast-style popup if the target is current user */
+  if(targetUserId===STATE.user?.id||!targetUserId){
+    showInAppNotif(title,body,type,refId);
+  }
+  autoSyncFirebase();
+}
+function showInAppNotif(title,body,type,refId){
+  let bar=document.getElementById('in-app-notif');
+  if(bar) bar.remove();
+  bar=document.createElement('div');bar.id='in-app-notif';
+  const col=type==='lead'?'#4F46E5':type==='task'?'#059669':'#1F2937';
+  bar.style.cssText='position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:9999;background:white;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.18);padding:12px 16px;max-width:min(380px,90vw);border-left:4px solid '+col+';cursor:pointer;animation:slideInNotif .3s ease';
+  bar.innerHTML='<div style="font-size:13px;font-weight:800;color:'+col+'">'+escHtml(title)+'</div><div style="font-size:12px;color:#6B7280;margin-top:2px">'+escHtml(body)+'</div>';
+  if(!document.getElementById('notif-keyframes')){const s=document.createElement('style');s.id='notif-keyframes';s.textContent='@keyframes slideInNotif{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';document.head.appendChild(s);}
+  bar.onclick=()=>{bar.remove();if(refId)showLeadDetail(refId);};
+  document.body.appendChild(bar);
+  clearTimeout(window._notifTimer);
+  window._notifTimer=setTimeout(()=>{if(bar.parentNode)bar.remove();},4000);
+}
+function renderNotifBadge(){
+  const unread=(STATE.notifications||[]).filter(n=>!n.read&&n.targetUserId===STATE.user?.id).length;
+  let badge=document.getElementById('notif-badge');
+  if(!badge){
+    /* Try to find a nav location to place the badge */
+    const navBtn=document.querySelector('[onclick*="setNav(\'leads\')"]')||document.querySelector('.nb[onclick*="leads"]');
+    if(!navBtn) return;
+    badge=document.createElement('span');badge.id='notif-badge';
+    badge.style.cssText='position:absolute;top:2px;right:2px;background:#EF4444;color:white;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;pointer-events:none';
+    navBtn.style.position='relative';
+    navBtn.appendChild(badge);
+  }
+  badge.textContent=unread>0?unread:'';
+  badge.style.display=unread>0?'flex':'none';
+}
 // Filter out soft-deleted items for display (but keep them in data for sync)
 function active(arr){return(arr||[]).filter(x=>!x._deleted);}
 // Clean up items soft-deleted more than 7 days ago
 function cleanupDeleted(arr){
-  const cutoff=Date.now()-7*86400000;
+  const cutoff=Date.now()-30*86400000;
   return(arr||[]).filter(x=>!x._deleted||x._ts>cutoff);
 }
 // Smart merge: compare each record by _ts timestamp, newer wins
@@ -293,7 +335,7 @@ const detState = gstin => STATES[(gstin||'').substring(0,2)] || '';
 const gstType = cGstin => !cGstin||cGstin.length<2 ? 'none' : STATE.settings.gstin.substring(0,2)===cGstin.substring(0,2) ? 'same' : 'diff';
 let STATE = {
 user:null, items:[], entries:[], customers:[], brokers:[], products:[], suppliers:[],
-users:[], deviceReqs:[], jobWork:[], orders:[], bills:[], payments:[], leads:[], flaggedEntries:[], recurringLeads:[], taskTemplates:[], taskInstances:[], staffLeave:[], custGroups:[],
+users:[], deviceReqs:[], jobWork:[], orders:[], bills:[], payments:[], leads:[], flaggedEntries:[], recurringLeads:[], taskTemplates:[], taskInstances:[], staffLeave:[], custGroups:[], notifications:[],
 settings:{
 companyName:'AMRIT LAXMI TEXTILE', gstin:'24AAXPJ5150B1ZU',
 address:'B-3 3022, REGENT TEXTILE MARKET, RING ROAD, SURAT-395002',
@@ -376,6 +418,7 @@ const s=lsGet('vs_settings'); if(s) STATE.settings={...STATE.settings,...s};
 if(!STATE.settings.firebaseUrl) STATE.settings.firebaseUrl='https://alt-stock-default-rtdb.asia-southeast1.firebasedatabase.app';
 if(!STATE.settings.firebaseSecret) STATE.settings.firebaseSecret='z50jh3UrEareEAjTDG4IudKUHg2qZtHoPn4Brvm4';
 STATE.leads=lsGet('vs_leads')||[];
+STATE.notifications=lsGet('vs_notifications')||[];
 STATE.flaggedEntries=lsGet('vs_flagged')||[];
 STATE.recurringLeads=lsGet('vs_rec_leads')||[];
 STATE.taskTemplates=lsGet('vs_task_templates')||[];
@@ -883,6 +926,7 @@ const DASH_WIDGETS=[
   {id:'stats',     label:'Stats Cards',        icon:'📊', desc:'Items, Stock, Meters, Pending'},
   {id:'alerts',    label:'Alerts',             icon:'🔔', desc:'Low stock & system alerts'},
   {id:'tasks',     label:'My Tasks',           icon:'📋', desc:'Today\'s task summary'},
+  {id:'leadspipeline', label:'Leads Pipeline', icon:'🎯', desc:'Lead stats, overdue & today\'s follow-ups'},
   {id:'followups', label:'Lead Follow-ups',    icon:'📞', desc:'Due follow-up reminders'},
   {id:'recurring', label:'Recurring Visits',   icon:'🔁', desc:'Scheduled visit reminders'},
   {id:'shortcuts', label:'Quick Actions',      icon:'⚡', desc:'Shortcut buttons'},
@@ -890,7 +934,7 @@ const DASH_WIDGETS=[
   {id:'mixedsarees',label:'Mixed Sarees',        icon:'🎨', desc:'Mixed saree batches in stock'},
   {id:'recent',    label:'Recent Activity',    icon:'🕐', desc:'Latest ledger entries'}
 ];
-const DEFAULT_DASH_ORDER=['stats','alerts','tasks','followups','recurring','shortcuts','stock','mixedsarees','recent'];
+const DEFAULT_DASH_ORDER=['stats','alerts','tasks','leadspipeline','followups','recurring','shortcuts','stock','mixedsarees','recent'];
 
 function getDashConfig(){
   /* Per-user config takes priority, then fall back to admin global config, then defaults */
@@ -957,6 +1001,7 @@ const widgetMap={
   }},
   alerts:{els:[alertsEl], render:()=>renderDashAlerts()},
   tasks:{els:[taskEl], render:()=>renderDashTaskWidget()},
+  leadspipeline:{els:[(()=>{let e=el('dash-leads-pipeline');if(!e){e=document.createElement('div');e.id='dash-leads-pipeline';const scr=document.querySelector('#s-dash .scr-body');if(scr)scr.appendChild(e);}return e;})()], render:()=>renderDashLeadsPipeline()},
   followups:{els:[followupEl], render:()=>{try{renderFollowupAlert();}catch(e){}}},
   recurring:{els:[recurringEl], render:()=>{try{renderDashRecurringVisits();}catch(e){}}},
   shortcuts:{els:[shortcutsEl], render:()=>{}/* already rendered above */},
@@ -5441,6 +5486,7 @@ el('usr-id').value=id; el('usr-name').value=u.name||''; el('usr-un').value=u.use
 el('usr-pw').value=''; el('usr-role').value=u.role||'staff';
 el('usr-wa').value=u.whatsapp||''; el('usr-pfx').value=u.orderPrefix||'';
 el('usr-act').value=u.active!==false?'1':'0';
+if(el('usr-show-in-lead-assign')) el('usr-show-in-lead-assign').checked=u.showInLeadAssign!==false;
 el('usr-title').textContent='Edit User';
 refreshStaffTypeDropdown();
 if(u.staffTypeId&&el('usr-stype')) el('usr-stype').value=u.staffTypeId;
@@ -5464,6 +5510,7 @@ name, username:uname, role:el('usr-role').value,
 whatsapp:el('usr-wa').value.trim(), orderPrefix:el('usr-pfx').value.trim(),
 active:el('usr-act').value==='1',
 staffTypeId, staffTypeName:staffType?.name||'',
+showInLeadAssign:el('usr-show-in-lead-assign')?.checked!==false,
 permissions:{...window._usrPerms}
 };
 if(pw) obj.password=pw;
@@ -5511,6 +5558,12 @@ c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Compa
 '<div style="font-size:11px;color:var(--t3);margin-top:4px">Reports and alerts will be shared to this number</div>'+
 '<div class="fg mt12"><label>Auto-delete completed tasks after (days)</label><input class="inp mono" id="s-autodel" type="number" min="0" step="1" placeholder="0 = never" value="'+(s.autoDeleteCompletedDays||0)+'"/></div>'+
 '<div style="font-size:11px;color:var(--t3);margin-top:4px">Set to 0 to keep completed tasks forever. E.g. 30 = delete tasks completed more than 30 days ago.</div>'+
+'</div>'+
+'<div class="card mt12"><div class="fw8" style="margin-bottom:8px">📲 WhatsApp Message Templates</div>'+
+'<div style="font-size:12px;color:var(--t2);margin-bottom:12px;line-height:1.6">Customize what message is sent when you tap "WA Salesman" or "WA Broker" for a lead. Use these variables: <b>{name}</b> (party name), <b>{phone}</b>, <b>{status}</b>, <b>{market}</b>, <b>{interest}</b>, <b>{rate}</b>, <b>{followup}</b>, <b>{salesman}</b>, <b>{broker}</b>, <b>{company}</b>, <b>{notes}</b></div>'+
+'<div class="fg"><label>WA Message — Salesman Template</label><textarea class="ta" id="s-wa-tpl-sm" rows="6" placeholder="Leave blank to use the default bilingual template. Use {name}, {status}, {market}, {interest}, {rate}, {followup}, {broker}, {notes} as variables.">'+(s.waTemplateSalesman||'')+'</textarea></div>'+
+'<div class="fg mt8"><label>WA Message — Broker Template</label><textarea class="ta" id="s-wa-tpl-brk" rows="6" placeholder="Leave blank to use the default bilingual template.">'+(s.waTemplateBroker||'')+'</textarea></div>'+
+'<div style="font-size:11px;color:var(--t3);margin-top:4px">Example: Hi {salesman}, Lead update for *{name}* ({market}). Status: {status}. Follow-up: {followup}. Interest: {interest}.</div>'+
 '</div>'+
 '<div class="card mt12"><div class="fw8" style="margin-bottom:6px">🎯 Lead Auto-Cleanup</div>'+
 '<div class="xs ct3" style="margin-bottom:12px">Automatically remove Won and Lost leads after a set number of days to keep the CRM clean. Set 0 to never auto-delete.</div>'+
@@ -5574,6 +5627,8 @@ avgMtrPerTaka:nA, avgMtrPerTP:sf('s-avgtp',STATE.settings.avgMtrPerTP),
 autoDeleteCompletedDays:si('s-autodel',STATE.settings.autoDeleteCompletedDays||0),
 autoDeleteWonLeadsDays:si('s-del-won',STATE.settings.autoDeleteWonLeadsDays||0),
 autoDeleteLostLeadsDays:si('s-del-lost',STATE.settings.autoDeleteLostLeadsDays||0),
+waTemplateSalesman:sv('s-wa-tpl-sm'),
+waTemplateBroker:sv('s-wa-tpl-brk'),
 mixedSareesCut:sf('s-mixcut',STATE.settings.mixedSareesCut||6),
 taskRefreshTime:sv('s-trt')||'09:30',
 officeTimezone:sv('s-otz')||'Asia/Calcutta'
@@ -6174,6 +6229,7 @@ el('usr-id').value=''; el('usr-name').value=''; el('usr-un').value='';
 el('usr-pw').value=''; el('usr-role').value='staff';
 el('usr-wa').value=''; el('usr-pfx').value='';
 el('usr-act').value='1'; el('usr-title').textContent='New User'; el('usr-sub').textContent='';
+if(el('usr-show-in-lead-assign')) el('usr-show-in-lead-assign').checked=true;
 refreshStaffTypeDropdown();
 window._usrPerms={...DEFAULT_PERMS};
 buildPermUI('usr-perms', window._usrPerms, p=>{ window._usrPerms=p; });
@@ -7542,6 +7598,49 @@ if(tab==='won'){
   if(nWon) _wonCardsEl=mkSection('✅','Order Received',nWon,'#065F46','#D1FAE5','#6EE7B7');
   if(nLost) _lostCardsEl=mkSection('❌','Not Interested',nLost,'#991B1B','#FEE2E2','#FCA5A5');
 }
+/* Urgency grouping — only for all/mine tabs on default sort with no search */
+const _useGroups=(tab==='all'||tab==='mine')&&sortVal==='recent'&&!query;
+let _groupContainers=null;
+if(_useGroups){
+  const _GROUPS=[
+    {key:'overdue',ico:'🚨',label:'Overdue Follow-ups',    col:'#DC2626',bg:'#FEF2F2',bdr:'#FECACA',open:true},
+    {key:'today',  ico:'📅',label:'Due Today',             col:'#B45309',bg:'#FFFBEB',bdr:'#FDE68A',open:true},
+    {key:'new',    ico:'🆕',label:'Needs First Contact',   col:'#92400E',bg:'#FEF3C7',bdr:'#FCD34D',open:true},
+    {key:'hot',    ico:'🔥',label:'Hot — Active Recently', col:'#065F46',bg:'#ECFDF5',bdr:'#6EE7B7',open:true},
+    {key:'warm',   ico:'⚡',label:'Warm — Follow Up Soon', col:'#1D4ED8',bg:'#EFF6FF',bdr:'#93C5FD',open:false},
+    {key:'cold',   ico:'🧊',label:'Cold / Dormant',        col:'#6B7280',bg:'#F9FAFB',bdr:'#E5E7EB',open:false},
+  ];
+  const _gkFn=l=>{
+    const _lc2=l.notes?.length?l.notes[l.notes.length-1]:null;
+    const _ds=_lc2?Math.floor((Date.now()-new Date(_lc2.date).getTime())/86400000):999;
+    if(l.followupDate&&l.followupDate<today_s) return 'overdue';
+    if(l.followupDate===today_s) return 'today';
+    if(!l.notes?.length) return 'new';
+    if(_ds<=3) return 'hot';
+    if(_ds<=7) return 'warm';
+    return 'cold';
+  };
+  const _buckets={};
+  leads.forEach(l=>{const k=_gkFn(l);if(!_buckets[k])_buckets[k]=[];_buckets[k].push(l);});
+  /* Sort within groups */
+  if(_buckets.overdue) _buckets.overdue.sort((a,b)=>(a.followupDate||'').localeCompare(b.followupDate||''));
+  ['today','new','hot','warm','cold'].forEach(k=>{if(_buckets[k])_buckets[k].sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0));});
+  /* Rebuild leads in grouped order so forEach iterates them correctly */
+  leads.splice(0,leads.length,..._GROUPS.flatMap(g=>_buckets[g.key]||[]));
+  _groupContainers={_gkFn};
+  _GROUPS.forEach(g=>{
+    if(!_buckets[g.key]?.length) return;
+    const wrap=document.createElement('div');wrap.style.cssText='margin-bottom:10px';
+    const banner=document.createElement('div');
+    banner.style.cssText='padding:9px 14px;border-radius:10px;background:'+g.bg+';border:1.5px solid '+g.bdr+';cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;-webkit-tap-highlight-color:transparent';
+    banner.innerHTML='<div style="display:flex;align-items:center;gap:7px"><span style="font-size:15px">'+g.ico+'</span><span style="font-size:13px;font-weight:800;color:'+g.col+'">'+g.label+'</span><span style="font-size:11px;font-weight:700;background:'+g.col+';color:white;padding:1px 8px;border-radius:10px;margin-left:2px">'+_buckets[g.key].length+'</span></div><span data-arr style="font-size:11px;color:'+g.col+';font-weight:700">'+(g.open?'▼ Open':'▶ Show')+'</span>';
+    const cards=document.createElement('div');cards.style.display=g.open?'block':'none';cards.style.paddingTop='4px';
+    banner.onclick=()=>{const op=cards.style.display!=='none';cards.style.display=op?'none':'block';banner.querySelector('[data-arr]').textContent=op?'▶ Show':'▼ Open';};
+    wrap.appendChild(banner);wrap.appendChild(cards);
+    c.appendChild(wrap);
+    _groupContainers[g.key]=cards;
+  });
+}
 leads.forEach(lead=>{
 const sc=LEAD_STATUS_COLORS[lead.status]||'#6366F1';
 const overdue=lead.followupDate&&lead.followupDate<today_s&&isActive(lead.status);
@@ -7576,7 +7675,9 @@ const stageBar='<div style="display:flex;align-items:center;margin-bottom:5px">'
 const terminalBadge=(isWon(lead.status)||isLost(lead.status))?
   '<div style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:800;background:'+sc+'22;color:'+sc+'">'+(isWon(lead.status)?'✅ Order Received':'❌ Not Interested')+'</div>':'';
 const row=document.createElement('div');
-row.style.cssText='background:white;border:1.5px solid '+(overdue?'#EF4444':unattended?'#F59E0B':'#E5E4F0')+';border-radius:12px;margin-bottom:8px;overflow:hidden;cursor:pointer';
+const cardBg=!isActive(lead.status)?(isWon(lead.status)?'#ECFDF5':'#F8F8FA'):overdue?'#FFF1F2':unattended?'#FFFBEB':heat==='hot'?'#F0FDF4':heat==='warm'?'#EFF6FF':heat==='cold'?'#F5F5F5':'#FAFAFE';
+const cardBorder=!isActive(lead.status)?(isWon(lead.status)?'#10B981':'#9CA3AF'):overdue?'#EF4444':unattended?'#F59E0B':heat==='hot'?'#22C55E':heat==='warm'?'#3B82F6':heat==='cold'?'#D1D5DB':sc;
+row.style.cssText='background:'+cardBg+';border:1.5px solid '+cardBorder+';border-left:3px solid '+cardBorder+';border-radius:12px;margin-bottom:8px;overflow:hidden;cursor:pointer';
 row.innerHTML=
 '<div style="padding:10px 14px">'+
 '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
@@ -7629,6 +7730,9 @@ row.onclick=()=>showLeadDetail(lead.id);
 if(tab==='won'){
   if(isWon(lead.status)&&_wonCardsEl) _wonCardsEl.appendChild(row);
   else if(isLost(lead.status)&&_lostCardsEl) _lostCardsEl.appendChild(row);
+} else if(_groupContainers){
+  const _gc=_groupContainers[_groupContainers._gkFn(lead)];
+  if(_gc) _gc.appendChild(row); else c.appendChild(row);
 } else {
   c.appendChild(row);
 }
@@ -7722,9 +7826,12 @@ function refreshLeadSalesmanDropdown(selId){
 const sel=el('lead-sm'); if(!sel) return;
 const stypes=STATE.settings?.staffTypes||[];
 const admins=STATE.users.filter(u=>u.active!==false&&!u._deleted&&u.role==='admin');
-/* Only show salesman and CRE staff in assign dropdown, not accountants */
+/* Show staff who have showInLeadAssign=true, OR fall back to type-based filter */
+const hasExplicitFlag=STATE.users.some(u=>u.active!==false&&!u._deleted&&u.role!=='admin'&&u.showInLeadAssign===true);
 const staff=STATE.users.filter(u=>{
   if(u.active===false||u._deleted||u.role==='admin') return false;
+  /* If any user has explicit flag set, use that; otherwise fall back to staffType name filter */
+  if(hasExplicitFlag) return u.showInLeadAssign===true;
   const userSt=stypes.find(t=>t.id===u.staffTypeId);
   const stName=(userSt?.name||u.staffType||'').toLowerCase();
   return stName.includes('salesman')||stName.includes('cre')||stName.includes('sales')||stName.includes('market');
@@ -7835,6 +7942,20 @@ lead.notes=(lead.notes||[]).concat([{note,date:today(),by:STATE.user?.name||'',s
 lsSave('vs_leads',STATE.leads);rmEl('m-qstat');
 renderLeads('all');renderLeads('mine');renderLeads('today');renderLeads('won'); renderLeads('won2'); renderLeads('lost');
 toast('Status → '+status,'ok');autoSyncFirebase();
+/* Prompt to send WA update */
+if((lead.assignedId||lead.brokerId)&&(lead.assignedId||lead.brokerId)){
+  const sm=STATE.users.find(u=>u.id===lead.assignedId);
+  const brk=STATE.brokers?.find(b=>b.id===lead.brokerId);
+  const div=document.createElement('div');div.id='m-wa-after-status';
+  div.style.cssText='position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center';
+  let wabtns='';
+  if(sm&&(sm.phone||sm.whatsapp)) wabtns+='<button style="flex:1;padding:12px 8px;background:#25D366;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer" onclick="waLeadToSalesman(\''+id+'\');rmEl(\'m-wa-after-status\')">📲 WA Salesman<br><span style="font-size:10px;opacity:.85">'+sm.name+'</span></button>';
+  if(brk&&brk.phone) wabtns+='<button style="flex:1;padding:12px 8px;background:#059669;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer" onclick="waLeadToBroker(\''+id+'\');rmEl(\'m-wa-after-status\')">📲 WA Broker<br><span style="font-size:10px;opacity:.85">'+brk.name+'</span></button>';
+  if(!wabtns){div.remove();return;}
+  div.innerHTML='<div style="background:white;border-radius:16px 16px 0 0;width:min(500px,100%);padding:16px"><div style="font-size:14px;font-weight:800;color:#1F2937;margin-bottom:4px">Status updated to: <span style="color:#4F46E5">'+status+'</span></div><div style="font-size:12px;color:#6B7280;margin-bottom:14px">Send WhatsApp update about this status change?</div><div style="display:flex;gap:8px;margin-bottom:10px">'+wabtns+'</div><button onclick="rmEl(\'m-wa-after-status\')" style="width:100%;padding:10px;background:#F3F4F6;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">Skip — Don\'t Send</button></div>';
+  div.onclick=e=>{if(e.target===div)div.remove();};
+  document.body.appendChild(div);
+}
 }
 const LC_ACTS=[{k:'Call',ico:'📞'},{k:'Visit',ico:'🤝'},{k:'WhatsApp',ico:'💬'},{k:'Email',ico:'📧'},{k:'Broker Update',ico:'🤝'},{k:'Sample Sent',ico:'📦'},{k:'Order Report',ico:'📋'},{k:'Note',ico:'📝'}];
 const LC_ACT_COLORS={Call:'#4F46E5',Visit:'#059669',WhatsApp:'#16A34A',Email:'#0891B2','Broker Update':'#D97706','Sample Sent':'#F59E0B','Order Report':'#10B981',Note:'#6B7280'};
@@ -7885,6 +8006,13 @@ lsSave('vs_leads',STATE.leads);
 hideMod('m-log-contact');
 toast('Contact logged','ok');
 autoSyncFirebase();
+/* Notify assigned salesman if the updater is admin/CRE */
+try{
+  const _notifLead=STATE.leads?.find(l=>l.id===leadId);
+  if(_notifLead?.assignedId&&_notifLead.assignedId!==STATE.user?.id){
+    pushNotification(_notifLead.assignedId,_notifLead.assignedName,'Lead Update: '+_notifLead.name,STATE.user?.name+' logged a contact — '+newStatus,'lead',leadId);
+  }
+}catch(e){}
 if(el('m-lead-det')?.classList.contains('on')) showLeadDetail(leadId);
 renderLeads('all'); renderLeads('mine'); renderLeads('today'); renderLeads('won'); renderLeads('won2'); renderLeads('lost');
 }
@@ -7964,23 +8092,29 @@ html+='<div style="padding:14px;background:#EEF2FF;border-radius:10px;text-align
 }
 el('lead-det-body').innerHTML=html;
 const foot=el('lead-det-foot'); foot.innerHTML='';
-const mk=(cls,txt,fn)=>{const b=document.createElement('button');b.className='btn '+cls;b.style.cssText='-webkit-tap-highlight-color:transparent;touch-action:manipulation';b.innerHTML=txt;b.onclick=fn;return b;};
+const mk=(cls,txt,fn)=>{const b=document.createElement('button');b.className='btn '+cls;b.style.cssText='-webkit-tap-highlight-color:transparent;touch-action:manipulation;min-width:0;flex-shrink:1';b.innerHTML=txt;b.onclick=fn;return b;};
 const isAdmin=STATE.user?.role==='admin';
 const isMyLead=lead.assignedId===STATE.user?.id;
 const adminCreated=lead.createdByRole==='admin'&&!isAdmin;
 const canEdit=(isAdmin||hasPerm('leads_edit')||isMyLead)&&!adminCreated;
 const canUpdate=isAdmin||hasPerm('leads_edit')||hasPerm('leads_view')||isMyLead;
-const isWonL=l=>l.status==='Order Received'||l.status==='Won';
-if(canUpdate) foot.appendChild(mk('bp bfl','📞 Log Contact',()=>openLogContact(id)));
-if(canUpdate) foot.appendChild(mk('bs','Update Status',()=>{hideMod('m-lead-det');updateLeadStatus(id);}));
-if(lead.assignedId) foot.appendChild(mk('bs','WA Salesman',()=>waLeadToSalesman(id)));
-if(lead.brokerId) foot.appendChild(mk('bs','WA Broker',()=>waLeadToBroker(id)));
-if(canEdit) foot.appendChild(mk('bs bfl','Edit',()=>{hideMod('m-lead-det');editLead(id);}));
-if(adminCreated) foot.appendChild(mk('bgh','🔒 Admin Lead — Status Only',()=>{}));
-if(isAdmin&&!isWonL(lead)&&lead.status!=='Closed') foot.appendChild(mk('bsuc bfl','Convert',()=>{hideMod('m-lead-det');convertLead(id);}));
-if(isAdmin||hasPerm('delete_entry'))foot.appendChild(mk('bd','Delete',()=>deleteLead(id)));
-foot.appendChild(mk('bfl','ð Print',()=>printLeadPdf(id)));
-foot.appendChild(mk('bgh bfl','Close',()=>hideMod('m-lead-det')));
+const isWonL2=l=>l.status==='Order Received'||l.status==='Won';
+/* Row 1: primary actions */
+const row1=document.createElement('div');row1.style.cssText='display:flex;gap:6px;width:100%;flex-wrap:wrap';
+if(canUpdate) row1.appendChild(mk('bp bfl','📞 Log Contact',()=>openLogContact(id)));
+if(canUpdate) row1.appendChild(mk('bs','📋 Status',()=>{hideMod('m-lead-det');updateLeadStatus(id);}));
+if(canEdit) row1.appendChild(mk('bs','✏️ Edit',()=>{hideMod('m-lead-det');editLead(id);}));
+/* Row 2: WA + convert + delete + print */
+const row2=document.createElement('div');row2.style.cssText='display:flex;gap:6px;width:100%;flex-wrap:wrap';
+if(lead.assignedId) row2.appendChild(mk('bs','📲 WA SM',()=>waLeadToSalesman(id)));
+if(lead.brokerId) row2.appendChild(mk('bs','📲 WA Brk',()=>waLeadToBroker(id)));
+if(isAdmin&&!isWonL2(lead)&&lead.status!=='Closed') row2.appendChild(mk('bsuc','Convert',()=>{hideMod('m-lead-det');convertLead(id);}));
+row2.appendChild(mk('','🖨 Print',()=>printLeadPdf(id)));
+if(isAdmin||hasPerm('delete_entry')) row2.appendChild(mk('bd','🗑 Delete',()=>deleteLead(id)));
+if(adminCreated) row2.appendChild(mk('bgh bfl','🔒 Admin Lead — Status Only',()=>{}));
+row2.appendChild(mk('bgh bfl','✕ Close',()=>hideMod('m-lead-det')));
+foot.appendChild(row1);
+if(row2.children.length) foot.appendChild(row2);
 showMod('m-lead-det');
 }
 function renderFYTab(){
@@ -8443,7 +8577,7 @@ function printLeadPdf(id){
   if(lead.market) html+='<div><div class="ml">Market</div><div class="mv">'+lead.market+'</div></div>';
   if(lead.assignedName) html+='<div><div class="ml">Assigned To</div><div class="mv">'+lead.assignedName+'</div></div>';
   if(lead.source) html+='<div><div class="ml">Source</div><div class="mv">'+lead.source+'</div></div>';
-  if(lead.rateGiven) html+='<div><div class="ml">Rate Given</div><div class="mv">â¹'+lead.rateGiven+'/mtr</div></div>';
+  if(lead.rateGiven) html+='<div><div class="ml">Rate Given</div><div class="mv">₹'+lead.rateGiven+'/mtr</div></div>';
   if(lead.followupDate) html+='<div><div class="ml">Follow-up</div><div class="mv">'+fmtDate(lead.followupDate)+'</div></div>';
   if(lead.interest) html+='<div><div class="ml">Interest</div><div class="mv">'+lead.interest+'</div></div>';
   if(lead.address) html+='<div><div class="ml">Address</div><div class="mv">'+lead.address+'</div></div>';
@@ -8452,11 +8586,11 @@ function printLeadPdf(id){
     html+='<h2 style="font-size:13px;font-weight:800;color:#374151;margin:14px 0 8px;border-bottom:2px solid #4F46E5;padding-bottom:4px">Contact History ('+lead.notes.length+')</h2>';
     html+='<table><tr><th>Date</th><th>By</th><th>Status</th><th>Note</th></tr>';
     lead.notes.slice().reverse().forEach(n=>{
-      html+='<tr><td>'+fmtDate(n.date)+'</td><td>'+(n.by||'')+'</td><td>'+(n.status||n.activityType||'')+'</td><td>'+(n.note||'')+(n.outcome?'<br><em style="color:#059669">â '+n.outcome+'</em>':'')+(n.nextFollowup?'<br><span style="color:#D97706">ð '+fmtDate(n.nextFollowup)+'</span>':'')+'</td></tr>';
+      html+='<tr><td>'+fmtDate(n.date)+'</td><td>'+(n.by||'')+'</td><td>'+(n.status||n.activityType||'')+'</td><td>'+(n.note||'')+(n.outcome?'<br><em style="color:#059669">✓ '+n.outcome+'</em>':'')+(n.nextFollowup?'<br><span style="color:#D97706">📅 '+fmtDate(n.nextFollowup)+'</span>':'')+'</td></tr>';
     });
     html+='</table>';
   }
-  html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;â¢&nbsp; Lead: '+lead.name+' &nbsp;â¢&nbsp; Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
+  html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;•&nbsp; Lead: '+lead.name+' &nbsp;•&nbsp; Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
   _printWin(html,'Lead - '+lead.name);
 }
 function printTaskPdf(id){
@@ -9958,14 +10092,13 @@ else if(ph.length===11&&ph.startsWith('0')){ ph='91'+ph.slice(1); }
 else if(!ph.startsWith('91')&&ph.length<11){ ph='91'+ph; }
 const encoded=encodeURIComponent(msg||'');
 const isMobile=/Android|iPhone|iPad|iPod|webOS|BlackBerry|Opera Mini|IEMobile/i.test(navigator.userAgent);
-const url=isMobile
-? 'https://api.whatsapp.com/send?phone='+ph+'&text='+encoded
-: 'https://web.whatsapp.com/send?phone='+ph+'&text='+encoded;
 if(isMobile){
-const a=document.createElement('a');a.href=url;a.setAttribute('target','_blank');a.setAttribute('rel','noopener noreferrer');
+/* Deep link — opens WhatsApp app directly, no web load */
+const a=document.createElement('a');a.href='whatsapp://send?phone='+ph+'&text='+encoded;a.setAttribute('rel','noopener noreferrer');
 document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),100);
 }else{
-window.open(url,'_blank');
+/* Desktop: open WhatsApp Web in a named window so it reuses the same tab */
+window.open('https://web.whatsapp.com/send?phone='+ph+'&text='+encoded,'_wa_window');
 }
 }
 function waOutstanding(){
@@ -10367,6 +10500,13 @@ openWA(sm.whatsapp||sm.phone, buildLeadWAMsg(lead,sm.name,false));
 }
 function buildLeadWAMsg(lead,recipientName,isForBroker){
 const co=STATE.settings.companyName||'Amrit Laxmi Textile';
+/* Use custom template if set */
+const tpl=isForBroker?(STATE.settings.waTemplateBroker||''):(STATE.settings.waTemplateSalesman||'');
+if(tpl.trim()){
+  const _brk2=STATE.brokers.find(b=>b.id===lead.brokerId);
+  const vars={name:lead.name||'',phone:lead.phone||'',status:lead.status||'',market:lead.market||'',interest:lead.interest||'',rate:lead.rateGiven?'₹'+lead.rateGiven+'/mtr':'Not given',followup:lead.followupDate?fmtDate(lead.followupDate):'ASAP',salesman:lead.assignedName||'',broker:_brk2?.name||'',company:co,notes:lead.lastNote||lead.progress||''};
+  return tpl.replace(/\{(\w+)\}/g,(_,k)=>vars[k]||'');
+}
 const brk=STATE.brokers.find(b=>b.id===lead.brokerId);
 const brkStr=brk?(brk.name+(brk.phone?' - '+brk.phone:'')):'';
 const rate=lead.rateGiven?'\u20B9'+lead.rateGiven+'/mtr':'Not given';
@@ -11937,6 +12077,54 @@ function setLeadStatus(id,status){
   if(status==='Order Received'||status==='Won'||status==='Not Interested'||status==='Lost'||status==='Closed')setTimeout(()=>hideMod('m-lead-det'),500);
 }
 
+// ═══ DASHBOARD LEADS PIPELINE WIDGET ════════════════════════════
+function renderDashLeadsPipeline(){
+  const c=el('dash-leads-pipeline');if(!c)return;
+  const today_s=(new Date()).toISOString().slice(0,10);
+  const leads=(STATE.leads||[]).filter(l=>!l._deleted);
+  const isActive=s=>s&&s!=='Order Received'&&s!=='Won'&&s!=='Not Interested'&&s!=='Lost'&&s!=='Closed';
+  const active=leads.filter(l=>isActive(l.status));
+  const overdue=active.filter(l=>l.followupDate&&l.followupDate<today_s);
+  const todayFU=active.filter(l=>l.followupDate===today_s);
+  const unattended=active.filter(l=>!l.notes?.length);
+  const won=leads.filter(l=>l.status==='Order Received'||l.status==='Won').length;
+  const total=leads.length;
+  const conv=total>0?Math.round(won/total*100):0;
+  /* Status breakdown for active leads */
+  const sc={};active.forEach(l=>{const s=l.status||'Unknown';sc[s]=(sc[s]||0)+1;});
+  const LEAD_STATUS_COLORS_LOCAL={'Enquiry Received':'#6366F1','Salesman Sent':'#0891B2','Sample Saree Set Sent':'#F59E0B','Salesman Updated':'#8B5CF6','Broker Updated':'#D97706','Follow Up':'#EF4444','Order Received':'#10B981','Not Interested':'#6B7280'};
+  c.innerHTML=
+  '<div style="padding:14px 16px 6px;display:flex;align-items:center;justify-content:space-between">'+
+  '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:18px">🎯</span><span style="font-size:14px;font-weight:800;color:#1F2937">Leads Pipeline</span></div>'+
+  '<button onclick="setNav(\'leads\')" style="font-size:11px;font-weight:700;color:#4F46E5;background:#EEF2FF;border:none;border-radius:6px;padding:4px 10px;cursor:pointer">View All →</button>'+
+  '</div>'+
+  /* KPI row */
+  '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 16px">'+
+  '<div style="background:#EEF2FF;border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer" onclick="setNav(\'leads\')"><div style="font-size:20px;font-weight:900;color:#4F46E5">'+active.length+'</div><div style="font-size:10px;color:#6B7280;margin-top:2px">Active</div></div>'+
+  '<div style="background:'+(overdue.length?'#FEE2E2':'#F3F4F6')+';border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer" onclick="setNav(\'leads\')"><div style="font-size:20px;font-weight:900;color:'+(overdue.length?'#DC2626':'#9CA3AF')+'">'+overdue.length+'</div><div style="font-size:10px;color:#6B7280;margin-top:2px">Overdue</div></div>'+
+  '<div style="background:'+(todayFU.length?'#FEF3C7':'#F3F4F6')+';border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer" onclick="setNav(\'leads\')"><div style="font-size:20px;font-weight:900;color:'+(todayFU.length?'#D97706':'#9CA3AF')+'">'+todayFU.length+'</div><div style="font-size:10px;color:#6B7280;margin-top:2px">Today</div></div>'+
+  '<div style="background:#D1FAE5;border-radius:10px;padding:10px 6px;text-align:center"><div style="font-size:20px;font-weight:900;color:#059669">'+conv+'%</div><div style="font-size:10px;color:#6B7280;margin-top:2px">Won</div></div>'+
+  '</div>'+
+  /* Alerts row */
+  (overdue.length||unattended.length?
+  '<div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap">'+
+  (overdue.length?'<div style="background:#FEE2E2;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;color:#DC2626;cursor:pointer" onclick="setNav(\'leads\')">⚠️ '+overdue.length+' overdue follow-up'+(overdue.length>1?'s':'')+'</div>':'')+
+  (unattended.length?'<div style="background:#FEF3C7;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;color:#92400E;cursor:pointer" onclick="setNav(\'leads\')">🆕 '+unattended.length+' never contacted</div>':'')+
+  '</div>':'')+
+  /* Stage breakdown */
+  (Object.keys(sc).length?
+  '<div style="padding:0 16px 12px">'+
+  '<div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">By Stage</div>'+
+  Object.entries(sc).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([s,n])=>{
+    const col=LEAD_STATUS_COLORS_LOCAL[s]||'#6366F1';
+    const pct=active.length>0?Math.round(n/active.length*100):0;
+    return '<div style="margin-bottom:5px"><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font-size:11px;color:#374151;font-weight:600">'+s+'</span><span style="font-size:11px;font-weight:800;color:'+col+'">'+n+'</span></div><div style="height:4px;background:#F3F4F6;border-radius:2px"><div style="height:4px;background:'+col+';border-radius:2px;width:'+pct+'%"></div></div></div>';
+  }).join('')+
+  '</div>':'')+
+  /* Quick action */
+  '<div style="padding:0 16px 14px"><button onclick="openNewLead()" style="width:100%;padding:10px;background:#4F46E5;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add New Lead</button></div>';
+}
+
 // ═══ DASHBOARD TASK WIDGET ═══════════════════════════════════════
 function renderDashTaskWidget(){
   const c=el('dash-task-widget');if(!c)return;
@@ -12935,7 +13123,7 @@ el('tpl-title').textContent='Add One-Off Task';el('tpl-subtitle').textContent='O
 <div class="ov" id="m-adhoc-task" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>&#x26A1; Quick Task</h3><p class="sub">Assign a one-off task to any staff member</p></div><button class="btn bgh bsm" onclick="hideMod('m-adhoc-task')">&#x2715;</button></div></div><div class="shb"><div id="adhoc-form" class="p16"></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-adhoc-task')">Cancel</button><button class="btn bp bfl" onclick="saveAdHocTask()">&#x26A1; Assign Task</button></div>
 </div></div>
 <div class="ov" id="m-leave" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>&#x1F3D6; Staff Leave</h3></div><button class="btn bgh bsm" onclick="hideMod('m-leave')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="lv-id"/><div class="fg"><label>Staff Member *</label><select class="sel" id="lv-user"><option value="">Select staff</option></select></div><div class="fg"><label>Substitute (tasks route to this person)</label><select class="sel" id="lv-sub"><option value="">No substitute</option></select></div><div class="ir2"><div class="fg"><label>From Date *</label><input class="inp" type="date" id="lv-from"/></div><div class="fg"><label>To Date *</label><input class="inp" type="date" id="lv-to"/></div></div><div class="fg"><label>Reason</label><select class="sel" id="lv-reason"><option>Personal</option><option>Medical</option><option>Festival</option><option>Emergency</option><option>Other</option></select></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-leave')">Cancel</button><button class="btn bp bfl" onclick="saveLeave()">Save Leave</button></div>
-</div></div><div class="ov" id="m-cust-group" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="cgtit">New Party Group</h3><p class="sub">Link firms for cross-billing</p></div><button class="btn bgh bsm" onclick="hideMod('m-cust-group')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="cg-id"/><div class="fg"><label>Group Name *</label><input class="inp" id="cg-name" placeholder="e.g. Sharma Group, ABC Textiles"/></div><div class="dvd"></div><div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Member Firms</div><div id="cg-members" style="margin-bottom:12px"></div><div style="display:flex;gap:8px;align-items:center"><select class="sel" id="cg-add-member" style="flex:1"><option value="">— Select customer to add —</option></select><button class="btn bp bsm" onclick="addGroupMemberUI()">Add</button><button class="btn bs bsm" onclick="openCustFromGroup()" title="Create new customer and add to this group">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:8px;line-height:1.6">Save the group name first if adding new members to a new group.</div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><button class="btn bd bfl" id="cg-del-btn" style="display:none" onclick="deleteCustGroup(el('cg-id').value)">&#x1F5D1; Delete Group</button><div style="display:flex;gap:6px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-cust-group')">Cancel</button><button class="btn bp bfl" onclick="saveCustGroup()">Save Group</button></div></div></div></div><div class="ov" id="m-prog" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Programme Lot</p><div style="font-size:22px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace;line-height:1" id="prog-ord-no">—</div><div style="font-size:12px;color:var(--t2);margin-top:2px" id="prog-cust"></div></div><button class="btn bgh bsm" onclick="hideMod('m-prog')">&#x2715;</button></div></div><div class="shb" id="prog-bod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-prog')">Cancel</button><button class="btn bp bfl" onclick="saveProgramme()">&#x2714; Add Programme</button></div></div></div><div class="ov" id="m-testing" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>🧪 Testing Checklist</h3><p class="sub">Verify every change</p></div><button class="btn bgh bsm" onclick="hideMod('m-testing')">✕</button></div></div><div class="shb" style="padding:16px;font-size:15px;line-height:2"><b style="color:var(--P)">1. Font Size</b><br>All text larger — body 16px, nav 12px.<br><br><b style="color:var(--P)">2. Dashboard Task Widget</b><br>Login as staff → Dashboard shows "My Tasks Today" card.<br><br><b style="color:var(--P)">3. Edit Task</b><br>Tasks → tap task → "✏️ Edit Task" → change → Save.<br><br><b style="color:var(--P)">4. Future Task Schedule</b><br>Tasks → Templates → New → set Start Date to future.<br><br><b style="color:var(--P)">5. Task Report</b><br>Tasks → 📊 Report → set dates → Go → see staff chart.<br><br><b style="color:var(--P)">6. Delete Completed</b><br>Tasks → Report → "🗑 Delete Completed" → Range/Month/Year/All → Delete.<br><br><b style="color:var(--P)">7. Delete Lead</b><br>Leads → tap lead → "🗑 Delete Lead" (admin only).<br><br><b style="color:var(--P)">8. Lead Status Saves Instantly</b><br>Open lead → tap Won → saves + moves to Won tab.<br><br><b style="color:var(--P)">9. Forgot Password</b><br>Login → "Forgot Password?" → enter username → resets to admin123.<br><br><b style="color:var(--P)">10. Forgot Username</b><br>Login → "Forgot Username?" → shows all usernames.<br><br><b style="color:var(--P)">11. Admin Locked Out</b><br>"Admin locked out?" → 3 working recovery options.<br><br><b style="color:var(--P)">12. Auto-Sync 30s</b><br>Change on PC → wait 30s on Android → auto-refreshes.<br><br><b style="color:var(--P)">13. 🔄 Refresh</b><br>Dashboard → tap 🔄 → instant pull from server.<br><br><b style="color:var(--P)">14. Logout Saves</b><br>Logout → "Save & sync?" → syncs GS+Firebase → logs out.<br><br><b style="color:var(--P)">15. GS + Firebase Hybrid</b><br>Every save: GS first, Firebase backup.<br><br><b style="color:var(--P)">16. GST Lookup</b><br>Customers → GSTIN → GST Lookup → opens gstin.in.<br><br><b style="color:var(--P)">17. Supplier GSTIN</b><br>Suppliers → Add → GSTIN field present → saves.<br><br><b style="color:var(--P)">18. WA Reminders</b><br>Tasks → All → "📲 Send WA Reminders Now" → WA per staff.</div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-testing')">Got it!</button></div></div></div><button id="calc-fab" onclick="toggleCalc()" title="Calculator (Numpad ready)" style="position:fixed;right:20px;bottom:20px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#4F46E5,#7C3AED);border:none;color:white;font-size:22px;cursor:pointer;z-index:9997;box-shadow:0 4px 15px rgba(79,70,229,0.5);display:flex;align-items:center;justify-content:center">🧮</button><div id="calc-float" style="display:none;position:fixed;right:20px;bottom:20px;width:272px;background:#1F2937;border-radius:20px;box-shadow:0 25px 60px rgba(0,0,0,0.6);z-index:9998;overflow:hidden;font-family:system-ui,-apple-system,sans-serif"><div id="calc-drag" style="background:#111827;padding:10px 14px 8px;cursor:move;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #374151"><span style="color:#6B7280;font-size:11px;font-weight:600;letter-spacing:1px">⌨ CALCULATOR</span><button onclick="toggleCalc()" style="background:none;border:none;color:#6B7280;font-size:20px;cursor:pointer;line-height:1;padding:0">×</button></div><div style="padding:6px 14px 10px;background:#111827"><div id="calc-expr" style="color:#4B5563;font-size:11px;min-height:16px;text-align:right;font-family:monospace;white-space:nowrap;overflow:hidden"></div><div id="calc-disp" style="color:#F9FAFB;font-size:32px;text-align:right;font-family:monospace;font-weight:300;letter-spacing:-1px;overflow:hidden;text-overflow:ellipsis;line-height:1.2">0</div></div><div id="calc-gst-panel" style="display:none;background:#0F172A;margin:0 10px 8px;border-radius:12px;padding:10px;font-size:12px;color:#D1D5DB"><div style="display:flex;gap:5px;margin-bottom:8px"><button onclick="setGSTRate(5)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#374151;border:none;border-radius:8px;color:#D1D5DB;cursor:pointer;font-size:11px;font-weight:600">5%</button><button onclick="setGSTRate(12)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#374151;border:none;border-radius:8px;color:#D1D5DB;cursor:pointer;font-size:11px;font-weight:600">12%</button><button onclick="setGSTRate(18)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#4F46E5;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:11px;font-weight:600">18%</button><button onclick="setGSTRate(28)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#374151;border:none;border-radius:8px;color:#D1D5DB;cursor:pointer;font-size:11px;font-weight:600">28%</button></div><div id="calc-gst-result"></div></div><div id="calc-mu-panel" style="display:none;background:#0F172A;margin:0 10px 8px;border-radius:12px;padding:10px;font-size:12px;color:#D1D5DB"><div id="calc-mu-result"></div></div><div style="padding:4px 10px 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px"><button onclick="calcBtn('AC')" style="grid-column:span 2;background:#374151;border:none;border-radius:10px;color:#EF4444;font-size:15px;font-weight:700;padding:13px 4px;cursor:pointer">AC</button><button onclick="calcBtn('back')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">⌫</button><button onclick="calcBtn('/')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">÷</button><button onclick="calcBtn('7')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">7</button><button onclick="calcBtn('8')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">8</button><button onclick="calcBtn('9')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">9</button><button onclick="calcBtn('*')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">×</button><button onclick="calcBtn('4')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">4</button><button onclick="calcBtn('5')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">5</button><button onclick="calcBtn('6')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">6</button><button onclick="calcBtn('-')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">−</button><button onclick="calcBtn('1')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">1</button><button onclick="calcBtn('2')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">2</button><button onclick="calcBtn('3')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">3</button><button onclick="calcBtn('+')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">+</button><button onclick="calcBtn('MU')" style="background:#7C3AED;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;padding:13px 4px;cursor:pointer" title="Markup: enter cost, press MU, enter %, press =">MU</button><button onclick="calcBtn('0')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">0</button><button onclick="calcBtn('.')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">.</button><button onclick="calcBtn('=')" style="background:#4F46E5;border:none;border-radius:10px;color:#fff;font-size:20px;font-weight:700;padding:13px 4px;cursor:pointer">=</button><button onclick="calcBtn('GST')" id="calc-gst-btn" style="grid-column:span 4;background:#065F46;border:none;border-radius:10px;color:#34D399;font-size:13px;font-weight:700;padding:11px 4px;cursor:pointer">GST ▾</button></div></div>
+</div></div><div class="ov" id="m-cust-group" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="cgtit">New Party Group</h3><p class="sub">Link firms for cross-billing</p></div><button class="btn bgh bsm" onclick="hideMod('m-cust-group')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="cg-id"/><div class="fg"><label>Group Name *</label><input class="inp" id="cg-name" placeholder="e.g. Sharma Group, ABC Textiles"/></div><div class="dvd"></div><div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Member Firms</div><div id="cg-members" style="margin-bottom:12px"></div><div style="display:flex;gap:8px;align-items:center"><select class="sel" id="cg-add-member" style="flex:1"><option value="">— Select customer to add —</option></select><button class="btn bp bsm" onclick="addGroupMemberUI()">Add</button><button class="btn bs bsm" onclick="openCustFromGroup()" title="Create new customer and add to this group">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:8px;line-height:1.6">Save the group name first if adding new members to a new group.</div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><button class="btn bd bfl" id="cg-del-btn" style="display:none" onclick="deleteCustGroup(el('cg-id').value)">&#x1F5D1; Delete Group</button><div style="display:flex;gap:6px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-cust-group')">Cancel</button><button class="btn bp bfl" onclick="saveCustGroup()">Save Group</button></div></div></div></div><div class="ov" id="m-prog" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Programme Lot</p><div style="font-size:22px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace;line-height:1" id="prog-ord-no">—</div><div style="font-size:12px;color:var(--t2);margin-top:2px" id="prog-cust"></div></div><button class="btn bgh bsm" onclick="hideMod('m-prog')">&#x2715;</button></div></div><div class="shb" id="prog-bod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-prog')">Cancel</button><button class="btn bp bfl" onclick="saveProgramme()">&#x2714; Add Programme</button></div></div></div><div class="ov" id="m-testing" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>🧪 Testing Checklist</h3><p class="sub">Verify every change</p></div><button class="btn bgh bsm" onclick="hideMod('m-testing')">✕</button></div></div><div class="shb" style="padding:16px;font-size:15px;line-height:2"><b style="color:var(--P)">1. Font Size</b><br>All text larger — body 16px, nav 12px.<br><br><b style="color:var(--P)">2. Dashboard Task Widget</b><br>Login as staff → Dashboard shows "My Tasks Today" card.<br><br><b style="color:var(--P)">3. Edit Task</b><br>Tasks → tap task → "✏️ Edit Task" → change → Save.<br><br><b style="color:var(--P)">4. Future Task Schedule</b><br>Tasks → Templates → New → set Start Date to future.<br><br><b style="color:var(--P)">5. Task Report</b><br>Tasks → 📊 Report → set dates → Go → see staff chart.<br><br><b style="color:var(--P)">6. Delete Completed</b><br>Tasks → Report → "🗑 Delete Completed" → Range/Month/Year/All → Delete.<br><br><b style="color:var(--P)">7. Delete Lead</b><br>Leads → tap lead → "🗑 Delete Lead" (admin only).<br><br><b style="color:var(--P)">8. Lead Status Saves Instantly</b><br>Open lead → tap Won → saves + moves to Won tab.<br><br><b style="color:var(--P)">9. Forgot Password</b><br>Login → "Forgot Password?" → enter username → resets to admin123.<br><br><b style="color:var(--P)">10. Forgot Username</b><br>Login → "Forgot Username?" → shows all usernames.<br><br><b style="color:var(--P)">11. Admin Locked Out</b><br>"Admin locked out?" → 3 working recovery options.<br><br><b style="color:var(--P)">12. Auto-Sync 30s</b><br>Change on PC → wait 30s on Android → auto-refreshes.<br><br><b style="color:var(--P)">13. 🔄 Refresh</b><br>Dashboard → tap 🔄 → instant pull from server.<br><br><b style="color:var(--P)">14. Logout Saves</b><br>Logout → "Save & sync?" → syncs GS+Firebase → logs out.<br><br><b style="color:var(--P)">15. GS + Firebase Hybrid</b><br>Every save: GS first, Firebase backup.<br><br><b style="color:var(--P)">16. GST Lookup</b><br>Customers → GSTIN → GST Lookup → opens gstin.in.<br><br><b style="color:var(--P)">17. Supplier GSTIN</b><br>Suppliers → Add → GSTIN field present → saves.<br><br><b style="color:var(--P)">18. WA Reminders</b><br>Tasks → All → "📲 Send WA Reminders Now" → WA per staff.</div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-testing')">Got it!</button></div></div></div><button id="calc-fab" onclick="toggleCalc()" title="Calculator (Numpad ready)" style="position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#4F46E5,#7C3AED);border:none;color:white;font-size:22px;cursor:pointer;z-index:9997;box-shadow:0 4px 15px rgba(79,70,229,0.5);display:flex;align-items:center;justify-content:center">🧮</button><div id="calc-float" style="display:none;position:fixed;right:20px;bottom:20px;width:272px;background:#1F2937;border-radius:20px;box-shadow:0 25px 60px rgba(0,0,0,0.6);z-index:9998;overflow:hidden;font-family:system-ui,-apple-system,sans-serif"><div id="calc-drag" style="background:#111827;padding:10px 14px 8px;cursor:move;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #374151"><span style="color:#6B7280;font-size:11px;font-weight:600;letter-spacing:1px">⌨ CALCULATOR</span><button onclick="toggleCalc()" style="background:none;border:none;color:#6B7280;font-size:20px;cursor:pointer;line-height:1;padding:0">×</button></div><div style="padding:6px 14px 10px;background:#111827"><div id="calc-expr" style="color:#4B5563;font-size:11px;min-height:16px;text-align:right;font-family:monospace;white-space:nowrap;overflow:hidden"></div><div id="calc-disp" style="color:#F9FAFB;font-size:32px;text-align:right;font-family:monospace;font-weight:300;letter-spacing:-1px;overflow:hidden;text-overflow:ellipsis;line-height:1.2">0</div></div><div id="calc-gst-panel" style="display:none;background:#0F172A;margin:0 10px 8px;border-radius:12px;padding:10px;font-size:12px;color:#D1D5DB"><div style="display:flex;gap:5px;margin-bottom:8px"><button onclick="setGSTRate(5)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#374151;border:none;border-radius:8px;color:#D1D5DB;cursor:pointer;font-size:11px;font-weight:600">5%</button><button onclick="setGSTRate(12)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#374151;border:none;border-radius:8px;color:#D1D5DB;cursor:pointer;font-size:11px;font-weight:600">12%</button><button onclick="setGSTRate(18)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#4F46E5;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:11px;font-weight:600">18%</button><button onclick="setGSTRate(28)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#374151;border:none;border-radius:8px;color:#D1D5DB;cursor:pointer;font-size:11px;font-weight:600">28%</button></div><div id="calc-gst-result"></div></div><div id="calc-mu-panel" style="display:none;background:#0F172A;margin:0 10px 8px;border-radius:12px;padding:10px;font-size:12px;color:#D1D5DB"><div id="calc-mu-result"></div></div><div style="padding:4px 10px 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px"><button onclick="calcBtn('AC')" style="grid-column:span 2;background:#374151;border:none;border-radius:10px;color:#EF4444;font-size:15px;font-weight:700;padding:13px 4px;cursor:pointer">AC</button><button onclick="calcBtn('back')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">⌫</button><button onclick="calcBtn('/')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">÷</button><button onclick="calcBtn('7')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">7</button><button onclick="calcBtn('8')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">8</button><button onclick="calcBtn('9')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">9</button><button onclick="calcBtn('*')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">×</button><button onclick="calcBtn('4')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">4</button><button onclick="calcBtn('5')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">5</button><button onclick="calcBtn('6')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">6</button><button onclick="calcBtn('-')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">−</button><button onclick="calcBtn('1')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">1</button><button onclick="calcBtn('2')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">2</button><button onclick="calcBtn('3')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">3</button><button onclick="calcBtn('+')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">+</button><button onclick="calcBtn('MU')" style="background:#7C3AED;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;padding:13px 4px;cursor:pointer" title="Markup: enter cost, press MU, enter %, press =">MU</button><button onclick="calcBtn('0')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">0</button><button onclick="calcBtn('.')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">.</button><button onclick="calcBtn('=')" style="background:#4F46E5;border:none;border-radius:10px;color:#fff;font-size:20px;font-weight:700;padding:13px 4px;cursor:pointer">=</button><button onclick="calcBtn('GST')" id="calc-gst-btn" style="grid-column:span 4;background:#065F46;border:none;border-radius:10px;color:#34D399;font-size:13px;font-weight:700;padding:11px 4px;cursor:pointer">GST ▾</button></div></div>
 <div class="ov" id="m-exch">
 <div class="sh" style="max-width:720px">
 <div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Exchange Slip</h3><p class="sub">Manage exchange voucher</p></div><button class="btn bgh bsm" onclick="hideMod('m-exch')">&#10005;</button></div></div>
