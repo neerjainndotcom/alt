@@ -12247,7 +12247,7 @@ function applyCloudData(d,force=false){
     // Deep-merge dashConfigPerUser so every staff member's personal layout survives sync
     const mergedPerUser={...(STATE.settings.dashConfigPerUser||{}), ...(d.settings.dashConfigPerUser||{})};
     const _localNextInward=STATE.settings.nextInwardNo||1;
-    STATE.settings={...STATE.settings,...d.settings,...keep};
+    STATE.settings={...STATE.settings,...d.settings};
     // Never let sync go backwards on the inward counter
     STATE.settings.nextInwardNo=Math.max(_localNextInward,STATE.settings.nextInwardNo||1);
     if(Object.keys(mergedPerUser).length) STATE.settings.dashConfigPerUser=mergedPerUser;
