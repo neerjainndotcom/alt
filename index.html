@@ -474,8 +474,18 @@ function autoSyncCloud(){
       const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;
       if(localCount<=1){window._syncRunning=false;window._saveLock=false;return;}
       if(!(STATE.users||[]).length){window._syncRunning=false;window._saveLock=false;return;}
+      /* Merge in any changes other devices made since our last pull, BEFORE we push.
+         Without this, our local snapshot can silently overwrite/erase updates
+         (like a staff member's completed task) that another device already saved
+         to Google Sheets moments ago. */
+      if(GAS_URL){
+        try{
+          const cloud=await api('getAll');
+          if(cloud&&typeof cloud==='object'&&(cloud.items||cloud.users))applyCloudData(cloud,false);
+        }catch(e){}
+      }
       const nowTs=new Date().toISOString();
-      // PUSH local data to Google Sheets
+      // PUSH merged data to Google Sheets
       window._lastSaveAt=Date.now();
       const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
         brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
