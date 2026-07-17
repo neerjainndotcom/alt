@@ -32,7 +32,7 @@
 <div id="tst"></div>
 <div id="cov"><div class="ccard"><div class="cicn" id="ci"></div><div class="ctit" id="ct"></div><div class="cmsg" id="cm"></div><div class="cbtns"><button class="cno" id="cn">Cancel</button><button class="cyes" id="cy">Confirm</button></div></div>
 </div>
-<div id="ls"><div class="lg"></div><div class="lglow"></div><div class="lcard"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p>Amrit Laxmi Textile · Surat</p></div><div id="lf"><div class="lf"><label>Username</label><input type="text" id="lu" placeholder="Enter username" autocomplete="username"/></div><div class="lf"><label>Password</label><input type="password" id="lp" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div><button class="lbtn" onclick="doLogin()">Sign In →</button><div class="lerr" id="le"></div><div style="display:flex;justify-content:space-between;margin-top:14px"><button onclick="showForgotUsername()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Username?</button><button onclick="showForgotPassword()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Password?</button></div><div style="margin-top:14px;background:rgba(255,165,0,0.15);border-radius:10px;padding:12px;border:1.5px solid rgba(255,165,0,0.4)"><div style="font-size:11px;color:rgba(255,255,255,0.9);margin-bottom:8px;text-align:center;font-weight:700">&#x1F4F1; First time on this phone / New device?</div><button onclick="loginScreenSyncFirebase()" style="width:100%;background:linear-gradient(135deg,#D97706,#F59E0B);color:white;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 15px rgba(217,119,6,.4)">&#x1F525; Load Data from Firebase</button><div id="ls-sync-status" style="font-size:12px;color:rgba(255,255,255,0.9);margin-top:8px;text-align:center;min-height:18px;font-weight:600"></div><div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:6px;text-align:center">Tap this button to load all your data before logging in</div></div><div style="text-align:center;margin-top:10px"><button onclick="showEmergencyRecovery()" style="background:none;border:none;color:rgba(255,80,80,0.7);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline">&#x1F6A8; Admin locked out?</button></div><div id="login-version" style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3)"></div></div><div id="of" class="hid"><p style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:20px;line-height:1.6">📱 New device detected!<br>OTP sent to admin WhatsApp.<br>Ask admin to share the code.</p><div class="lf"><label>One-Time Password</label><input type="number" class="otp-inp" id="oi" placeholder="000000" maxlength="6"/></div><button class="lbtn" onclick="doOTP()">Verify OTP →</button><div class="lerr" id="oe"></div><button style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit" onclick="showEl('lf');hideEl('of')">← Back</button></div></div>
+<div id="ls"><div class="lg"></div><div class="lglow"></div><div class="lcard"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p>Amrit Laxmi Textile · Surat</p></div><div id="lf"><div class="lf"><label>Username</label><input type="text" id="lu" placeholder="Enter username" autocomplete="username"/></div><div class="lf"><label>Password</label><input type="password" id="lp" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div><button class="lbtn" onclick="doLogin()">Sign In →</button><div class="lerr" id="le"></div><div style="display:flex;justify-content:space-between;margin-top:14px"><button onclick="showForgotUsername()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Username?</button><button onclick="showForgotPassword()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Password?</button></div><div style="margin-top:14px;background:rgba(255,165,0,0.15);border-radius:10px;padding:12px;border:1.5px solid rgba(255,165,0,0.4)"><div style="font-size:11px;color:rgba(255,255,255,0.9);margin-bottom:8px;text-align:center;font-weight:700">&#x1F4F1; First time on this phone / New device?</div><button onclick="loginScreenSyncGAS()" style="width:100%;background:linear-gradient(135deg,#1D4ED8,#3B82F6);color:white;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 15px rgba(29,78,216,.4)">&#x1F4CA; Load Data from Google Sheets</button><div id="ls-sync-status" style="font-size:12px;color:rgba(255,255,255,0.9);margin-top:8px;text-align:center;min-height:18px;font-weight:600"></div><div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:6px;text-align:center">Tap this button to load all your data before logging in</div></div><div style="text-align:center;margin-top:10px"><button onclick="showEmergencyRecovery()" style="background:none;border:none;color:rgba(255,80,80,0.7);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline">&#x1F6A8; Admin locked out?</button></div><div id="login-version" style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3)"></div></div><div id="of" class="hid"><p style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:20px;line-height:1.6">📱 New device detected!<br>OTP sent to admin WhatsApp.<br>Ask admin to share the code.</p><div class="lf"><label>One-Time Password</label><input type="number" class="otp-inp" id="oi" placeholder="000000" maxlength="6"/></div><button class="lbtn" onclick="doOTP()">Verify OTP →</button><div class="lerr" id="oe"></div><button style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit" onclick="showEl('lf');hideEl('of')">← Back</button></div></div>
 </div>
 <div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:12px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-recurring-visits"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div id="dash-mixed-sarees"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('pend',this)">Pending</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button><button class="tbb" onclick="salesTab('pay',this)">Payments</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div id="billst"></div></div><div class="tp" id="tp-pend"><div style="display:flex;gap:0;padding:8px 16px 0;border-bottom:1.5px solid #E5E4F0"><button class="sw on" id="pend-sub-pend" onclick="pendSubTab('pend')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Pending</button><button class="sw" id="pend-sub-done" onclick="pendSubTab('done')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Completed</button></div><div id="pendlst"></div><div id="donelst" style="display:none"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg" style="position:relative"><label>Customer</label><input type="text" class="inp" id="inv-cust-search" placeholder="Type customer name to search..." oninput="filterInvCusts()" onfocus="filterInvCusts()" autocomplete="off" style="font-size:14px;padding:10px 12px"/><input type="hidden" id="inv-cust-sel"/><div id="inv-cust-dd" style="display:none;position:absolute;left:0;right:0;top:100%;background:white;border:1.5px solid var(--br);border-radius:0 0 10px 10px;z-index:200;max-height:230px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.13)"></div></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div><div class="tp" id="tp-pay"><div class="srch"><span>🔍</span><input type="text" placeholder="Search payments by customer or bill no..." oninput="renderPayments(this.value)"/></div><div id="paylst"></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="openExchange()"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" id="inward-manual-btn" onclick="openManualStock()" style="display:none;border:1.5px solid rgba(217,119,6,.3);background:var(--Al)"><span class="qaico">✏️</span><div><div class="qalbl" style="color:var(--Ad)">Manual Entry</div><div class="qasub">Add/deduct balance</div></div></div></div></div><div class="stl" <div class="stl">Exchange Sarees</div>
 <div style="margin-bottom:8px"><select class="inp" id="exch-status-filter" onchange="renderExchangeList()" style="max-width:200px">
@@ -88,8 +88,8 @@
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" capture="environment" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
 </div></div><script>
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.4.0';
-const APP_BUILD_DATE='2026-04-03';
+const APP_VERSION='1.5.0';
+const APP_BUILD_DATE='2026-07-17';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -213,7 +213,7 @@ function pushNotification(targetUserId,targetUserName,title,body,type,refId){
   if(targetUserId===STATE.user?.id||!targetUserId){
     showInAppNotif(title,body,type,refId);
   }
-  autoSyncFirebase();
+  autoSyncCloud();
 }
 function showInAppNotif(title,body,type,refId){
   let bar=document.getElementById('in-app-notif');
@@ -415,8 +415,6 @@ STATE.orders=lsGet('vs_orders')||[];
 STATE.bills=lsGet('vs_bills')||[];
 STATE.payments=lsGet('vs_payments')||[];
 const s=lsGet('vs_settings'); if(s) STATE.settings={...STATE.settings,...s};
-if(!STATE.settings.firebaseUrl) STATE.settings.firebaseUrl='https://alt-stock-default-rtdb.asia-southeast1.firebasedatabase.app';
-if(!STATE.settings.firebaseSecret) STATE.settings.firebaseSecret='z50jh3UrEareEAjTDG4IudKUHg2qZtHoPn4Brvm4';
 STATE.leads=lsGet('vs_leads')||[];
 STATE.notifications=lsGet('vs_notifications')||[];
 STATE.flaggedEntries=lsGet('vs_flagged')||[];
@@ -456,9 +454,9 @@ if(STATE.taskInstances) lsSave('vs_task_instances',STATE.taskInstances);
 if(STATE.staffLeave) lsSave('vs_staff_leave',STATE.staffLeave);
 if(STATE.mixedSarees) lsSave('vs_mixed_sarees',STATE.mixedSarees);
 if(STATE.exchanges)lsSave('vs_exchanges',STATE.exchanges);
-autoSyncFirebase();
+autoSyncCloud();
 }
-function autoSyncFirebase(){
+function autoSyncCloud(){
   clearTimeout(window._autoSyncTimer);
   /* Lock immediately so sync poll can't pull stale data before push completes */
   window._saveLock=true;
@@ -476,9 +474,8 @@ function autoSyncFirebase(){
       const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;
       if(localCount<=1){window._syncRunning=false;window._saveLock=false;return;}
       if(!(STATE.users||[]).length){window._syncRunning=false;window._saveLock=false;return;}
-      const fu=fbUrl('data');
       const nowTs=new Date().toISOString();
-      // PUSH local data to Firebase
+      // PUSH local data to Google Sheets
       window._lastSaveAt=Date.now();
       const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
         brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
@@ -489,23 +486,22 @@ function autoSyncFirebase(){
         custGroups:STATE.custGroups||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],
         settings:{...STATE.settings,lastSync:nowTs},
         syncedAt:nowTs};
-      if(fu){
-        try{
-          const r=await fetch(fu,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl)});
-          if(r.ok){setLiveStatus('live');STATE.settings.lastSync=nowTs;lsSave('vs_settings',STATE.settings);}
-        }catch(e){}
-      }
-      // GAS backup — fire and forget (don't await, it's slow)
       if(GAS_URL){
-        const ctrl=new AbortController();
-        setTimeout(()=>ctrl.abort(),5000);
-        fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl}),signal:ctrl.signal}).catch(()=>{});
+        try{
+          const ctrl=new AbortController();
+          const tid=setTimeout(()=>ctrl.abort(),15000);
+          const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl}),signal:ctrl.signal});
+          clearTimeout(tid);
+          const j=await r.json().catch(()=>null);
+          if(j&&!j.error){setLiveStatus('live');STATE.settings.lastSync=nowTs;lsSave('vs_settings',STATE.settings);}
+          else{setLiveStatus('off');}
+        }catch(e){setLiveStatus('off');}
       }
     }catch(e){console.warn('autoSync error:',e);}
     window._syncRunning=false;
     window._saveLock=false;
     /* If a save was requested while we were pushing, fire another push now */
-    if(window._needsResync){window._needsResync=false;setTimeout(autoSyncFirebase,100);}
+    if(window._needsResync){window._needsResync=false;setTimeout(autoSyncCloud,100);}
   },250);
 }
 let _tt;
@@ -588,14 +584,7 @@ STATE.users=[found]; lsSave('vs_users',STATE.users);
 }
 const s=el('ls-sync-status');
 if(!found){
-  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Step 1: Loading from Firebase...</span>';
-  await loginScreenSyncFirebase();
-  found=findUser();
-  if(found){console.log('LOGIN: Found user in Firebase');}
-  else{console.log('LOGIN: User NOT in Firebase. Users loaded:',STATE.users.length);}
-}
-if(!found){
-  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Step 2: Loading from Google Sheets...</span>';
+  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Step 1: Loading from Google Sheets...</span>';
   try{
     const gd=await api('getAll');
     console.log('LOGIN: GAS getAll response:',gd?'got data':'null/empty',gd?'users:'+(gd.users||[]).length:'');
@@ -610,14 +599,14 @@ if(!found){
   }catch(e){console.log('LOGIN: GAS error:',e.message);}
 }
 if(!found){
-  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Step 3: Direct API login...</span>';
+  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Step 2: Direct API login...</span>';
   const r=await api('login',{username:user,password:pass,deviceId:devId()});
   console.log('LOGIN: Direct API response:',r);
   if(r&&r.user){loginOK(r.user);return;}
   // Show detailed error with what we found
   const names=STATE.users.map(u=>u.username).filter(Boolean);
   el('le').textContent='Username "'+user+'" not found. Available accounts: '+(names.length?names.join(', '):'NONE loaded');
-  if(s)s.innerHTML='<span style="color:#F87171">❌ Could not find account. Firebase users: '+STATE.users.length+'</span>';
+  if(s)s.innerHTML='<span style="color:#F87171">❌ Could not find account. Google Sheets users: '+STATE.users.length+'</span>';
   return;
 }
 if(found.active===false){el('le').textContent='Account is disabled. Contact admin.';return;}
@@ -668,55 +657,29 @@ if(!STATE.settings.currentFY){
 setNav('dash');
 renderSettingsForm();
 renderDBSetup();
-// ALWAYS pull from server on login — Firebase FIRST (fast+reliable), GAS fallback
+// ALWAYS pull from server on login — Google Sheets
 (async function(){
-  let pulled=false;
   try{
-    // Try Firebase first (fast, reliable CORS, real-time capable)
-    const fu=fbUrl('data');
-    if(fu){
-      try{
-        const r=await fetch(fu);
-        if(r.ok){
-          const d=await r.json();
-          if(d&&typeof d==='object'&&(d.items||d.users||d.customers)){
-            applyCloudData(d);setLiveStatus('live');pulled=true;
-          }
-        }
-      }catch(e){}
+    setLiveStatus('connecting');
+    const d=await api('getAll');
+    if(d&&typeof d==='object'&&(d.items||d.users||d.customers)){
+      applyCloudData(d,true);setLiveStatus('live');
+    }else{
+      setLiveStatus('off');
     }
-    // Fallback to Google Sheets
-    
-  }catch(e){console.warn('initApp pull:',e);}
+  }catch(e){console.warn('initApp pull:',e);setLiveStatus('off');}
   window._initialPullDone=true;
 })();
 
-  /* Polling fallback — only runs when SSE is disconnected or as a slow safety net.
-     When SSE is live, poll every 30s (safety net). When offline, poll every 5s (reconnect faster). */
+  /* Polling — periodically checks Google Sheets for changes made on other devices */
   clearInterval(window._syncPoll);
   window._syncPoll=setInterval(async()=>{
     if(window._saveLock||window._syncRunning)return;
     if(window._lastSaveAt&&Date.now()-window._lastSaveAt<4000)return;
-    try{
-      let d=null;
-      const fu=fbUrl('data');
-      if(fu){try{const r=await fetch(fu);if(r.ok){const j=await r.json();if(j&&typeof j==='object'&&(j.items||j.users))d=j;}}catch(e){}}
-      
-      if(!d)return;
-      /* Re-check saveLock — a save may have started while we were fetching */
-      if(window._saveLock||window._syncRunning)return;
-      const cloudSync=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
-      const localSync=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
-      const hasNewItems=(d.items||[]).some(ci=>!(STATE.items||[]).find(li=>li.id===ci.id));
-      if(cloudSync>localSync||hasNewItems){
-        applyCloudData(d,true);
-        setLiveStatus('live');
-        if(cloudSync>localSync) showSyncToast();
-      }
-    }catch(e){}
-  },15000);/* Poll every 15s as safety net — SSE handles real-time, this catches anything SSE misses */
+    try{await silentPullGAS();}catch(e){}
+  },20000);/* Poll every 20s for changes from other devices */
   scheduleWAReminder();
-  startFirebaseRealtime();  try{autoDeleteOldCompletedTasks();}catch(e){}
+  try{autoDeleteOldCompletedTasks();}catch(e){}
 }
 async function syncAPI(){
 if(window._saveLock) return;
@@ -760,11 +723,11 @@ function restoreBackup(){
       const text=await file.text();
       const d=JSON.parse(text);
       if(!d.items&&!d.entries){toast('Invalid backup file — not an ALT backup','er');return;}
-      if(!confirm('Restore from "'+file.name+'"?\n\nThis will replace ALL current data in Firebase with the backup. This cannot be undone.\n\nAre you sure?'))return;
+      if(!confirm('Restore from "'+file.name+'"?\n\nThis will replace ALL current data in Google Sheets with the backup. This cannot be undone.\n\nAre you sure?'))return;
       toast('Restoring...','info');
-      applyCloudData(d);
+      applyCloudData(d,true);
       persist();
-      await syncToFirebase(false);
+      await hybridSaveAll(false);
       toast('Restore complete! All data is back.','ok');
     }catch(e){toast('Error reading file: '+e.message,'er');}
   };
@@ -1929,7 +1892,7 @@ const selGrpId=(el('cst-grp-sel')?.value||'').trim();
 lsSave('vs_customers',STATE.customers);lsSave('vs_cust_groups',STATE.custGroups);
 toast('Customer saved','ok');
 api('saveCustomer',{customers:STATE.customers});
-autoSyncFirebase();
+autoSyncCloud();
 if(window._returnToOrder){
 window._returnToOrder=false;
 hideMod('m-cst');
@@ -1975,7 +1938,7 @@ if(!id&&isDuplicate(STATE.brokers,'name',name)){toast('Broker "'+name+'" already
 const obj={name,phone:el('brk-ph').value.trim(),commission:parseFloat(el('brk-cm').value)||0};
 if(id){const i=STATE.brokers.findIndex(b=>b.id===id);if(i>=0){STATE.brokers[i]={...STATE.brokers[i],...obj};STATE.brokers[i]._ts=Date.now();}}
 else STATE.brokers.push(stamp({id:uid(),...obj}));
-lsSave('vs_brokers',STATE.brokers);autoSyncFirebase();
+lsSave('vs_brokers',STATE.brokers);autoSyncCloud();
 if(window._returnToBroker){
 window._returnToBroker=false; hideMod('m-brk');
 const bs=el('od-b');
@@ -2015,7 +1978,7 @@ function saveSup(){
     contact:el('sup-ct').value.trim(),address:el('sup-addr').value.trim(),notes:el('sup-nt').value.trim()};
   if(id){const i=STATE.suppliers.findIndex(s=>s.id===id);if(i>=0){STATE.suppliers[i]={...STATE.suppliers[i],...obj};STATE.suppliers[i]._ts=Date.now();}}
   else STATE.suppliers.push(stamp({id:uid(),...obj}));
-  lsSave('vs_suppliers',STATE.suppliers);hideMod('m-sup');renderSups();toast('Supplier saved','ok');autoSyncFirebase();
+  lsSave('vs_suppliers',STATE.suppliers);hideMod('m-sup');renderSups();toast('Supplier saved','ok');autoSyncCloud();
 }
 function renderPrds(){
 const c=el('prdlst'); if(!c) return;
@@ -4616,7 +4579,7 @@ function saveBillOrderLink(billId,ordId){
   rmEl('m-link-ord');
   persist();renderBills();renderOrders();renderDash();
   toast('Bill '+bill.billNo+' linked to Order '+ord.orderNo,'ok');
-  autoSyncFirebase();
+  autoSyncCloud();
 }
 function renderBills(q=''){
 const c=el('billst')||el('billlst'); if(!c) return;
@@ -5527,7 +5490,7 @@ async function deleteUser(id){
   if(!ok)return;
   softDelete(STATE.users,id);
   lsSave('vs_users',STATE.users);renderUsers();
-  toast(u.name+' deleted','ok');autoSyncFirebase();
+  toast(u.name+' deleted','ok');autoSyncCloud();
 }
 function renderDevices(){
 const c=el('devlst'); if(!c) return;
@@ -7922,13 +7885,13 @@ lsSave('vs_rec_leads',STATE.recurringLeads);
 window._isRecurringLead=false;window._recLeadEditId=null;
 const sec=document.getElementById('lead-rec-schedule');if(sec)sec.remove();
 hideMod('m-lead');renderRecurringLeads();renderDash();
-toast('Recurring lead saved','ok');autoSyncFirebase();
+toast('Recurring lead saved','ok');autoSyncCloud();
 return;
 }
 window._isRecurringLead=false;
 hideMod('m-lead');
 renderLeads('all'); renderLeads('mine'); renderLeads('today'); renderLeads('won'); renderLeads('won2'); renderLeads('lost');
-toast('Lead saved','ok'); autoSyncFirebase();
+toast('Lead saved','ok'); autoSyncCloud();
 }
 async function updateLeadStatus(id){
 const lead=STATE.leads?.find(l=>l.id===id); if(!lead) return;
@@ -7955,14 +7918,14 @@ const d=new Date();d.setDate(d.getDate()+days);
 lead.followupDate=d.toISOString().slice(0,10);lead.updatedAt=today();lead._ts=Date.now();
 lsSave('vs_leads',STATE.leads);
 renderLeads('all');renderLeads('mine');renderLeads('today');renderLeads('won');renderLeads('won2');renderLeads('lost');
-toast('Follow-up: '+fmtDate(lead.followupDate),'ok');autoSyncFirebase();
+toast('Follow-up: '+fmtDate(lead.followupDate),'ok');autoSyncCloud();
 }
 function quickSetFollowupDate(leadId,dateStr){
 const lead=STATE.leads?.find(l=>l.id===leadId);if(!lead||!dateStr)return;
 lead.followupDate=dateStr;lead.updatedAt=today();lead._ts=Date.now();
 lsSave('vs_leads',STATE.leads);
 renderLeads('all');renderLeads('mine');renderLeads('today');renderLeads('won');renderLeads('won2');renderLeads('lost');
-toast('Follow-up: '+fmtDate(dateStr),'ok');autoSyncFirebase();
+toast('Follow-up: '+fmtDate(dateStr),'ok');autoSyncCloud();
 }
 function quickSetLeadStatus(id,status){
 const lead=STATE.leads?.find(l=>l.id===id);if(!lead)return;
@@ -7977,7 +7940,7 @@ lead.notes=(lead.notes||[]).concat([{note,date:today(),by:STATE.user?.name||'',s
 }
 lsSave('vs_leads',STATE.leads);rmEl('m-qstat');
 renderLeads('all');renderLeads('mine');renderLeads('today');renderLeads('won'); renderLeads('won2'); renderLeads('lost');
-toast('Status → '+status,'ok');autoSyncFirebase();
+toast('Status → '+status,'ok');autoSyncCloud();
 /* Prompt to send WA update */
 if((lead.assignedId||lead.brokerId)&&(lead.assignedId||lead.brokerId)){
   const sm=STATE.users.find(u=>u.id===lead.assignedId);
@@ -8041,7 +8004,7 @@ if(nextFollowup) lead.followupDate=nextFollowup;
 lsSave('vs_leads',STATE.leads);
 hideMod('m-log-contact');
 toast('Contact logged','ok');
-autoSyncFirebase();
+autoSyncCloud();
 /* Notify assigned salesman if the updater is admin/CRE */
 try{
   const _notifLead=STATE.leads?.find(l=>l.id===leadId);
@@ -8061,7 +8024,7 @@ async function convertLead(id){
 const lead=STATE.leads?.find(l=>l.id===id); if(!lead) return;
 const ok=await appConfirm('Convert to Customer?',lead.name+' will be opened in Add Customer form with pre-filled details.','?','Convert','ok');
 if(!ok) return;
-lead.status='Order Received'; lead.updatedAt=today(); lead._ts=Date.now(); lsSave('vs_leads',STATE.leads); autoSyncFirebase();
+lead.status='Order Received'; lead.updatedAt=today(); lead._ts=Date.now(); lsSave('vs_leads',STATE.leads); autoSyncCloud();
 hideMod('m-lead'); hideMod('m-lead-det');
 /* Open customer form pre-filled with lead data */
 openCust();
@@ -8261,7 +8224,7 @@ STATE.settings.allFYs.push(nextFY);
 STATE.settings.currentFY=nextFY;
 persist(); renderFYTab(); renderDash();
 toast('FY '+nextFY+' opened! Old data archived. Stock carried forward.','ok');
-autoSyncFirebase();
+autoSyncCloud();
 }
 function viewFYSummary(fy){
   const archive=lsGet('vs_fy_archive_'+fy);
@@ -8347,7 +8310,7 @@ async function deleteFYData(fy){
   }
   persist();renderFYTab();
   toast('FY '+fy+' data deleted permanently','ok');
-  autoSyncFirebase();
+  autoSyncCloud();
 }
 function downloadFYPdf(fy){
   const archive=lsGet('vs_fy_archive_'+fy);
@@ -9300,17 +9263,7 @@ renderFlaggedTab(); renderDash(); renderRecentAct();
 function renderDbTab(){
 const c=el('dbbod'); if(!c) return;
 const lastSync=STATE.settings.lastSync||'Never';
-const dbMode=STATE.settings.dbMode||'firebase';
 c.innerHTML=
-'<div style="display:flex;gap:8px;margin-bottom:14px">'+
-'<button class="btn bfl" id="dbt-fb" onclick="setDbMode(\'firebase\')" style="flex:1">&#x1F525; Firebase</button>'+
-'<button class="btn bfl" id="dbt-gs" onclick="setDbMode(\'sheets\')" style="flex:1">&#x1F4CA; Google Sheets</button>'+
-'</div>'+
-'<div style="background:linear-gradient(135deg,#065F46,#059669);border-radius:12px;padding:14px;margin-bottom:12px">'+
-'<div style="font-size:13px;font-weight:900;color:white;margin-bottom:4px">&#x1F504; Switch / Migrate Database</div>'+
-'<div style="font-size:11px;color:rgba(255,255,255,.85);margin-bottom:10px">Move from Firebase to Google Sheets (or vice versa) without losing any data. Works mid-year too.</div>'+
-'<button class="btn" style="background:white;color:#065F46;font-weight:800;font-size:13px;padding:11px;width:100%" onclick="openDbMigrate()">&#x1F4CB; Migration Guide &amp; Tool</button>'+
-'</div>'+
 '<div style="background:linear-gradient(135deg,#1e1b4b,#3730A3);border-radius:12px;padding:14px;margin-bottom:12px">'+
 '<div style="font-size:13px;font-weight:900;color:white;margin-bottom:4px">&#x1F4BE; Backup &amp; Restore</div>'+
 '<div style="font-size:11px;color:#A5B4FC;margin-bottom:10px">Save everything to a file. Share with staff via WhatsApp.</div>'+
@@ -9320,50 +9273,10 @@ c.innerHTML=
 '</div>'+
 '<input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"/>'+
 '</div>'+
-'<div style="background:linear-gradient(135deg,#B45309,#D97706);border-radius:12px;padding:14px;margin-bottom:12px;display:'+(dbMode==='firebase'?'block':'none')+'">'+
-'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
-'<span style="font-size:20px">&#x1F525;</span>'+
-'<div>'+
-'<div style="font-size:14px;font-weight:900;color:white">Firebase Realtime Database</div>'+
-'<div style="font-size:10px;color:rgba(255,255,255,.8)">FREE forever &#x2022; 1GB &#x2022; Works anywhere &#x2022; Recommended</div>'+
-'</div>'+
-'</div>'+
-'<div class="fg" style="margin-bottom:8px">'+
-'<label style="font-size:11px;color:rgba(255,255,255,.9);font-weight:700">Database URL</label>'+
-'<input class="inp mono" id="fb-url" placeholder="https://your-project-default-rtdb.firebaseio.com" value="'+(STATE.settings.firebaseUrl||'')+'"/>'+
-'</div>'+
-'<div class="fg" style="margin-bottom:10px">'+
-'<label style="font-size:11px;color:rgba(255,255,255,.9);font-weight:700">Database Secret</label>'+
-'<input class="inp mono" id="fb-secret" type="password" placeholder="Your database secret key" value="'+(STATE.settings.firebaseSecret||'')+'"/>'+
-'</div>'+
-'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">'+
-'<button class="btn" style="background:rgba(255,255,255,.2);color:white;border:1.5px solid rgba(255,255,255,.3);font-weight:800;font-size:12px" onclick="saveFirebaseCreds()">Save</button>'+
-'<button class="btn" style="background:rgba(255,255,255,.2);color:white;border:1.5px solid rgba(255,255,255,.3);font-weight:800;font-size:12px" onclick="testFirebase()">Test</button>'+
-'<button class="btn" style="background:rgba(255,255,255,.2);color:white;border:1.5px solid rgba(255,255,255,.3);font-weight:700;font-size:11px" onclick="renderDbTab()">Refresh</button>'+
-'</div>'+
-'<div id="fb-status" style="font-size:11px;color:rgba(255,255,255,.9);min-height:16px;margin-bottom:8px">Last sync: '+lastSync+'</div>'+
-'<div style="display:grid;gap:6px">'+
-'<button class="btn" style="background:white;color:#92400E;font-weight:900;font-size:14px;padding:13px" onclick="syncToFirebase()">&#x2191; Push ALL data to Firebase</button>'+
-'<button class="btn" style="background:rgba(255,255,255,.18);color:white;border:1.5px solid rgba(255,255,255,.4);font-size:13px;font-weight:700;padding:11px" onclick="syncFromFirebase()">&#x2193; Pull data from Firebase</button>'+
-'</div>'+
-'</div>'+
-'<div style="background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:10px;padding:14px;margin-bottom:12px;font-size:12px;color:#78350F;line-height:2">'+
-'<div style="font-weight:900;font-size:14px;margin-bottom:8px">&#x1F525; How to setup Firebase (one time only)</div>'+
-'<strong>Step 1:</strong> Open <strong>console.firebase.google.com</strong> on your computer<br>'+
-'<strong>Step 2:</strong> Click <strong>"Add project"</strong> &#x2192; Type name: <strong>ALT-Stock</strong><br>'+
-'<strong>Step 3:</strong> Turn OFF Google Analytics &#x2192; Click <strong>"Create project"</strong><br>'+
-'<strong>Step 4:</strong> From left menu click <strong>"Build"</strong> &#x2192; then <strong>"Realtime Database"</strong><br>'+
-'<strong>Step 5:</strong> Click <strong>"Create database"</strong> &#x2192; Pick any region &#x2192; Choose <strong>"Start in test mode"</strong> &#x2192; Click <strong>"Enable"</strong><br>'+
-'<strong>Step 6:</strong> You will see a URL at the top (like https://alt-stock-xxx.firebaseio.com) &#x2192; <strong>Copy it</strong> &#x2192; Paste in "Database URL" box above<br>'+
-'<strong>Step 7:</strong> Click the <strong>&#x2699; gear icon</strong> (top left corner) &#x2192; Click <strong>"Project Settings"</strong><br>'+
-'<strong>Step 8:</strong> Click <strong>"Service accounts"</strong> tab &#x2192; Click <strong>"Database secrets"</strong><br>'+
-'<strong>Step 9:</strong> Click <strong>"Show"</strong> next to the secret &#x2192; <strong>Copy it</strong> &#x2192; Paste in "Database Secret" box above<br>'+
-'<strong>Step 10:</strong> Click <strong>"Save"</strong> &#x2192; Then <strong>"Test"</strong> &#x2192; Then <strong>"Push ALL data to Firebase"</strong><br>'+
-'<div style="margin-top:8px;padding:8px;background:rgba(255,255,255,.6);border-radius:8px;font-weight:700">&#x2705; Done! Your data will now sync automatically across all devices.</div>'+
-'</div>'+
-'<div style="background:var(--Pl);border-radius:12px;padding:14px;margin-bottom:12px;display:'+(dbMode==='sheets'?'block':'none')+'">'+
-'<div style="font-size:14px;font-weight:900;color:var(--Pd);margin-bottom:4px">&#x1F4CA; Google Sheets (Optional Backup)</div>'+
-'<div style="font-size:11px;color:var(--t3);margin-bottom:10px">This is optional. Firebase alone is enough. Use this only if you also want data in Google Sheets.</div>'+
+'<div style="background:var(--Pl);border-radius:12px;padding:14px;margin-bottom:12px">'+
+'<div style="font-size:14px;font-weight:900;color:var(--Pd);margin-bottom:4px">&#x1F4CA; Google Sheets Database</div>'+
+'<div style="font-size:11px;color:var(--t3);margin-bottom:10px">This is your one and only database. All devices sync through this Google Sheet.</div>'+
+'<div style="font-size:11px;color:var(--t3);margin-bottom:8px">Last sync: '+lastSync+'</div>'+
 '<input class="inp mono" id="gas-url" value="'+(STATE.settings.gasUrl||'')+'" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:11px;margin-bottom:8px"/>'+
 '<div style="display:flex;gap:8px;margin-bottom:8px">'+
 '<button class="btn bp" onclick="saveGasUrl()" style="flex:1">Save</button>'+
@@ -9390,7 +9303,7 @@ c.innerHTML=
 '<span style="font-size:20px">&#x1F9F9;</span>'+
 '<div style="font-size:14px;font-weight:900;color:#991B1B">Bulk Delete (Danger Zone)</div>'+
 '</div>'+
-'<div style="font-size:11px;color:#B91C1C;margin-bottom:12px;line-height:1.6">Delete all records of a specific type at once. After deleting, tap <strong>Push ALL data to Firebase</strong> above so all other devices get the update. <strong>Take a backup first.</strong></div>'+
+'<div style="font-size:11px;color:#B91C1C;margin-bottom:12px;line-height:1.6">Delete all records of a specific type at once. Changes push to Google Sheets automatically. <strong>Take a backup first.</strong></div>'+
 '<div style="display:grid;gap:8px">'+
 '<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:10px;padding:10px 12px;border:1.5px solid #FCA5A5">'+
 '<div><div style="font-size:13px;font-weight:800;color:#1F2937">&#x1F4E5; Inward Records</div><div style="font-size:11px;color:#6B7280" id="cnt-inward"></div></div>'+
@@ -9418,7 +9331,7 @@ c.innerHTML=
 '</div>'+
 '</div>'+
 '<div style="font-size:11px;color:#B91C1C;margin-top:10px;padding:8px;background:white;border-radius:8px;line-height:1.7">'+
-'&#x1F4A1; <strong>Why do entries come back?</strong> If another phone/tab is open with old data and syncs, it can push the old data back to Firebase. Fix: after deleting here, tap <strong>"&#x2191; Push ALL data to Firebase"</strong> above — then have all other phones reload the app.'+
+'&#x1F4A1; <strong>Why do entries come back?</strong> If another phone/tab is open with old data and syncs, it can push the old data back to Google Sheets. Fix: after deleting here, have all other phones tap 🔄 Refresh or reload the app.'+
 '</div>'+
 '</div>';
 
@@ -9437,11 +9350,7 @@ if(ce)ce.textContent=entries.length+' entries (stock movements)';
 if(cl)cl.textContent=leads.length+' leads';
 };
 _fillCounts();
-
-var _fb=c.querySelector('#dbt-fb'),_gb=c.querySelector('#dbt-gs');
-if(_fb){_fb.style.background=dbMode==='firebase'?'var(--g2)':'';_fb.style.color=dbMode==='firebase'?'white':''}
-if(_gb){_gb.style.background=dbMode==='sheets'?'var(--g2)':'';_gb.style.color=dbMode==='sheets'?'white':''}}
-function setDbMode(mode){if(!STATE.settings)STATE.settings={};STATE.settings.dbMode=mode;persist();renderDbTab();}
+}
 async function bulkDelete(type){
 if(STATE.user?.role!=='admin'){toast('Admin only','er');return;}
 const labels={inward:'ALL Inward Records',orders:'ALL Order Forms',bills:'ALL Bills',entries:'ALL Ledger Entries',leads:'ALL Leads',all:'ALL Business Data (Orders + Bills + Inward + Entries + Leads)'};
@@ -9494,10 +9403,9 @@ lsSave('vs_frt',syncTs);
 /* Block the poll from overwriting our deletion */
 clearInterval(window._syncPoll);
 window._saveLock=true;
-/* Immediately force-push to Firebase */
-const fu=fbUrl('data');
+/* Immediately force-push to Google Sheets */
 let pushed=false;
-if(fu){
+if(GAS_URL){
 try{
 const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
 brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
@@ -9507,8 +9415,12 @@ taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],
 staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
 custGroups:STATE.custGroups||[],products:STATE.products||[],
 settings:{...STATE.settings,lastSync:syncTs},syncedAt:syncTs};
-const r=await fetch(fu,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl)});
-if(r.ok){pushed=true;setLiveStatus('live');}
+const ctrl=new AbortController();
+const tid=setTimeout(()=>ctrl.abort(),15000);
+const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl}),signal:ctrl.signal});
+clearTimeout(tid);
+const j=await r.json().catch(()=>null);
+if(j&&!j.error){pushed=true;setLiveStatus('live');}
 }catch(e){console.warn('bulkDelete push error:',e);}
 }
 window._saveLock=false;
@@ -9517,14 +9429,14 @@ clearInterval(window._syncPoll);
 window._syncPoll=setInterval(async()=>{
 if(window._saveLock||window._syncRunning)return;
 if(window._lastSaveAt&&Date.now()-window._lastSaveAt<4000)return;
-try{await silentPullFirebase();}catch(e){}
-},30000);
+try{await silentPullGAS();}catch(e){}
+},20000);
 renderDash();renderDbTab();
 try{renderOrders();}catch(e){}
 try{renderInRec();}catch(e){}
 try{renderLedger();}catch(e){}
 try{renderLeads('all');}catch(e){}
-toast('✅ '+label+' deleted'+(pushed?' & pushed to Firebase':' locally (push to Firebase manually)'),'ok');
+toast('✅ '+label+' deleted'+(pushed?' & pushed to Google Sheets':' locally (sync may take a moment)'),'ok');
 }
 function forceRepairStock(){
   if(!STATE.items||!STATE.entries){toast('No data loaded yet','er');return;}
@@ -9629,7 +9541,6 @@ if(s) s.innerHTML='<span style="color:var(--Rd)">&#x274C; '+e.message+'</span>';
 toast('Connection error','er');
 }
 }
-function loadFirebaseData(d){applyCloudData(d);}
 function setLiveStatus(state){
   const dot=document.getElementById('live-dot');
   const txt=document.getElementById('live-txt');
@@ -9653,41 +9564,6 @@ function showSyncToast(){
   bar.style.transform='translateY(0)';
   clearTimeout(window._syncToastTimer);
   window._syncToastTimer=setTimeout(()=>{bar.style.transform='translateY(-100%)';},2500);
-}
-function startFirebaseRealtime(){
-  const url=(STATE.settings.firebaseUrl||'').trim().replace(/\/+$/,'');
-  const secret=(STATE.settings.firebaseSecret||'').trim();
-  if(!url||!secret){setLiveStatus('off');return;}
-  if(window._fbES){try{window._fbES.close();}catch(e){}window._fbES=null;}
-  setLiveStatus('connecting');
-  try{
-    window._fbES=new EventSource(url+'/altstock/data.json?auth='+secret);
-    window._fbES.onopen=()=>setLiveStatus('live');
-    const onData=e=>{
-      try{
-        if(window._saveLock||window._syncRunning)return;
-        /* Firebase sends partial patch events — don't rely on patch payload.
-           Instead fetch the full dataset so nothing gets dropped. */
-        clearTimeout(window._fbPullTimer);
-        window._fbPullTimer=setTimeout(async()=>{
-          if(window._saveLock||window._syncRunning){return;}
-          try{
-            const fu=fbUrl('data');if(!fu)return;
-            const r=await fetch(fu);if(!r.ok)return;
-            const d=await r.json();if(!d||!d.items)return;
-            /* Re-check saveLock — a save may have started while we were fetching */
-            if(window._saveLock||window._syncRunning)return;
-            const cT=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);
-            const lT=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
-            const hasNew=(d.items||[]).some(ci=>!(STATE.items||[]).find(li=>li.id===ci.id));
-            if(cT>lT||hasNew){applyCloudData(d,true);setLiveStatus('live');showSyncToast();}
-          }catch(x){}
-        },800);
-      }catch(x){}
-    };
-    window._fbES.addEventListener('put',onData);window._fbES.addEventListener('patch',onData);
-    window._fbES.onerror=()=>{setLiveStatus('off');try{window._fbES.close();}catch(e){}window._fbES=null;clearTimeout(window._fbRecon);window._fbRecon=setTimeout(startFirebaseRealtime,3000);};
-  }catch(e){setLiveStatus('off');}
 }
 async function syncFromJsonBin(){
 const binId=STATE.settings.jsonbinId, key=STATE.settings.jsonbinKey;
@@ -9769,103 +9645,9 @@ toast('Import failed: '+e.message,'er');
 event.target.value='';
 }
 }
-function saveFirebaseCreds(){
-STATE.settings.firebaseUrl=(el('fb-url')?.value||'').trim().replace(/\/$/,'');
-STATE.settings.firebaseSecret=(el('fb-secret')?.value||'').trim();
-lsSave('vs_settings',STATE.settings);
-toast('Firebase credentials saved','ok');
-}
-function fbUrl(path){
-let url=(STATE.settings.firebaseUrl||'').trim().replace(/\/+$/,'');
-const secret=(STATE.settings.firebaseSecret||'').trim();
-if(!url) return null;
-return url+'/altstock/'+path+'.json?auth='+secret;
-}
-async function testFirebase(){
-saveFirebaseCreds();
-const url=(STATE.settings.firebaseUrl||'').trim().replace(/\/+$/,'');
-const secret=(STATE.settings.firebaseSecret||'').trim();
-if(!url){toast('Enter Database URL first','er');return;}
-if(!secret){toast('Enter Database Secret first','er');return;}
-const s=el('fb-status'); if(s) s.innerHTML='Testing connection...';
-const testUrl=url+'/altstock/ping.json?auth='+secret;
+async function silentPullGAS(){
 try{
-const r=await fetch(testUrl,{
-method:'PUT',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({connected:true,ts:new Date().toISOString(),app:'ALT Stock'})
-});
-const text=await r.text();
-if(r.ok){
-if(s) s.innerHTML='&#x2705; Connected to Firebase!';
-toast('Firebase connected!','ok');
-}else{
-let msg='';
-try{ msg=JSON.parse(text)?.error||text; }catch(e){ msg=text||r.status; }
-if(msg.toLowerCase().includes('permission')){
-if(s) s.innerHTML='&#x26A0;&#xFE0F; Permission denied - Update Firebase Rules (see instructions below)';
-toast('Firebase Rules need to be updated','er');
-}else if(msg.toLowerCase().includes('invalid')||r.status===401){
-if(s) s.innerHTML='&#x274C; Invalid secret key - check your Database Secret';
-toast('Invalid secret key','er');
-}else{
-if(s) s.innerHTML='&#x274C; Error '+r.status+': '+msg.slice(0,80);
-}
-}
-}catch(e){
-if(s) s.innerHTML='&#x274C; Network error: '+e.message;
-toast('Network error: '+e.message,'er');
-}
-}
-async function syncToFirebase(silent){
-const u=fbUrl('data'); if(!u){toast('Enter Firebase URL and save first','er');return;}
-const s=el('fb-status'); if(s&&!silent) s.innerHTML='Pushing to Firebase...';
-const payload={
-items:STATE.items, entries:STATE.entries, customers:STATE.customers,
-brokers:STATE.brokers, suppliers:STATE.suppliers, users:STATE.users,
-orders:STATE.orders, bills:STATE.bills, jobWork:STATE.jobWork,
-leads:STATE.leads||[], flaggedEntries:STATE.flaggedEntries||[],
-exchanges:STATE.exchanges||[],
-settings:STATE.settings, syncedAt:new Date().toISOString()
-};
-try{
-const r=await fetch(u,{method:'PUT',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify(payload)
-});
-if(r.ok){
-STATE.settings.lastSync=new Date().toLocaleString();
-lsSave('vs_settings',STATE.settings);
-if(s&&!silent) s.innerHTML='✅ Synced to Firebase at '+STATE.settings.lastSync;
-if(!silent) toast('All data saved to Firebase!','ok');
-else console.log('Auto-synced to Firebase');
-}else{
-const d=await r.json();
-if(s&&!silent) s.innerHTML='❌ Failed: '+(d?.error||r.status);
-if(!silent) toast('Firebase sync failed','er');
-}
-}catch(e){
-if(s) s.innerHTML='❌ '+e.message;
-toast('Sync error: '+e.message,'er');
-}
-}
-async function syncFromFirebase(){
-  const u=fbUrl('data');if(!u){toast('Configure Firebase','er');return;}
-  const ok=await appConfirm('Pull from Firebase?','Overwrites all local data.','?','Pull','ok');if(!ok)return;
-  const s=el('fb-status');if(s)s.innerHTML='Downloading...';
-  try{const r=await fetch(u);const d=await r.json();
-    if(d&&d.items){applyCloudData(d);if(s)s.innerHTML='<span style="color:var(--Gd)">Pulled at '+new Date().toLocaleString()+'</span>';toast('Pulled from Firebase','ok');}
-    else{if(s)s.innerHTML='<span style="color:var(--Rd)">Firebase empty.</span>';toast('Firebase empty','er');}
-  }catch(e){if(s)s.innerHTML='<span style="color:var(--Rd)">'+e.message+'</span>';toast('Pull failed','er');}
-}
-async function silentPullFirebase(){
-const url=(STATE.settings.firebaseUrl||'').trim().replace(/\/+$/,'');
-const secret=(STATE.settings.firebaseSecret||'').trim();
-if(!url||!secret) return;
-try{
-const r=await fetch(url+'/altstock/data.json?auth='+secret);
-if(!r.ok) return;
-const d=await r.json();
+const d=await api('getAll');
 if(!d||!d.items) return;
 /* ── Force-reload check ── */
 const cloudFrt=d.settings?.forceReloadToken||'';
@@ -9874,7 +9656,7 @@ if(cloudFrt&&cloudFrt!==myFrt){
 /* Store the token so we don't reload twice */
 lsSave('vs_frt',cloudFrt);
 /* Apply the fresh data first */
-try{loadFirebaseData(d);}catch(e){}
+try{applyCloudData(d,true);}catch(e){}
 /* Show a 3-second countdown toast then reload */
 const _t=el('tst');
 if(_t){_t.textContent='🔄 Admin cleared data — reloading in 3s...';_t.className='on er';}
@@ -9884,7 +9666,7 @@ return;
 const cloudDate=d.syncedAt?new Date(d.syncedAt):new Date(0);
 const localDate=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
 if(cloudDate>localDate){
-loadFirebaseData(d);
+applyCloudData(d,true);
 toast('☁️ Data updated from cloud','ok');
 }
 }catch(e){  }
@@ -10007,7 +9789,7 @@ STATE.entries=[];
 lsSave('vs_entries',STATE.entries);
 renderLedger(); renderDash();
 toast('Ledger cleared \u2014 '+count+' entries deleted','ok');
-autoSyncFirebase();
+autoSyncCloud();
 }
 function applyRoleUI(){
 refreshCurrentUser();
@@ -10162,7 +9944,7 @@ const res=el('fpwd-result'); if(!res) return;
 if(!uname){ res.innerHTML='<span style="color:var(--Rd)">Enter your username first</span>'; return; }
 if(!STATE.users||STATE.users.length<=1){
 res.innerHTML='<span style="color:#D97706">Loading user data from cloud...</span>';
-await loginScreenSyncFirebase();
+await loginScreenSyncGAS();
 }
 const user=STATE.users.find(u=>(u.username||'').toLowerCase()===uname.toLowerCase());
 if(!user){
@@ -10197,7 +9979,7 @@ const res=el('funame-result'); if(!res) return;
 if(!name){ res.innerHTML='<span style="color:var(--Rd)">Enter your name</span>'; return; }
 if(!STATE.users||STATE.users.length<=1){
 res.innerHTML='<span style="color:#D97706">Loading user data from cloud...</span>';
-await loginScreenSyncFirebase();
+await loginScreenSyncGAS();
 }
 const matches=STATE.users.filter(u=>(u.name||'').toLowerCase().includes(name)&&u.role!=='admin');
 if(!matches.length){
@@ -10228,78 +10010,16 @@ hint.style.cssText='font-size:11px;color:var(--t3);margin-top:8px;text-align:cen
 hint.textContent='Your username is shown above. Contact admin if you need password reset.';
 res.appendChild(hint);
 }
-function openDbMigrate(){
-const cur=[];
-if(STATE.settings.firebaseUrl) cur.push('Firebase ('+STATE.settings.firebaseUrl.replace('https://','').split('.')[0]+')');
-if(STATE.settings.jsonbinId) cur.push('JSONBin');
-if(STATE.settings.gasUrl) cur.push('Google Sheets');
-const curTxt=cur.length?cur.join(', '):'None configured';
-el('dbmigrate-body').innerHTML=
-'<div style="background:var(--Gl);border-radius:10px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--Gd)">'+
-'<div class="fw7" style="margin-bottom:4px">&#x2705; Safe to switch anytime — even mid-year</div>'+
-'<div>Current: <strong>'+curTxt+'</strong><br>Your data stays in localStorage on this device. Switching database just changes WHERE it backs up.</div>'+
-'</div>'+
-'<div style="font-weight:800;font-size:13px;margin-bottom:10px">How to Migrate:</div>'+
-'<div style="background:white;border:1.5px solid var(--br);border-radius:10px;padding:12px;margin-bottom:8px">'+
-'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
-'<span style="background:#4F46E5;color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">1</span>'+
-'<span class="fw7">Export backup from current database</span>'+
-'</div>'+
-'<div style="font-size:11px;color:var(--t3);margin-bottom:8px;line-height:1.7">First, save all your current data as a backup file. This is your safety net.</div>'+
-'<button class="btn bp bfl" onclick="exportData()">&#x2193; Download Backup Now</button>'+
-'</div>'+
-'<div style="background:white;border:1.5px solid var(--br);border-radius:10px;padding:12px;margin-bottom:8px">'+
-'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
-'<span style="background:#4F46E5;color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">2</span>'+
-'<span class="fw7">Setup your new database</span>'+
-'</div>'+
-'<div style="font-size:11px;color:var(--t3);line-height:1.7">'+
-'<strong>Firebase &#x2192; Google Sheets:</strong> Go to Apps Script, paste the GAS code from your Notion guide, deploy as Web App, copy the URL.<br><br>'+
-'<strong>Google Sheets &#x2192; Firebase:</strong> Go to console.firebase.google.com, create Realtime Database, copy URL + secret.<br><br>'+
-'<strong>Either &#x2192; JSONBin:</strong> Go to jsonbin.io, create account, create bin, copy Bin ID + Master Key.'+
-'</div>'+
-'</div>'+
-'<div style="background:white;border:1.5px solid var(--br);border-radius:10px;padding:12px;margin-bottom:8px">'+
-'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
-'<span style="background:#4F46E5;color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">3</span>'+
-'<span class="fw7">Enter new database credentials</span>'+
-'</div>'+
-'<div style="font-size:11px;color:var(--t3);margin-bottom:8px">Go back to the Database tab and fill in the new database details (URL, secret, etc.).</div>'+
-'<button class="btn bs bfl" onclick="hideMod(\'m-dbmigrate\')">&#x2190; Back to Database Tab</button>'+
-'</div>'+
-'<div style="background:white;border:1.5px solid var(--br);border-radius:10px;padding:12px;margin-bottom:8px">'+
-'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
-'<span style="background:#4F46E5;color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">4</span>'+
-'<span class="fw7">Test + Push all data to new database</span>'+
-'</div>'+
-'<div style="font-size:11px;color:var(--t3);margin-bottom:8px">Tap Test to verify connection, then Push ALL Data to transfer everything.</div>'+
-'<button class="btn bsuc bfl" onclick="hideMod(\'m-dbmigrate\');aTab(\'db\',document.querySelector(\'#s-admin .tbb[onclick*=db]\'))">&#x2191; Go to Database Tab</button>'+
-'</div>'+
-'<div style="background:var(--Gl);border:1.5px solid var(--Gs);border-radius:10px;padding:12px">'+
-'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
-'<span style="background:#059669;color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">5</span>'+
-'<span class="fw7 cG">Done! Verify your data is in the new database</span>'+
-'</div>'+
-'<div style="font-size:11px;color:var(--Gd);line-height:1.7">'+
-'Firebase: Check console.firebase.google.com &#x2192; Realtime Database &#x2192; Data tab. You should see an "altstock" folder.<br>'+
-'Google Sheets: Open your sheet. All tabs (items, orders, bills etc.) should have data.<br>'+
-'JSONBin: Open jsonbin.io &#x2192; your bin. Data should be there.<br><br>'+
-'<strong>All your data is preserved. Nothing is lost when switching.</strong>'+
-'</div>'+
-'</div>';
-showMod('m-dbmigrate');
-}
 async function showEmergencyRecovery(){
 showMod('m-recovery'); const m=el('m-recovery'); if(m) m.style.zIndex='1001';
 if(!STATE.users||STATE.users.length<=1){
 const c=el('recovery-body');if(c)c.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3)">Loading data from cloud...</div>';
-await loginScreenSyncFirebase();
+await loginScreenSyncGAS();
 }
 renderRecoveryOptions();
 }
 function renderRecoveryOptions(){
 const c=el('recovery-body'); if(!c) return;
-const hasFirebase=!!(STATE.settings.firebaseUrl&&STATE.settings.firebaseSecret);
 const hasJsonBin=!!(STATE.settings.jsonbinId&&STATE.settings.jsonbinKey);
 const hasLocalUsers=STATE.users&&STATE.users.length>0;
 const adminUser=STATE.users?.find(u=>u.role==='admin');
@@ -10322,28 +10042,12 @@ opt1.innerHTML=
 '</div>'+
 '<button class="btn bd bfl" onclick="resetAdminPassword()">&#x1F511; Reset Admin Password to admin123</button>';
 c.appendChild(opt1);
-if(hasFirebase){
-const opt2=document.createElement('div');
-opt2.style.cssText='background:white;border:1.5px solid #FCD34D;border-radius:10px;padding:14px;margin-bottom:10px';
-opt2.innerHTML=
-'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
-'<span style="background:#D97706;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">2</span>'+
-'<span class="fw7">Restore User Data from Firebase</span>'+
-'</div>'+
-'<div style="font-size:11px;color:var(--t3);line-height:1.7;margin-bottom:10px">'+
-'Your Firebase database may have the correct credentials stored.<br>'+
-'This will pull all data including user accounts from Firebase.'+
-'</div>'+
-'<div id="recovery-fb-status" style="font-size:11px;color:var(--t3);margin-bottom:8px"></div>'+
-'<button class="btn bsuc bfl" onclick="recoveryPullFirebase()">&#x2193; Pull Users from Firebase</button>';
-c.appendChild(opt2);
-}
 if(hasJsonBin){
 const opt3=document.createElement('div');
 opt3.style.cssText='background:white;border:1.5px solid #93C5FD;border-radius:10px;padding:14px;margin-bottom:10px';
 opt3.innerHTML=
 '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
-'<span style="background:#2563EB;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">3</span>'+
+'<span style="background:#2563EB;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">2</span>'+
 '<span class="fw7">Restore User Data from JSONBin</span>'+
 '</div>'+
 '<div style="font-size:11px;color:var(--t3);line-height:1.7;margin-bottom:10px">'+
@@ -10357,7 +10061,7 @@ const opt4=document.createElement('div');
 opt4.style.cssText='background:white;border:1.5px solid var(--br);border-radius:10px;padding:14px;margin-bottom:10px';
 opt4.innerHTML=
 '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
-'<span style="background:#374151;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">'+(hasFirebase||hasJsonBin?'4':'2')+'</span>'+
+'<span style="background:#374151;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">'+(hasJsonBin?'3':'2')+'</span>'+
 '<span class="fw7">Restore from Backup File</span>'+
 '</div>'+
 '<div style="font-size:11px;color:var(--t3);line-height:1.7;margin-bottom:10px">'+
@@ -10398,13 +10102,13 @@ hideMod('m-fpwd');
 el('lu').value=user.username||'';
 el('lp').value='';
 toast('Password reset successful! Login with your new password.','ok');
-try{await syncToFirebase(true);}catch(e){}
+try{autoSyncCloud();}catch(e){}
 }
 async function resetAdminPassword(){
 let admin=STATE.users?.find(u=>u.role==='admin');
 if(!admin){
 toast('Pulling data from cloud...','ok');
-await loginScreenSyncFirebase();
+await loginScreenSyncGAS();
 admin=STATE.users?.find(u=>u.role==='admin');
 }
 if(!admin){toast('No admin account found. Use "Create Emergency Admin" below.','er');return;}
@@ -10414,25 +10118,6 @@ hideMod('m-recovery');
 el('lu').value=admin.username||'admin';
 el('lp').value='admin123';
 toast('Password reset! Username: '+(admin.username||'admin')+' | Password: admin123','ok');
-}
-async function recoveryPullFirebase(){
-const url=STATE.settings.firebaseUrl,secret=STATE.settings.firebaseSecret;
-const s=el('recovery-fb-status'); if(s) s.innerHTML='Connecting to Firebase...';
-try{
-const r=await fetch(url+'/altstock/data.json?auth='+secret);
-const d=await r.json();
-if(d&&d.users&&d.users.length){
-STATE.users=d.users;
-lsSave('vs_users',STATE.users);
-if(s) s.innerHTML='<span style="color:var(--Gd)">&#x2705; '+d.users.length+' users restored from Firebase!</span>';
-renderRecoveryOptions();
-toast('Users restored from Firebase','ok');
-}else{
-if(s) s.innerHTML='<span style="color:var(--Rd)">No user data found in Firebase. Try Option 1 or 4.</span>';
-}
-}catch(e){
-if(s) s.innerHTML='<span style="color:var(--Rd)">&#x274C; '+e.message+'</span>';
-}
 }
 async function recoveryPullJsonBin(){
 const binId=STATE.settings.jsonbinId,key=STATE.settings.jsonbinKey;
@@ -10468,25 +10153,18 @@ el('lu').value=uname;
 el('lp').value=pwd;
 toast('Emergency admin created! Username: '+uname,'ok');
 }
-async function loginScreenSyncFirebase(){
+async function loginScreenSyncGAS(){
   const s=el('ls-sync-status');
-  const url=(STATE.settings.firebaseUrl||'').trim().replace(/\/+$/,'');
-  const sec=(STATE.settings.firebaseSecret||'').trim();
-  if(!url||!sec){
-    if(s)s.innerHTML='<span style="color:#FCD34D">⚠️ Firebase not set up. Login with admin / admin123 first, then configure in Admin → Database.</span>';
+  if(!GAS_URL){
+    if(s)s.innerHTML='<span style="color:#FCD34D">⚠️ Google Sheets not set up. Login with admin / admin123 first, then configure in Admin → Database.</span>';
     return;
   }
-  if(s)s.innerHTML='<span style="color:#FCD34D">⏳ Loading from Firebase...</span>';
+  if(s)s.innerHTML='<span style="color:#FCD34D">⏳ Loading from Google Sheets...</span>';
   try{
-    const r=await fetch(url+'/altstock/data.json?auth='+sec);
-    if(!r.ok){
-      if(s)s.innerHTML='<span style="color:#F87171">❌ Firebase error '+r.status+'. Check URL and Secret key.</span>';
-      return;
-    }
-    const d=await r.json();
+    const d=await api('getAll');
     if(d&&typeof d==='object'&&(d.items||d.users||d.customers)){
       ['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork','leads','flaggedEntries','taskTemplates','taskInstances','staffLeave','recurringLeads'].forEach(k=>{if(d[k]&&(!Array.isArray(d[k])||d[k].length>0))STATE[k]=d[k];});
-      if(d.settings)STATE.settings={...STATE.settings,...d.settings,firebaseUrl:url,firebaseSecret:sec};
+      if(d.settings)STATE.settings={...STATE.settings,...d.settings};
       window._dataPulledFromServer=true;
       lsSave('vs_items',STATE.items);lsSave('vs_entries',STATE.entries);lsSave('vs_customers',STATE.customers);
       lsSave('vs_brokers',STATE.brokers);lsSave('vs_suppliers',STATE.suppliers);lsSave('vs_users',STATE.users);
@@ -10499,7 +10177,7 @@ async function loginScreenSyncFirebase(){
       if(STATE.recurringLeads)lsSave('vs_rec_leads',STATE.recurringLeads);
       if(s)s.innerHTML='<span style="color:#4ADE80">✅ Data loaded! You can now log in.</span>';
     }else if(d===null){
-      if(s)s.innerHTML='<span style="color:#FBBF24">⚠️ Firebase is empty. Log in with admin / admin123 to set up.</span>';
+      if(s)s.innerHTML='<span style="color:#FBBF24">⚠️ Could not reach Google Sheets. Check your connection.</span>';
     }else{
       if(s)s.innerHTML='<span style="color:#FBBF24">⚠️ Unexpected data. Try logging in with admin / admin123.</span>';
     }
@@ -10717,7 +10395,7 @@ if(idx>=0) STATE.recurringLeads[idx]={...STATE.recurringLeads[idx],...obj}; else
 lsSave('vs_rec_leads',STATE.recurringLeads);
 hideMod('m-rec-lead'); renderRecurringLeads(); renderDash();
 toast('Recurring lead saved','ok');
-autoSyncFirebase();
+autoSyncCloud();
 }
 function saveRecLeadAndWA(){
 saveRecurringLead();
@@ -10897,7 +10575,7 @@ let changed=false;
   if(isWonL&&wonDays&&ageDays>=wonDays){l._deleted=true;l._autoDeleted=true;l._ts=Date.now();changed=true;}
   if(isLostL&&lostDays&&ageDays>=lostDays){l._deleted=true;l._autoDeleted=true;l._ts=Date.now();changed=true;}
 });
-if(changed){lsSave('vs_leads',STATE.leads);autoSyncFirebase();}
+if(changed){lsSave('vs_leads',STATE.leads);autoSyncCloud();}
 }
 function generateTodayRecurringTasks(){
 const todayStr=today();
@@ -11076,7 +10754,7 @@ if(ok) updateRecVisitReport(rid);
 }else{
 toast('Visit logged \u2705','ok');
 }
-autoSyncFirebase();
+autoSyncCloud();
 }
 const TASK_PRIORITY_COLORS={High:'#DC2626',Medium:'#D97706',Low:'#16A34A'};
 const TASK_CAT_ICONS={Accounting:'📊',Dispatch:'📦','Mill/Stock':'🧵',Sales:'🎯',Admin:'🛡',Compliance:'📋',Other:'📌'};
@@ -11161,7 +10839,7 @@ if(newInst.length){
 if(!STATE.taskInstances) STATE.taskInstances=[];
 STATE.taskInstances.push(...newInst);
 lsSave('vs_task_instances',STATE.taskInstances);
-autoSyncFirebase();
+autoSyncCloud();
 }
 }
 function isTaskScheduledOn(tmpl,dateStr){
@@ -11292,9 +10970,9 @@ task.comments.push({id:'c_done_'+Date.now(),userId:STATE.user.id,userName:STATE.
 if(task.templateId){var _td=new Date().toISOString().split('T')[0];(STATE.taskInstances||[]).forEach(function(_t){if(_t.templateId===task.templateId&&_t.id!==task.id&&_t.status!=='Done'&&_t.generatedDate<_td){_t.status='Done';_t.completedAt=now.toISOString();_t.completedByUserId=STATE.user.id;_t.completedByName=STATE.user.name;_t.isOnTime=false;}});}
 lsSave('vs_task_instances',STATE.taskInstances);
 renderMyTasks(); renderAllTasks();
-autoSyncFirebase();
+autoSyncCloud();
 toast('Task marked done \u2705','ok');
-}function clearStaleTaskInstances(){var today=new Date().toISOString().split('T')[0];var cnt=0;(STATE.taskInstances||[]).forEach(function(t){if(t.status!=='Done'&&t.generatedDate&&t.generatedDate<today){t.status='Done';t.completedAt=new Date().toISOString();t.completedByUserId=(STATE.user&&STATE.user.id)||'admin';t.completedByName='Admin (Cleared)';t.isOnTime=false;cnt++;}});if(cnt===0){toast('No old pending tasks','ok');return;}lsSave('vs_task_instances',STATE.taskInstances);renderMyTasks();renderAllTasks();autoSyncFirebase();toast('Cleared '+cnt+' old pending tasks ✓','ok');}
+}function clearStaleTaskInstances(){var today=new Date().toISOString().split('T')[0];var cnt=0;(STATE.taskInstances||[]).forEach(function(t){if(t.status!=='Done'&&t.generatedDate&&t.generatedDate<today){t.status='Done';t.completedAt=new Date().toISOString();t.completedByUserId=(STATE.user&&STATE.user.id)||'admin';t.completedByName='Admin (Cleared)';t.isOnTime=false;cnt++;}});if(cnt===0){toast('No old pending tasks','ok');return;}lsSave('vs_task_instances',STATE.taskInstances);renderMyTasks();renderAllTasks();autoSyncCloud();toast('Cleared '+cnt+' old pending tasks ✓','ok');}
 
 function addTaskComment(instanceId,text){
 const task=(STATE.taskInstances||[]).find(t=>t.id===instanceId); if(!task||!text.trim()) return;
@@ -11305,7 +10983,7 @@ task.comments.unshift({id:'c_leg_'+task.id,userId:task.assignedUserId,userName:t
 task.comments.push({id:'c_'+Date.now(),userId:STATE.user.id,userName:STATE.user.name,role:STATE.user.role||'staff',text:text.trim(),ts:new Date().toISOString()});
 task._ts=Date.now();
 lsSave('vs_task_instances',STATE.taskInstances);
-autoSyncFirebase();
+autoSyncCloud();
 }
 function renderTaskComments(task){
 const comments=task.comments||[];
@@ -11396,7 +11074,7 @@ const _ti=STATE.taskInstances.find(t=>t.id===id);
 if(_ti){_ti._deleted=true;_ti._ts=Date.now();}
 lsSave('vs_task_instances',STATE.taskInstances);
 hideMod('m-task-inst'); renderAllTasks(); renderMyTasks();
-toast('Task deleted','ok');autoSyncFirebase();
+toast('Task deleted','ok');autoSyncCloud();
 };
 foot.appendChild(delBtn);
 }
@@ -11660,7 +11338,7 @@ if(obj.startDate&&obj.startDate<today()) generateTaskInstances(obj.startDate);
 hideMod('m-task-tpl');
 renderTaskTemplates();
 toast('Template saved','ok');
-autoSyncFirebase();
+autoSyncCloud();
 }
 async function toggleTaskTemplate(id){
 const t=(STATE.taskTemplates||[]).find(x=>x.id===id); if(!t) return;
@@ -11669,7 +11347,7 @@ t._ts=Date.now();
 lsSave('vs_task_templates',STATE.taskTemplates);
 renderTaskTemplates();
 toast(t.name+(t.active?' activated':' paused'),'ok');
-autoSyncFirebase();
+autoSyncCloud();
 }
 async function deleteTaskTemplate(id){
 const ok=await appConfirm('Delete Template?','This removes the task template. Existing instances remain.','?','Delete','dr');
@@ -11679,7 +11357,7 @@ if(t){t._deleted=true;t._ts=Date.now();}
 lsSave('vs_task_templates',STATE.taskTemplates);
 renderTaskTemplates();
 toast('Template deleted','ok');
-autoSyncFirebase();
+autoSyncCloud();
 }
 function renderLeaveList(){
 const c=el('task-lst-lv'); if(!c) return;
@@ -11739,7 +11417,7 @@ lsSave('vs_staff_leave',STATE.staffLeave);
 hideMod('m-leave');
 renderLeaveList();
 toast(user?.name+' on leave '+from+' to '+to,'ok');
-autoSyncFirebase();
+autoSyncCloud();
 }
 async function deleteLeave(id){
 const ok=await appConfirm('Remove Leave?','','?','Remove','dr');
@@ -11846,7 +11524,7 @@ lsSave('vs_task_instances',STATE.taskInstances);
 renderMyTasks();renderAllTasks();updateTaskDot();
 try{renderDashTaskWidget();}catch(e){}
 toast('✅ Task marked done'+(task.isOnTime?' — On Time':' — Late'),'ok');
-autoSyncFirebase();
+autoSyncCloud();
 }
 function snoozeTaskDeadline(instanceId,hours){
 const task=(STATE.taskInstances||[]).find(t=>t.id===instanceId);if(!task)return;
@@ -11855,7 +11533,7 @@ task.deadline=newDeadline.toISOString();task._ts=Date.now();
 lsSave('vs_task_instances',STATE.taskInstances);
 renderMyTasks();renderAllTasks();
 toast('Deadline snoozed by '+hours+'h → '+newDeadline.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),'ok');
-autoSyncFirebase();
+autoSyncCloud();
 }
 function pauseTasksForUser(userId,userName){
 const d=today();
@@ -11865,7 +11543,7 @@ if(!STATE.staffLeave)STATE.staffLeave=[];
 STATE.staffLeave.push({id:uid(),userId,userName,from:d,to:d,reason:'Paused by admin',substituteId:null,substituteName:null,_ts:Date.now()});
 lsSave('vs_staff_leave',STATE.staffLeave);
 toast(userName+'\'s tasks paused for today','ok');
-renderAllTasks();autoSyncFirebase();
+renderAllTasks();autoSyncCloud();
 }
 function openAdHocTask(prefillUserId){
 const allUsers=STATE.users?.filter(u=>u.active!==false&&!u._deleted)||[];
@@ -11907,7 +11585,7 @@ lsSave('vs_task_instances',STATE.taskInstances);
 hideMod('m-adhoc-task');
 renderAllTasks();renderMyTasks();updateTaskDot();
 toast('Task assigned to '+(user?.name||userId),'ok');
-autoSyncFirebase();
+autoSyncCloud();
 }
 function updateTaskDot(){
 const dot=el('tdot'); if(!dot) return;
@@ -11969,11 +11647,10 @@ if(!STATE.taskInstances)STATE.taskInstances=[];
 STATE.taskInstances.push(inst);
 lsSave('vs_task_instances',STATE.taskInstances);
 rmEl('m-newtask');renderMyTasks();renderAllTasks();updateTaskDot();
-toast('Task added','ok');autoSyncFirebase();
+toast('Task added','ok');autoSyncCloud();
 }
 
-// ═══ HYBRID SYNC ════════════════════════════════════════════════
-// fbUrl() defined earlier near Firebase code
+// ═══ CLOUD SYNC (Google Sheets) ════════════════════════════════════════════════
 async function hybridSaveAll(silent){
   window._lastSaveAt=Date.now();
   const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
@@ -11984,28 +11661,14 @@ async function hybridSaveAll(silent){
     staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
     custGroups:STATE.custGroups||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],
     settings:STATE.settings,syncedAt:new Date().toISOString()};
-  let fb=false,gs=false;
-  // Firebase FIRST (fast, reliable, real-time)
-  try{const fu=fbUrl('data');if(fu){const r=await fetch(fu,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl)});fb=r.ok;}}catch(e){}
-  // Google Sheets SECOND (backup, with timeout for large data)
+  let gs=false;
   try{const ctrl=new AbortController();const tid=setTimeout(()=>ctrl.abort(),15000);const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl}),signal:ctrl.signal});clearTimeout(tid);const j=await r.json();gs=j&&!j.error;}catch(e){}
   STATE.settings.lastSync=new Date().toLocaleString();lsSave('vs_settings',STATE.settings);
-  if(!silent){if(gs&&fb)toast('Saved GS+Firebase','ok');else if(gs)toast('Saved Google Sheets','ok');else if(fb)toast('Saved Firebase','ok');else toast('Both failed - local only','er');}
-  return{fb,gs};
+  setLiveStatus(gs?'live':'off');
+  if(!silent){if(gs)toast('Saved to Google Sheets','ok');else toast('Save failed - local only','er');}
+  return{gs};
 }
 async function hybridGetAll(){
-  // Try Firebase FIRST (reliable CORS, fast)
-  try{
-    const fu=fbUrl('data');
-    if(fu){
-      const r=await fetch(fu);
-      if(r.ok){
-        const d=await r.json();
-        if(d&&d.items){ console.log('Got data from Firebase'); return d; }
-      }
-    }
-  }catch(e){ console.warn('Firebase getAll fail:',e.message); }
-  // Fallback: Google Sheet (needs text/plain for CORS)
   try{
     const ctrl=new AbortController();
     const tid=setTimeout(()=>ctrl.abort(),8000);
@@ -12037,11 +11700,7 @@ async function manualRefresh(){
     window._saveLock=true;
     // STEP 1: Pull server data FIRST so we don't overwrite other devices' changes
     let serverData=null;
-    const fu=fbUrl('data');
-    if(fu){
-      try{const r=await fetch(fu);if(r.ok){const d=await r.json();if(d&&typeof d==='object'&&(d.items||d.users))serverData=d;}}catch(e){}
-    }
-    if(!serverData&&GAS_URL){
+    if(GAS_URL){
       try{
         const ctrl=new AbortController();
         const tid=setTimeout(()=>ctrl.abort(),10000);
@@ -12071,16 +11730,6 @@ function erReset(){
   el('lu').value=a.username||'admin';el('lp').value='admin123';
   toast('Admin password reset','ok');
 }
-async function erFB(){
-  const s=el('erfbs'),url=(STATE.settings.firebaseUrl||'').trim(),sec=(STATE.settings.firebaseSecret||'').trim();
-  if(!url||!sec){if(s)s.textContent='Firebase not configured';return;}
-  if(s)s.textContent='Loading...';
-  try{const r=await fetch(url+'/altstock/data.json?auth='+sec);const d=await r.json();
-    if(d&&d.users){STATE.users=d.users;lsSave('vs_users',STATE.users);
-      if(s)s.textContent='✅ '+d.users.length+' users loaded';toast('Users restored','ok');}
-    else{if(s)s.textContent='No users in Firebase';}}
-  catch(e){if(s)s.textContent='Error: '+e.message;}
-}
 function erNew(){
   const u=(el('erun')?.value||'').trim(),p=(el('erpw')?.value||'').trim();
   if(!u||!p){toast('Enter username and password','er');return;}
@@ -12103,7 +11752,7 @@ async function deleteLead(id){
 // ═══ LEAD STATUS (instant save) ══════════════════════════════════
 function setLeadStatus(id,status){
   const lead=(STATE.leads||[]).find(l=>l.id===id);if(!lead)return;
-  lead.status=status;lead.updatedAt=today();lead._ts=Date.now();lsSave('vs_leads',STATE.leads);autoSyncFirebase();
+  lead.status=status;lead.updatedAt=today();lead._ts=Date.now();lsSave('vs_leads',STATE.leads);autoSyncCloud();
   renderLeads('all');renderLeads('mine');renderLeads('today');renderLeads('won'); renderLeads('won2'); renderLeads('lost');
   document.querySelectorAll('#lead-status-btns button').forEach(b=>{
     b.style.background=b.dataset.status===status?'var(--P)':'var(--bg)';
@@ -12288,7 +11937,7 @@ function saveETI(id){
   task.note=el('etint')?.value||'';
   task._ts=Date.now();
   lsSave('vs_task_instances',STATE.taskInstances);rmEl('m-etit');
-  renderAllTasks();renderMyTasks();toast('Task updated','ok');autoSyncFirebase();
+  renderAllTasks();renderMyTasks();toast('Task updated','ok');autoSyncCloud();
 }
 
 // ═══ WA DAILY TASK REMINDERS ═════════════════════════════════════
@@ -12388,7 +12037,7 @@ async function doDCT(){
   /* Soft-delete so smartMerge won't resurrect from other devices */
   targets.forEach(t=>{t._deleted=true;t._ts=Date.now();});
   lsSave('vs_task_instances',STATE.taskInstances);rmEl('m-dctt');
-  renderAllTasks();renderMyTasks();toast(targets.length+' tasks deleted','ok');autoSyncFirebase();
+  renderAllTasks();renderMyTasks();toast(targets.length+' tasks deleted','ok');autoSyncCloud();
 }
 
 function autoDeleteOldCompletedTasks(){
@@ -12403,7 +12052,7 @@ function autoDeleteOldCompletedTasks(){
   if(count){
     lsSave('vs_task_instances',STATE.taskInstances);
     console.log('Auto-deleted '+count+' old completed tasks');
-    autoSyncFirebase();
+    autoSyncCloud();
   }
 }
 // ═══ TASK REPORT ═════════════════════════════════════════════════
@@ -12577,7 +12226,6 @@ function applyCloudData(d,force=false){
     const hasNewItems=(d.items||[]).some(ci=>!(STATE.items||[]).find(li=>li.id===ci.id));
     if(cloudTs<=localTs&&localTs.getTime()>0&&!hasNewItems)return;
   }
-  const keep={firebaseUrl:STATE.settings.firebaseUrl,firebaseSecret:STATE.settings.firebaseSecret};
   const keys=['items','entries','customers','brokers','suppliers','users','orders','bills',
    'payments','jobWork','leads','flaggedEntries',
    'taskTemplates','taskInstances','staffLeave','recurringLeads','mixedSarees',
@@ -12593,7 +12241,7 @@ function applyCloudData(d,force=false){
     });
   }
   keys.forEach(k=>{STATE[k]=cleanupDeleted(STATE[k]);});
-  // Defensive: ensure every item has a colours array — corrupt/partial records from Firebase can omit it
+  // Defensive: ensure every item has a colours array — corrupt/partial records can omit it
   (STATE.items||[]).forEach(item=>{if(!Array.isArray(item.colours))item.colours=[];});
   if(d.settings){
     // Deep-merge dashConfigPerUser so every staff member's personal layout survives sync
@@ -12929,14 +12577,14 @@ function setFollowupDate(id,days){
   var lead=(STATE.leads||[]).find(function(l){return l.id===id;});if(!lead)return;
   var d=new Date();d.setDate(d.getDate()+days);
   lead.followupDate=d.toISOString().split('T')[0];
-  lsSave('vs_leads',STATE.leads);autoSyncFirebase();
+  lsSave('vs_leads',STATE.leads);autoSyncCloud();
   toast('Follow-up: '+fmtDate(lead.followupDate),'ok');showLeadDetail(id);
 }
 function setFollowupCustom(id){
   var lead=(STATE.leads||[]).find(function(l){return l.id===id;});if(!lead)return;
   var date=window.prompt('Enter date (YYYY-MM-DD):',lead.followupDate||today());
   if(!date)return;
-  lead.followupDate=date;lsSave('vs_leads',STATE.leads);autoSyncFirebase();
+  lead.followupDate=date;lsSave('vs_leads',STATE.leads);autoSyncCloud();
   toast('Follow-up: '+fmtDate(date),'ok');showLeadDetail(id);
 }
 
@@ -12961,14 +12609,14 @@ freq:t.freq,days:t.days||[],dates:t.dates||[],deadlineTime:t.time,active:true,st
 STATE.taskTemplates=defTpls;
 lsSave('vs_task_templates',STATE.taskTemplates);
 }
-if(STATE.settings.firebaseUrl&&STATE.settings.firebaseSecret){
+if(GAS_URL){
 const localCount=(STATE.users||[]).length+(STATE.items||[]).length+(STATE.customers||[]).length;
 const noUsers=(STATE.users||[]).length===0;
 if(localCount<=1||noUsers){
 setTimeout(()=>{
 const s=el('ls-sync-status');
 if(s) s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading your data from cloud...</span>';
-loginScreenSyncFirebase();
+loginScreenSyncGAS();
 }, 800);
 }
 }
@@ -13159,7 +12807,7 @@ el('tpl-title').textContent='Add One-Off Task';el('tpl-subtitle').textContent='O
 <div class="ov" id="m-adhoc-task" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>&#x26A1; Quick Task</h3><p class="sub">Assign a one-off task to any staff member</p></div><button class="btn bgh bsm" onclick="hideMod('m-adhoc-task')">&#x2715;</button></div></div><div class="shb"><div id="adhoc-form" class="p16"></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-adhoc-task')">Cancel</button><button class="btn bp bfl" onclick="saveAdHocTask()">&#x26A1; Assign Task</button></div>
 </div></div>
 <div class="ov" id="m-leave" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>&#x1F3D6; Staff Leave</h3></div><button class="btn bgh bsm" onclick="hideMod('m-leave')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="lv-id"/><div class="fg"><label>Staff Member *</label><select class="sel" id="lv-user"><option value="">Select staff</option></select></div><div class="fg"><label>Substitute (tasks route to this person)</label><select class="sel" id="lv-sub"><option value="">No substitute</option></select></div><div class="ir2"><div class="fg"><label>From Date *</label><input class="inp" type="date" id="lv-from"/></div><div class="fg"><label>To Date *</label><input class="inp" type="date" id="lv-to"/></div></div><div class="fg"><label>Reason</label><select class="sel" id="lv-reason"><option>Personal</option><option>Medical</option><option>Festival</option><option>Emergency</option><option>Other</option></select></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-leave')">Cancel</button><button class="btn bp bfl" onclick="saveLeave()">Save Leave</button></div>
-</div></div><div class="ov" id="m-cust-group" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="cgtit">New Party Group</h3><p class="sub">Link firms for cross-billing</p></div><button class="btn bgh bsm" onclick="hideMod('m-cust-group')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="cg-id"/><div class="fg"><label>Group Name *</label><input class="inp" id="cg-name" placeholder="e.g. Sharma Group, ABC Textiles"/></div><div class="dvd"></div><div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Member Firms</div><div id="cg-members" style="margin-bottom:12px"></div><div style="display:flex;gap:8px;align-items:center"><select class="sel" id="cg-add-member" style="flex:1"><option value="">— Select customer to add —</option></select><button class="btn bp bsm" onclick="addGroupMemberUI()">Add</button><button class="btn bs bsm" onclick="openCustFromGroup()" title="Create new customer and add to this group">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:8px;line-height:1.6">Save the group name first if adding new members to a new group.</div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><button class="btn bd bfl" id="cg-del-btn" style="display:none" onclick="deleteCustGroup(el('cg-id').value)">&#x1F5D1; Delete Group</button><div style="display:flex;gap:6px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-cust-group')">Cancel</button><button class="btn bp bfl" onclick="saveCustGroup()">Save Group</button></div></div></div></div><div class="ov" id="m-prog" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Programme Lot</p><div style="font-size:22px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace;line-height:1" id="prog-ord-no">—</div><div style="font-size:12px;color:var(--t2);margin-top:2px" id="prog-cust"></div></div><button class="btn bgh bsm" onclick="hideMod('m-prog')">&#x2715;</button></div></div><div class="shb" id="prog-bod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-prog')">Cancel</button><button class="btn bp bfl" onclick="saveProgramme()">&#x2714; Add Programme</button></div></div></div><div class="ov" id="m-testing" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>🧪 Testing Checklist</h3><p class="sub">Verify every change</p></div><button class="btn bgh bsm" onclick="hideMod('m-testing')">✕</button></div></div><div class="shb" style="padding:16px;font-size:15px;line-height:2"><b style="color:var(--P)">1. Font Size</b><br>All text larger — body 16px, nav 12px.<br><br><b style="color:var(--P)">2. Dashboard Task Widget</b><br>Login as staff → Dashboard shows "My Tasks Today" card.<br><br><b style="color:var(--P)">3. Edit Task</b><br>Tasks → tap task → "✏️ Edit Task" → change → Save.<br><br><b style="color:var(--P)">4. Future Task Schedule</b><br>Tasks → Templates → New → set Start Date to future.<br><br><b style="color:var(--P)">5. Task Report</b><br>Tasks → 📊 Report → set dates → Go → see staff chart.<br><br><b style="color:var(--P)">6. Delete Completed</b><br>Tasks → Report → "🗑 Delete Completed" → Range/Month/Year/All → Delete.<br><br><b style="color:var(--P)">7. Delete Lead</b><br>Leads → tap lead → "🗑 Delete Lead" (admin only).<br><br><b style="color:var(--P)">8. Lead Status Saves Instantly</b><br>Open lead → tap Won → saves + moves to Won tab.<br><br><b style="color:var(--P)">9. Forgot Password</b><br>Login → "Forgot Password?" → enter username → resets to admin123.<br><br><b style="color:var(--P)">10. Forgot Username</b><br>Login → "Forgot Username?" → shows all usernames.<br><br><b style="color:var(--P)">11. Admin Locked Out</b><br>"Admin locked out?" → 3 working recovery options.<br><br><b style="color:var(--P)">12. Auto-Sync 30s</b><br>Change on PC → wait 30s on Android → auto-refreshes.<br><br><b style="color:var(--P)">13. 🔄 Refresh</b><br>Dashboard → tap 🔄 → instant pull from server.<br><br><b style="color:var(--P)">14. Logout Saves</b><br>Logout → "Save & sync?" → syncs GS+Firebase → logs out.<br><br><b style="color:var(--P)">15. GS + Firebase Hybrid</b><br>Every save: GS first, Firebase backup.<br><br><b style="color:var(--P)">16. GST Lookup</b><br>Customers → GSTIN → GST Lookup → opens gstin.in.<br><br><b style="color:var(--P)">17. Supplier GSTIN</b><br>Suppliers → Add → GSTIN field present → saves.<br><br><b style="color:var(--P)">18. WA Reminders</b><br>Tasks → All → "📲 Send WA Reminders Now" → WA per staff.</div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-testing')">Got it!</button></div></div></div><div id="float-btns" style="position:fixed;right:10px;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 10px);z-index:150;display:flex;flex-direction:row;gap:8px;align-items:center"><button id="global-refresh-btn" onclick="manualRefresh()" title="Refresh" style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#4F46E5,#6366F1);color:white;border:none;font-size:16px;cursor:pointer;box-shadow:0 3px 12px rgba(79,70,229,.4);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">&#x1F504;</button><button id="calc-fab" onclick="toggleCalc()" title="Calculator" style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white;border:none;font-size:18px;cursor:pointer;box-shadow:0 3px 12px rgba(79,70,229,.4);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">🧮</button></div><div id="calc-float" style="display:none;position:fixed;right:20px;bottom:20px;width:272px;background:#1F2937;border-radius:20px;box-shadow:0 25px 60px rgba(0,0,0,0.6);z-index:9998;overflow:hidden;font-family:system-ui,-apple-system,sans-serif"><div id="calc-drag" style="background:#111827;padding:10px 14px 8px;cursor:move;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #374151"><span style="color:#6B7280;font-size:11px;font-weight:600;letter-spacing:1px">⌨ CALCULATOR</span><button onclick="toggleCalc()" style="background:none;border:none;color:#6B7280;font-size:20px;cursor:pointer;line-height:1;padding:0">×</button></div><div style="padding:6px 14px 10px;background:#111827"><div id="calc-expr" style="color:#4B5563;font-size:11px;min-height:16px;text-align:right;font-family:monospace;white-space:nowrap;overflow:hidden"></div><div id="calc-disp" style="color:#F9FAFB;font-size:32px;text-align:right;font-family:monospace;font-weight:300;letter-spacing:-1px;overflow:hidden;text-overflow:ellipsis;line-height:1.2">0</div></div><div id="calc-gst-panel" style="display:none;background:#0F172A;margin:0 10px 8px;border-radius:12px;padding:10px;font-size:12px;color:#D1D5DB"><div style="display:flex;gap:5px;margin-bottom:8px"><button onclick="setGSTRate(5)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#374151;border:none;border-radius:8px;color:#D1D5DB;cursor:pointer;font-size:11px;font-weight:600">5%</button><button onclick="setGSTRate(12)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#374151;border:none;border-radius:8px;color:#D1D5DB;cursor:pointer;font-size:11px;font-weight:600">12%</button><button onclick="setGSTRate(18)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#4F46E5;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:11px;font-weight:600">18%</button><button onclick="setGSTRate(28)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#374151;border:none;border-radius:8px;color:#D1D5DB;cursor:pointer;font-size:11px;font-weight:600">28%</button></div><div id="calc-gst-result"></div></div><div id="calc-mu-panel" style="display:none;background:#0F172A;margin:0 10px 8px;border-radius:12px;padding:10px;font-size:12px;color:#D1D5DB"><div id="calc-mu-result"></div></div><div style="padding:4px 10px 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px"><button onclick="calcBtn('AC')" style="grid-column:span 2;background:#374151;border:none;border-radius:10px;color:#EF4444;font-size:15px;font-weight:700;padding:13px 4px;cursor:pointer">AC</button><button onclick="calcBtn('back')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">⌫</button><button onclick="calcBtn('/')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">÷</button><button onclick="calcBtn('7')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">7</button><button onclick="calcBtn('8')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">8</button><button onclick="calcBtn('9')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">9</button><button onclick="calcBtn('*')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">×</button><button onclick="calcBtn('4')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">4</button><button onclick="calcBtn('5')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">5</button><button onclick="calcBtn('6')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">6</button><button onclick="calcBtn('-')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">−</button><button onclick="calcBtn('1')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">1</button><button onclick="calcBtn('2')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">2</button><button onclick="calcBtn('3')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">3</button><button onclick="calcBtn('+')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">+</button><button onclick="calcBtn('MU')" style="background:#7C3AED;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;padding:13px 4px;cursor:pointer" title="Markup: enter cost, press MU, enter %, press =">MU</button><button onclick="calcBtn('0')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">0</button><button onclick="calcBtn('.')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">.</button><button onclick="calcBtn('=')" style="background:#4F46E5;border:none;border-radius:10px;color:#fff;font-size:20px;font-weight:700;padding:13px 4px;cursor:pointer">=</button><button onclick="calcBtn('GST')" id="calc-gst-btn" style="grid-column:span 4;background:#065F46;border:none;border-radius:10px;color:#34D399;font-size:13px;font-weight:700;padding:11px 4px;cursor:pointer">GST ▾</button></div></div>
+</div></div><div class="ov" id="m-cust-group" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="cgtit">New Party Group</h3><p class="sub">Link firms for cross-billing</p></div><button class="btn bgh bsm" onclick="hideMod('m-cust-group')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="cg-id"/><div class="fg"><label>Group Name *</label><input class="inp" id="cg-name" placeholder="e.g. Sharma Group, ABC Textiles"/></div><div class="dvd"></div><div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Member Firms</div><div id="cg-members" style="margin-bottom:12px"></div><div style="display:flex;gap:8px;align-items:center"><select class="sel" id="cg-add-member" style="flex:1"><option value="">— Select customer to add —</option></select><button class="btn bp bsm" onclick="addGroupMemberUI()">Add</button><button class="btn bs bsm" onclick="openCustFromGroup()" title="Create new customer and add to this group">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:8px;line-height:1.6">Save the group name first if adding new members to a new group.</div></div><div class="shf" style="flex-wrap:wrap;gap:6px"><button class="btn bd bfl" id="cg-del-btn" style="display:none" onclick="deleteCustGroup(el('cg-id').value)">&#x1F5D1; Delete Group</button><div style="display:flex;gap:6px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-cust-group')">Cancel</button><button class="btn bp bfl" onclick="saveCustGroup()">Save Group</button></div></div></div></div><div class="ov" id="m-prog" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px">Programme Lot</p><div style="font-size:22px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace;line-height:1" id="prog-ord-no">—</div><div style="font-size:12px;color:var(--t2);margin-top:2px" id="prog-cust"></div></div><button class="btn bgh bsm" onclick="hideMod('m-prog')">&#x2715;</button></div></div><div class="shb" id="prog-bod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-prog')">Cancel</button><button class="btn bp bfl" onclick="saveProgramme()">&#x2714; Add Programme</button></div></div></div><div class="ov" id="m-testing" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>🧪 Testing Checklist</h3><p class="sub">Verify every change</p></div><button class="btn bgh bsm" onclick="hideMod('m-testing')">✕</button></div></div><div class="shb" style="padding:16px;font-size:15px;line-height:2"><b style="color:var(--P)">1. Font Size</b><br>All text larger — body 16px, nav 12px.<br><br><b style="color:var(--P)">2. Dashboard Task Widget</b><br>Login as staff → Dashboard shows "My Tasks Today" card.<br><br><b style="color:var(--P)">3. Edit Task</b><br>Tasks → tap task → "✏️ Edit Task" → change → Save.<br><br><b style="color:var(--P)">4. Future Task Schedule</b><br>Tasks → Templates → New → set Start Date to future.<br><br><b style="color:var(--P)">5. Task Report</b><br>Tasks → 📊 Report → set dates → Go → see staff chart.<br><br><b style="color:var(--P)">6. Delete Completed</b><br>Tasks → Report → "🗑 Delete Completed" → Range/Month/Year/All → Delete.<br><br><b style="color:var(--P)">7. Delete Lead</b><br>Leads → tap lead → "🗑 Delete Lead" (admin only).<br><br><b style="color:var(--P)">8. Lead Status Saves Instantly</b><br>Open lead → tap Won → saves + moves to Won tab.<br><br><b style="color:var(--P)">9. Forgot Password</b><br>Login → "Forgot Password?" → enter username → resets to admin123.<br><br><b style="color:var(--P)">10. Forgot Username</b><br>Login → "Forgot Username?" → shows all usernames.<br><br><b style="color:var(--P)">11. Admin Locked Out</b><br>"Admin locked out?" → 3 working recovery options.<br><br><b style="color:var(--P)">12. Auto-Sync 30s</b><br>Change on PC → wait 30s on Android → auto-refreshes.<br><br><b style="color:var(--P)">13. 🔄 Refresh</b><br>Dashboard → tap 🔄 → instant pull from server.<br><br><b style="color:var(--P)">14. Logout Saves</b><br>Logout → "Save & sync?" → syncs to Google Sheets → logs out.<br><br><b style="color:var(--P)">15. Google Sheets Sync</b><br>Every save pushes to Google Sheets automatically.<br><br><b style="color:var(--P)">16. GST Lookup</b><br>Customers → GSTIN → GST Lookup → opens gstin.in.<br><br><b style="color:var(--P)">17. Supplier GSTIN</b><br>Suppliers → Add → GSTIN field present → saves.<br><br><b style="color:var(--P)">18. WA Reminders</b><br>Tasks → All → "📲 Send WA Reminders Now" → WA per staff.</div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-testing')">Got it!</button></div></div></div><div id="float-btns" style="position:fixed;right:10px;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 10px);z-index:150;display:flex;flex-direction:row;gap:8px;align-items:center"><button id="global-refresh-btn" onclick="manualRefresh()" title="Refresh" style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#4F46E5,#6366F1);color:white;border:none;font-size:16px;cursor:pointer;box-shadow:0 3px 12px rgba(79,70,229,.4);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">&#x1F504;</button><button id="calc-fab" onclick="toggleCalc()" title="Calculator" style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white;border:none;font-size:18px;cursor:pointer;box-shadow:0 3px 12px rgba(79,70,229,.4);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent">🧮</button></div><div id="calc-float" style="display:none;position:fixed;right:20px;bottom:20px;width:272px;background:#1F2937;border-radius:20px;box-shadow:0 25px 60px rgba(0,0,0,0.6);z-index:9998;overflow:hidden;font-family:system-ui,-apple-system,sans-serif"><div id="calc-drag" style="background:#111827;padding:10px 14px 8px;cursor:move;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #374151"><span style="color:#6B7280;font-size:11px;font-weight:600;letter-spacing:1px">⌨ CALCULATOR</span><button onclick="toggleCalc()" style="background:none;border:none;color:#6B7280;font-size:20px;cursor:pointer;line-height:1;padding:0">×</button></div><div style="padding:6px 14px 10px;background:#111827"><div id="calc-expr" style="color:#4B5563;font-size:11px;min-height:16px;text-align:right;font-family:monospace;white-space:nowrap;overflow:hidden"></div><div id="calc-disp" style="color:#F9FAFB;font-size:32px;text-align:right;font-family:monospace;font-weight:300;letter-spacing:-1px;overflow:hidden;text-overflow:ellipsis;line-height:1.2">0</div></div><div id="calc-gst-panel" style="display:none;background:#0F172A;margin:0 10px 8px;border-radius:12px;padding:10px;font-size:12px;color:#D1D5DB"><div style="display:flex;gap:5px;margin-bottom:8px"><button onclick="setGSTRate(5)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#374151;border:none;border-radius:8px;color:#D1D5DB;cursor:pointer;font-size:11px;font-weight:600">5%</button><button onclick="setGSTRate(12)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#374151;border:none;border-radius:8px;color:#D1D5DB;cursor:pointer;font-size:11px;font-weight:600">12%</button><button onclick="setGSTRate(18)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#4F46E5;border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:11px;font-weight:600">18%</button><button onclick="setGSTRate(28)" class="gst-rate-btn" style="flex:1;padding:5px 2px;background:#374151;border:none;border-radius:8px;color:#D1D5DB;cursor:pointer;font-size:11px;font-weight:600">28%</button></div><div id="calc-gst-result"></div></div><div id="calc-mu-panel" style="display:none;background:#0F172A;margin:0 10px 8px;border-radius:12px;padding:10px;font-size:12px;color:#D1D5DB"><div id="calc-mu-result"></div></div><div style="padding:4px 10px 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px"><button onclick="calcBtn('AC')" style="grid-column:span 2;background:#374151;border:none;border-radius:10px;color:#EF4444;font-size:15px;font-weight:700;padding:13px 4px;cursor:pointer">AC</button><button onclick="calcBtn('back')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">⌫</button><button onclick="calcBtn('/')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">÷</button><button onclick="calcBtn('7')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">7</button><button onclick="calcBtn('8')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">8</button><button onclick="calcBtn('9')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">9</button><button onclick="calcBtn('*')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">×</button><button onclick="calcBtn('4')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">4</button><button onclick="calcBtn('5')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">5</button><button onclick="calcBtn('6')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">6</button><button onclick="calcBtn('-')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">−</button><button onclick="calcBtn('1')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">1</button><button onclick="calcBtn('2')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">2</button><button onclick="calcBtn('3')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">3</button><button onclick="calcBtn('+')" style="background:#4B5563;border:none;border-radius:10px;color:#FBBF24;font-size:18px;font-weight:700;padding:13px 4px;cursor:pointer">+</button><button onclick="calcBtn('MU')" style="background:#7C3AED;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;padding:13px 4px;cursor:pointer" title="Markup: enter cost, press MU, enter %, press =">MU</button><button onclick="calcBtn('0')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">0</button><button onclick="calcBtn('.')" style="background:#374151;border:none;border-radius:10px;color:#F9FAFB;font-size:18px;padding:13px 4px;cursor:pointer">.</button><button onclick="calcBtn('=')" style="background:#4F46E5;border:none;border-radius:10px;color:#fff;font-size:20px;font-weight:700;padding:13px 4px;cursor:pointer">=</button><button onclick="calcBtn('GST')" id="calc-gst-btn" style="grid-column:span 4;background:#065F46;border:none;border-radius:10px;color:#34D399;font-size:13px;font-weight:700;padding:11px 4px;cursor:pointer">GST ▾</button></div></div>
 <div class="ov" id="m-exch">
 <div class="sh" style="max-width:720px">
 <div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Exchange Slip</h3><p class="sub">Manage exchange voucher</p></div><button class="btn bgh bsm" onclick="hideMod('m-exch')">&#10005;</button></div></div>
