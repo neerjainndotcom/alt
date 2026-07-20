@@ -9657,10 +9657,11 @@ event.target.value='';
 }
 async function silentPullGAS(){
 try{
-const d=await fetch(GAS_URL+'?action=getAll').then(r=>r.json()).catch(()=>null);
-if(!d){setLiveStatus('off');return;}
+const res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'getAll'})}).catch(()=>null);
+if(!res){setLiveStatus('off');return;}
+const d=await res.json().catch(()=>null);
 setLiveStatus('live');
-if(!d.items) return;
+if(!d||!d.items)return;
 /* ── Force-reload check ── */
 setLiveStatus('live'); const cloudFrt=d.settings?.forceReloadToken||'';
 const myFrt=lsGet('vs_frt')||'';
