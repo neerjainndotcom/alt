@@ -9657,8 +9657,10 @@ event.target.value='';
 }
 async function silentPullGAS(){
 try{
-const d=await api('getAll');
-if(!d||!d.items) return;
+const d=await fetch(GAS_URL+'?action=getAll').then(r=>r.json()).catch(()=>null);
+if(!d){setLiveStatus('off');return;}
+setLiveStatus('live');
+if(!d.items) return;
 /* ── Force-reload check ── */
 setLiveStatus('live'); const cloudFrt=d.settings?.forceReloadToken||'';
 const myFrt=lsGet('vs_frt')||'';
