@@ -524,8 +524,11 @@ function autoSyncCloud(){
           const tid=setTimeout(()=>ctrl.abort(),15000);
           const r=await fetch(FIREBASE_URL+'/altstock.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl),signal:ctrl.signal});
           clearTimeout(tid);
-          if(r.ok){setLiveStatus('live');STATE.settings.lastSync=nowTs;lsSave('vs_settings',STATE.settings);}
-          else{setLiveStatus('off');}
+          if(r.ok){
+            /* Write tiny meta node so other devices know to pull */
+            fetch(FIREBASE_URL+'/_meta.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:nowTs})}).catch(()=>{});
+            setLiveStatus('live');STATE.settings.lastSync=nowTs;lsSave('vs_settings',STATE.settings);
+          }else{setLiveStatus('off');}
         }catch(e){setLiveStatus('off');}
       }else if(GAS_URL){
         try{
@@ -9687,8 +9690,9 @@ if(!fbUrl){toast('Paste your Firebase Database URL','er');return;}
 STATE.settings.firebaseUrl=fbUrl;
 FIREBASE_URL=fbUrl;
 lsSave('vs_settings',STATE.settings);
-toast('Saved — connecting...','ok');
+toast('Saved — starting sync...','ok');
 initFirebaseListener();
+renderDbTab();
 }
 function saveFirebaseSetup(){saveSheetSetup();}
 function showGASScriptModal(){
@@ -9936,29 +9940,34 @@ ta.value=s;ta.style.position='fixed';ta.style.opacity='0';
 document.body.appendChild(ta);ta.select();document.execCommand('copy');
 document.body.removeChild(ta);toast('Script copied!','ok');
 }
-let _fbEventSource=null;
+/* Firebase meta-poll — checks a tiny _meta node (50 bytes) every 10s.
+   Only does a full 4MB pull when cloud timestamp is newer than local.
+   This keeps bandwidth near zero vs EventSource which streams full DB continuously. */
 function initFirebaseListener(){
   if(!FIREBASE_URL)return;
-  if(_fbEventSource){try{_fbEventSource.close();}catch(e){}  _fbEventSource=null;}
-  try{
-    _fbEventSource=new EventSource(FIREBASE_URL+'/altstock.json');
-    _fbEventSource.addEventListener('put',function(e){
-      try{
-        if(window._saveLock||window._syncRunning)return;
-        const msg=JSON.parse(e.data);
-        const d=msg.data;
-        if(!d||typeof d!=='object'||!d.items)return;
-        const cloudDate=d._savedAt?new Date(d._savedAt):new Date(0);
-        const localDate=STATE.settings?.lastSync?new Date(STATE.settings.lastSync):new Date(0);
-        if(cloudDate<=localDate&&localDate.getTime()>0)return;
-        applyCloudData(d,true);
-        refreshCurrentView();
-        setLiveStatus('live');
-      }catch(err){}
-    });
-    _fbEventSource.onopen=function(){setLiveStatus('live');console.log('Firebase connected');};
-    _fbEventSource.onerror=function(){setLiveStatus('off');};
-  }catch(err){console.warn('Firebase listener error:',err);}
+  if(window._fbMetaPoll)clearInterval(window._fbMetaPoll);
+  window._fbMetaPoll=setInterval(async()=>{
+    if(window._saveLock||window._syncRunning)return;
+    if(window._lastSaveAt&&Date.now()-window._lastSaveAt<8000)return;
+    try{
+      const r=await fetch(FIREBASE_URL+'/_meta.json');
+      if(!r.ok)return;
+      const meta=await r.json();
+      if(!meta||!meta.ts)return;
+      const cloudTs=new Date(meta.ts);
+      const localTs=STATE.settings?.lastSync?new Date(STATE.settings.lastSync):new Date(0);
+      if(cloudTs<=localTs)return;
+      /* Cloud is newer — do a full pull */
+      const r2=await fetch(FIREBASE_URL+'/altstock.json');
+      if(!r2.ok)return;
+      const d=await r2.json();
+      if(!d||!d.items)return;
+      applyCloudData(d,true);
+      refreshCurrentView();
+      setLiveStatus('live');
+    }catch(e){setLiveStatus('off');}
+  },10000);/* Poll meta every 10s */
+  setLiveStatus(FIREBASE_URL?'live':'off');
 }
 function refreshCurrentView(){
   try{
@@ -10017,6 +10026,7 @@ try{
     const j=await r.json().catch(()=>null);ok=j&&!j.error;
   }
   if(ok){
+    if(FIREBASE_URL)fetch(FIREBASE_URL+'/_meta.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:nowTs})}).catch(()=>{});
     STATE.settings.lastSync=nowTs;lsSave('vs_settings',STATE.settings);
     if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pushed at '+nowTs.slice(11,19)+'</span>';
     toast('Pushed to Firebase','ok');setLiveStatus('live');
