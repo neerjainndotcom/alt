@@ -118,7 +118,7 @@ const DATA_VERSION=2;
   }catch(e){}
 })();
 // ═══════════════════════════════════════════════════════════════════════
-let GAS_URL='';
+let GAS_URL='';let FIREBASE_URL='';
 const OWNER_SETUP_HASH='292d8497dbee6cf4c66e9eb10c1f804fbffb96c4736ef5bb734c0e5bf3bb0f19';
 const el = id => document.getElementById(id);
 const escHtml = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -436,7 +436,7 @@ STATE.orders=lsGet('vs_orders')||[];
 STATE.bills=lsGet('vs_bills')||[];
 STATE.payments=lsGet('vs_payments')||[];
 const s=lsGet('vs_settings'); if(s) STATE.settings={...STATE.settings,...s};
-GAS_URL=STATE.settings.gasUrl||'';
+GAS_URL=STATE.settings.gasUrl||'';FIREBASE_URL=STATE.settings.firebaseUrl||'';if(FIREBASE_URL)setTimeout(initFirebaseListener,500);
 STATE.leads=lsGet('vs_leads')||[];
 STATE.notifications=lsGet('vs_notifications')||[];
 STATE.flaggedEntries=lsGet('vs_flagged')||[];
@@ -503,11 +503,11 @@ function autoSyncCloud(){
       if(GAS_URL){
         try{
           const cloud=await api('getAll');
-          if(cloud&&typeof cloud==='object'&&(cloud.items||cloud.users))applyCloudData(cloud,false);
+          if(cloud&&typeof cloud==='object'&&(cloud.items||cloud.users))applyCloudData(cloud,true);
         }catch(e){}
       }
       const nowTs=new Date().toISOString();
-      // PUSH merged data to Google Sheets
+      // PUSH to Firebase (local already saved)
       window._lastSaveAt=Date.now();
       const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
         brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
@@ -517,8 +517,17 @@ function autoSyncCloud(){
         staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
         custGroups:STATE.custGroups||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],
         settings:{...STATE.settings,lastSync:nowTs},
-        syncedAt:nowTs};
-      if(GAS_URL){
+        _savedAt:nowTs};
+      if(FIREBASE_URL){
+        try{
+          const ctrl=new AbortController();
+          const tid=setTimeout(()=>ctrl.abort(),15000);
+          const r=await fetch(FIREBASE_URL+'/altstock.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl),signal:ctrl.signal});
+          clearTimeout(tid);
+          if(r.ok){setLiveStatus('live');STATE.settings.lastSync=nowTs;lsSave('vs_settings',STATE.settings);}
+          else{setLiveStatus('off');}
+        }catch(e){setLiveStatus('off');}
+      }else if(GAS_URL){
         try{
           const ctrl=new AbortController();
           const tid=setTimeout(()=>ctrl.abort(),15000);
@@ -534,7 +543,7 @@ function autoSyncCloud(){
     window._saveLock=false;
     /* If a save was requested while we were pushing, fire another push now */
     if(window._needsResync){window._needsResync=false;setTimeout(autoSyncCloud,100);}
-  },250);
+  },7000);
 }
 let _tt;
 function toast(msg,type=''){
@@ -744,11 +753,14 @@ renderDBSetup();
 
   /* Polling — periodically checks Google Sheets for changes made on other devices */
   clearInterval(window._syncPoll);
+  /* Firebase real-time listener replaces polling.
+     Fallback poll only used if no Firebase URL (GAS mode) */
   window._syncPoll=setInterval(async()=>{
+    if(FIREBASE_URL)return;/* Firebase handles this via EventSource */
     if(window._saveLock||window._syncRunning)return;
     if(window._lastSaveAt&&Date.now()-window._lastSaveAt<4000)return;
     try{await silentPullGAS();}catch(e){}
-  },20000);/* Poll every 20s for changes from other devices */
+  },20000);
   scheduleWAReminder();
   try{autoDeleteOldCompletedTasks();}catch(e){}
 }
@@ -9518,11 +9530,13 @@ renderFlaggedTab(); renderDash(); renderRecentAct();
 
 function renderDbTab(){
 const c=el('dbbod'); if(!c) return;
-const lastSync=STATE.settings.lastSync||'Never';
+const fbUrl=STATE.settings.firebaseUrl||'';
+const lastSync=STATE.settings.lastSync?STATE.settings.lastSync.slice(0,19).replace('T',' '):'Never';
+const isConnected=!!FIREBASE_URL;
 c.innerHTML=
 '<div style="background:linear-gradient(135deg,#1e1b4b,#3730A3);border-radius:12px;padding:14px;margin-bottom:12px">'+
 '<div style="font-size:13px;font-weight:900;color:white;margin-bottom:4px">&#x1F4BE; Backup &amp; Restore</div>'+
-'<div style="font-size:11px;color:#A5B4FC;margin-bottom:10px">Save everything to a file. Share with staff via WhatsApp.</div>'+
+'<div style="font-size:11px;color:#A5B4FC;margin-bottom:10px">Save everything to a file.</div>'+
 '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
 '<button class="btn" style="background:#4F46E5;color:white;padding:11px;font-size:12px;font-weight:800;border-radius:8px" onclick="exportData()">&#x2193; Export Backup</button>'+
 '<button class="btn" id="imp-btn" style="background:white;color:#1e1b4b;padding:11px;font-size:12px;font-weight:800;border-radius:8px" onclick="triggerImport()">&#x2191; Import Backup</button>'+
@@ -9530,82 +9544,46 @@ c.innerHTML=
 '<input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"/>'+
 '</div>'+
 '<div style="background:var(--Pl);border-radius:12px;padding:14px;margin-bottom:12px">'+
-'<div style="font-size:14px;font-weight:900;color:var(--Pd);margin-bottom:4px">&#x1F4CA; Google Sheets Database</div>'+
-'<div style="font-size:11px;color:var(--t3);margin-bottom:10px">This is your one and only database. All devices sync through this Google Sheet.</div>'+
-'<div style="font-size:11px;color:var(--t3);margin-bottom:8px">Last sync: '+lastSync+'</div>'+
-'<input class="inp mono" id="gas-url" value="'+(STATE.settings.gasUrl||'')+'" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:11px;margin-bottom:8px"/>'+
-'<div style="display:flex;gap:8px;margin-bottom:8px">'+
-'<button class="btn bp" onclick="saveGasUrl()" style="flex:1">Save</button>'+
-'<button class="btn bs" onclick="testGasConnection()" style="flex:1">Test</button>'+
+'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+
+'<span style="font-size:20px">&#x1F525;</span>'+
+'<div style="font-size:14px;font-weight:900;color:var(--Pd)">Firebase Realtime Database</div>'+
+'<span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;'+(isConnected?'background:#D1FAE5;color:#065F46':'background:#FEE2E2;color:#991B1B')+'">'+(isConnected?'&#x1F7E2; Live':'&#x26AA; Not connected')+'</span>'+
 '</div>'+
-'<div id="gas-status" style="font-size:11px;color:var(--t3);margin-bottom:8px"></div>'+
+'<div style="font-size:11px;color:var(--t3);margin-bottom:12px">Real-time sync across all devices. Changes appear in under 2 seconds.</div>'+
+'<div style="background:var(--card);border-radius:8px;padding:10px;margin-bottom:12px;font-size:11px;line-height:1.9;color:var(--t2)">'+
+'<div style="font-weight:700;margin-bottom:2px;color:var(--txt)">&#x1F4CB; One-time setup (5 minutes):</div>'+
+'1. Go to <b>console.firebase.google.com</b> &#8594; Add project<br>'+
+'2. Name it (e.g. <b>alt-stock</b>) &#8594; Continue &#8594; Create project<br>'+
+'3. Click <b>Build</b> &#8594; <b>Realtime Database</b> &#8594; Create database<br>'+
+'4. Choose any location &#8594; Start in <b>test mode</b> &#8594; Enable<br>'+
+'5. Copy the URL shown (like <code>https://alt-stock-default-rtdb.firebaseio.com</code>)<br>'+
+'6. Paste it below and click <b>Save &amp; Connect</b>'+
+'</div>'+
+'<div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:4px">Firebase Database URL</div>'+
+'<input class="inp mono" id="firebase-url" value="'+fbUrl+'" placeholder="https://your-project-default-rtdb.firebaseio.com" style="font-size:11px;margin-bottom:6px"/>'+
+'<div style="font-size:10px;color:var(--t3);margin-bottom:10px">Paste only the base URL — no path at the end.</div>'+
+'<div style="display:flex;gap:8px;margin-bottom:8px">'+
+'<button class="btn bp" onclick="saveSheetSetup()" style="flex:1;font-weight:700">&#x26A1; Save &amp; Connect</button>'+
+'<button class="btn bs" onclick="testFirebaseConnection()" style="flex:1">&#x2713; Test</button>'+
+'</div>'+
+'<div id="gas-status" style="font-size:11px;min-height:16px;margin-bottom:10px"></div>'+
 '<div style="display:grid;gap:6px">'+
-'<button class="btn bsuc bfl" onclick="syncToCloud()">&#x2191; Push to Google Sheets</button>'+
-'<button class="btn bp bfl" onclick="syncFromCloud()">&#x2193; Pull from Google Sheets</button>'+
+'<button class="btn bsuc bfl" onclick="syncToCloud()">&#x2191; Push All Data to Firebase</button>'+
+'<button class="btn bp bfl" onclick="syncFromCloud()">&#x2193; Pull Data from Firebase</button>'+
 '<button class="btn" onclick="forceRepairStock()" style="background:linear-gradient(135deg,#D97706,#F59E0B);color:white;font-weight:800">&#x1F527; Repair Stock from Ledger</button>'+
 '</div>'+
-'<div style="background:white;border-radius:8px;padding:10px;margin-top:10px;font-size:11px;color:var(--t2);line-height:1.8">'+
-'<div style="font-weight:800;margin-bottom:4px">How to setup Google Sheets:</div>'+
-'1. Open <strong>script.google.com</strong> &#x2192; Click <strong>"New project"</strong><br>'+
-'2. Delete the sample code &#x2192; Paste the GAS code (given to you separately)<br>'+
-'3. Click <strong>"Deploy"</strong> &#x2192; <strong>"New deployment"</strong><br>'+
-'4. Type: <strong>"Web app"</strong> &#x2192; Execute as: <strong>"Me"</strong> &#x2192; Access: <strong>"Anyone"</strong><br>'+
-'5. Click <strong>"Deploy"</strong> &#x2192; Copy the URL &#x2192; Paste above &#x2192; Save &#x2192; Test'+
+'<div style="font-size:10px;color:var(--t3);margin-top:8px">Last sync: '+lastSync+'</div>'+
 '</div>'+
-'</div>'+
-/* ── Bulk Delete / Danger Zone ── */
 '<div style="background:#FEF2F2;border:2px solid #FCA5A5;border-radius:12px;padding:14px;margin-bottom:12px">'+
 '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
 '<span style="font-size:20px">&#x1F9F9;</span>'+
-'<div style="font-size:14px;font-weight:900;color:#991B1B">Bulk Delete (Danger Zone)</div>'+
+'<div style="font-size:14px;font-weight:900;color:#DC2626">Danger Zone</div>'+
 '</div>'+
-'<div style="font-size:11px;color:#B91C1C;margin-bottom:12px;line-height:1.6">Delete all records of a specific type at once. Changes push to Google Sheets automatically. <strong>Take a backup first.</strong></div>'+
+'<div style="font-size:11px;color:#7F1D1D;margin-bottom:10px">These actions permanently delete data.</div>'+
 '<div style="display:grid;gap:8px">'+
-'<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:10px;padding:10px 12px;border:1.5px solid #FCA5A5">'+
-'<div><div style="font-size:13px;font-weight:800;color:#1F2937">&#x1F4E5; Inward Records</div><div style="font-size:11px;color:#6B7280" id="cnt-inward"></div></div>'+
-'<button onclick="bulkDelete(\'inward\')" style="background:#DC2626;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer">&#x1F5D1; Delete All</button>'+
-'</div>'+
-'<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:10px;padding:10px 12px;border:1.5px solid #FCA5A5">'+
-'<div><div style="font-size:13px;font-weight:800;color:#1F2937">&#x1F4CB; Order Forms</div><div style="font-size:11px;color:#6B7280" id="cnt-orders"></div></div>'+
-'<button onclick="bulkDelete(\'orders\')" style="background:#DC2626;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer">&#x1F5D1; Delete All</button>'+
-'</div>'+
-'<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:10px;padding:10px 12px;border:1.5px solid #FCA5A5">'+
-'<div><div style="font-size:13px;font-weight:800;color:#1F2937">&#x1F9FE; Bills</div><div style="font-size:11px;color:#6B7280" id="cnt-bills"></div></div>'+
-'<button onclick="bulkDelete(\'bills\')" style="background:#DC2626;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer">&#x1F5D1; Delete All</button>'+
-'</div>'+
-'<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:10px;padding:10px 12px;border:1.5px solid #FCA5A5">'+
-'<div><div style="font-size:13px;font-weight:800;color:#1F2937">&#x1F4D2; Ledger Entries</div><div style="font-size:11px;color:#6B7280" id="cnt-entries"></div></div>'+
-'<button onclick="bulkDelete(\'entries\')" style="background:#DC2626;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer">&#x1F5D1; Delete All</button>'+
-'</div>'+
-'<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:10px;padding:10px 12px;border:1.5px solid #FCA5A5">'+
-'<div><div style="font-size:13px;font-weight:800;color:#1F2937">&#x1F3AF; Leads</div><div style="font-size:11px;color:#6B7280" id="cnt-leads"></div></div>'+
-'<button onclick="bulkDelete(\'leads\')" style="background:#DC2626;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer">&#x1F5D1; Delete All</button>'+
-'</div>'+
-'<div style="background:#7F1D1D;border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between">'+
-'<div><div style="font-size:13px;font-weight:900;color:white">&#x2622;&#xFE0F; ALL Business Data</div><div style="font-size:11px;color:rgba(255,255,255,.7)">Orders + Bills + Inward + Ledger + Leads</div></div>'+
-'<button onclick="bulkDelete(\'all\')" style="background:#FEF2F2;color:#7F1D1D;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:900;cursor:pointer">&#x26A0; Wipe All</button>'+
-'</div>'+
-'</div>'+
-'<div style="font-size:11px;color:#B91C1C;margin-top:10px;padding:8px;background:white;border-radius:8px;line-height:1.7">'+
-'&#x1F4A1; <strong>Why do entries come back?</strong> If another phone/tab is open with old data and syncs, it can push the old data back to Google Sheets. Fix: after deleting here, have all other phones tap 🔄 Refresh or reload the app.'+
+'<button class="btn" style="background:#DC2626;color:white;font-weight:700" onclick="clearAllDataConfirm()">&#x1F5D1; Clear ALL Data</button>'+
 '</div>'+
 '</div>';
-
-/* Fill counts after render */
-const _fillCounts=()=>{
-const orders=STATE.orders?.filter(x=>!x._deleted)||[];
-const bills=STATE.bills?.filter(x=>!x._deleted)||[];
-const entries=(STATE.entries||[]).filter(x=>!x._deleted);
-const leads=(STATE.leads||[]).filter(x=>!x._deleted);
-const inward=entries.filter(e=>['mill','jobwork','exchange'].includes(e.type));
-const ci=el('cnt-inward'),co=el('cnt-orders'),cb=el('cnt-bills'),ce=el('cnt-entries'),cl=el('cnt-leads');
-if(ci)ci.textContent=inward.length+' entries';
-if(co)co.textContent=orders.length+' records';
-if(cb)cb.textContent=bills.length+' bills';
-if(ce)ce.textContent=entries.length+' entries (stock movements)';
-if(cl)cl.textContent=leads.length+' leads';
-};
-_fillCounts();
 }
 async function bulkDelete(type){
 if(STATE.user?.role!=='admin'){toast('Admin only','er');return;}
@@ -9703,6 +9681,294 @@ function forceRepairStock(){
   try{renderItems();}catch(e){}
   toast('✅ Stock rebuilt from '+STATE.entries.length+' ledger entries','ok');
 }
+function saveSheetSetup(){
+const fbUrl=(el('firebase-url')?.value||'').trim().replace(/\/$/,'');
+if(!fbUrl){toast('Paste your Firebase Database URL','er');return;}
+STATE.settings.firebaseUrl=fbUrl;
+FIREBASE_URL=fbUrl;
+lsSave('vs_settings',STATE.settings);
+toast('Saved — connecting...','ok');
+initFirebaseListener();
+}
+function saveFirebaseSetup(){saveSheetSetup();}
+function showGASScriptModal(){
+showMod('m-gas-script');
+const ta=el('gas-script-ta');
+if(ta)ta.value=getGASScript();
+}
+function getGASScript(){
+return `// ============================================================
+// ALT Stock — Google Apps Script
+// Paste this entire script into your Google Sheet's
+// Script Editor (Extensions > Apps Script), then deploy.
+// ============================================================
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const action = data.action;
+    if (action === 'saveAll')      return saveAll(data);
+    if (action === 'getAll')       return getAll();
+    if (action === 'login')        return loginUser(data);
+    if (action === 'saveSettings') return saveSettingsOnly(data);
+    return respond({ error: 'Unknown action: ' + action });
+  } catch (err) {
+    return respond({ error: err.toString() });
+  }
+}
+
+function doGet() {
+  return respond({ status: 'ALT Stock script is running', time: new Date().toISOString() });
+}
+
+function respond(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ── Sheet helpers ──────────────────────────────────────────
+function ss() { return SpreadsheetApp.getActiveSpreadsheet(); }
+
+function getSheet(name) {
+  return ss().getSheetByName(name) || ss().insertSheet(name);
+}
+
+function setHeaders(sheet, headers, color) {
+  sheet.clearContents();
+  const r = sheet.getRange(1, 1, 1, headers.length);
+  r.setValues([headers]);
+  r.setFontWeight('bold').setFontColor('#FFFFFF').setBackground(color);
+  sheet.setFrozenRows(1);
+}
+
+function autoResize(sheet) {
+  if (sheet.getLastColumn() > 0)
+    sheet.autoResizeColumns(1, sheet.getLastColumn());
+}
+
+function fmt(ts) {
+  if (!ts) return '';
+  try { return new Date(ts).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }); }
+  catch(e) { return String(ts); }
+}
+
+// ── Internal JSON storage (_Data tab) ─────────────────────
+const DATA_KEYS = [
+  'items','entries','customers','brokers','suppliers','users',
+  'orders','bills','payments','jobWork','leads','flaggedEntries',
+  'taskTemplates','taskInstances','staffLeave','recurringLeads','settings'
+];
+
+function saveJsonData(data) {
+  const sheet = getSheet('_Data');
+  setHeaders(sheet, ['Key','JSON Data','Records','Last Updated'], '#374151');
+  const rows = DATA_KEYS
+    .filter(k => data[k] !== undefined)
+    .map(k => {
+      const v = data[k];
+      return [k, JSON.stringify(v), Array.isArray(v) ? v.length : 1, new Date().toISOString()];
+    });
+  if (rows.length) sheet.getRange(2, 1, rows.length, 4).setValues(rows);
+}
+
+function readJsonData() {
+  const sheet = ss().getSheetByName('_Data');
+  if (!sheet || sheet.getLastRow() < 2) return {};
+  const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, 2).getValues();
+  const result = {};
+  rows.forEach(([key, json]) => {
+    if (key && json) { try { result[key] = JSON.parse(json); } catch(e) {} }
+  });
+  return result;
+}
+
+// ── SAVE ALL ──────────────────────────────────────────────
+function saveAll(data) {
+  saveJsonData(data);
+  if (data.users)     writeUsers(data.users);
+  if (data.items)     writeStock(data.items);
+  if (data.customers) writeCustomers(data.customers);
+  if (data.orders)    writeOrders(data.orders);
+  if (data.payments)  writePayments(data.payments);
+  if (data.entries)   writeInward(data.entries);
+  if (data.leads)     writeLeads(data.leads);
+  if (data.settings)  writeSettings(data.settings);
+  return respond({ success: true, savedAt: new Date().toISOString() });
+}
+
+// ── GET ALL ───────────────────────────────────────────────
+function getAll() {
+  return respond(readJsonData());
+}
+
+// ── LOGIN ─────────────────────────────────────────────────
+function loginUser(data) {
+  const all = readJsonData();
+  const user = (all.users || []).find(u =>
+    u.username === data.username && !u._deleted
+  );
+  if (!user) return respond({ error: 'User not found' });
+  if (user.password !== data.password) return respond({ error: 'Wrong password' });
+  return respond({ user });
+}
+
+// ── SAVE SETTINGS ONLY ───────────────────────────────────
+function saveSettingsOnly(data) {
+  const all = readJsonData();
+  all.settings = data.settings;
+  saveJsonData(all);
+  if (data.settings) writeSettings(data.settings);
+  return respond({ success: true });
+}
+
+// ── READABLE SHEETS ───────────────────────────────────────
+
+function writeUsers(users) {
+  const sheet = getSheet('👤 Users');
+  setHeaders(sheet, ['Name','Username','Role','WhatsApp','Active','Added On'], '#4F46E5');
+  const rows = (users || []).filter(u => !u._deleted).map(u => [
+    u.name || '', u.username || '', u.role || '',
+    u.whatsapp || '', u.active !== false ? 'Yes' : 'No', fmt(u._ts)
+  ]);
+  if (rows.length) sheet.getRange(2, 1, rows.length, 6).setValues(rows);
+  autoResize(sheet);
+}
+
+function writeStock(items) {
+  const sheet = getSheet('📦 Stock');
+  setHeaders(sheet, ['Item Name','Category','Code','HSN','Rate (Rs)','Colour','Stock (Taka)','Stock (Mtrs)','Updated'], '#059669');
+  const rows = [];
+  (items || []).filter(i => !i._deleted).forEach(item => {
+    const colours = (item.colours || []).filter(c => !c._deleted);
+    if (colours.length) {
+      colours.forEach(c => rows.push([
+        item.name || '', item.category || '', item.code || '',
+        item.hsn || '', item.rate || 0, c.colour || '',
+        c.stock_taka || 0, c.stock_mtrs || 0, fmt(item._ts)
+      ]));
+    } else {
+      rows.push([item.name||'', item.category||'', item.code||'', item.hsn||'', item.rate||0, '-', 0, 0, fmt(item._ts)]);
+    }
+  });
+  if (rows.length) sheet.getRange(2, 1, rows.length, 9).setValues(rows);
+  autoResize(sheet);
+}
+
+function writeCustomers(customers) {
+  const sheet = getSheet('👥 Customers');
+  setHeaders(sheet, ['Name','Phone','City','Market','GSTIN','Address','Active','Added On'], '#0891B2');
+  const rows = (customers || []).filter(c => !c._deleted).map(c => [
+    c.name||'', c.phone||'', c.city||'', c.market||'',
+    c.gstin||'', c.address||'', c.active!==false?'Yes':'No', fmt(c._ts)
+  ]);
+  if (rows.length) sheet.getRange(2, 1, rows.length, 8).setValues(rows);
+  autoResize(sheet);
+}
+
+function writeOrders(orders) {
+  const sheet = getSheet('🛒 Orders');
+  setHeaders(sheet, ['Order No','Date','Customer','Phone','Items','Total Taka','Total Mtrs','Status','Salesman','Created'], '#D97706');
+  const rows = (orders || []).filter(o => !o._deleted).map(o => {
+    const itms = (o.items || []);
+    const summary = itms.map(i => (i.name||'') + ' ' + (i.colour||'') + ' (' + (i.taka||0) + 'tk)').join(' | ');
+    const taka = itms.reduce((s,i) => s+(i.taka||0), 0);
+    const mtrs = itms.reduce((s,i) => s+(i.meters||i.mtrs||0), 0);
+    return [o.orderNo||'', o.date||'', o.customerName||'', o.customerPhone||'',
+            summary, taka, mtrs, o.status||'Pending', o.salesman||'', fmt(o._ts)];
+  });
+  if (rows.length) sheet.getRange(2, 1, rows.length, 10).setValues(rows);
+  autoResize(sheet);
+}
+
+function writePayments(payments) {
+  const sheet = getSheet('💰 Payments');
+  setHeaders(sheet, ['Date','Customer','Amount (Rs)','Type','Reference','Notes','Entered On'], '#7C3AED');
+  const rows = (payments || []).filter(p => !p._deleted).map(p => [
+    p.date||'', p.customerName||'', p.amount||0,
+    p.type||'', p.ref||'', p.notes||'', fmt(p._ts)
+  ]);
+  if (rows.length) sheet.getRange(2, 1, rows.length, 7).setValues(rows);
+  autoResize(sheet);
+}
+
+function writeInward(entries) {
+  const sheet = getSheet('📥 Inward');
+  setHeaders(sheet, ['Voucher No','Date','Supplier','Item','Colour','Taka','Mtrs','Rate','Type','Created'], '#0891B2');
+  const rows = (entries || []).filter(e => !e._deleted).map(e => [
+    e.voucherNo||e.inwardNo||'', e.date||'', e.supplierName||e.party||'',
+    e.itemName||'', e.colour||'', e.taka||0, e.meters||e.mtrs||0,
+    e.rate||0, e.type||'', fmt(e._ts)
+  ]);
+  if (rows.length) sheet.getRange(2, 1, rows.length, 10).setValues(rows);
+  autoResize(sheet);
+}
+
+function writeLeads(leads) {
+  const sheet = getSheet('🎯 Leads');
+  setHeaders(sheet, ['Name','Phone','City','Market','Interest','Status','Salesman','Follow Up','Created'], '#E11D48');
+  const rows = (leads || []).filter(l => !l._deleted).map(l => [
+    l.name||'', l.phone||'', l.city||'', l.market||'',
+    l.interest||'', l.status||'', l.salesman||'', l.followUp||'', fmt(l._ts)
+  ]);
+  if (rows.length) sheet.getRange(2, 1, rows.length, 9).setValues(rows);
+  autoResize(sheet);
+}
+
+function writeSettings(settings) {
+  const sheet = getSheet('⚙️ Settings');
+  setHeaders(sheet, ['Setting','Value'], '#374151');
+  const HIDE = ['recoveryPinHash','recoveryFileTokenHash','installCode'];
+  const rows = Object.entries(settings || {})
+    .filter(([k]) => !HIDE.includes(k))
+    .map(([k,v]) => [k, typeof v === 'object' ? JSON.stringify(v) : String(v)]);
+  if (rows.length) sheet.getRange(2, 1, rows.length, 2).setValues(rows);
+  autoResize(sheet);
+}`;}
+function copyGASScript(){
+const s=getGASScript();
+if(navigator.clipboard){navigator.clipboard.writeText(s).then(()=>toast('Script copied!','ok')).catch(()=>copyFallback(s));}
+else copyFallback(s);
+}
+function copyFallback(s){
+const ta=document.createElement('textarea');
+ta.value=s;ta.style.position='fixed';ta.style.opacity='0';
+document.body.appendChild(ta);ta.select();document.execCommand('copy');
+document.body.removeChild(ta);toast('Script copied!','ok');
+}
+let _fbEventSource=null;
+function initFirebaseListener(){
+  if(!FIREBASE_URL)return;
+  if(_fbEventSource){try{_fbEventSource.close();}catch(e){}  _fbEventSource=null;}
+  try{
+    _fbEventSource=new EventSource(FIREBASE_URL+'/altstock.json');
+    _fbEventSource.addEventListener('put',function(e){
+      try{
+        if(window._saveLock||window._syncRunning)return;
+        const msg=JSON.parse(e.data);
+        const d=msg.data;
+        if(!d||typeof d!=='object'||!d.items)return;
+        const cloudDate=d._savedAt?new Date(d._savedAt):new Date(0);
+        const localDate=STATE.settings?.lastSync?new Date(STATE.settings.lastSync):new Date(0);
+        if(cloudDate<=localDate&&localDate.getTime()>0)return;
+        applyCloudData(d,true);
+        refreshCurrentView();
+        setLiveStatus('live');
+      }catch(err){}
+    });
+    _fbEventSource.onopen=function(){setLiveStatus('live');console.log('Firebase connected');};
+    _fbEventSource.onerror=function(){setLiveStatus('off');};
+  }catch(err){console.warn('Firebase listener error:',err);}
+}
+function refreshCurrentView(){
+  try{
+    const cur=window._currentNav||'';
+    if(cur==='tasks'){try{renderMyTasks();}catch(e){} try{renderAllTasks();}catch(e){}}
+    else if(cur==='dash'){try{renderDash();}catch(e){}}
+    else if(cur==='sales'){try{renderOrders();}catch(e){}}
+    else if(cur==='leads'){try{renderLeads();}catch(e){}}
+  }catch(e){}
+}
 function saveGasUrl(){
 const url=(el('gas-url')?.value||'').trim();
 STATE.settings.gasUrl=url;
@@ -9710,66 +9976,73 @@ GAS_URL=url;
 lsSave('vs_settings',STATE.settings);
 toast('GAS URL saved','ok');
 }
-async function testGasConnection(){
-const url=STATE.settings.gasUrl; if(!url){toast('Enter GAS URL first','er');return;}
-const s=el('gas-status'); if(s) s.innerHTML='<span style="color:var(--Ad)">Testing...</span>';
+async function testGasConnection(){testFirebaseConnection();}
+async function testFirebaseConnection(){
+const url=(el('firebase-url')?.value||STATE.settings.firebaseUrl||'').trim().replace(/\/$/,'');
+if(!url){toast('Paste Firebase URL first','er');return;}
+const s=el('gas-status');
+if(s)s.innerHTML='<span style="color:var(--Ad)">Testing...</span>';
 try{
-const r=await fetch(url+'?action=ping',{method:'GET',redirect:'follow'});
-const text=await r.text();
-let d; try{d=JSON.parse(text);}catch(e){d={error:'Non-JSON response: '+text.slice(0,100)};}
-if(d.status==='ok'){
-if(s) s.innerHTML='<span style="color:var(--Gd)">&#x2705; Connected! '+d.ts+'</span>';
-toast('Connected to Google Sheets','ok');
-}else{
-if(s) s.innerHTML='<span style="color:var(--Rd)">&#x274C; '+(d.error||'Check your GAS URL and permissions')+'</span>';
-}
+  const r=await fetch(url+'/altstock/_ping.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({t:Date.now()})});
+  if(r.ok){
+    if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Connected to Firebase!</span>';
+    toast('Firebase connected','ok');
+  }else{
+    if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; HTTP '+r.status+' — Check database is in test mode</span>';
+  }
 }catch(e){
-if(s) s.innerHTML='<span style="color:var(--Rd)">&#x274C; '+e.message+'</span>';
-toast('Connection failed','er');
+  if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; Cannot reach Firebase. Check URL.</span>';
 }
 }
 async function syncToCloud(){
-const url=STATE.settings.gasUrl; if(!url){toast('Set GAS URL first','er');return;}
-const s=el('gas-status'); if(s) s.innerHTML='<span style="color:var(--Ad)">Syncing to Google Sheets...</span>';
-const payload={
-items:STATE.items, entries:STATE.entries, customers:STATE.customers,
-brokers:STATE.brokers, suppliers:STATE.suppliers, users:STATE.users,
-orders:STATE.orders, bills:STATE.bills, jobWork:STATE.jobWork,
-leads:STATE.leads||[], flaggedEntries:STATE.flaggedEntries||[],
-settings:STATE.settings
-};
+if(!FIREBASE_URL&&!GAS_URL){toast('Set Firebase URL in Admin → Database first','er');return;}
+const s=el('gas-status');if(s)s.innerHTML='<span style="color:var(--Ad)">Pushing...</span>';
 try{
-const formData=new URLSearchParams();
-formData.append('action','syncAll');
-formData.append('data',JSON.stringify(payload));
-const r=await fetch(url,{
-method:'POST', redirect:'follow',
-body:formData
-});
-const text=await r.text();
-let d; try{d=JSON.parse(text);}catch(e){d={ok:text.includes('ok')||r.ok};}
-STATE.settings.lastSync=new Date().toLocaleString();
-lsSave('vs_settings',STATE.settings);
-if(s) s.innerHTML='<span style="color:var(--Gd)">&#x2705; Synced at '+STATE.settings.lastSync+'</span>';
-toast('All data synced to Google Sheets','ok');
-}catch(e){
-STATE.settings.lastSync=new Date().toLocaleString();
-lsSave('vs_settings',STATE.settings);
-if(s) s.innerHTML='<span style="color:var(--Ad)">Sent — verify with Test Connection</span>';
-toast('Data sent to Google Sheets','ok');
-}
+  window._autoSyncTimer&&clearTimeout(window._autoSyncTimer);
+  const nowTs=new Date().toISOString();
+  const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
+    brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
+    orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],
+    jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],
+    taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],
+    staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
+    custGroups:STATE.custGroups||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],
+    settings:{...STATE.settings,lastSync:nowTs},_savedAt:nowTs};
+  let ok=false;
+  if(FIREBASE_URL){
+    const r=await fetch(FIREBASE_URL+'/altstock.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl)});
+    ok=r.ok;
+  }else if(GAS_URL){
+    const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl})});
+    const j=await r.json().catch(()=>null);ok=j&&!j.error;
+  }
+  if(ok){
+    STATE.settings.lastSync=nowTs;lsSave('vs_settings',STATE.settings);
+    if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pushed at '+nowTs.slice(11,19)+'</span>';
+    toast('Pushed to Firebase','ok');setLiveStatus('live');
+  }else{
+    if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; Push failed — check connection</span>';
+  }
+}catch(e){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; '+e.message+'</span>';}
 }
 async function syncFromCloud(){
-  const url=STATE.settings.gasUrl||GAS_URL; if(!url){toast('Set GAS URL in Admin → Database first','er');return;}
-  const ok=await appConfirm('Pull from Google Sheets?','Overwrites local data.','?','Pull','ok');if(!ok)return;
-  const s=el('gas-status');if(s)s.innerHTML='<span style="color:var(--Ad)">Downloading...</span>';
-  try{
-    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'})});
-    const text=await r.text();let d;
-    try{d=JSON.parse(text);}catch(e){if(s)s.innerHTML='<span style="color:var(--Rd)">Bad response. Push All Data first.</span>';return;}
-    if(d&&d.items){applyCloudData(d);if(s)s.innerHTML='<span style="color:var(--Gd)">Pulled at '+new Date().toLocaleString()+'</span>';toast('Pulled from Google Sheets','ok');}
-    else{if(s)s.innerHTML='<span style="color:var(--Rd)">No data found. Go Admin > Database > Push All Data first.</span>';toast('No data','er');}
-  }catch(e){if(s)s.innerHTML='<span style="color:var(--Rd)">'+e.message+'</span>';toast('Pull failed','er');}
+if(!FIREBASE_URL&&!GAS_URL){toast('Set Firebase URL in Admin → Database first','er');return;}
+const ok=await appConfirm('Pull from Firebase?','Merges cloud data into local. Newer records win.','?','Pull','ok');if(!ok)return;
+const s=el('gas-status');if(s)s.innerHTML='<span style="color:var(--Ad)">Downloading...</span>';
+try{
+  let d;
+  if(FIREBASE_URL){
+    const r=await fetch(FIREBASE_URL+'/altstock.json');
+    if(!r.ok){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; Firebase error: '+r.status+'</span>';return;}
+    d=await r.json();
+  }else{
+    d=await api('getAll');
+  }
+  if(!d||!d.items){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; No data in Firebase yet — push first</span>';return;}
+  applyCloudData(d,true);persist();
+  if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pulled and merged successfully</span>';
+  toast('Data pulled from Firebase','ok');refreshCurrentView();
+}catch(e){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; '+e.message+'</span>';}
 }
 function saveJsonBinCreds(){
 STATE.settings.jsonbinId=(el('jb-bin')?.value||'').trim();
@@ -9904,23 +10177,26 @@ event.target.value='';
 }
 async function silentPullGAS(){
 try{
-const d=await api('getAll');
+let d;
+if(FIREBASE_URL){
+  const r=await fetch(FIREBASE_URL+'/altstock.json');
+  if(!r.ok)return;
+  d=await r.json();
+}else{
+  d=await api('getAll');
+}
 if(!d||!d.items) return;
-/* ── Force-reload check ── */
 const cloudFrt=d.settings?.forceReloadToken||'';
 const myFrt=lsGet('vs_frt')||'';
 if(cloudFrt&&cloudFrt!==myFrt){
-/* Store the token so we don't reload twice */
 lsSave('vs_frt',cloudFrt);
-/* Apply the fresh data first */
 try{applyCloudData(d,true);}catch(e){}
-/* Show a 3-second countdown toast then reload */
 const _t=el('tst');
 if(_t){_t.textContent='🔄 Admin cleared data — reloading in 3s...';_t.className='on er';}
 setTimeout(()=>window.location.reload(),3000);
 return;
 }
-const cloudDate=d.syncedAt?new Date(d.syncedAt):new Date(0);
+const cloudDate=(d._savedAt||d.syncedAt)?new Date(d._savedAt||d.syncedAt):new Date(0);
 const localDate=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);
 if(cloudDate>localDate){
 applyCloudData(d,true);
@@ -11153,6 +11429,8 @@ const TASK_PRIORITY_COLORS={High:'#DC2626',Medium:'#D97706',Low:'#16A34A'};
 const TASK_CAT_ICONS={Accounting:'📊',Dispatch:'📦','Mill/Stock':'🧵',Sales:'🎯',Admin:'🛡',Compliance:'📋',Other:'📌'};
 function initTasksScreen(){
 try{
+/* Pull latest from cloud so task status is always current */
+if(GAS_URL&&!window._syncRunning)silentPullGAS().then(()=>{renderMyTasks();renderAllTasks();}).catch(()=>{});
 const isAdmin=STATE.user?.role==='admin';
 ['task-tpl-btn','task-adhoc-btn','ttab-all','ttab-tpl','ttab-lv','ttab-rep'].forEach((id2)=>{
 const el2=document.getElementById(id2);
@@ -13222,6 +13500,34 @@ el('tpl-title').textContent='Add One-Off Task';el('tpl-subtitle').textContent='O
 <div class="shh"><div class="hr"><div><h3>&#8652; Merge SKUs</h3><p class="sub">Combine two colour variants into one</p></div><button class="btn bgh bsm" onclick="hideMod('m-merge-sku')">&#10005;</button></div></div>
 <div class="shb" id="m-merge-sku-body" style="padding:16px;overflow-y:auto"></div>
 <div style="padding:12px 16px;border-top:1px solid var(--br);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0"><button class="btn" onclick="hideMod('m-merge-sku')">Cancel</button><button class="btn bga" onclick="doMergeSku()">Merge SKUs</button></div>
+</div>
+</div>
+
+<div id="m-gas-script" class="mod" style="display:none">
+<div class="mod-box" style="max-width:780px;max-height:90vh;display:flex;flex-direction:column">
+<div class="mod-hdr"><span>📋 Google Apps Script</span><button onclick="hideMod('m-gas-script')" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--txt)">&#10005;</button></div>
+<div style="padding:1rem 1.2rem;overflow-y:auto;flex:1">
+<div style="background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:1rem;margin-bottom:1rem">
+<p style="margin:0 0 .5rem;font-weight:600;color:var(--Pd)">Follow these steps to connect your Google Sheet:</p>
+<ol style="margin:0;padding-left:1.2rem;line-height:2">
+<li>Open your Google Sheet &#8594; click <b>Extensions</b> &#8594; <b>Apps Script</b></li>
+<li>Delete any existing code in the editor</li>
+<li>Click <b>Copy Script</b> below and paste it into the editor</li>
+<li>Click Save (Ctrl+S), give the project a name (e.g. ALT Stock)</li>
+<li>Click <b>Deploy</b> &#8594; <b>New deployment</b></li>
+<li>Select type: <b>Web app</b></li>
+<li>Set <b>Execute as: Me</b> and <b>Who has access: Anyone</b></li>
+<li>Click <b>Deploy</b> &#8594; copy the <b>Web App URL</b> (ends in /exec)</li>
+<li>Paste that URL into <b>Step 3</b> on the Database tab and save</li>
+<li>Click <b>Test Connection</b> to verify everything works</li>
+</ol>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+<span style="font-weight:600;font-size:.9rem">Apps Script Code</span>
+<button onclick="copyGASScript()" style="background:var(--Pd);color:#fff;border:none;border-radius:6px;padding:.4rem 1rem;cursor:pointer;font-size:.85rem">&#128203; Copy Script</button>
+</div>
+<textarea id="gas-script-ta" readonly style="width:100%;height:360px;font-family:monospace;font-size:.78rem;background:#1e1e2e;color:#cdd6f4;border:1px solid var(--bdr);border-radius:8px;padding:.8rem;resize:vertical;box-sizing:border-box"></textarea>
+</div>
 </div>
 </div>
 </body>
