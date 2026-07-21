@@ -32,7 +32,7 @@
 <div id="tst"></div>
 <div id="cov"><div class="ccard"><div class="cicn" id="ci"></div><div class="ctit" id="ct"></div><div class="cmsg" id="cm"></div><div class="cbtns"><button class="cno" id="cn">Cancel</button><button class="cyes" id="cy">Confirm</button></div></div>
 </div>
-<div id="ls"><div class="lg"></div><div class="lglow"></div><div class="lcard"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p>Amrit Laxmi Textile · Surat</p></div><div id="lf"><div class="lf"><label>Username</label><input type="text" id="lu" placeholder="Enter username" autocomplete="username"/></div><div class="lf"><label>Password</label><input type="password" id="lp" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div><button class="lbtn" onclick="doLogin()">Sign In →</button><div class="lerr" id="le"></div><div style="display:flex;justify-content:space-between;margin-top:14px"><button onclick="showForgotUsername()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Username?</button><button onclick="showForgotPassword()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Password?</button></div><div style="margin-top:14px;background:rgba(255,165,0,0.15);border-radius:10px;padding:12px;border:1.5px solid rgba(255,165,0,0.4)"><div style="font-size:11px;color:rgba(255,255,255,0.9);margin-bottom:8px;text-align:center;font-weight:700">&#x1F4F1; First time on this phone / New device?</div><button onclick="loginScreenSyncGAS()" style="width:100%;background:linear-gradient(135deg,#1D4ED8,#3B82F6);color:white;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 15px rgba(29,78,216,.4)">&#x1F4CA; Load Data from Google Sheets</button><div id="ls-sync-status" style="font-size:12px;color:rgba(255,255,255,0.9);margin-top:8px;text-align:center;min-height:18px;font-weight:600"></div><div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:6px;text-align:center">Tap this button to load all your data before logging in</div></div><div style="text-align:center;margin-top:10px"><button onclick="showEmergencyRecovery()" style="background:none;border:none;color:rgba(255,80,80,0.7);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline">&#x1F6A8; Admin locked out?</button></div><div id="login-version" style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3)"></div></div><div id="of" class="hid"><p style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:20px;line-height:1.6">📱 New device detected!<br>OTP sent to admin WhatsApp.<br>Ask admin to share the code.</p><div class="lf"><label>One-Time Password</label><input type="number" class="otp-inp" id="oi" placeholder="000000" maxlength="6"/></div><button class="lbtn" onclick="doOTP()">Verify OTP →</button><div class="lerr" id="oe"></div><button style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit" onclick="showEl('lf');hideEl('of')">← Back</button></div></div>
+<div id="ls"><div class="lg"></div><div class="lglow"></div><div class="lcard"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p>Amrit Laxmi Textile · Surat</p></div><div id="lf"><div class="lf"><label>Username</label><input type="text" id="lu" placeholder="Enter username" autocomplete="username"/></div><div class="lf"><label>Password</label><input type="password" id="lp" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div><button class="lbtn" onclick="doLogin()">Sign In →</button><div class="lerr" id="le"></div><div style="display:flex;justify-content:space-between;margin-top:14px"><button onclick="showForgotUsername()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Username?</button><button onclick="showForgotPassword()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Password?</button></div><div style="text-align:center;margin-top:10px"><button onclick="showEmergencyRecovery()" style="background:none;border:none;color:rgba(255,80,80,0.7);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline">&#x1F6A8; Admin locked out?</button></div><div id="login-version" style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3)"></div></div><div id="setup-screen" style="display:none;width:100%"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p style="color:rgba(255,255,255,0.6);font-size:13px">First Time Setup — Create Your Admin Account</p></div><div id="lf"><div class="lf"><label>Your Full Name</label><input type="text" id="setup-name" placeholder="e.g. Neer Jain" autocomplete="name"/></div><div class="lf"><label>Choose Username</label><input type="text" id="setup-user" placeholder="e.g. neer" autocomplete="username" style="text-transform:lowercase"/></div><div class="lf"><label>Choose Password</label><input type="password" id="setup-pass" placeholder="Min. 6 characters" autocomplete="new-password"/></div><div class="lf"><label>Confirm Password</label><input type="password" id="setup-pass2" placeholder="Re-enter password" autocomplete="new-password"/></div><div class="lf" style="margin-top:6px"><label style="color:rgba(255,255,255,0.9)">Google Sheets URL <span style="color:rgba(255,255,255,0.4);font-weight:400">(optional — set up later in Admin → Database)</span></label><input type="url" id="setup-gas" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" style="font-size:11px"/><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;line-height:1.5">Paste your Google Sheets Web App URL here so your account saves to the cloud immediately. Without this, data is only on this device until you add it later.</div></div><button class="lbtn" onclick="createFirstAdmin()">✔ Create Admin Account →</button><div class="lerr" id="setup-err"></div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:12px;text-align:center;line-height:1.6">This creates the only admin account for ALT Stock.<br>Set up a Recovery PIN after logging in.</div><button onclick="showLoginForm()" style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit">← Back to Login</button></div></div><div id="of" class="hid"><p style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:20px;line-height:1.6">📱 New device detected!<br>OTP sent to admin WhatsApp.<br>Ask admin to share the code.</p><div class="lf"><label>One-Time Password</label><input type="number" class="otp-inp" id="oi" placeholder="000000" maxlength="6"/></div><button class="lbtn" onclick="doOTP()">Verify OTP →</button><div class="lerr" id="oe"></div><button style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit" onclick="showEl('lf');hideEl('of')">← Back</button></div></div>
 </div>
 <div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:12px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-recurring-visits"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div id="dash-mixed-sarees"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('pend',this)">Pending</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button><button class="tbb" onclick="salesTab('pay',this)">Payments</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div id="billst"></div></div><div class="tp" id="tp-pend"><div style="display:flex;gap:0;padding:8px 16px 0;border-bottom:1.5px solid #E5E4F0"><button class="sw on" id="pend-sub-pend" onclick="pendSubTab('pend')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Pending</button><button class="sw" id="pend-sub-done" onclick="pendSubTab('done')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Completed</button></div><div id="pendlst"></div><div id="donelst" style="display:none"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg" style="position:relative"><label>Customer</label><input type="text" class="inp" id="inv-cust-search" placeholder="Type customer name to search..." oninput="filterInvCusts()" onfocus="filterInvCusts()" autocomplete="off" style="font-size:14px;padding:10px 12px"/><input type="hidden" id="inv-cust-sel"/><div id="inv-cust-dd" style="display:none;position:absolute;left:0;right:0;top:100%;background:white;border:1.5px solid var(--br);border-radius:0 0 10px 10px;z-index:200;max-height:230px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.13)"></div></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div><div class="tp" id="tp-pay"><div class="srch"><span>🔍</span><input type="text" placeholder="Search payments by customer or bill no..." oninput="renderPayments(this.value)"/></div><div id="paylst"></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="openExchange()"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" id="inward-manual-btn" onclick="openManualStock()" style="display:none;border:1.5px solid rgba(217,119,6,.3);background:var(--Al)"><span class="qaico">✏️</span><div><div class="qalbl" style="color:var(--Ad)">Manual Entry</div><div class="qasub">Add/deduct balance</div></div></div></div></div><div class="stl" <div class="stl">Exchange Sarees</div>
 <div style="margin-bottom:8px"><select class="inp" id="exch-status-filter" onchange="renderExchangeList()" style="max-width:200px">
@@ -118,7 +118,8 @@ const DATA_VERSION=2;
   }catch(e){}
 })();
 // ═══════════════════════════════════════════════════════════════════════
-const GAS_URL='https://script.google.com/macros/s/AKfycbzpI5SkyAfuOaPybjS666eKaIMYfcvUJUDB_88yDc8rvgQ-hVHSDAqHJjRcpzHhOTxK/exec';
+let GAS_URL='';
+const OWNER_SETUP_HASH='292d8497dbee6cf4c66e9eb10c1f804fbffb96c4736ef5bb734c0e5bf3bb0f19';
 const el = id => document.getElementById(id);
 const escHtml = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const ls = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
@@ -361,7 +362,7 @@ companyName:'AMRIT LAXMI TEXTILE', gstin:'24AAXPJ5150B1ZU',
 address:'B-3 3022, REGENT TEXTILE MARKET, RING ROAD, SURAT-395002',
 phone:'9913866366', email:'amritlaxmitextiles@gmail.com',
 orderPrefix:'B/', inwardPrefix:'GRN/', nextInwardNo:1, discount:5, discountDays:45, nettDays:120,
-avgMtrPerTaka:90, avgMtrPerTP:45, adminWhatsApp:'919913866366', gasUrl:'https://script.google.com/macros/s/AKfycbzpI5SkyAfuOaPybjS666eKaIMYfcvUJUDB_88yDc8rvgQ-hVHSDAqHJjRcpzHhOTxK/exec',
+avgMtrPerTaka:90, avgMtrPerTP:45, adminWhatsApp:'919913866366', gasUrl:'',
 staffTypes:[
 {id:'salesman', name:'Salesman', color:'#4F46E5'},
 {id:'jr_accountant', name:'Junior Accountant', color:'#0891B2'},
@@ -435,6 +436,7 @@ STATE.orders=lsGet('vs_orders')||[];
 STATE.bills=lsGet('vs_bills')||[];
 STATE.payments=lsGet('vs_payments')||[];
 const s=lsGet('vs_settings'); if(s) STATE.settings={...STATE.settings,...s};
+GAS_URL=STATE.settings.gasUrl||'';
 STATE.leads=lsGet('vs_leads')||[];
 STATE.notifications=lsGet('vs_notifications')||[];
 STATE.flaggedEntries=lsGet('vs_flagged')||[];
@@ -602,16 +604,55 @@ try{
 }catch(e){}
 return _sha256pure(s)||s;
 }
+function showFirstTimeSetup(){
+el('lf').style.display='none';
+const of2=el('of'); if(of2) of2.style.display='none';
+const ss=el('setup-screen'); if(ss) ss.style.display='';
+setTimeout(()=>{const i=el('setup-name');if(i)i.focus();},100);
+}
+function showLoginForm(){
+el('lf').style.display='';
+const ss=el('setup-screen'); if(ss) ss.style.display='none';
+}
+async function createFirstAdmin(){
+const name=(el('setup-name')?.value||'').trim();
+const uname=(el('setup-user')?.value||'').trim().toLowerCase();
+const pass=(el('setup-pass')?.value||'');
+const pass2=(el('setup-pass2')?.value||'');
+const gasUrl=(el('setup-gas')?.value||'').trim();
+const err=el('setup-err');
+if(!name){err.textContent='Enter your full name.';return;}
+if(!uname||uname.length<3){err.textContent='Username must be at least 3 characters.';return;}
+if(!/^[a-z0-9_]+$/.test(uname)){err.textContent='Username: only letters, numbers, underscore.';return;}
+if(!pass||pass.length<6){err.textContent='Password must be at least 6 characters.';return;}
+if(pass!==pass2){err.textContent='Passwords do not match.';return;}
+err.textContent='Setting up your account...';
+const h=await sha256(pass);
+const admin={id:uid(),name:name,username:uname,password:h,role:'admin',active:true,orderPrefix:'B/'};
+STATE.users=[admin];
+if(gasUrl){STATE.settings.gasUrl=gasUrl;GAS_URL=gasUrl;lsSave('vs_settings',STATE.settings);}
+lsSave('vs_users',STATE.users);
+if(gasUrl){
+err.textContent='Saving to Google Sheets...';
+try{await hybridSaveAll(true);}catch(e){}
+}
+err.textContent='';
+toast('Admin account created! Welcome, '+name+'.','ok');
+loginOK(admin);
+}
 async function doLogin(){
 const user=el('lu').value.trim(), pass=el('lp').value;
 el('le').textContent='';
 if(!user||!pass){el('le').textContent='Enter username and password';return;}
+// Hidden first-time setup trigger: username=setup, password=owner code
+if(user.toLowerCase()==='setup'){
+const h=await sha256(pass);
+if(h===OWNER_SETUP_HASH){showFirstTimeSetup();return;}
+else{el('le').textContent='Invalid setup code.';return;}
+}
 const findUser=()=>STATE.users.find(u=>(u.username||'').toLowerCase()===user.toLowerCase());
 let found=findUser();
-if(!found&&STATE.users.length===0&&user.toLowerCase()==='admin'&&pass==='admin123'){
-found={id:uid(),name:'Admin',username:'admin',password:'admin123',role:'admin',active:true,whatsapp:STATE.settings.adminWhatsApp,orderPrefix:'B/'};
-STATE.users=[found]; lsSave('vs_users',STATE.users);
-}
+
 const s=el('ls-sync-status');
 if(!found){
   if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Step 1: Loading from Google Sheets...</span>';
@@ -5692,9 +5733,12 @@ c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Compa
 '<p class="ct3 sm" style="margin:4px 0 8px">All task logic uses office time, even when you travel</p>'+
 '</div>'+
 
-'<button class="btn bp bfl mt16" onclick="saveSettings()">Save Settings</button>'+
+'<div class="card mt12"><div class="fw8" style="margin-bottom:6px">🔒 Recovery Security</div><div class="xs ct3" style="margin-bottom:12px">Two-layer protection for "Admin Locked Out?". Set a PIN for quick access. Generate a Recovery File as a backup key — only you will have this file in the world. Both are needed to fully secure emergency recovery.</div><div style="font-size:12px;font-weight:700;margin-bottom:6px">Step 1 — Recovery PIN</div><div style="display:flex;gap:8px;align-items:flex-end"><div class="fg" style="flex:1"><label>Set Recovery PIN (4–8 digits)</label><input class="inp mono" id="s-rec-pin" type="password" placeholder="e.g. 2580" maxlength="8" inputmode="numeric"/></div><button class="btn bp" onclick="saveRecoveryPin()">Set PIN</button></div><div style="font-size:12px;font-weight:700;margin-top:14px;margin-bottom:6px">Step 2 — Recovery File</div><div class="xs ct3" style="margin-bottom:10px">This file is your master key. It is unique to your app — there is no other copy in the world. Download it and keep it somewhere safe (pen drive, personal phone, email to yourself). If you forget your PIN, this file unlocks recovery.</div><button class="btn bga bfl" onclick="generateRecoveryFile()">⬇ Generate &amp; Download Recovery File</button><div id="rec-pin-status" style="font-size:11px;margin-top:6px"></div></div>'+
+recPinStatusHtml()+'<button class="btn bp bfl mt16" onclick="saveSettings()">Save Settings</button>'+
 '<button class="btn bd bfl mt8" onclick="logout()">Logout</button>'+
 '<div style="height:20px"></div>';
+// Update recovery PIN status div after render
+setTimeout(()=>{const d=el('rec-pin-status');if(d)d.innerHTML=recPinStatusHtml().replace(/<div[^>]*>/,'').replace('</div>','');},0);
 }
 function saveSettings(){
 const nA=parseFloat(el('s-avg')?.value||'90')||90;
@@ -5739,7 +5783,7 @@ renderDbTab();
 }
 function saveDBUrl(){
 const url=(el('db-url')?.value||'').trim();
-STATE.settings.gasUrl=url; lsSet('vs_gasUrl',url); lsSave('vs_settings',STATE.settings);
+STATE.settings.gasUrl=url; GAS_URL=url; lsSet('vs_gasUrl',url); lsSave('vs_settings',STATE.settings);
 toast(url?'Database URL saved':'URL cleared','ok');
 }
 async function testDB(){ toast('Testing...'); const r=await api('ping'); r?toast('✅ Connected!','ok'):toast('❌ Connection failed. Check URL.','er'); }
@@ -9662,6 +9706,7 @@ function forceRepairStock(){
 function saveGasUrl(){
 const url=(el('gas-url')?.value||'').trim();
 STATE.settings.gasUrl=url;
+GAS_URL=url;
 lsSave('vs_settings',STATE.settings);
 toast('GAS URL saved','ok');
 }
@@ -9715,7 +9760,7 @@ toast('Data sent to Google Sheets','ok');
 }
 }
 async function syncFromCloud(){
-  const url=STATE.settings.gasUrl||GAS_URL;
+  const url=STATE.settings.gasUrl||GAS_URL; if(!url){toast('Set GAS URL in Admin → Database first','er');return;}
   const ok=await appConfirm('Pull from Google Sheets?','Overwrites local data.','?','Pull','ok');if(!ok)return;
   const s=el('gas-status');if(s)s.innerHTML='<span style="color:var(--Ad)">Downloading...</span>';
   try{
@@ -10222,83 +10267,195 @@ hint.style.cssText='font-size:11px;color:var(--t3);margin-top:8px;text-align:cen
 hint.textContent='Your username is shown above. Contact admin if you need password reset.';
 res.appendChild(hint);
 }
+function recPinStatusHtml(){
+const p=STATE.settings.recoveryPinHash;
+const f=STATE.settings.recoveryFileTokenHash;
+const pLine=p?'✅ Recovery PIN is set.':'⚠️ No Recovery PIN — set one above.';
+const fLine=f?'✅ Recovery File has been generated.':'⚠️ No Recovery File — generate one below.';
+const col=p&&f?'#059669':'#D97706';
+return '<div style="font-size:11px;margin-top:8px;line-height:1.8;color:'+col+';font-weight:600">'+pLine+'<br>'+fLine+'</div>';
+}
+async function saveRecoveryPin(){
+const pin=(el('s-rec-pin')?.value||'').trim();
+if(!pin||pin.length<4){toast('PIN must be at least 4 digits','er');return;}
+if(!/^\d+$/.test(pin)){toast('PIN must be numbers only','er');return;}
+const hash=await sha256(pin);
+STATE.settings.recoveryPinHash=hash;
+lsSave('vs_settings',STATE.settings);
+if(el('s-rec-pin'))el('s-rec-pin').value='';
+renderSettingsForm();
+toast('Recovery PIN set ✅','ok');
+try{autoSyncCloud();}catch(e){}
+}
+
 async function showEmergencyRecovery(){
 showMod('m-recovery'); const m=el('m-recovery'); if(m) m.style.zIndex='1001';
-if(!STATE.users||STATE.users.length<=1){
-const c=el('recovery-body');if(c)c.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3)">Loading data from cloud...</div>';
-await loginScreenSyncGAS();
+renderRecoveryGate();
 }
+async function generateRecoveryFile(){
+const arr=new Uint8Array(32);
+crypto.getRandomValues(arr);
+const token=Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+const hash=await sha256(token);
+STATE.settings.recoveryFileTokenHash=hash;
+lsSave('vs_settings',STATE.settings);
+try{autoSyncCloud();}catch(e){}
+const payload={t:'ALT_RECOVERY',k:token,c:new Date().toISOString()};
+const encoded=btoa(JSON.stringify(payload));
+const lines=encoded.match(/.{1,64}/g)||[];
+const fileContent='-----BEGIN ALT RECOVERY KEY-----\n'+lines.join('\n')+'\n-----END ALT RECOVERY KEY-----\n';
+const blob=new Blob([fileContent],{type:'text/plain'});
+const url=URL.createObjectURL(blob);
+const a=document.createElement('a');
+a.href=url;
+const co=(STATE.settings.companyName||'ALT').replace(/[^A-Z0-9]/gi,'_').toUpperCase();
+a.download='RECOVERY_'+co+'.altrecovery';
+document.body.appendChild(a);a.click();document.body.removeChild(a);
+URL.revokeObjectURL(url);
+renderSettingsForm();
+toast('Recovery file downloaded! Store it safely.','ok');
+}
+async function verifyRecoveryFile(file){
+return new Promise(resolve=>{
+const reader=new FileReader();
+reader.onload=async e=>{
+try{
+const text=e.target.result||'';
+const m=text.match(/-----BEGIN ALT RECOVERY KEY-----([\s\S]+?)-----END ALT RECOVERY KEY-----/);
+if(!m){resolve(false);return;}
+const decoded=JSON.parse(atob(m[1].replace(/\s+/g,'')));
+if(decoded.t!=='ALT_RECOVERY'||!decoded.k){resolve(false);return;}
+const hash=await sha256(decoded.k);
+resolve(hash===STATE.settings.recoveryFileTokenHash);
+}catch(err){resolve(false);}
+};
+reader.onerror=()=>resolve(false);
+reader.readAsText(file);
+});
+}
+function renderRecoveryGate(){
+const c=el('recovery-body'); if(!c) return;
+const hasPIN=!!(STATE.settings.recoveryPinHash);
+const hasFile=!!(STATE.settings.recoveryFileTokenHash);
+c.innerHTML=
+'<div style="background:#FEF2F2;border:1.5px solid #FECACA;border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:#7F1D1D;line-height:1.7">'+
+'<strong>⚠️ Only for genuine admin lockout situations.</strong><br>If you are staff, close this and ask your admin for help.</div>'+
+(hasPIN
+?'<div style="background:white;border:1.5px solid var(--br);border-radius:10px;padding:16px">'+
+'<div style="font-size:14px;font-weight:800;margin-bottom:4px">🔒 Enter Recovery PIN</div>'+
+'<div style="font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6">Enter the Recovery PIN set by the admin to continue.</div>'+
+'<div class="fg"><label>Recovery PIN</label>'+
+'<input class="inp mono" id="rec-gate-input" type="password" placeholder="Enter PIN" inputmode="numeric" autocomplete="off" onkeydown="if(event.key===\'Enter\')submitRecoveryGate()"/></div>'+
+'<button class="btn bp bfl mt12" onclick="submitRecoveryGate()">Verify →</button>'+
+'<div id="rec-gate-err" style="font-size:12px;color:var(--Rd);margin-top:8px;min-height:18px;font-weight:600"></div>'+
+(hasFile
+?'<div style="margin-top:16px;border-top:1px solid var(--br);padding-top:12px">'+
+'<div style="font-size:12px;font-weight:700;margin-bottom:4px">Forgot your PIN?</div>'+
+'<div style="font-size:11px;color:var(--t3);margin-bottom:10px;line-height:1.6">Upload your Recovery File (.altrecovery) to bypass the PIN.</div>'+
+'<label class="btn bgh bfl" style="display:block;text-align:center;cursor:pointer">'+
+'📂 Upload Recovery File'+
+'<input type="file" accept=".altrecovery,.json" style="display:none" onchange="submitRecoveryFile(this)"/></label>'+
+'<div id="rec-file-err" style="font-size:12px;color:var(--Rd);margin-top:8px;min-height:18px;font-weight:600"></div>'+
+'</div>'
+:'<div style="margin-top:16px;border-top:1px solid var(--br);padding-top:12px">'+
+'<div style="font-size:11px;color:var(--t3);line-height:1.6">No Recovery File was generated. After logging in, go to <strong>Admin → Settings → Recovery Security</strong> to generate one.</div>'+
+'</div>')
++'</div>'
+:'<div style="background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:10px;padding:14px">'+
+'<div style="font-size:13px;font-weight:800;color:#92400E;margin-bottom:6px">⚠️ Recovery Not Configured</div>'+
+'<div style="font-size:12px;color:#92400E;line-height:1.7;margin-bottom:12px">No Recovery PIN or Recovery File has been set up. Log in as admin and go to <strong>Admin → Settings → Recovery Security</strong> to configure recovery protection.</div>'+
+'</div>'
+);
+setTimeout(()=>{const i=el('rec-gate-input');if(i)i.focus();},100);
+}
+async function submitRecoveryGate(){
+const input=(el('rec-gate-input')?.value||'').trim();
+const errEl=el('rec-gate-err');
+if(!input){if(errEl)errEl.textContent='Please enter your PIN.';return;}
+const hash=await sha256(input);
+const ok=hash===STATE.settings.recoveryPinHash;
+if(!ok){
+if(errEl)errEl.textContent='❌ Incorrect PIN. Try again.';
+const inp=el('rec-gate-input');
+if(inp){inp.value='';inp.focus();}
+return;
+}
+if(errEl)errEl.textContent='';
+await loadAndShowRecovery();
+}
+async function submitRecoveryFile(input){
+const file=input?.files?.[0];
+const errEl=el('rec-file-err');
+if(!file){return;}
+if(errEl)errEl.textContent='Checking file...';
+const ok=await verifyRecoveryFile(file);
+if(!ok){
+if(errEl)errEl.textContent='❌ Invalid or wrong Recovery File. Make sure you are uploading the correct .altrecovery file.';
+input.value='';
+return;
+}
+if(errEl)errEl.textContent='';
+await loadAndShowRecovery();
+}
+async function loadAndShowRecovery(){
+const c=el('recovery-body');
+if(c)c.innerHTML='<div style="text-align:center;padding:24px;color:var(--t3)">✅ Verified. Loading data...</div>';
+if(GAS_URL){try{await loginScreenSyncGAS();}catch(e){}}
 renderRecoveryOptions();
 }
 function renderRecoveryOptions(){
 const c=el('recovery-body'); if(!c) return;
-const hasJsonBin=!!(STATE.settings.jsonbinId&&STATE.settings.jsonbinKey);
-const hasLocalUsers=STATE.users&&STATE.users.length>0;
-const adminUser=STATE.users?.find(u=>u.role==='admin');
-c.innerHTML='';
-const warn=document.createElement('div');
-warn.style.cssText='background:#FEF2F2;border:1.5px solid #FECACA;border-radius:10px;padding:12px;margin-bottom:14px;font-size:12px;color:#7F1D1D;line-height:1.7';
-warn.innerHTML='<strong>&#x26A0;&#xFE0F; This section is only for admin lockout situations.</strong><br>If you are staff, ask your admin for help. Do not share this page with anyone.';
-c.appendChild(warn);
-const opt1=document.createElement('div');
-opt1.style.cssText='background:white;border:1.5px solid var(--br);border-radius:10px;padding:14px;margin-bottom:10px';
-opt1.innerHTML=
-'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
-'<span style="background:#4F46E5;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">1</span>'+
-'<span class="fw7">Reset Admin Password to Default</span>'+
-'</div>'+
-'<div style="font-size:11px;color:var(--t3);line-height:1.7;margin-bottom:10px">'+
-'Resets the admin account password back to <strong>admin123</strong>.<br>'+
-'Username stays the same: <strong>'+(adminUser?.username||'admin')+'</strong><br>'+
-'After login, go to Admin &#x2192; Users &#x2192; Edit to set a new password.'+
-'</div>'+
-'<button class="btn bd bfl" onclick="resetAdminPassword()">&#x1F511; Reset Admin Password to admin123</button>';
-c.appendChild(opt1);
-if(hasJsonBin){
-const opt3=document.createElement('div');
-opt3.style.cssText='background:white;border:1.5px solid #93C5FD;border-radius:10px;padding:14px;margin-bottom:10px';
-opt3.innerHTML=
-'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
-'<span style="background:#2563EB;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">2</span>'+
-'<span class="fw7">Restore User Data from JSONBin</span>'+
-'</div>'+
-'<div style="font-size:11px;color:var(--t3);line-height:1.7;margin-bottom:10px">'+
-'Pull your users from JSONBin cloud backup.'+
-'</div>'+
-'<div id="recovery-jb-status" style="font-size:11px;color:var(--t3);margin-bottom:8px"></div>'+
-'<button class="btn bp bfl" onclick="recoveryPullJsonBin()">&#x2193; Pull Users from JSONBin</button>';
-c.appendChild(opt3);
+const users=STATE.users||[];
+const admins=users.filter(u=>u.role==='admin');
+const others=users.filter(u=>u.role!=='admin');
+let html='<div style="background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:#14532D;font-weight:600">'+
+'✅ Identity verified. You can now reset passwords for any account below.</div>';
+if(!users.length){
+html+='<div style="background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:10px;padding:14px;font-size:12px;color:#92400E;line-height:1.7">'+
+'No user accounts found on this device. If your data is in Google Sheets, configure the GAS URL first and try again.</div>';
+c.innerHTML=html;return;
 }
-const opt4=document.createElement('div');
-opt4.style.cssText='background:white;border:1.5px solid var(--br);border-radius:10px;padding:14px;margin-bottom:10px';
-opt4.innerHTML=
-'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
-'<span style="background:#374151;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">'+(hasJsonBin?'3':'2')+'</span>'+
-'<span class="fw7">Restore from Backup File</span>'+
+const userCard=(u)=>{
+const isAdmin=u.role==='admin';
+return '<div style="background:white;border:1.5px solid '+(isAdmin?'#C7D2FE':'var(--br)')+';border-radius:10px;padding:14px;margin-bottom:10px">'+
+'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+
+'<span style="background:'+(isAdmin?'#4F46E5':'#374151')+';color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:99px">'+
+(isAdmin?'ADMIN':'STAFF')+'</span>'+
+'<span class="fw7">'+u.name+'</span>'+
+'<span style="font-size:11px;color:var(--t3);">@'+u.username+'</span>'+
 '</div>'+
-'<div style="font-size:11px;color:var(--t3);line-height:1.7;margin-bottom:10px">'+
-'If you have a previously exported backup .json file, import it here.<br>'+
-'This will restore all your data including user accounts.'+
+'<div style="display:flex;gap:8px;align-items:center">'+
+'<input class="inp mono" id="rec-pwd-'+u.id+'" type="password" placeholder="New password" style="flex:1;font-size:13px"/>'+
+'<button class="btn bp" data-uid="'+u.id+'" onclick="resetPasswordFromRecovery(this.dataset.uid)">Set Password</button>'+
 '</div>'+
-'<button class="btn bgh bfl" onclick="triggerImport()">&#x2191; Import Backup File</button>';
-c.appendChild(opt4);
-const opt5=document.createElement('div');
-opt5.style.cssText='background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:10px;padding:14px;margin-bottom:10px';
-opt5.innerHTML=
-'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
-'<span style="background:#EA580C;color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">&#x26A0;</span>'+
-'<span class="fw7">Last Resort: Create New Admin Account</span>'+
-'</div>'+
-'<div style="font-size:11px;color:#92400E;line-height:1.7;margin-bottom:10px">'+
-'Creates a new admin user. The old admin account remains but you cannot log in to it.<br>'+
-'<strong>Only use this if all other options fail.</strong>'+
-'</div>'+
-'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'+
-'<div class="fg"><label style="font-size:11px">New Username</label><input class="inp" id="rec-uname" value="admin2" style="font-size:13px"/></div>'+
-'<div class="fg"><label style="font-size:11px">New Password</label><input class="inp" id="rec-pwd" value="admin123" style="font-size:13px"/></div>'+
-'</div>'+
-'<button class="btn" style="background:#EA580C;color:white;width:100%;font-weight:800;padding:10px" onclick="createEmergencyAdmin()">&#x1F6A8; Create Emergency Admin</button>';
-c.appendChild(opt5);
+'<div id="rec-pwd-res-'+u.id+'" style="font-size:11px;margin-top:6px;min-height:16px"></div>'+
+'</div>';
+};
+if(admins.length){
+html+='<div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Admin Accounts</div>';
+admins.forEach(u=>{html+=userCard(u);});
+}
+if(others.length){
+html+='<div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 8px">Staff Accounts</div>';
+others.forEach(u=>{html+=userCard(u);});
+}
+c.innerHTML=html;
+}
+async function resetPasswordFromRecovery(userId){
+const inp=el('rec-pwd-'+userId);
+const res=el('rec-pwd-res-'+userId);
+const pwd=(inp?.value||'').trim();
+if(!pwd||pwd.length<4){if(res)res.innerHTML='<span style="color:var(--Rd)">Password must be at least 4 characters.</span>';return;}
+const user=STATE.users?.find(u=>u.id===userId);
+if(!user){if(res)res.innerHTML='<span style="color:var(--Rd)">User not found.</span>';return;}
+const h=await sha256(pwd);
+user.password=h;
+lsSave('vs_users',STATE.users);
+if(res)res.innerHTML='<span style="color:#059669">✅ Password updated for @'+user.username+'</span>';
+if(inp)inp.value='';
+const isAdmin=user.role==='admin';
+if(isAdmin){el('lu').value=user.username||'';el('lp').value='';}
+try{autoSyncCloud();}catch(e){}
 }
 async function doAdminPasswordReset(userId){
 const np=(el('fpwd-new')?.value||''),cp=(el('fpwd-confirm')?.value||'');
@@ -12857,17 +13014,7 @@ freq:t.freq,days:t.days||[],dates:t.dates||[],deadlineTime:t.time,active:true,st
 STATE.taskTemplates=defTpls;
 lsSave('vs_task_templates',STATE.taskTemplates);
 }
-if(GAS_URL){
-const localCount=(STATE.users||[]).length+(STATE.items||[]).length+(STATE.customers||[]).length;
-const noUsers=(STATE.users||[]).length===0;
-if(localCount<=1||noUsers){
-setTimeout(()=>{
-const s=el('ls-sync-status');
-if(s) s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading your data from cloud...</span>';
-loginScreenSyncGAS();
-}, 800);
-}
-}
+
 if(!checkSess()){ el('ls').style.display='flex'; }
 const lv=el('login-version');if(lv)lv.textContent='ALT Stock v'+APP_VERSION+' | '+APP_BUILD_DATE;
 })();
