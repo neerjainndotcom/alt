@@ -740,8 +740,11 @@ if(!STATE.settings.currentFY){
 setNav('dash');
 renderSettingsForm();
 renderDBSetup();
-// ALWAYS pull from server on login — Google Sheets
+if(FIREBASE_URL)initFirebaseListener();
+// Pull from server on login — skip if Firebase is configured (it handles sync)
 (async function(){
+  if(FIREBASE_URL){window._initialPullDone=true;return;}
+  if(!GAS_URL){window._initialPullDone=true;return;}
   try{
     setLiveStatus('connecting');
     const d=await api('getAll');
