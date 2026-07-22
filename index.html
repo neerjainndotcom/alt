@@ -118,7 +118,9 @@ const DATA_VERSION=2;
   }catch(e){}
 })();
 // ═══════════════════════════════════════════════════════════════════════
-let GAS_URL='';let FIREBASE_URL='';
+let GAS_URL='';
+const DEFAULT_FIREBASE_URL='https://amrit-laxmi-textiles-do-default-rtdb.firebaseio.com';
+let FIREBASE_URL=DEFAULT_FIREBASE_URL;
 const OWNER_SETUP_HASH='292d8497dbee6cf4c66e9eb10c1f804fbffb96c4736ef5bb734c0e5bf3bb0f19';
 const el = id => document.getElementById(id);
 const escHtml = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -436,7 +438,7 @@ STATE.orders=lsGet('vs_orders')||[];
 STATE.bills=lsGet('vs_bills')||[];
 STATE.payments=lsGet('vs_payments')||[];
 const s=lsGet('vs_settings'); if(s) STATE.settings={...STATE.settings,...s};
-GAS_URL=STATE.settings.gasUrl||'';FIREBASE_URL=STATE.settings.firebaseUrl||'';if(FIREBASE_URL)setTimeout(initFirebaseListener,500);
+GAS_URL=STATE.settings.gasUrl||'';FIREBASE_URL=STATE.settings.firebaseUrl||DEFAULT_FIREBASE_URL;if(FIREBASE_URL)setTimeout(initFirebaseListener,500);
 STATE.leads=lsGet('vs_leads')||[];
 STATE.notifications=lsGet('vs_notifications')||[];
 STATE.flaggedEntries=lsGet('vs_flagged')||[];
@@ -13306,8 +13308,22 @@ STATE.taskTemplates=defTpls;
 lsSave('vs_task_templates',STATE.taskTemplates);
 }
 
-if(!checkSess()){ el('ls').style.display='flex'; }
-const lv=el('login-version');if(lv)lv.textContent='ALT Stock v'+APP_VERSION+' | '+APP_BUILD_DATE;
+// On a fresh device, pull from Firebase before showing login so users list is current
+(async function(){
+  const lv=el('login-version');if(lv)lv.textContent='ALT Stock v'+APP_VERSION+' | '+APP_BUILD_DATE;
+  if(checkSess())return; // already logged in, skip
+  // Show login screen immediately but pull in background to refresh user list
+  el('ls').style.display='flex';
+  if(FIREBASE_URL){
+    try{
+      const r=await fetch(FIREBASE_URL+'/altstock.json');
+      if(r.ok){
+        const d=await r.json();
+        if(d&&d.items) applyCloudData(d,false); // false = don't overwrite newer local data
+      }
+    }catch(e){/* silent — offline is fine */}
+  }
+})();
 })();
 var _calc={cur:'0',expr:'',prevVal:null,op:null,newNum:true,gstMode:false,gstRate:18,muMode:false,muCost:null};
 function toggleCalc(){var f=document.getElementById('calc-float');if(!f)return;f.style.display=f.style.display==='none'?'block':'none';}
