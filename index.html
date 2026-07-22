@@ -98,7 +98,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.5.5';
+const APP_VERSION='1.5.6';
 const APP_BUILD_DATE='2026-07-22';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -667,26 +667,31 @@ else{el('le').textContent='Invalid setup code.';return;}
 }
 const _norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 const findUser=()=>STATE.users.find(u=>(u.username||'').toLowerCase()===user.toLowerCase())||STATE.users.find(u=>_norm(u.username)===_norm(user));
-let found=findUser();
 
 const s=el('ls-sync-status');
-if(!found&&FIREBASE_URL){
-  // Fetch only the users list — small, fast on any connection
+// ALWAYS refresh the accounts list from Firebase first, and REPLACE the local
+// copy — this wipes any stale/old accounts (e.g. renamed users) so login always
+// checks against the current cloud data, not outdated local records.
+if(FIREBASE_URL){
   if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading accounts…</span>';
   try{
     const ctrl=new AbortController();
     setTimeout(()=>ctrl.abort(),8000);
-    const fr=await fetch(FIREBASE_URL+'/altstock/users.json',{signal:ctrl.signal});
+    const fr=await fetch(FIREBASE_URL+'/altstock/users.json',{cache:'no-store',signal:ctrl.signal});
     if(fr.ok){
       const users=await fr.json();
       if(Array.isArray(users)&&users.length>0){
-        STATE.users=users;
+        STATE.users=users;           // full replace — no merge, no stale records
         lsSave('vs_users',STATE.users);
-        found=findUser();
       }
     }
-  }catch(e){}
+  }catch(e){/* offline — fall back to local list */}
   if(s)s.innerHTML='';
+}
+let found=findUser();
+if(!found&&GAS_URL){
+  // GAS fallback only if no Firebase
+  try{const gd=await api('getAll');if(gd&&gd.users){STATE.users=gd.users;lsSave('vs_users',STATE.users);found=findUser();}}catch(e){}
 }
 if(!found){
   el('le').textContent='Username not found. Check spelling or contact admin.';
