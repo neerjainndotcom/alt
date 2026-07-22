@@ -98,7 +98,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.6.1';
+const APP_VERSION='1.7.0';
 const APP_BUILD_DATE='2026-07-22b';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -513,31 +513,23 @@ function autoSyncCloud(){
         }catch(e){}
       }
       const nowTs=new Date().toISOString();
-      // PUSH to Firebase (local already saved)
       window._lastSaveAt=Date.now();
-      const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
-        brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
-        orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],
-        jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],
-        taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],
-        staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
-        custGroups:STATE.custGroups||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],
-        settings:{...STATE.settings,lastSync:nowTs},
-        _savedAt:nowTs};
       if(FIREBASE_URL){
-        try{
-          const ctrl=new AbortController();
-          const tid=setTimeout(()=>ctrl.abort(),15000);
-          const r=await fetch(FIREBASE_URL+'/altstock.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl),signal:ctrl.signal});
-          clearTimeout(tid);
-          if(r.ok){
-            /* Write tiny meta node so other devices know to pull */
-            fetch(FIREBASE_URL+'/_meta.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:nowTs})}).catch(()=>{});
-            setLiveStatus('live');STATE.settings.lastSync=nowTs;lsSave('vs_settings',STATE.settings);
-          }else{setLiveStatus('off');}
-        }catch(e){setLiveStatus('off');}
+        // Delta push: writes only the records that changed, not the whole
+        // database. Per-record writes also mean two devices editing
+        // different records at the same time can never clobber each other,
+        // so no pre-pull merge step is needed here (unlike the GAS path).
+        await pushDeltaToFirebase();
       }else if(GAS_URL){
         try{
+          const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
+            brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
+            orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],
+            jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],
+            taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],
+            staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
+            custGroups:STATE.custGroups||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],
+            settings:{...STATE.settings,lastSync:nowTs},_savedAt:nowTs};
           const ctrl=new AbortController();
           const tid=setTimeout(()=>ctrl.abort(),15000);
           const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl}),signal:ctrl.signal});
@@ -683,9 +675,11 @@ if(FIREBASE_URL){
     setTimeout(()=>ctrl.abort(),10000);
     const fr=await fetch(FIREBASE_URL+'/altstock/users.json?nocache='+Date.now(),{cache:'no-store',signal:ctrl.signal});
     if(fr.ok){
-      const users=await fr.json();
+      const usersRaw=await fr.json();
       cloudReached=true;
-      if(Array.isArray(users)&&users.length>0){
+      // /altstock/users is now a keyed object ({id: record}), not an array
+      const users=Array.isArray(usersRaw)?usersRaw:Object.values(usersRaw||{});
+      if(users.length>0){
         STATE.users=users;           // full replace — no merge, no stale records
         lsSave('vs_users',STATE.users);
       }
@@ -762,12 +756,11 @@ if(FIREBASE_URL)initFirebaseListener();
   if(FIREBASE_URL){
     try{
       setLiveStatus('connecting');
-      const r=await fetch(FIREBASE_URL+'/altstock.json?nocache='+Date.now(),{cache:'no-store'});
-      if(r.ok){
-        const d=await r.json();
-        if(d&&(d.items||d.users||d.customers)){applyCloudData(d,true);refreshCurrentView();}
-        setLiveStatus('live');
-      }else{setLiveStatus('off');}
+      // Full pull of every collection + seeds the delta-sync timestamps so
+      // every sync after login (10s poll, tab switches, etc.) is delta-only.
+      const got=await pullAllFromFirebase(true);
+      if(got){refreshCurrentView();setLiveStatus('live');}
+      else{setLiveStatus('off');}
     }catch(e){setLiveStatus('off');}
     window._initialPullDone=true;
     return;
@@ -9983,23 +9976,9 @@ function initFirebaseListener(){
   window._fbMetaPoll=setInterval(async()=>{
     if(window._saveLock||window._syncRunning)return;
     if(window._lastSaveAt&&Date.now()-window._lastSaveAt<8000)return;
-    try{
-      const r=await fetch(FIREBASE_URL+'/_meta.json');
-      if(!r.ok)return;
-      const meta=await r.json();
-      if(!meta||!meta.ts)return;
-      const cloudTs=new Date(meta.ts);
-      const localTs=STATE.settings?.lastSync?new Date(STATE.settings.lastSync):new Date(0);
-      if(cloudTs<=localTs)return;
-      /* Cloud is newer — do a full pull */
-      const r2=await fetch(FIREBASE_URL+'/altstock.json');
-      if(!r2.ok)return;
-      const d=await r2.json();
-      if(!d||!d.items)return;
-      applyCloudData(d,true);
-      refreshCurrentView();
-      setLiveStatus('live');
-    }catch(e){setLiveStatus('off');}
+    /* Delta pull: checks the tiny per-collection meta first, downloads only
+       the records that actually changed (not the whole database). */
+    await pullDeltaFromFirebase();
   },10000);/* Poll meta every 10s */
   setLiveStatus(FIREBASE_URL?'live':'off');
 }
@@ -10020,29 +9999,14 @@ function refreshCurrentView(){
     /* reports intentionally not auto-refreshed — user picks the view/date explicitly */
   }catch(e){}
 }
-/* Lightweight on-demand pull: checks tiny /_meta first, only downloads the
-   full DB when the cloud is newer, then refreshes the visible tab. Used on
-   every tab open so all screens show the latest data across devices. */
+/* Lightweight on-demand pull: delta-only, downloads just the records that
+   changed since our last sync (not the whole database). Used on every tab
+   open so all screens show the latest data across devices. */
 async function pullLatestAndRefresh(){
   if(!FIREBASE_URL)return;
   if(window._saveLock||window._syncRunning)return;
   if(window._lastSaveAt&&Date.now()-window._lastSaveAt<8000)return;
-  try{
-    const r=await fetch(FIREBASE_URL+'/_meta.json');
-    if(!r.ok)return;
-    const meta=await r.json();
-    if(!meta||!meta.ts)return;
-    const cloudTs=new Date(meta.ts);
-    const localTs=STATE.settings?.lastSync?new Date(STATE.settings.lastSync):new Date(0);
-    if(cloudTs<=localTs)return;/* already up to date */
-    const r2=await fetch(FIREBASE_URL+'/altstock.json');
-    if(!r2.ok)return;
-    const d=await r2.json();
-    if(!d||!d.items)return;
-    applyCloudData(d,true);
-    refreshCurrentView();
-    setLiveStatus('live');
-  }catch(e){}
+  await pullDeltaFromFirebase();
 }
 function saveGasUrl(){
 const url=(el('gas-url')?.value||'').trim();
@@ -10074,27 +10038,27 @@ if(!FIREBASE_URL&&!GAS_URL){toast('Set Firebase URL in Admin → Database first'
 const s=el('gas-status');if(s)s.innerHTML='<span style="color:var(--Ad)">Pushing...</span>';
 try{
   window._autoSyncTimer&&clearTimeout(window._autoSyncTimer);
-  const nowTs=new Date().toISOString();
-  const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
-    brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
-    orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],
-    jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],
-    taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],
-    staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
-    custGroups:STATE.custGroups||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],
-    settings:{...STATE.settings,lastSync:nowTs},_savedAt:nowTs};
   let ok=false;
   if(FIREBASE_URL){
-    const r=await fetch(FIREBASE_URL+'/altstock.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pl)});
-    ok=r.ok;
+    // full=true: this manual button means "push EVERYTHING now", ignoring
+    // the normal delta cutoff — used for disaster-recovery/troubleshooting.
+    ok=await pushDeltaToFirebase(true);
   }else if(GAS_URL){
+    const nowTs=new Date().toISOString();
+    const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
+      brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
+      orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],
+      jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],
+      taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],
+      staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],
+      custGroups:STATE.custGroups||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],
+      settings:{...STATE.settings,lastSync:nowTs},_savedAt:nowTs};
     const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',...pl})});
     const j=await r.json().catch(()=>null);ok=j&&!j.error;
+    if(ok){STATE.settings.lastSync=nowTs;lsSave('vs_settings',STATE.settings);}
   }
   if(ok){
-    if(FIREBASE_URL)fetch(FIREBASE_URL+'/_meta.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({ts:nowTs})}).catch(()=>{});
-    STATE.settings.lastSync=nowTs;lsSave('vs_settings',STATE.settings);
-    if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pushed at '+nowTs.slice(11,19)+'</span>';
+    if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pushed at '+new Date().toTimeString().slice(0,8)+'</span>';
     toast('Pushed to Firebase','ok');setLiveStatus('live');
   }else{
     if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; Push failed — check connection</span>';
@@ -10106,14 +10070,17 @@ if(!FIREBASE_URL&&!GAS_URL){toast('Set Firebase URL in Admin → Database first'
 const ok=await appConfirm('Pull from Firebase?','Merges cloud data into local. Newer records win.','?','Pull','ok');if(!ok)return;
 const s=el('gas-status');if(s)s.innerHTML='<span style="color:var(--Ad)">Downloading...</span>';
 try{
-  let d;
   if(FIREBASE_URL){
-    const r=await fetch(FIREBASE_URL+'/altstock.json');
-    if(!r.ok){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; Firebase error: '+r.status+'</span>';return;}
-    d=await r.json();
-  }else{
-    d=await api('getAll');
+    // Manual "Pull Data" = full resync: fetch every collection and reseed
+    // the delta timestamps, rather than a partial delta pull.
+    const got=await pullAllFromFirebase(true);
+    if(!got){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; No data in Firebase yet — push first</span>';return;}
+    persist();
+    if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pulled and merged successfully</span>';
+    toast('Data pulled from Firebase','ok');refreshCurrentView();
+    return;
   }
+  const d=await api('getAll');
   if(!d||!d.items){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; No data in Firebase yet — push first</span>';return;}
   applyCloudData(d,true);persist();
   if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pulled and merged successfully</span>';
@@ -10253,14 +10220,12 @@ event.target.value='';
 }
 async function silentPullGAS(){
 try{
-let d;
 if(FIREBASE_URL){
-  const r=await fetch(FIREBASE_URL+'/altstock.json');
-  if(!r.ok)return;
-  d=await r.json();
-}else{
-  d=await api('getAll');
+  /* Delta pull — also handles the forceReloadToken "admin cleared data" check internally */
+  await pullDeltaFromFirebase();
+  return;
 }
+const d=await api('getAll');
 if(!d||!d.items) return;
 const cloudFrt=d.settings?.forceReloadToken||'';
 const myFrt=lsGet('vs_frt')||'';
@@ -12408,6 +12373,11 @@ toast('Task added','ok');autoSyncCloud();
 // ═══ CLOUD SYNC (Google Sheets) ════════════════════════════════════════════════
 async function hybridSaveAll(silent){
   window._lastSaveAt=Date.now();
+  if(FIREBASE_URL){
+    const ok=await pushDeltaToFirebase();
+    if(!silent){if(ok)toast('Saved to cloud','ok');else toast('Save failed - local only','er');}
+    return{gs:ok};
+  }
   const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,
     brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,
     orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],
@@ -12454,20 +12424,19 @@ async function manualRefresh(){
   try{
     window._saveLock=true;
     // STEP 1: Pull server data FIRST so we don't overwrite other devices' changes
-    let serverData=null;
-    if(GAS_URL){
+    if(FIREBASE_URL){
+      await pullDeltaFromFirebase();
+    }else if(GAS_URL){
       try{
         const ctrl=new AbortController();
         const tid=setTimeout(()=>ctrl.abort(),10000);
         const r=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'getAll'}),signal:ctrl.signal});
         clearTimeout(tid);
         const d=await r.json();
-        if(d&&typeof d==='object'&&(d.items||d.users||d.customers))serverData=d;
+        if(d&&typeof d==='object'&&(d.items||d.users||d.customers))applyCloudData(d,true);
       }catch(e){}
     }
-    // STEP 2: Smart merge — force apply so timestamp skew never blocks a manual sync
-    if(serverData){applyCloudData(serverData,true);}
-    // STEP 3: Push merged result back so all devices see the combined data
+    // STEP 2: Push our (now merged) local changes back so all devices converge
     await hybridSaveAll(true);
     window._saveLock=false;
     done(true,'✅ Synced — all devices up to date');
@@ -12985,6 +12954,180 @@ function mergeTaskInstances(local,remote){
   });
   return Array.from(map.values());
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// DELTA SYNC — record-level. Each collection lives at /altstock/{col}/{id}
+// (a keyed object, not an array) with a per-collection timestamp at
+// /_meta/{col}. Pushes write only changed records via a single multi-path
+// PATCH; pulls query Firebase's indexed ?orderBy="_ts"&startAt=N to fetch
+// only records changed since the last sync. This keeps sync bandwidth
+// proportional to what actually changed, not total database size — so it
+// stays cheap even at 1,00,000+ entries. 'settings' is a small singleton
+// and is always synced whole; it is not part of DELTA_COLLECTIONS.
+// ═══════════════════════════════════════════════════════════════════════
+const DELTA_COLLECTIONS=['items','entries','customers','brokers','suppliers','users',
+  'orders','bills','payments','jobWork','leads','flaggedEntries','taskTemplates',
+  'taskInstances','staffLeave','recurringLeads','mixedSarees','custGroups','products','exchanges'];
+
+// Every record needs a numeric _ts to be picked up by delta filtering/query.
+// Older code paths that push into arrays without stamping (e.g. ledger
+// entries) are patched here at sync time so nothing is silently skipped.
+function ensureAllTimestamps(){
+  DELTA_COLLECTIONS.forEach(k=>{ (STATE[k]||[]).forEach(r=>{ if(r&&!r._ts) r._ts=Date.now(); }); });
+}
+function _dsLastPush(){ return parseInt(localStorage.getItem('vs_delta_push_ts')||'0',10); }
+function _dsSetLastPush(ts){ try{localStorage.setItem('vs_delta_push_ts',String(ts));}catch(e){} }
+function _dsPullTsMap(){ try{return JSON.parse(localStorage.getItem('vs_delta_pull_ts')||'{}');}catch(e){return {};} }
+function _dsSetPullTsMap(m){ try{localStorage.setItem('vs_delta_pull_ts',JSON.stringify(m));}catch(e){} }
+
+function persistAllCollections(){
+  lsSave('vs_items',STATE.items);lsSave('vs_entries',STATE.entries);
+  lsSave('vs_customers',STATE.customers);lsSave('vs_brokers',STATE.brokers);
+  lsSave('vs_suppliers',STATE.suppliers);lsSave('vs_users',STATE.users);
+  lsSave('vs_orders',STATE.orders);lsSave('vs_bills',STATE.bills);
+  lsSave('vs_payments',STATE.payments);lsSave('vs_jobwork',STATE.jobWork);
+  lsSave('vs_leads',STATE.leads);lsSave('vs_settings',STATE.settings);
+  if(STATE.taskTemplates)lsSave('vs_task_templates',STATE.taskTemplates);
+  if(STATE.taskInstances)lsSave('vs_task_instances',STATE.taskInstances);
+  if(STATE.staffLeave)lsSave('vs_staff_leave',STATE.staffLeave);
+  if(STATE.flaggedEntries)lsSave('vs_flagged',STATE.flaggedEntries);
+  if(STATE.recurringLeads)lsSave('vs_rec_leads',STATE.recurringLeads);
+  if(STATE.mixedSarees)lsSave('vs_mixed_sarees',STATE.mixedSarees);
+  if(STATE.custGroups)lsSave('vs_cust_groups',STATE.custGroups);
+  if(STATE.products)lsSave('vs_products',STATE.products);
+}
+
+// PUSH: only records changed since our last successful push, in one PATCH.
+// full=true ignores the last-push cutoff and pushes every record (used by
+// the manual "Push All Data" admin button for a guaranteed full resync).
+async function pushDeltaToFirebase(full){
+  if(!FIREBASE_URL) return false;
+  ensureAllTimestamps();
+  const pushStartTs=Date.now();
+  const cutoff=full?0:_dsLastPush();
+  const updates={};
+  DELTA_COLLECTIONS.forEach(col=>{
+    let touched=false;
+    (STATE[col]||[]).forEach(rec=>{
+      if(!rec||!rec.id) return;
+      if((rec._ts||0)>cutoff){ updates['altstock/'+col+'/'+rec.id]=rec; touched=true; }
+    });
+    if(touched) updates['_meta/'+col]={ts:pushStartTs};
+  });
+  const nowIso=new Date().toISOString();
+  updates['altstock/settings']={...STATE.settings,lastSync:nowIso};
+  updates['_meta/settings']={ts:pushStartTs};
+  try{
+    const ctrl=new AbortController();
+    const tid=setTimeout(()=>ctrl.abort(),20000);
+    const r=await fetch(FIREBASE_URL+'/.json',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(updates),signal:ctrl.signal});
+    clearTimeout(tid);
+    if(r.ok){
+      _dsSetLastPush(pushStartTs);
+      STATE.settings.lastSync=nowIso; lsSave('vs_settings',STATE.settings);
+      setLiveStatus('live');
+      return true;
+    }
+    setLiveStatus('off'); return false;
+  }catch(e){ setLiveStatus('off'); return false; }
+}
+
+// PULL: only records changed since our last successful pull, per collection,
+// via Firebase's indexed startAt query. Merges into STATE using the same
+// conflict-resolution logic as a full pull (newer _ts wins; Done tasks
+// always win over Pending). Refreshes whichever tab is open when done.
+async function pullDeltaFromFirebase(){
+  if(!FIREBASE_URL) return false;
+  try{
+    const metaR=await fetch(FIREBASE_URL+'/_meta.json');
+    if(!metaR.ok) return false;
+    const meta=(await metaR.json())||{};
+    const pullMap=_dsPullTsMap();
+    let anyUpdated=false;
+    for(const col of DELTA_COLLECTIONS){
+      const cloudTs=(meta[col]&&meta[col].ts)||0;
+      const localTs=pullMap[col]||0;
+      if(!cloudTs||cloudTs<=localTs) continue;
+      const url=FIREBASE_URL+'/altstock/'+col+'.json?orderBy='+encodeURIComponent('"_ts"')+'&startAt='+localTs;
+      const r=await fetch(url);
+      if(r.ok){
+        const obj=await r.json();
+        const arr=obj?Object.values(obj):[];
+        if(arr.length){
+          STATE[col]=col==='items'?mergeItems(STATE[col],arr):col==='taskInstances'?mergeTaskInstances(STATE[col],arr):smartMerge(STATE[col],arr,col==='users'?'username':undefined);
+          STATE[col]=cleanupDeleted(STATE[col]);
+          anyUpdated=true;
+        }
+      }
+      pullMap[col]=cloudTs;
+    }
+    const settingsCloudTs=(meta.settings&&meta.settings.ts)||0;
+    if(settingsCloudTs>(pullMap.settings||0)){
+      const sr=await fetch(FIREBASE_URL+'/altstock/settings.json');
+      if(sr.ok){
+        const sd=await sr.json();
+        if(sd){
+          const cloudFrt=sd.forceReloadToken||'';
+          const myFrt=lsGet('vs_frt')||'';
+          if(cloudFrt&&cloudFrt!==myFrt){
+            lsSave('vs_frt',cloudFrt);
+            const _t=el('tst');
+            if(_t){_t.textContent='🔄 Admin cleared data — reloading in 3s...';_t.className='on er';}
+            setTimeout(()=>window.location.reload(),3000);
+            return true;
+          }
+          const mergedPerUser={...(STATE.settings.dashConfigPerUser||{}),...(sd.dashConfigPerUser||{})};
+          const _localNextInward=STATE.settings.nextInwardNo||1;
+          STATE.settings={...STATE.settings,...sd};
+          STATE.settings.nextInwardNo=Math.max(_localNextInward,STATE.settings.nextInwardNo||1);
+          if(Object.keys(mergedPerUser).length) STATE.settings.dashConfigPerUser=mergedPerUser;
+          anyUpdated=true;
+        }
+      }
+      pullMap.settings=settingsCloudTs;
+    }
+    _dsSetPullTsMap(pullMap);
+    if(anyUpdated){
+      try{migrateData();}catch(e){}
+      try{recalcStockFromEntries();}catch(e){}
+      try{refreshCurrentUser();}catch(e){}
+      persistAllCollections();
+      refreshCurrentView();
+      setLiveStatus('live');
+    }
+    return anyUpdated;
+  }catch(e){ return false; }
+}
+
+// FULL PULL: fetches every collection from the per-collection Firebase
+// layout in parallel (used at login, and by the manual "Pull Data" admin
+// button). Also seeds the local per-collection pull-timestamp map from
+// /_meta so every sync after this one can be delta-only.
+async function pullAllFromFirebase(force){
+  if(!FIREBASE_URL) return false;
+  try{
+    const metaR=await fetch(FIREBASE_URL+'/_meta.json');
+    const meta=metaR.ok?((await metaR.json())||{}):{};
+    const results=await Promise.all(DELTA_COLLECTIONS.map(col=>
+      fetch(FIREBASE_URL+'/altstock/'+col+'.json').then(r=>r.ok?r.json():null).catch(()=>null)
+    ));
+    const d={};
+    DELTA_COLLECTIONS.forEach((col,i)=>{
+      const raw=results[i];
+      d[col]=Array.isArray(raw)?raw:(raw&&typeof raw==='object'?Object.values(raw):[]);
+    });
+    const sr=await fetch(FIREBASE_URL+'/altstock/settings.json').catch(()=>null);
+    d.settings=(sr&&sr.ok)?(await sr.json()):null;
+    if(!d.items.length&&!d.users.length&&!d.customers.length) return false;
+    applyCloudData(d,force!==false);
+    const pullMap={};
+    DELTA_COLLECTIONS.forEach(col=>{ pullMap[col]=(meta[col]&&meta[col].ts)||Date.now(); });
+    pullMap.settings=(meta.settings&&meta.settings.ts)||Date.now();
+    _dsSetPullTsMap(pullMap);
+    return true;
+  }catch(e){ return false; }
+}
+
 function applyCloudData(d,force=false){
   if(!d)return;
   // Skip if cloud data is not newer than what we already have (unless forced)
@@ -13406,8 +13549,9 @@ lsSave('vs_task_templates',STATE.taskTemplates);
       const r=await fetch(FIREBASE_URL+'/altstock/users.json',{signal:ctrl.signal});
       clearTimeout(tid);
       if(r.ok){
-        const users=await r.json();
-        if(Array.isArray(users)&&users.length>0){
+        const usersRaw=await r.json();
+        const users=Array.isArray(usersRaw)?usersRaw:Object.values(usersRaw||{});
+        if(users.length>0){
           STATE.users=users;
           lsSave('vs_users',STATE.users);
         }
