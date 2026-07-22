@@ -98,7 +98,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.6.0';
+const APP_VERSION='1.6.1';
 const APP_BUILD_DATE='2026-07-22b';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -854,6 +854,7 @@ function restoreBackup(){
 
 
 function setNav(tab){
+window._currentNav=tab;/* track active tab so cloud sync can refresh it */
 document.body.style.overflow='';/* clear stuck modal-overflow on nav */
 document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
 document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
@@ -890,6 +891,8 @@ setLeadTabsForRole();
 }
 
 if(tab==='research') renderResearch();
+/* Pull latest from cloud on tab open so every screen shows current data */
+try{ pullLatestAndRefresh(); }catch(e){}
 }
 let _hindi=false;
 const HI={
@@ -10001,12 +10004,44 @@ function initFirebaseListener(){
   setLiveStatus(FIREBASE_URL?'live':'off');
 }
 function refreshCurrentView(){
+  // Re-render whichever tab is open so live cloud data appears immediately.
+  // Only refreshes LIST views (never open forms/modals) to avoid disrupting input.
   try{
+    if(document.querySelector('.ov.show, .ov.on'))return;/* a modal is open — don't disrupt */
     const cur=window._currentNav||'';
-    if(cur==='tasks'){try{renderMyTasks();}catch(e){} try{renderAllTasks();}catch(e){}}
+    if(cur==='tasks'){try{renderMyTasks();}catch(e){}try{renderAllTasks();}catch(e){}try{updateTaskDot();}catch(e){}}
     else if(cur==='dash'){try{renderDash();}catch(e){}}
-    else if(cur==='sales'){try{renderOrders();}catch(e){}}
-    else if(cur==='leads'){try{renderLeads();}catch(e){}}
+    else if(cur==='sales'){try{renderOrders();}catch(e){}try{renderBills();}catch(e){}}
+    else if(cur==='leads'){try{renderLeads('all');}catch(e){}try{renderLeads('mine');}catch(e){}try{renderLeads('today');}catch(e){}}
+    else if(cur==='masters'){try{renderItems();}catch(e){}try{renderCusts();}catch(e){}try{renderBrks();}catch(e){}try{renderSups();}catch(e){}try{renderPrds();}catch(e){}try{renderCustGroups();}catch(e){}}
+    else if(cur==='inward'){try{renderInRec();}catch(e){}try{renderExchangeList();}catch(e){}}
+    else if(cur==='jw'){try{renderJWLists();}catch(e){}}
+    else if(cur==='admin'){try{renderUsers();}catch(e){}try{renderDevices();}catch(e){}try{renderLedger();}catch(e){}}
+    /* reports intentionally not auto-refreshed — user picks the view/date explicitly */
+  }catch(e){}
+}
+/* Lightweight on-demand pull: checks tiny /_meta first, only downloads the
+   full DB when the cloud is newer, then refreshes the visible tab. Used on
+   every tab open so all screens show the latest data across devices. */
+async function pullLatestAndRefresh(){
+  if(!FIREBASE_URL)return;
+  if(window._saveLock||window._syncRunning)return;
+  if(window._lastSaveAt&&Date.now()-window._lastSaveAt<8000)return;
+  try{
+    const r=await fetch(FIREBASE_URL+'/_meta.json');
+    if(!r.ok)return;
+    const meta=await r.json();
+    if(!meta||!meta.ts)return;
+    const cloudTs=new Date(meta.ts);
+    const localTs=STATE.settings?.lastSync?new Date(STATE.settings.lastSync):new Date(0);
+    if(cloudTs<=localTs)return;/* already up to date */
+    const r2=await fetch(FIREBASE_URL+'/altstock.json');
+    if(!r2.ok)return;
+    const d=await r2.json();
+    if(!d||!d.items)return;
+    applyCloudData(d,true);
+    refreshCurrentView();
+    setLiveStatus('live');
   }catch(e){}
 }
 function saveGasUrl(){
