@@ -98,7 +98,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.5.3';
+const APP_VERSION='1.5.4';
 const APP_BUILD_DATE='2026-07-22';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -669,32 +669,26 @@ const findUser=()=>STATE.users.find(u=>(u.username||'').toLowerCase()===user.toL
 let found=findUser();
 
 const s=el('ls-sync-status');
-if(!found){
-  // Try Firebase pull first (primary sync source)
-  if(FIREBASE_URL){
-    if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Syncing from cloud...</span>';
-    try{
-      const fr=await fetch(FIREBASE_URL+'/altstock.json');
-      if(fr.ok){
-        const fd=await fr.json();
-        if(fd&&fd.items){applyCloudData(fd,true);found=findUser();}
+if(!found&&FIREBASE_URL){
+  // Fetch only the users list — small, fast on any connection
+  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading accounts…</span>';
+  try{
+    const ctrl=new AbortController();
+    setTimeout(()=>ctrl.abort(),8000);
+    const fr=await fetch(FIREBASE_URL+'/altstock/users.json',{signal:ctrl.signal});
+    if(fr.ok){
+      const users=await fr.json();
+      if(Array.isArray(users)&&users.length>0){
+        STATE.users=users;
+        lsSave('vs_users',STATE.users);
+        found=findUser();
       }
-    }catch(e){console.log('LOGIN: Firebase pull error:',e.message);}
-  }
-  // GAS fallback if no Firebase
-  if(!found&&GAS_URL){
-    if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading from Google Sheets...</span>';
-    try{
-      const gd=await api('getAll');
-      if(gd&&typeof gd==='object'&&(gd.items||gd.users||gd.customers)){
-        applyCloudData(gd,true);found=findUser();
-      }
-    }catch(e){console.log('LOGIN: GAS error:',e.message);}
-  }
+    }
+  }catch(e){}
+  if(s)s.innerHTML='';
 }
 if(!found){
   el('le').textContent='Username not found. Check spelling or contact admin.';
-  if(s)s.innerHTML='';
   return;
 }
 if(found.active===false){el('le').textContent='Account is disabled. Contact admin.';return;}
@@ -13311,44 +13305,45 @@ STATE.taskTemplates=defTpls;
 lsSave('vs_task_templates',STATE.taskTemplates);
 }
 
-// On page load: always pull from Firebase first, THEN show login
+// On page load: fetch ONLY users from Firebase (tiny file), then show login
 (async function(){
   const lv=el('login-version');if(lv)lv.textContent='ALT Stock v'+APP_VERSION+' | '+APP_BUILD_DATE;
   if(checkSess())return; // already logged in
 
-  // Show a connecting screen — don't reveal login form until data is ready
-  const lcard=document.querySelector('.lcard');
+  // Hide login form, show connecting message
   const lf=el('lf');
-  if(lcard&&lf){
-    // Hide the form, show a syncing message
-    lf.style.display='none';
-    const syncMsg=document.createElement('div');
-    syncMsg.id='pre-login-sync';
-    syncMsg.style.cssText='text-align:center;padding:30px 0;color:rgba(255,255,255,0.7);font-size:14px;';
-    syncMsg.innerHTML='🔄 Connecting to cloud…';
-    lcard.appendChild(syncMsg);
+  const lcard=document.querySelector('.lcard');
+  if(lf) lf.style.display='none';
+  if(lcard){
+    const msg=document.createElement('div');
+    msg.id='pre-login-sync';
+    msg.style.cssText='text-align:center;padding:30px 0;color:rgba(255,255,255,0.7);font-size:14px;line-height:2';
+    msg.innerHTML='🔄 Connecting to cloud…<br><span style="font-size:11px;opacity:0.5">Please wait</span>';
+    lcard.appendChild(msg);
   }
-
   el('ls').style.display='flex';
 
-  // Pull from Firebase with a 6-second timeout
+  // Fetch ONLY the users list — tiny, fast even on slow connections
   if(FIREBASE_URL){
     try{
       const ctrl=new AbortController();
-      const tid=setTimeout(()=>ctrl.abort(),6000);
-      const r=await fetch(FIREBASE_URL+'/altstock.json',{signal:ctrl.signal});
+      const tid=setTimeout(()=>ctrl.abort(),8000);
+      const r=await fetch(FIREBASE_URL+'/altstock/users.json',{signal:ctrl.signal});
       clearTimeout(tid);
       if(r.ok){
-        const d=await r.json();
-        if(d&&(d.items||d.users)) applyCloudData(d,true);
+        const users=await r.json();
+        if(Array.isArray(users)&&users.length>0){
+          STATE.users=users;
+          lsSave('vs_users',STATE.users);
+        }
       }
-    }catch(e){/* offline or timeout — continue to login */}
+    }catch(e){/* offline — let user try anyway */}
   }
 
-  // Now show the actual login form
-  const syncMsg=document.getElementById('pre-login-sync');
-  if(syncMsg)syncMsg.remove();
-  if(lf)lf.style.display='';
+  // Show login form
+  const msg=document.getElementById('pre-login-sync');
+  if(msg) msg.remove();
+  if(lf) lf.style.display='';
 })();
 })();
 var _calc={cur:'0',expr:'',prevVal:null,op:null,newNum:true,gstMode:false,gstRate:18,muMode:false,muCost:null};
