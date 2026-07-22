@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.5.8';
-const APP_BUILD_DATE='2026-07-22';
+const APP_VERSION='1.6.0';
+const APP_BUILD_DATE='2026-07-22b';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -11471,7 +11471,7 @@ const TASK_CAT_ICONS={Accounting:'📊',Dispatch:'📦','Mill/Stock':'🧵',Sale
 function initTasksScreen(){
 try{
 /* Pull latest from cloud so task status is always current */
-if(GAS_URL&&!window._syncRunning)silentPullGAS().then(()=>{renderMyTasks();renderAllTasks();}).catch(()=>{});
+if((FIREBASE_URL||GAS_URL)&&!window._syncRunning)silentPullGAS().then(()=>{renderMyTasks();renderAllTasks();updateTaskDot();}).catch(()=>{});
 const isAdmin=STATE.user?.role==='admin';
 ['task-tpl-btn','task-adhoc-btn','ttab-all','ttab-tpl','ttab-lv','ttab-rep'].forEach((id2)=>{
 const el2=document.getElementById(id2);
@@ -12005,8 +12005,7 @@ const def=idx===0?'<option value="">Unassigned</option>':'<option value="">No su
 const selVal=idx===0?selId:subId;
 const mkOpt=u=>{
   const lv=getActiveLeave(u.id,tod);
-  const lbl=(u.role==='admin'?'👑 ':'')+u.name+(u.role==='admin'?' (Admin)':'')+(lv?' 🛑 On Leave':'');
-  return '<option value="'+u.id+'"'+(u.id===selVal?' selected':'')+'>'+lbl+'</option>';
+  return '<option value="'+u.id+'"'+(u.id===selVal?' selected':'')+'>'+taskUserLabel(u,{leave:!!lv})+'</option>';
 };
 const aOpts=admins.map(mkOpt).join('');
 const sOpts=staff.map(mkOpt).join('');
@@ -12257,9 +12256,17 @@ lsSave('vs_staff_leave',STATE.staffLeave);
 toast(userName+'\'s tasks paused for today','ok');
 renderAllTasks();autoSyncCloud();
 }
+/* Shared label for task assign dropdowns: "Kuldeep - (Junior Accountant)" */
+function taskUserLabel(u,opts){
+  opts=opts||{};
+  const desig=u.staffTypeName||(u.role==='admin'?'Admin':'Staff');
+  let lbl=u.name+' - ('+desig+')';
+  if(opts.leave) lbl+=' 🛑 On Leave';
+  return lbl;
+}
 function openAdHocTask(prefillUserId){
 const allUsers=STATE.users?.filter(u=>u.active!==false&&!u._deleted)||[];
-const staffOpts=allUsers.map(u=>'<option value="'+u.id+'"'+(u.id===prefillUserId?' selected':'')+'>'+u.name+(u.role==='admin'?' (Admin)':'')+'</option>').join('');
+const staffOpts=allUsers.map(u=>'<option value="'+u.id+'"'+(u.id===prefillUserId?' selected':'')+'>'+taskUserLabel(u)+'</option>').join('');
 const catOpts=Object.keys(TASK_CAT_ICONS).map(c=>'<option value="'+c+'">'+TASK_CAT_ICONS[c]+' '+c+'</option>').join('');
 const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
 const defDeadline=today()+'T18:00';
@@ -12311,17 +12318,18 @@ dot.style.display=myPending.length>0?'':'none';
 }
 function openNewTaskInstance(){
 const isAdmin=STATE.user?.role==='admin';
-if(isAdmin){openNewTaskTemplate();el('tpl-title').textContent='Add One-Off Task';el('tpl-subtitle').textContent='One-time task';el('tpl-save-btn').textContent='Save Task';el('tpl-freq').value='once';onTplFreqChange();return;}
 const allTiUsers=STATE.users.filter(u=>u.active!==false&&!u._deleted);
 const tiAdmins=allTiUsers.filter(u=>u.role==='admin');
 const tiStaff=allTiUsers.filter(u=>u.role!=='admin');
 const tiTod=today();
 const mkTiOpt=u=>{
   const lv=getActiveLeave(u.id,tiTod);
-  const lbl=(u.role==='admin'?'👑 ':'')+u.name+(u.role==='admin'?' (Admin)':'')+(lv?' 🛑 On Leave':'');
-  return '<option value="'+u.id+'"'+(u.id===STATE.user?.id?' selected':'')+'>'+lbl+'</option>';
+  return '<option value="'+u.id+'"'+(u.id===STATE.user?.id?' selected':'')+'>'+taskUserLabel(u,{leave:!!lv})+'</option>';
 };
-const uO=tiAdmins.map(mkTiOpt).join('')+(tiAdmins.length&&tiStaff.length?'<option disabled>──────</option>':'')+tiStaff.map(mkTiOpt).join('');
+// Admins can assign to anyone; staff can only assign to other staff (never to admin).
+const uO=isAdmin
+  ?(tiAdmins.map(mkTiOpt).join('')+(tiAdmins.length&&tiStaff.length?'<option disabled>──────</option>':'')+tiStaff.map(mkTiOpt).join(''))
+  :tiStaff.map(mkTiOpt).join('');
 const pO=['High','Medium','Low'].map(p=>'<option'+(p==='Medium'?' selected':'')+'>'+p+'</option>').join('');
 const catO=['Accounting','Dispatch','Mill/Stock','Sales','Admin','Compliance','Other'].map(c=>'<option>'+c+'</option>').join('');
 const div=document.createElement('div');div.id='m-newtask';
@@ -12618,8 +12626,11 @@ function editTaskInstance(id){
   const allUsr=STATE.users.filter(u=>u.active!==false&&!u._deleted);
   const admUsr=allUsr.filter(u=>u.role==='admin');
   const stfUsr=allUsr.filter(u=>u.role!=='admin');
-  const mkUO=u=>{const lv=getActiveLeave(u.id,tod2);const lbl=(u.role==='admin'?'👑 ':'')+u.name+(u.role==='admin'?' (Admin)':'')+(lv?' 🛑 On Leave':'');return '<option value="'+u.id+'"'+(u.id===task.assignedUserId?' selected':'')+'>'+lbl+'</option>';};
-  const uO=admUsr.map(mkUO).join('')+(admUsr.length&&stfUsr.length?'<option disabled>──────</option>':'')+stfUsr.map(mkUO).join('');
+  const mkUO=u=>{const lv=getActiveLeave(u.id,tod2);return '<option value="'+u.id+'"'+(u.id===task.assignedUserId?' selected':'')+'>'+taskUserLabel(u,{leave:!!lv})+'</option>';};
+  // Admins can reassign to anyone; staff can only reassign to other staff.
+  const uO=isAdmin
+    ?(admUsr.map(mkUO).join('')+(admUsr.length&&stfUsr.length?'<option disabled>──────</option>':'')+stfUsr.map(mkUO).join(''))
+    :stfUsr.map(mkUO).join('');
   const pO=['High','Medium','Low'].map(p=>'<option'+(p===task.priority?' selected':'')+'>'+p+'</option>').join('');
   const div=document.createElement('div');div.id='m-etit';
   div.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
