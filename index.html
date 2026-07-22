@@ -98,7 +98,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.5.6';
+const APP_VERSION='1.5.7';
 const APP_BUILD_DATE='2026-07-22';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -107,9 +107,12 @@ const DATA_VERSION=2;
 (function checkVersion(){
   try{
     const params=new URLSearchParams(window.location.search);
+    const stored=localStorage.getItem('vs_app_version');
+    // On any version change, wipe the cached accounts list so old/renamed
+    // accounts can never block a fresh login. Data reloads from Firebase.
+    if(stored!==APP_VERSION){ try{localStorage.removeItem('vs_users');}catch(e){} }
     // If we arrived via a cache-bust redirect, just store version and continue
     if(params.has('_cb')){localStorage.setItem('vs_app_version',APP_VERSION);return;}
-    const stored=localStorage.getItem('vs_app_version');
     if(stored!==APP_VERSION){
       localStorage.setItem('vs_app_version',APP_VERSION);
       // Redirect to a unique URL with timestamp — bypasses ALL browser/CDN caches
@@ -672,26 +675,34 @@ const s=el('ls-sync-status');
 // ALWAYS refresh the accounts list from Firebase first, and REPLACE the local
 // copy — this wipes any stale/old accounts (e.g. renamed users) so login always
 // checks against the current cloud data, not outdated local records.
+let cloudReached=false;
 if(FIREBASE_URL){
   if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading accounts…</span>';
   try{
     const ctrl=new AbortController();
-    setTimeout(()=>ctrl.abort(),8000);
-    const fr=await fetch(FIREBASE_URL+'/altstock/users.json',{cache:'no-store',signal:ctrl.signal});
+    setTimeout(()=>ctrl.abort(),10000);
+    const fr=await fetch(FIREBASE_URL+'/altstock/users.json?nocache='+Date.now(),{cache:'no-store',signal:ctrl.signal});
     if(fr.ok){
       const users=await fr.json();
+      cloudReached=true;
       if(Array.isArray(users)&&users.length>0){
         STATE.users=users;           // full replace — no merge, no stale records
         lsSave('vs_users',STATE.users);
       }
     }
-  }catch(e){/* offline — fall back to local list */}
+  }catch(e){cloudReached=false;}
   if(s)s.innerHTML='';
 }
 let found=findUser();
 if(!found&&GAS_URL){
   // GAS fallback only if no Firebase
-  try{const gd=await api('getAll');if(gd&&gd.users){STATE.users=gd.users;lsSave('vs_users',STATE.users);found=findUser();}}catch(e){}
+  try{const gd=await api('getAll');if(gd&&gd.users){STATE.users=gd.users;lsSave('vs_users',STATE.users);found=findUser();cloudReached=true;}}catch(e){}
+}
+// If we could NOT reach the cloud, warn clearly — this is almost always a
+// content-blocker / privacy filter blocking firebaseio.com, or no internet.
+if(!cloudReached&&FIREBASE_URL){
+  el('le').innerHTML='⚠️ Can\'t reach the cloud server.<br><span style="font-size:11px">Turn off any ad/content blocker for this site, or check your internet, then try again.</span>';
+  return;
 }
 if(!found){
   el('le').textContent='Username not found. Check spelling or contact admin.';
