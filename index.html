@@ -669,29 +669,31 @@ let found=findUser();
 
 const s=el('ls-sync-status');
 if(!found){
-  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Step 1: Loading from Google Sheets...</span>';
-  try{
-    const gd=await api('getAll');
-    console.log('LOGIN: GAS getAll response:',gd?'got data':'null/empty',gd?'users:'+(gd.users||[]).length:'');
-    if(gd&&typeof gd==='object'&&(gd.items||gd.users||gd.customers)){
-      ['items','entries','customers','brokers','suppliers','users','orders','bills','payments','jobWork','leads','flaggedEntries','taskTemplates','taskInstances','staffLeave','recurringLeads'].forEach(k=>{if(gd[k]&&(!Array.isArray(gd[k])||gd[k].length>0))STATE[k]=gd[k];});
-      if(gd.settings)STATE.settings={...STATE.settings,...gd.settings};
-      lsSave('vs_users',STATE.users);
-      found=findUser();
-      if(found){console.log('LOGIN: Found user in Google Sheets');}
-      else{console.log('LOGIN: User NOT in Sheets. Usernames:',STATE.users.map(u=>u.username));}
-    }
-  }catch(e){console.log('LOGIN: GAS error:',e.message);}
+  // Try Firebase pull first (primary sync source)
+  if(FIREBASE_URL){
+    if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Syncing from cloud...</span>';
+    try{
+      const fr=await fetch(FIREBASE_URL+'/altstock.json');
+      if(fr.ok){
+        const fd=await fr.json();
+        if(fd&&fd.items){applyCloudData(fd,true);found=findUser();}
+      }
+    }catch(e){console.log('LOGIN: Firebase pull error:',e.message);}
+  }
+  // GAS fallback if no Firebase
+  if(!found&&GAS_URL){
+    if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading from Google Sheets...</span>';
+    try{
+      const gd=await api('getAll');
+      if(gd&&typeof gd==='object'&&(gd.items||gd.users||gd.customers)){
+        applyCloudData(gd,true);found=findUser();
+      }
+    }catch(e){console.log('LOGIN: GAS error:',e.message);}
+  }
 }
 if(!found){
-  if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Step 2: Direct API login...</span>';
-  const r=await api('login',{username:user,password:pass,deviceId:devId()});
-  console.log('LOGIN: Direct API response:',r);
-  if(r&&r.user){loginOK(r.user);return;}
-  // Show detailed error with what we found
-  const names=STATE.users.map(u=>u.username).filter(Boolean);
   el('le').textContent='Username not found. Check spelling or contact admin.';
-  if(s)s.innerHTML='<span style="color:#F87171">❌ Could not find account. Google Sheets users: '+STATE.users.length+'</span>';
+  if(s)s.innerHTML='';
   return;
 }
 if(found.active===false){el('le').textContent='Account is disabled. Contact admin.';return;}
