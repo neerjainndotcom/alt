@@ -98,23 +98,24 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.5.0';
-const APP_BUILD_DATE='2026-07-17';
+const APP_VERSION='1.5.2';
+const APP_BUILD_DATE='2026-07-22';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
 // detects the mismatch and forces a hard reload to fetch the new file.
 (function checkVersion(){
   try{
+    const params=new URLSearchParams(window.location.search);
+    // If we arrived via a cache-bust redirect, just store version and continue
+    if(params.has('_cb')){localStorage.setItem('vs_app_version',APP_VERSION);return;}
     const stored=localStorage.getItem('vs_app_version');
-    if(stored && stored!==APP_VERSION){
-      // Version changed — clear the page cache and reload fresh
+    if(stored!==APP_VERSION){
       localStorage.setItem('vs_app_version',APP_VERSION);
-      // Force fetch a completely fresh copy (bypasses browser cache)
-      window.location.href=window.location.href.split('?')[0]+'?v='+APP_VERSION;
+      // Redirect to a unique URL with timestamp — bypasses ALL browser/CDN caches
+      window.location.replace(window.location.href.split('?')[0]+'?_cb='+Date.now());
       return;
     }
-    localStorage.setItem('vs_app_version',APP_VERSION);
   }catch(e){}
 })();
 // ═══════════════════════════════════════════════════════════════════════
