@@ -98,7 +98,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.7.0';
+const APP_VERSION='1.7.1';
 const APP_BUILD_DATE='2026-07-22b';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -1063,7 +1063,7 @@ el('ds').textContent=fmtDate(new Date());
 /* Build stats data (always needed for alerts etc.) */
 let totT=0,totSKU=0;
 const activeItems=STATE.items.filter(i=>!i._deleted);
-activeItems.forEach(i=>i.colours.filter(c=>!c.discontinued&&!c._deleted).forEach(c=>{totSKU++;totT+=(c.stock_taka||0);}));
+activeItems.forEach(i=>(i.colours||[]).filter(c=>!c.discontinued&&!c._deleted).forEach(c=>{totSKU++;totT+=(c.stock_taka||0);}));
 const activeOrders=STATE.orders.filter(o=>!o._deleted&&o.status!=='deleted');
 const activeBillsDash=liveBills();
 
@@ -13119,11 +13119,18 @@ async function pullAllFromFirebase(force){
     const sr=await fetch(FIREBASE_URL+'/altstock/settings.json').catch(()=>null);
     d.settings=(sr&&sr.ok)?(await sr.json()):null;
     if(!d.items.length&&!d.users.length&&!d.customers.length) return false;
+    const pullStartTs=Date.now();
     applyCloudData(d,force!==false);
     const pullMap={};
     DELTA_COLLECTIONS.forEach(col=>{ pullMap[col]=(meta[col]&&meta[col].ts)||Date.now(); });
     pullMap.settings=(meta.settings&&meta.settings.ts)||Date.now();
     _dsSetPullTsMap(pullMap);
+    // Seed the push cutoff to now too — everything we just downloaded already
+    // matches the cloud, so the NEXT push should only include records this
+    // device modifies locally after this point, not the entire dataset we
+    // just pulled. Without this, a device's very first push after login would
+    // re-upload every record it has, defeating the point of delta sync.
+    _dsSetLastPush(pullStartTs);
     return true;
   }catch(e){ return false; }
 }
