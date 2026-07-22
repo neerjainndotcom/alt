@@ -688,7 +688,7 @@ if(!found){
   if(r&&r.user){loginOK(r.user);return;}
   // Show detailed error with what we found
   const names=STATE.users.map(u=>u.username).filter(Boolean);
-  el('le').textContent='Username "'+user+'" not found. Available accounts: '+(names.length?names.join(', '):'NONE loaded');
+  el('le').textContent='Username not found. Check spelling or contact admin.';
   if(s)s.innerHTML='<span style="color:#F87171">❌ Could not find account. Google Sheets users: '+STATE.users.length+'</span>';
   return;
 }
