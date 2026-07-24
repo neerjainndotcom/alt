@@ -34,7 +34,7 @@
 </div>
 <div id="ls"><div class="lg"></div><div class="lglow"></div><div class="lcard"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p>Amrit Laxmi Textile · Surat</p></div><div id="lf"><div class="lf"><label>Username</label><input type="text" id="lu" placeholder="Enter username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"/></div><div class="lf"><label>Password</label><input type="password" id="lp" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div><button class="lbtn" onclick="doLogin()">Sign In →</button><div class="lerr" id="le"></div><div style="display:flex;justify-content:space-between;margin-top:14px"><button onclick="showForgotUsername()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Username?</button><button onclick="showForgotPassword()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Password?</button></div><div style="text-align:center;margin-top:10px"><button onclick="showEmergencyRecovery()" style="background:none;border:none;color:rgba(255,80,80,0.7);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline">&#x1F6A8; Admin locked out?</button></div><div id="login-version" style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3)"></div></div><div id="setup-screen" style="display:none;width:100%"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p style="color:rgba(255,255,255,0.6);font-size:13px">First Time Setup — Create Your Admin Account</p></div><div id="lf"><div class="lf"><label>Your Full Name</label><input type="text" id="setup-name" placeholder="e.g. Neer Jain" autocomplete="name"/></div><div class="lf"><label>Choose Username</label><input type="text" id="setup-user" placeholder="e.g. neer" autocomplete="username" style="text-transform:lowercase"/></div><div class="lf"><label>Choose Password</label><input type="password" id="setup-pass" placeholder="Min. 6 characters" autocomplete="new-password"/></div><div class="lf"><label>Confirm Password</label><input type="password" id="setup-pass2" placeholder="Re-enter password" autocomplete="new-password"/></div><div class="lf" style="margin-top:6px"><label style="color:rgba(255,255,255,0.9)">Google Sheets URL <span style="color:rgba(255,255,255,0.4);font-weight:400">(optional — set up later in Admin → Database)</span></label><input type="url" id="setup-gas" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" style="font-size:11px"/><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;line-height:1.5">Paste your Google Sheets Web App URL here so your account saves to the cloud immediately. Without this, data is only on this device until you add it later.</div></div><button class="lbtn" onclick="createFirstAdmin()">✔ Create Admin Account →</button><div class="lerr" id="setup-err"></div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:12px;text-align:center;line-height:1.6">This creates the only admin account for ALT Stock.<br>Set up a Recovery PIN after logging in.</div><button onclick="showLoginForm()" style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit">← Back to Login</button></div></div><div id="of" class="hid"><p style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:20px;line-height:1.6">📱 New device detected!<br>OTP sent to admin WhatsApp.<br>Ask admin to share the code.</p><div class="lf"><label>One-Time Password</label><input type="number" class="otp-inp" id="oi" placeholder="000000" maxlength="6"/></div><button class="lbtn" onclick="doOTP()">Verify OTP →</button><div class="lerr" id="oe"></div><button style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit" onclick="showEl('lf');hideEl('of')">← Back</button></div></div>
 </div>
-<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:12px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-recurring-visits"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div id="dash-mixed-sarees"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('pend',this)">Pending</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button><button class="tbb" onclick="salesTab('pay',this)">Payments</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div id="billst"></div></div><div class="tp" id="tp-pend"><div style="display:flex;gap:0;padding:8px 16px 0;border-bottom:1.5px solid #E5E4F0"><button class="sw on" id="pend-sub-pend" onclick="pendSubTab('pend')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Pending</button><button class="sw" id="pend-sub-done" onclick="pendSubTab('done')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Completed</button></div><div id="pendlst"></div><div id="donelst" style="display:none"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg" style="position:relative"><label>Customer</label><input type="text" class="inp" id="inv-cust-search" placeholder="Type customer name to search..." oninput="filterInvCusts()" onfocus="filterInvCusts()" autocomplete="off" style="font-size:14px;padding:10px 12px"/><input type="hidden" id="inv-cust-sel"/><div id="inv-cust-dd" style="display:none;position:absolute;left:0;right:0;top:100%;background:white;border:1.5px solid var(--br);border-radius:0 0 10px 10px;z-index:200;max-height:230px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.13)"></div></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div><div class="tp" id="tp-pay"><div class="srch"><span>🔍</span><input type="text" placeholder="Search payments by customer or bill no..." oninput="renderPayments(this.value)"/></div><div id="paylst"></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="openExchange()"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" id="inward-manual-btn" onclick="openManualStock()" style="display:none;border:1.5px solid rgba(217,119,6,.3);background:var(--Al)"><span class="qaico">✏️</span><div><div class="qalbl" style="color:var(--Ad)">Manual Entry</div><div class="qasub">Add/deduct balance</div></div></div></div></div><div class="stl" <div class="stl">Exchange Sarees</div>
+<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:12px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-recurring-visits"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div id="dash-mixed-sarees"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('pend',this)">Pending</button><button class="tbb" onclick="salesTab('pay',this)">Payments</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div id="billst"></div></div><div class="tp" id="tp-pend"><div style="display:flex;gap:0;padding:8px 16px 0;border-bottom:1.5px solid #E5E4F0"><button class="sw on" id="pend-sub-pend" onclick="pendSubTab('pend')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Pending</button><button class="sw" id="pend-sub-done" onclick="pendSubTab('done')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Completed</button></div><div id="pendlst"></div><div id="donelst" style="display:none"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg" style="position:relative"><label>Customer</label><input type="text" class="inp" id="inv-cust-search" placeholder="Type customer name to search..." oninput="filterInvCusts()" onfocus="filterInvCusts()" autocomplete="off" style="font-size:14px;padding:10px 12px"/><input type="hidden" id="inv-cust-sel"/><div id="inv-cust-dd" style="display:none;position:absolute;left:0;right:0;top:100%;background:white;border:1.5px solid var(--br);border-radius:0 0 10px 10px;z-index:200;max-height:230px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.13)"></div></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div><div class="tp" id="tp-pay"><div class="srch"><span>🔍</span><input type="text" placeholder="Search payments by customer or bill no..." oninput="renderPayments(this.value)"/></div><div id="paylst"></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="openExchange()"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" id="inward-manual-btn" onclick="openManualStock()" style="display:none;border:1.5px solid rgba(217,119,6,.3);background:var(--Al)"><span class="qaico">✏️</span><div><div class="qalbl" style="color:var(--Ad)">Manual Entry</div><div class="qasub">Add/deduct balance</div></div></div></div></div><div class="stl" <div class="stl">Exchange Sarees</div>
 <div style="margin-bottom:8px"><select class="inp" id="exch-status-filter" onchange="renderExchangeList()" style="max-width:200px">
 <option value="">All Status</option>
 <option value="pending">Pending</option>
@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.10.1';
-const APP_BUILD_DATE='2026-07-24d';
+const APP_VERSION='1.11.0';
+const APP_BUILD_DATE='2026-07-24e';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -169,13 +169,21 @@ const emptyOpts=allOpts.filter(o=>o.value==='');
 const realOpts=allOpts.filter(o=>o.value!=='').sort((a,b)=>a.textContent.localeCompare(b.textContent));
 let shown=0;
 [...emptyOpts,...realOpts].forEach(o=>{
-if(fq&&!o.textContent.toLowerCase().includes(fq)) return;
+const sub=o.dataset?o.dataset.sub:'';
+if(fq&&!o.textContent.toLowerCase().includes(fq)&&!(sub&&sub.toLowerCase().includes(fq))) return;
 const d=document.createElement('div');
 const isSel=o.value!==''&&o.value===selectEl.value;
 const isEmpty=o.value==='';
 d.style.cssText='padding:9px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid #F3F4F6;'+
 (isSel?'background:#EEF2FF;font-weight:700;color:#4F46E5;':isEmpty?'color:#9CA3AF;font-style:italic;':'color:#111827;');
-d.textContent=o.textContent;
+if(sub){
+  const nameEl=document.createElement('div'); nameEl.textContent=o.textContent;
+  const subEl=document.createElement('div'); subEl.textContent=sub;
+  subEl.style.cssText='font-size:11px;font-weight:400;color:#9CA3AF;margin-top:2px;'+(isSel?'':'');
+  d.appendChild(nameEl); d.appendChild(subEl);
+}else{
+  d.textContent=o.textContent;
+}
 d.onmouseenter=()=>{if(!isSel)d.style.background='#F5F3FF';};
 d.onmouseleave=()=>{d.style.background=isSel?'#EEF2FF':'';};
 d.onclick=e=>{
@@ -2067,17 +2075,19 @@ window._returnToOrder=false;
 hideMod('m-cst');
 const sel=el('od-c');
 if(sel){
-const nc=STATE.customers[STATE.customers.length-1];
-sel.innerHTML='<option value="">Select customer...</option>'+STATE.customers.map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
-sel.value=nc.id; onOrderCustChange();
+/* Use savedId (the customer we just created/edited), NOT the last array element —
+   editing an existing customer does not move it to the end of STATE.customers, so
+   picking the "last" one previously selected a completely unrelated customer. */
+sel.innerHTML='<option value="">Select customer...</option>'+STATE.customers.filter(c=>!c._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(c=>'<option value="'+c.id+'"'+(c.address?' data-sub="'+escHtml(c.address)+'"':'')+'>'+c.name+'</option>').join('');
+sel.value=savedId; onOrderCustChange();
 }
 }else if(window._convertingLeadId){
 const leadId=window._convertingLeadId;
 window._convertingLeadId=null;
 const lead=STATE.leads?.find(l=>l.id===leadId);
 if(lead){
-const newCust=STATE.customers[STATE.customers.length-1];
-lead.customerId=newCust?.id; lead._ts=Date.now();
+const newCust=STATE.customers.find(c=>c.id===savedId);
+lead.customerId=newCust?.id||savedId; lead._ts=Date.now();
 lsSave('vs_leads',STATE.leads);
 }
 hideMod('m-cst'); renderCusts(); renderLeads('all'); renderLeads('mine'); renderLeads('today'); renderLeads('won'); renderLeads('won2'); renderLeads('lost');
@@ -2727,6 +2737,7 @@ window._ordPfx=pfx;
 if(!_ordId){
   const newNo=nextOrdNo(pfx);
   const disp=el('ordno'); if(disp) disp.textContent=newNo;
+  const inp=el('od-ordno-edit'); if(inp) inp.value=newNo;
 }
 }
 
@@ -2763,11 +2774,11 @@ u.role==='admin'
 )
 );
 const smOpts=salesmen.sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(u=>'<option value="'+u.id+'">'+u.name+(u.orderPrefix?' ('+u.orderPrefix+')':'')+'</option>').join('');
-const co=[...STATE.customers].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
+const co=[...STATE.customers].filter(c=>!c._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(c=>'<option value="'+c.id+'"'+(c.address?' data-sub="'+escHtml(c.address)+'"':'')+'>'+c.name+'</option>').join('');
 const bo=[...STATE.brokers].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(b=>'<option value="'+b.id+'">'+b.name+'</option>').join('');
 const isOpenOrd=(_ordType==='open');
 el('ordbod').innerHTML=
-(_ordId?'<div class="fg"><label>Order Number (editable)</label><input class="inp mono" type="text" id="od-ordno-edit" style="font-size:18px;font-weight:800;color:var(--P)" value=""/></div>':'')+
+'<div class="fg"><label>Order Number (editable)</label><input class="inp mono" type="text" id="od-ordno-edit" style="font-size:18px;font-weight:800;color:var(--P)" value="'+(_ordId?'':nextOrdNo(window._ordPfx||STATE.user?.orderPrefix||STATE.settings.orderPrefix||'B/'))+'"/></div>'+
 /* Order Type Toggle */
 '<div class="fg"><label>Order Type</label>'+
 '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
@@ -3323,12 +3334,20 @@ if(!confirm('⚠️ This order was modified by '+( existingOrd.by||'another user
 }
 const pfx=smUser?.orderPrefix||STATE.settings.orderPrefix||'B/';
 const editedOrdNo=(el('od-ordno-edit')?.value||'').trim();
-/* CRITICAL: During edit, ALWAYS preserve order number — never generate a new one */
-let ordNo=_ordId?(editedOrdNo||existingOrd?.orderNo||window._editOrdNo||el('ordno')?.textContent||''):nextOrdNo(pfx);
-/* Duplicate number check — another device may have created same number simultaneously */
+/* CRITICAL: During edit, ALWAYS preserve order number — never generate a new one.
+   For new orders, use whatever the user has in the editable field (they may have
+   changed it), falling back to the auto-generated number if they cleared it. */
+let ordNo=_ordId?(editedOrdNo||existingOrd?.orderNo||window._editOrdNo||el('ordno')?.textContent||''):(editedOrdNo||nextOrdNo(pfx));
+/* Duplicate number check — another device may have created same number simultaneously,
+   or the user manually typed a number that's already taken */
 if(!_ordId){
 const dup=STATE.orders.find(o=>o.orderNo===ordNo&&!o._deleted);
-if(dup){ordNo=nextOrdNo(pfx);}
+if(dup){
+const suggestion=nextOrdNo(pfx);
+const inp=el('od-ordno-edit'); if(inp) inp.value=suggestion;
+toast('Order number "'+ordNo+'" is already used — suggested "'+suggestion+'" instead, tap Save again','er');
+return;
+}
 }
 const commonFields={orderNo:ordNo,salesmanId:smId,salesmanName:smUser?.name||'',date:el('od-d')?.value,custId:cId,custName:cust?.name||'',brkId:bId,brkName:brk?.name||'',notes:el('od-nt')?.value,by:STATE.user?.name||'',fy:existingOrd?.fy||STATE.settings.currentFY||getCurrentFY()};
 
@@ -9171,13 +9190,27 @@ if(prev) onInvCustSelect();
 else{ const c=el('inv-pending-orders'); if(c) c.innerHTML=''; }
 setTimeout(()=>{ const s=el('inv-cust-search'); if(s&&!el('inv-cust-sel')?.value) s.focus(); },200);
 }
+function _custIdsWithPendingOrders(){
+const ids=new Set();
+(STATE.orders||[]).forEach(o=>{
+  if(o._deleted||!o.custId) return;
+  const isPending=o.status==='pending'||(o.type==='open'&&(o.programmes||[]).some(p=>p.status!=='billed'&&!p.billId));
+  if(isPending) ids.add(o.custId);
+});
+/* Also include other members of any party group a pending customer belongs to, since onInvCustSelect() shows group-wide pending orders */
+(STATE.custGroups||[]).forEach(g=>{
+  if((g.memberIds||[]).some(mid=>ids.has(mid))) (g.memberIds||[]).forEach(mid=>ids.add(mid));
+});
+return ids;
+}
 function filterInvCusts(){
 const q=(el('inv-cust-search')?.value||'').toLowerCase().trim();
 const dd=el('inv-cust-dd'); if(!dd) return;
-const sorted=[...STATE.customers].filter(c=>!c._deleted).sort((a,b)=>a.name.localeCompare(b.name));
-const filtered=q?sorted.filter(c=>c.name.toLowerCase().includes(q)||(c.phone||'').includes(q)):sorted;
-if(!filtered.length){dd.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--t3)">No customers found</div>';dd.style.display='block';return;}
-dd.innerHTML=filtered.map(c=>'<div onmousedown="selectInvCust(\''+c.id+'\',\''+c.name.replace(/'/g,'&#39;')+'\')" style="padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--br)" onmouseover="this.style.background=\'var(--Pl)\'" onmouseout="this.style.background=\'\'">'+c.name+'</div>').join('');
+const pendingIds=_custIdsWithPendingOrders();
+const sorted=[...STATE.customers].filter(c=>!c._deleted&&pendingIds.has(c.id)).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+const filtered=q?sorted.filter(c=>(c.name||'').toLowerCase().includes(q)||String(c.phone||'').includes(q)):sorted;
+if(!filtered.length){dd.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--t3)">'+(q?'No matching customers with pending orders':'No customers with pending orders')+'</div>';dd.style.display='block';return;}
+dd.innerHTML=filtered.map(c=>'<div onmousedown="selectInvCust(\''+c.id+'\',\''+c.name.replace(/'/g,'&#39;')+'\')" style="padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--br)" onmouseover="this.style.background=\'var(--Pl)\'" onmouseout="this.style.background=\'\'"><div>'+c.name+'</div>'+(c.address?'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+c.address+'</div>':'')+'</div>').join('');
 dd.style.display='block';
 }
 function selectInvCust(id,name){
