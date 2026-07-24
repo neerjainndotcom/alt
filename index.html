@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.12.0';
-const APP_BUILD_DATE='2026-07-24f';
+const APP_VERSION='1.12.1';
+const APP_BUILD_DATE='2026-07-24g';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -6836,6 +6836,9 @@ html+='</div>';
 el('disp-table').innerHTML=html;
 /* Show "+ Add Another Order" button now that primary order is loaded */
 const addBtn=el('disp-add-ord-btn'); if(addBtn) addBtn.style.display='block';
+/* Pre-fill discount with customer's default (or global default) — user can edit/zero it out for a Net bill */
+const discInp0=el('disp-disc');
+if(discInp0){const _c0=STATE.customers.find(c=>c.id===o.custId);discInp0.value=_c0?.discount!=null?_c0.discount:(STATE.settings.discount||0);}
 calcDispTotal();
 }
 /* ── MULTI-ORDER DISPATCH HELPERS ── */
