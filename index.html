@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.9.0';
-const APP_BUILD_DATE='2026-07-24a';
+const APP_VERSION='1.9.1';
+const APP_BUILD_DATE='2026-07-24b';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -6321,6 +6321,7 @@ const PERM_DEFS=[
 {id:'rep_vsorder',      grp:'Reports', lbl:'Stock vs Orders',       desc:'See stock shortage vs pending orders'},
 {id:'rep_daily',        grp:'Reports', lbl:'Daily Sales Report',    desc:'See daily bill totals by date'},
 {id:'rep_topsku',       grp:'Reports', lbl:'Top SKU Report',        desc:'See highest selling colours & SKUs'},
+{id:'rep_dayend',       grp:'Reports', lbl:'Day Wrap Report',       desc:"See today's completed tasks & leads by staff — admin-only by default, grant to a supervisor if needed"},
 {id:'reports_wa',       grp:'Reports', lbl:'Share Reports via WA',  desc:'WhatsApp share any report'},
 {id:'leads_view',    grp:'Leads', lbl:'View Leads',             desc:'View lead list'},
 {id:'leads_edit',    grp:'Leads', lbl:'Edit Leads',             desc:'Add & update leads'},
@@ -6331,7 +6332,7 @@ const PERM_DEFS=[
 {id:'cancel_bill', grp:'Ledger',    lbl:'Cancel Bills',       desc:'Cancel dispatched bills (stock reversal)'},
 {id:'flag_entry',  grp:'Ledger',    lbl:'Flag Wrong Entries', desc:'Flag entries for admin review'},
 ];
-const DEFAULT_PERMS={dash:0,sales_view:0,sales_order:0,sales_edit:0,sales_bill:0,sales_delete:0,sales_cancel:0,sales_wa:0,inward_view:0,inward:0,inward_delete:0,manual_stock:0,jw:0,jw_delete:0,masters_view:0,masters_edit:0,masters_delete:0,reports:0,rep_stock:0,rep_vsorder:0,rep_daily:0,rep_topsku:0,reports_wa:0,leads_view:0,leads_edit:0,leads_view_all:0,leads_assign:0,ledger_view:0,delete_entry:0,cancel_bill:0,edit_bill:0,flag_entry:0};
+const DEFAULT_PERMS={dash:0,sales_view:0,sales_order:0,sales_edit:0,sales_bill:0,sales_delete:0,sales_cancel:0,sales_wa:0,inward_view:0,inward:0,inward_delete:0,manual_stock:0,jw:0,jw_delete:0,masters_view:0,masters_edit:0,masters_delete:0,reports:0,rep_stock:0,rep_vsorder:0,rep_daily:0,rep_topsku:0,rep_dayend:0,reports_wa:0,leads_view:0,leads_edit:0,leads_view_all:0,leads_assign:0,ledger_view:0,delete_entry:0,cancel_bill:0,edit_bill:0,flag_entry:0};
 function getStaffTypes(){
 return [...((STATE.settings||{}).staffTypes||[]),{id:'admin',name:'Admin',color:'#E11D48'}];
 }
@@ -7187,6 +7188,9 @@ renderTopSKUReport();
 }else if(t==='trends'){
 renderTrends(7);
 }else if(t==='dayend'){
+if(!isAdmin&&!hasPerm('rep_dayend')){
+el('rep-dayend-body').innerHTML=noPermMsg('Day Wrap Report');return;
+}
 renderDayEndReport();
 }
 }
@@ -7215,8 +7219,7 @@ leadsTouchedToday.forEach(l=>{
 leadsAddedToday.forEach(l=>{const s=ensure(l.assignedId,l.assignedName||'Unassigned');s.leadsAdded.push(l);});
 leadsClosedToday.forEach(l=>{const s=ensure(l.assignedId,l.assignedName||'Unassigned');s.leadsClosed.push(l);});
 let ids=Object.keys(staffData);
-/* Non-admin staff only see their own day; admin sees everyone */
-if(!isAdmin){ids=ids.filter(k=>staffData[k].name===STATE.user?.name);}
+/* Anyone who reaches this point already has the rep_dayend permission (or is admin) — full team view */
 ids.sort((a,b)=>staffData[a].name.localeCompare(staffData[b].name));
 if(!ids.length){
 c.innerHTML='<div class="emp"><div class="emj">🌙</div><h3>No activity yet today</h3><p>Come back later — completed work will show up here, and this resets fresh every morning.</p></div>';
@@ -10481,7 +10484,7 @@ else if(fnName==='waDailyReport') waDailyReport(el('rep-daily-date')?.value||tod
 function applyReportTabVisibility(){
 const isAdmin=STATE.user?.role==='admin';
 const rscr=el('s-reports'); if(!rscr) return;
-const tabMap={stock:'rep_stock',vsorder:'rep_vsorder',daily:'rep_daily',topsku:'rep_topsku'};
+const tabMap={stock:'rep_stock',vsorder:'rep_vsorder',daily:'rep_daily',topsku:'rep_topsku',dayend:'rep_dayend'};
 rscr.querySelectorAll('.tbb').forEach(btn=>{
 const fn=btn.getAttribute('onclick')||'';
 const match=fn.match(/repTab\('(\w+)'/);
