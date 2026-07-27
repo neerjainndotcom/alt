@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.16.0';
-const APP_BUILD_DATE='2026-07-27e';
+const APP_VERSION='1.16.1';
+const APP_BUILD_DATE='2026-07-27f';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -8631,7 +8631,7 @@ const ok=await appConfirm('Switch Active Financial Year?',
   '\u2705 FY '+curFY+'\'s current data is safely archived \u2014 switch back anytime the same way.\n'+
   '\u2705 FY '+fy+'\'s archived data is fully restored and becomes editable again.\n\n'+
   'Everyone using the app should be aware before you switch.',
-  '&#x1F504;','Switch to FY '+fy,'ok');
+  '🔄','Switch to FY '+fy,'ok');
 if(!ok) return;
 const ok2=await appConfirm('Confirm Switch','Switch the active financial year to FY '+fy+' now?','\u26A0\uFE0F','Yes, Switch Now','dr');
 if(!ok2) return;
