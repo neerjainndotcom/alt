@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.13.0';
-const APP_BUILD_DATE='2026-07-27a';
+const APP_VERSION='1.14.0';
+const APP_BUILD_DATE='2026-07-27b';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -12140,6 +12140,34 @@ if(!filtered.length) html+='<div class="emp"><div class="emj">📋</div><h3>No t
 var _sc=(STATE.taskInstances||[]).filter(function(t){return t.status!=='Done'&&t.generatedDate&&t.generatedDate<new Date().toISOString().split('T')[0];}).length;if(_sc>0)html='<div style="margin-bottom:12px;padding:10px 14px;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;display:flex;align-items:center;justify-content:space-between"><span style="color:#991b1b;font-size:13px;font-weight:600">⚠️ '+_sc+' old tasks from past days</span><button class="btn bs" onclick="clearStaleTaskInstances()" style="background:#dc2626;color:white;font-size:12px;padding:6px 12px">🧹 Clear All</button></div>'+html;
 c.innerHTML=html;
 }
+function nextTemplateOccurrence(tmpl){
+/* Scan forward from today to find the next date this template would actually generate a task,
+   mirroring generateTaskInstances()'s Sunday/holiday skip so the date shown is accurate. */
+if(!tmpl.active) return null;
+const hols=STATE.settings?.holidays||[];
+const d=new Date();d.setHours(0,0,0,0);
+for(let i=0;i<400;i++){
+const dateStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+if(d.getDay()!==0&&!hols.includes(dateStr)){
+try{ if(isTaskScheduledOn(tmpl,dateStr)) return dateStr; }catch(e){}
+}
+d.setDate(d.getDate()+1);
+}
+return null;
+}
+function nextTemplateOccurrence(tmpl){
+if(!tmpl.active) return null;
+const hols=STATE.settings?.holidays||[];
+const d=new Date();d.setHours(0,0,0,0);
+for(let i=0;i<400;i++){
+const dateStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+if(d.getDay()!==0&&!hols.includes(dateStr)){
+try{ if(isTaskScheduledOn(tmpl,dateStr)) return dateStr; }catch(e){}
+}
+d.setDate(d.getDate()+1);
+}
+return null;
+}
 function renderTaskTemplates(){
 const c=el('task-lst-tpl'); if(!c) return;
 const tpls=active(STATE.taskTemplates||[]);
@@ -12167,6 +12195,7 @@ html+=
 (t.active?'<span style="background:#D1FAE5;color:#065F46;font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px">Active</span>':'<span style="background:#F3F4F6;color:#6B7280;font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px">Paused</span>')+
 '</div>'+
 '<div style="font-size:11px;color:var(--t3)">'+((!STATE.users.find(u=>u.id===t.assignedUserId&&!u._deleted&&u.active!==false))?'⚠️ <span style="color:#DC2626;font-weight:700">'+t.assignedUserName+' — user changed, edit to fix</span>':'👤 '+t.assignedUserName)+' \u2022 '+schedStr+' \u2022 by '+t.deadlineTime+'</div>'+
+(()=>{const _nd=nextTemplateOccurrence(t);return t.active?(_nd?'<div style="font-size:11px;color:#4F46E5;font-weight:700;margin-top:2px">📅 Next: '+fmtDate(_nd)+(_nd===today()?' (Today)':'')+'</div>':'<div style="font-size:11px;color:#9CA3AF;margin-top:2px">📅 No upcoming date found</div>'):'';})()+
 (t.description?'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+t.description+'</div>':'')+
 '</div>'+
 '</div>'+
