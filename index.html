@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.12.1';
-const APP_BUILD_DATE='2026-07-24g';
+const APP_VERSION='1.13.0';
+const APP_BUILD_DATE='2026-07-27a';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -4110,7 +4110,7 @@ function openEditBill(billId){
     _billFromProgLot=true;
     const _eg={};const _eo=[];
     _billRows.forEach((r,ri)=>{
-      const k=r._lotIdx!==undefined?String(r._lotIdx):((r.itemId||'')+'|'+(r.range||'')+'|'+ri);
+      const k=r._lotIdx!==undefined?String(r._lotIdx):(r.lotIndex!==undefined?String(r.lotIndex):((r.itemId||'')+'|'+(r.range||'')+'|'+ri));
       if(!_eg[k]){_eg[k]={itemId:r.itemId,range:r.range,cut:r.cut||6,progs:[]};_eo.push(k);}
       _eg[k].progs.push({itemId:r.itemId,colIdx:r.colIdx,pcs:r.pcs,rate:r.rate,billedPcs:0,bills:[],status:'pending'});
     });
