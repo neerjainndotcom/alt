@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.15.0';
-const APP_BUILD_DATE='2026-07-27d';
+const APP_VERSION='1.16.0';
+const APP_BUILD_DATE='2026-07-27e';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -8522,7 +8522,7 @@ c.innerHTML=
 '• <b>FY never changes or resets automatically</b> — your data is always safe.<br>'+
 '• <b>"Open New FY"</b> is a manual admin action — nothing happens without your confirmation.<br>'+
 '• When you open a new FY: old orders/bills/entries are <b>archived</b> (not deleted), stock carries forward as opening balance, and a fresh FY starts.<br>'+
-'• You can <b>view and download old FY data</b> anytime from this screen.'+
+'• You can <b>view and download old FY data</b> anytime from this screen.<br>'+'• <b>🔄 Switch to This Year</b> makes any past FY active again — new orders/bills/entries go into it and you can fully edit it, just like the current year.'+
 '</div>'+
 '</div>'+
 // ── FY mismatch warning ──
@@ -8550,7 +8550,8 @@ allFYs.map(fy=>{
   '<div style="padding:12px 14px;display:flex;align-items:center;gap:8px">'+
   '<div style="flex:1"><div class="fw7">FY '+fy+(isCur?' <span style="font-size:10px;background:var(--P);color:white;padding:1px 7px;border-radius:5px">CURRENT</span>':'')+'</div></div>'+
   '</div>'+
-  (!isCur?'<div style="display:flex;border-top:1px solid #F3F4F6">'+
+  (!isCur?'<button onclick="switchActiveFY(\''+fy+'\')" style="width:100%;padding:10px;border:none;border-top:1.5px solid var(--P);background:var(--Pl);font-size:12px;font-weight:800;color:var(--P);cursor:pointer">🔄 Switch to This Year (Make Active)</button>'+
+  '<div style="display:flex;border-top:1px solid #F3F4F6">'+
   '<button onclick="viewFYSummary(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;font-size:11px;font-weight:700;color:#4F46E5;cursor:pointer">📋 View</button>'+
   '<button onclick="downloadFYPdf(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#059669;cursor:pointer">📄 PDF Report</button>'+
   '<button onclick="deleteFYData(\''+fy+'\')" style="flex:1;padding:8px;border:none;background:transparent;border-left:1px solid #F3F4F6;font-size:11px;font-weight:700;color:#DC2626;cursor:pointer">🗑 Delete</button>'+
@@ -8567,6 +8568,10 @@ async function openNewFY(){
 const curFY=STATE.settings.currentFY||getCurrentFY();
 const yr=parseInt(curFY.split('-')[0]);
 const nextFY=(yr+1)+'-'+(String(yr+2).slice(-2));
+if((STATE.settings.allFYs||[]).includes(nextFY)){
+  toast('FY '+nextFY+' already exists. Use "Switch to This Year" below instead of Open New FY.','er');
+  return;
+}
 const ok=await appConfirm('Open New Financial Year?',
 'FY '+nextFY+' will be created.\n\n'+
 '✅ Stock levels carry forward as opening balance\n'+
@@ -8613,6 +8618,69 @@ STATE.settings.currentFY=nextFY;
 persist(); renderFYTab(); renderDash();
 toast('FY '+nextFY+' opened! Old data archived. Stock carried forward.','ok');
 autoSyncCloud();
+}
+function _tombOne(r){ if(r){ r._deleted=true; r._ts=Date.now(); } }
+function _reviveOne(r){ if(r){ r._deleted=false; r._ts=Date.now(); } }
+async function switchActiveFY(fy){
+const curFY=STATE.settings.currentFY||getCurrentFY();
+if(fy===curFY){toast('FY '+fy+' is already the active year','ok');return;}
+if(!(STATE.settings.allFYs||[]).includes(fy)){toast('Unknown financial year','er');return;}
+const ok=await appConfirm('Switch Active Financial Year?',
+  'This makes FY '+fy+' the ACTIVE year again.\n\n'+
+  '\u2705 New orders, bills, ledger entries & payments will go into FY '+fy+' from now on.\n'+
+  '\u2705 FY '+curFY+'\'s current data is safely archived \u2014 switch back anytime the same way.\n'+
+  '\u2705 FY '+fy+'\'s archived data is fully restored and becomes editable again.\n\n'+
+  'Everyone using the app should be aware before you switch.',
+  '&#x1F504;','Switch to FY '+fy,'ok');
+if(!ok) return;
+const ok2=await appConfirm('Confirm Switch','Switch the active financial year to FY '+fy+' now?','\u26A0\uFE0F','Yes, Switch Now','dr');
+if(!ok2) return;
+const deepClone=x=>JSON.parse(JSON.stringify(x||[]));
+// 1. Snapshot the year we're leaving BEFORE tombstoning (archive stays clean/undeleted)
+const curArchive={
+  orders:deepClone(STATE.orders),
+  bills:deepClone(STATE.bills),
+  entries:deepClone(STATE.entries),
+  payments:deepClone(STATE.payments||[]),
+  jobWork:deepClone(STATE.jobWork||[])
+};
+lsSave('vs_fy_archive_'+curFY,curArchive);
+// 2. Tombstone the live records so the cloud & other devices know these are hidden now
+(STATE.orders||[]).forEach(_tombOne);(STATE.bills||[]).forEach(_tombOne);
+(STATE.entries||[]).forEach(_tombOne);(STATE.payments||[]).forEach(_tombOne);(STATE.jobWork||[]).forEach(_tombOne);
+persistAllCollections();
+try{ await pushDeltaToFirebase(false); }catch(e){}
+// 3. Load the target FY's archive and revive it (fresh _ts + _deleted:false so it wins on sync)
+const targetArchive=lsGet('vs_fy_archive_'+fy)||{orders:[],bills:[],entries:[],payments:[],jobWork:[]};
+STATE.orders=targetArchive.orders||[];
+STATE.bills=targetArchive.bills||[];
+STATE.entries=targetArchive.entries||[];
+STATE.payments=targetArchive.payments||[];
+STATE.jobWork=targetArchive.jobWork||[];
+STATE.orders.forEach(_reviveOne);STATE.bills.forEach(_reviveOne);
+STATE.entries.forEach(_reviveOne);STATE.payments.forEach(_reviveOne);STATE.jobWork.forEach(_reviveOne);
+// 4. That FY is live now — drop its local archive copy
+try{localStorage.removeItem('vs_fy_archive_'+fy);}catch(e){}
+// 5. Update FY bookkeeping
+if(!STATE.settings.allFYs) STATE.settings.allFYs=[curFY];
+if(!STATE.settings.allFYs.includes(curFY)) STATE.settings.allFYs.push(curFY);
+if(!STATE.settings.allFYs.includes(fy)) STATE.settings.allFYs.push(fy);
+STATE.settings.currentFY=fy;
+try{recalcStockFromEntries();}catch(e){}
+persist();
+_refreshAllFyScreens();
+toast('Switched! FY '+fy+' is now active and editable.','ok');
+}
+function _refreshAllFyScreens(){
+try{renderFYTab();}catch(e){}
+try{renderDash();}catch(e){}
+try{renderOrders();}catch(e){}
+try{renderBills();}catch(e){}
+try{renderPendingOrders();}catch(e){}
+try{renderPayments();}catch(e){}
+try{renderOutstanding();}catch(e){}
+try{renderStock();}catch(e){}
+try{renderLedger();}catch(e){}
 }
 function viewFYSummary(fy){
   const archive=lsGet('vs_fy_archive_'+fy);
@@ -8676,6 +8744,11 @@ function viewFYSummary(fy){
   document.body.appendChild(div);
 }
 async function deleteFYData(fy){
+  const curFY=STATE.settings.currentFY||getCurrentFY();
+  if(fy===curFY){
+    toast('FY '+fy+' is the active year — switch to another FY first, then delete this one.','er');
+    return;
+  }
   const archive=lsGet('vs_fy_archive_'+fy);
   const archiveInfo=archive?
     (archive.orders||[]).length+' orders, '+(archive.bills||[]).length+' bills, '+(archive.entries||[]).length+' entries'
@@ -8686,19 +8759,41 @@ async function deleteFYData(fy){
   if(!ok) return;
   const ok2=await appConfirm('Are you sure?','Type YES to confirm deletion of FY '+fy+' data. This is your last chance.','\u26A0\uFE0F','Yes, Delete','dr');
   if(!ok2) return;
+  // Push delete-tombstones to the cloud for every record that ever lived in this FY
+  // (via its archive), so the data cannot silently reappear on a future full sync/
+  // login from any device — a plain local splice alone would not tell the cloud.
+  const mkTomb=arr=>(arr||[]).map(r=>({...r,_deleted:true,_ts:Date.now()}));
+  const idSet=arr=>new Set((arr||[]).map(r=>r.id));
+  const tOrders=mkTomb(archive?.orders), tBills=mkTomb(archive?.bills), tEntries=mkTomb(archive?.entries),
+        tPayments=mkTomb(archive?.payments), tJobWork=mkTomb(archive?.jobWork);
+  const orderIds=idSet(archive?.orders), billIds=idSet(archive?.bills), entryIds=idSet(archive?.entries),
+        paymentIds=idSet(archive?.payments), jobWorkIds=idSet(archive?.jobWork);
+  STATE.orders=(STATE.orders||[]).concat(tOrders);
+  STATE.bills=(STATE.bills||[]).concat(tBills);
+  STATE.entries=(STATE.entries||[]).concat(tEntries);
+  STATE.payments=(STATE.payments||[]).concat(tPayments);
+  STATE.jobWork=(STATE.jobWork||[]).concat(tJobWork);
+  // Defensive: tombstone any stray already-live records still tagged with this fy
+  STATE.entries.forEach(e=>{if(e.fy===fy&&!e._deleted){e._deleted=true;e._ts=Date.now();}});
+  STATE.orders.forEach(o=>{if(o.fy===fy&&!o._deleted){o._deleted=true;o._ts=Date.now();}});
+  STATE.bills.forEach(b=>{if(b.fy===fy&&!b._deleted){b._deleted=true;b._ts=Date.now();}});
+  persistAllCollections();
+  try{ await pushDeltaToFirebase(false); }catch(e){}
+  // Prune the tombstoned copies back out of live STATE — they only needed to exist
+  // long enough to be pushed as delete-signals.
+  STATE.orders=STATE.orders.filter(o=>!orderIds.has(o.id)&&o.fy!==fy);
+  STATE.bills=STATE.bills.filter(b=>!billIds.has(b.id)&&b.fy!==fy);
+  STATE.entries=STATE.entries.filter(e=>!entryIds.has(e.id)&&e.fy!==fy);
+  STATE.payments=STATE.payments.filter(p=>!paymentIds.has(p.id));
+  STATE.jobWork=STATE.jobWork.filter(j=>!jobWorkIds.has(j.id));
   // Remove archive from localStorage
   try{localStorage.removeItem('vs_fy_archive_'+fy);}catch(e){}
-  // Remove from active data too (entries/orders/bills tagged with this FY)
-  STATE.entries=(STATE.entries||[]).filter(e=>e.fy!==fy);
-  STATE.orders=(STATE.orders||[]).filter(o=>o.fy!==fy);
-  STATE.bills=(STATE.bills||[]).filter(b=>b.fy!==fy);
   // Remove from allFYs list
   if(STATE.settings.allFYs){
     STATE.settings.allFYs=STATE.settings.allFYs.filter(f=>f!==fy);
   }
   persist();renderFYTab();
   toast('FY '+fy+' data deleted permanently','ok');
-  autoSyncCloud();
 }
 function downloadFYPdf(fy){
   const archive=lsGet('vs_fy_archive_'+fy);
