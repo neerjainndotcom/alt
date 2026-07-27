@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.14.0';
-const APP_BUILD_DATE='2026-07-27b';
+const APP_VERSION='1.14.1';
+const APP_BUILD_DATE='2026-07-27c';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -11744,16 +11744,54 @@ lsSave('vs_task_instances',STATE.taskInstances);
 autoSyncCloud();
 }
 }
+function _rollToWorkday(dateStr){
+const hols=STATE.settings?.holidays||[];
+let dt=new Date(dateStr+'T00:00:00');
+while(dt.getDay()===0||hols.includes(dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'))){
+dt.setDate(dt.getDate()+1);
+}
+return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+}
+function _mkDateStr(y,m0,day){
+const dt=new Date(y,m0,day);
+if(dt.getMonth()!==(((m0%12)+12)%12)) return null;
+return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+}
+/* Scheduling check for recurring task templates. For monthly/quarterly/yearly/once frequencies,
+   if the raw scheduled day falls on a Sunday or configured holiday, the occurrence rolls forward
+   to the next working day (matching the app's existing follow-up-date rollover convention)
+   instead of being silently skipped until the next cycle. */
 function isTaskScheduledOn(tmpl,dateStr){
 const d=new Date(dateStr+'T00:00:00');
-const dow=d.getDay(); const dom=d.getDate(); const month=d.getMonth()+1;
+const dow=d.getDay(); const month=d.getMonth()+1; const year=d.getFullYear();
 if(tmpl.startDate&&dateStr<tmpl.startDate) return false;
-if(tmpl.freq==='once')return dateStr===(tmpl.startDate||'');
+if(tmpl.freq==='once'){ if(!tmpl.startDate) return false; return _rollToWorkday(tmpl.startDate)===dateStr; }
 if(tmpl.freq==='daily') return true;
 if(tmpl.freq==='weekly') return (tmpl.days||[]).includes(dow);
-if(tmpl.freq==='monthly') return (tmpl.dates||[]).includes(dom);
-if(tmpl.freq==='yearly') return dom===(tmpl.dates||[])[0]&&month===(tmpl.yearMonth||3);
-if(tmpl.freq==='quarterly'){const qs=(tmpl.quarterStart||1);const qd=(tmpl.quarterDay||1);return dom===qd&&((month-qs)%3===0)&&month>=qs;}
+if(tmpl.freq==='monthly'){
+const cands=[];
+[[year,d.getMonth()],[year,d.getMonth()-1]].forEach(([yy,mm0])=>{
+(tmpl.dates||[]).forEach(dn=>{ const s=_mkDateStr(yy,mm0,dn); if(s) cands.push(s); });
+});
+return cands.some(rawStr=>_rollToWorkday(rawStr)===dateStr);
+}
+if(tmpl.freq==='yearly'){
+const yd=(tmpl.dates||[])[0]; const ym=(tmpl.yearMonth||3);
+const cands=[];
+[year,year-1].forEach(yy=>{ const s=_mkDateStr(yy,ym-1,yd); if(s) cands.push(s); });
+return cands.some(rawStr=>_rollToWorkday(rawStr)===dateStr);
+}
+if(tmpl.freq==='quarterly'){
+const qs=(tmpl.quarterStart||1); const qd=(tmpl.quarterDay||1);
+const cands=[];
+for(let mm=1;mm<=12;mm++){
+if(mm>=qs&&(mm-qs)%3===0){
+const s=_mkDateStr(year,mm-1,qd); if(s) cands.push(s);
+const s2=_mkDateStr(year-1,mm-1,qd); if(s2) cands.push(s2);
+}
+}
+return cands.some(rawStr=>_rollToWorkday(rawStr)===dateStr);
+}
 return false;
 }
 function getActiveLeave(userId,dateStr){
