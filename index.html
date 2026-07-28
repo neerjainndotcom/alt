@@ -34,7 +34,7 @@
 </div>
 <div id="ls"><div class="lg"></div><div class="lglow"></div><div class="lcard"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p>Amrit Laxmi Textile · Surat</p></div><div id="lf"><div class="lf"><label>Username</label><input type="text" id="lu" placeholder="Enter username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"/></div><div class="lf"><label>Password</label><input type="password" id="lp" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div><button class="lbtn" onclick="doLogin()">Sign In →</button><div class="lerr" id="le"></div><div style="display:flex;justify-content:space-between;margin-top:14px"><button onclick="showForgotUsername()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Username?</button><button onclick="showForgotPassword()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Password?</button></div><div style="text-align:center;margin-top:10px"><button onclick="showEmergencyRecovery()" style="background:none;border:none;color:rgba(255,80,80,0.7);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline">&#x1F6A8; Admin locked out?</button></div><div id="login-version" style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3)"></div></div><div id="setup-screen" style="display:none;width:100%"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p style="color:rgba(255,255,255,0.6);font-size:13px">First Time Setup — Create Your Admin Account</p></div><div id="lf"><div class="lf"><label>Your Full Name</label><input type="text" id="setup-name" placeholder="e.g. Neer Jain" autocomplete="name"/></div><div class="lf"><label>Choose Username</label><input type="text" id="setup-user" placeholder="e.g. neer" autocomplete="username" style="text-transform:lowercase"/></div><div class="lf"><label>Choose Password</label><input type="password" id="setup-pass" placeholder="Min. 6 characters" autocomplete="new-password"/></div><div class="lf"><label>Confirm Password</label><input type="password" id="setup-pass2" placeholder="Re-enter password" autocomplete="new-password"/></div><div class="lf" style="margin-top:6px"><label style="color:rgba(255,255,255,0.9)">Google Sheets URL <span style="color:rgba(255,255,255,0.4);font-weight:400">(optional — set up later in Admin → Database)</span></label><input type="url" id="setup-gas" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" style="font-size:11px"/><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;line-height:1.5">Paste your Google Sheets Web App URL here so your account saves to the cloud immediately. Without this, data is only on this device until you add it later.</div></div><button class="lbtn" onclick="createFirstAdmin()">✔ Create Admin Account →</button><div class="lerr" id="setup-err"></div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:12px;text-align:center;line-height:1.6">This creates the only admin account for ALT Stock.<br>Set up a Recovery PIN after logging in.</div><button onclick="showLoginForm()" style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit">← Back to Login</button></div></div><div id="of" class="hid"><p style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:20px;line-height:1.6">📱 New device detected!<br>OTP sent to admin WhatsApp.<br>Ask admin to share the code.</p><div class="lf"><label>One-Time Password</label><input type="number" class="otp-inp" id="oi" placeholder="000000" maxlength="6"/></div><button class="lbtn" onclick="doOTP()">Verify OTP →</button><div class="lerr" id="oe"></div><button style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit" onclick="showEl('lf');hideEl('of')">← Back</button></div></div>
 </div>
-<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:12px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-recurring-visits"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div id="dash-mixed-sarees"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('pend',this)">Pending</button><button class="tbb" onclick="salesTab('pay',this)">Payments</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" id="ord-search" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div style="padding:0 16px 6px"><button class="btn bgh bxs" onclick="toggleFltPanel('ord')" style="font-size:11px">&#x1F50D; More Filters</button></div><div id="ord-flt-panel" style="display:none;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px;margin:0 16px 8px;background:var(--s2);border-radius:10px"><input class="inp" placeholder="Item name" id="ord-f-item" oninput="renderOrders()" style="font-size:12px;padding:6px 8px"/><input class="inp" placeholder="Range" id="ord-f-range" oninput="renderOrders()" style="font-size:12px;padding:6px 8px"/><input class="inp" placeholder="Party / Customer" id="ord-f-party" oninput="renderOrders()" style="font-size:12px;padding:6px 8px;grid-column:1/3"/><div><label style="font-size:9px;font-weight:700;color:var(--t3)">From</label><input class="inp" type="date" id="ord-f-from" onchange="renderOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><div><label style="font-size:9px;font-weight:700;color:var(--t3)">To</label><input class="inp" type="date" id="ord-f-to" onchange="renderOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><button class="btn bgh bxs" onclick="clearFlt('ord',renderOrders)" style="grid-column:1/3;font-size:11px">Clear Filters</button></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" id="bil-search" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div style="padding:0 16px 6px"><button class="btn bgh bxs" onclick="toggleFltPanel('bil')" style="font-size:11px">&#x1F50D; More Filters</button></div><div id="bil-flt-panel" style="display:none;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px;margin:0 16px 8px;background:var(--s2);border-radius:10px"><input class="inp" placeholder="Item name" id="bil-f-item" oninput="renderBills()" style="font-size:12px;padding:6px 8px"/><input class="inp" placeholder="Range" id="bil-f-range" oninput="renderBills()" style="font-size:12px;padding:6px 8px"/><input class="inp" placeholder="Party / Customer" id="bil-f-party" oninput="renderBills()" style="font-size:12px;padding:6px 8px;grid-column:1/3"/><div><label style="font-size:9px;font-weight:700;color:var(--t3)">From</label><input class="inp" type="date" id="bil-f-from" onchange="renderBills()" style="font-size:12px;padding:6px 8px;width:100%"/></div><div><label style="font-size:9px;font-weight:700;color:var(--t3)">To</label><input class="inp" type="date" id="bil-f-to" onchange="renderBills()" style="font-size:12px;padding:6px 8px;width:100%"/></div><button class="btn bgh bxs" onclick="clearFlt('bil',renderBills)" style="grid-column:1/3;font-size:11px">Clear Filters</button></div><div id="billst"></div></div><div class="tp" id="tp-pend"><div style="display:flex;gap:0;padding:8px 16px 0;border-bottom:1.5px solid #E5E4F0"><button class="sw on" id="pend-sub-pend" onclick="pendSubTab('pend')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Pending</button><button class="sw" id="pend-sub-done" onclick="pendSubTab('done')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Completed</button></div><div class="srch" style="margin-top:8px"><span>🔍</span><input type="text" id="pend-search" placeholder="Search pending..." oninput="renderPendingOrders();renderCompletedOrders()"/></div><div style="padding:0 16px 6px"><button class="btn bgh bxs" onclick="toggleFltPanel('pend')" style="font-size:11px">&#x1F50D; More Filters</button></div><div id="pend-flt-panel" style="display:none;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px;margin:0 16px 8px;background:var(--s2);border-radius:10px"><input class="inp" placeholder="Item name" id="pend-f-item" oninput="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px"/><input class="inp" placeholder="Range" id="pend-f-range" oninput="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px"/><input class="inp" placeholder="Party / Customer" id="pend-f-party" oninput="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px;grid-column:1/3"/><div><label style="font-size:9px;font-weight:700;color:var(--t3)">From</label><input class="inp" type="date" id="pend-f-from" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><div><label style="font-size:9px;font-weight:700;color:var(--t3)">To</label><input class="inp" type="date" id="pend-f-to" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><button class="btn bgh bxs" onclick="clearFlt('pend',()=>{renderPendingOrders();renderCompletedOrders();})" style="grid-column:1/3;font-size:11px">Clear Filters</button></div><div id="pendlst"></div><div id="donelst" style="display:none"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg" style="position:relative"><label>Customer</label><input type="text" class="inp" id="inv-cust-search" placeholder="Type customer name to search..." oninput="filterInvCusts()" onfocus="filterInvCusts()" autocomplete="off" style="font-size:14px;padding:10px 12px"/><input type="hidden" id="inv-cust-sel"/><div id="inv-cust-dd" style="display:none;position:absolute;left:0;right:0;top:100%;background:white;border:1.5px solid var(--br);border-radius:0 0 10px 10px;z-index:200;max-height:230px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.13)"></div></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div><div class="tp" id="tp-pay"><div class="srch"><span>🔍</span><input type="text" placeholder="Search payments by customer or bill no..." oninput="renderPayments(this.value)"/></div><div id="paylst"></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="openExchange()"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" id="inward-manual-btn" onclick="openManualStock()" style="display:none;border:1.5px solid rgba(217,119,6,.3);background:var(--Al)"><span class="qaico">✏️</span><div><div class="qalbl" style="color:var(--Ad)">Manual Entry</div><div class="qasub">Add/deduct balance</div></div></div></div></div><div class="stl" <div class="stl">Exchange Sarees</div>
+<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:12px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-recurring-visits"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div id="dash-mixed-sarees"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button><button class="tbb" onclick="salesTab('bil',this)">Bills</button><button class="tbb" onclick="salesTab('pend',this)">Pending</button><button class="tbb" onclick="salesTab('pay',this)">Payments</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" id="ord-search" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div style="padding:0 16px 6px"><button class="btn bgh bxs" onclick="toggleFltPanel('ord')" style="font-size:11px">&#x1F50D; More Filters</button></div><div id="ord-flt-panel" style="display:none;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px;margin:0 16px 8px;background:var(--s2);border-radius:10px"><select class="inp" id="ord-f-item" onchange="renderOrders()" style="font-size:12px;padding:6px 8px"><option value="">All Items</option></select><select class="inp" id="ord-f-range" onchange="renderOrders()" style="font-size:12px;padding:6px 8px"><option value="">All Ranges</option></select><select class="inp" id="ord-f-party" onchange="renderOrders()" style="font-size:12px;padding:6px 8px;grid-column:1/3"><option value="">All Parties</option></select><div><label style="font-size:9px;font-weight:700;color:var(--t3)">From</label><input class="inp" type="date" id="ord-f-from" onchange="renderOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><div><label style="font-size:9px;font-weight:700;color:var(--t3)">To</label><input class="inp" type="date" id="ord-f-to" onchange="renderOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><button class="btn bgh bxs" onclick="clearFlt('ord',renderOrders)" style="grid-column:1/3;font-size:11px">Clear Filters</button></div><div id="ordlst"></div></div><div class="tp" id="tp-bil"><div class="srch"><span>🔍</span><input type="text" id="bil-search" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div style="padding:0 16px 6px"><button class="btn bgh bxs" onclick="toggleFltPanel('bil')" style="font-size:11px">&#x1F50D; More Filters</button></div><div id="bil-flt-panel" style="display:none;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px;margin:0 16px 8px;background:var(--s2);border-radius:10px"><select class="inp" id="bil-f-item" onchange="renderBills()" style="font-size:12px;padding:6px 8px"><option value="">All Items</option></select><select class="inp" id="bil-f-range" onchange="renderBills()" style="font-size:12px;padding:6px 8px"><option value="">All Ranges</option></select><select class="inp" id="bil-f-party" onchange="renderBills()" style="font-size:12px;padding:6px 8px;grid-column:1/3"><option value="">All Parties</option></select><div><label style="font-size:9px;font-weight:700;color:var(--t3)">From</label><input class="inp" type="date" id="bil-f-from" onchange="renderBills()" style="font-size:12px;padding:6px 8px;width:100%"/></div><div><label style="font-size:9px;font-weight:700;color:var(--t3)">To</label><input class="inp" type="date" id="bil-f-to" onchange="renderBills()" style="font-size:12px;padding:6px 8px;width:100%"/></div><button class="btn bgh bxs" onclick="clearFlt('bil',renderBills)" style="grid-column:1/3;font-size:11px">Clear Filters</button></div><div id="billst"></div></div><div class="tp" id="tp-pend"><div style="display:flex;gap:0;padding:8px 16px 0;border-bottom:1.5px solid #E5E4F0"><button class="sw on" id="pend-sub-pend" onclick="pendSubTab('pend')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Pending</button><button class="sw" id="pend-sub-done" onclick="pendSubTab('done')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Completed</button></div><div class="srch" style="margin-top:8px"><span>🔍</span><input type="text" id="pend-search" placeholder="Search pending..." oninput="renderPendingOrders();renderCompletedOrders()"/></div><div style="padding:0 16px 6px"><button class="btn bgh bxs" onclick="toggleFltPanel('pend')" style="font-size:11px">&#x1F50D; More Filters</button></div><div id="pend-flt-panel" style="display:none;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px;margin:0 16px 8px;background:var(--s2);border-radius:10px"><select class="inp" id="pend-f-item" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px"><option value="">All Items</option></select><select class="inp" id="pend-f-range" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px"><option value="">All Ranges</option></select><select class="inp" id="pend-f-party" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px;grid-column:1/3"><option value="">All Parties</option></select><div><label style="font-size:9px;font-weight:700;color:var(--t3)">From</label><input class="inp" type="date" id="pend-f-from" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><div><label style="font-size:9px;font-weight:700;color:var(--t3)">To</label><input class="inp" type="date" id="pend-f-to" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><button class="btn bgh bxs" onclick="clearFlt('pend',()=>{renderPendingOrders();renderCompletedOrders();})" style="grid-column:1/3;font-size:11px">Clear Filters</button></div><div id="pendlst"></div><div id="donelst" style="display:none"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg" style="position:relative"><label>Customer</label><input type="text" class="inp" id="inv-cust-search" placeholder="Type customer name to search..." oninput="filterInvCusts()" onfocus="filterInvCusts()" autocomplete="off" style="font-size:14px;padding:10px 12px"/><input type="hidden" id="inv-cust-sel"/><div id="inv-cust-dd" style="display:none;position:absolute;left:0;right:0;top:100%;background:white;border:1.5px solid var(--br);border-radius:0 0 10px 10px;z-index:200;max-height:230px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.13)"></div></div><div id="inv-pending-orders" style="margin-top:12px"></div></div></div><div class="tp" id="tp-pay"><div class="srch"><span>🔍</span><input type="text" placeholder="Search payments by customer or bill no..." oninput="renderPayments(this.value)"/></div><div id="paylst"></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="showInward('jwin')"><span class="qaico">⚙️</span><div><div class="qalbl">Job Work Inward</div><div class="qasub">From job work</div></div></div><div class="qac" onclick="openExchange()"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" id="inward-manual-btn" onclick="openManualStock()" style="display:none;border:1.5px solid rgba(217,119,6,.3);background:var(--Al)"><span class="qaico">✏️</span><div><div class="qalbl" style="color:var(--Ad)">Manual Entry</div><div class="qasub">Add/deduct balance</div></div></div></div></div><div class="stl" <div class="stl">Exchange Sarees</div>
 <div style="margin-bottom:8px"><select class="inp" id="exch-status-filter" onchange="renderExchangeList()" style="max-width:200px">
 <option value="">All Status</option>
 <option value="pending">Pending</option>
@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.20.0';
-const APP_BUILD_DATE='2026-07-28e';
+const APP_VERSION='1.21.0';
+const APP_BUILD_DATE='2026-07-28f';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -3432,6 +3432,24 @@ if(flt.from&&(!o.date||o.date<flt.from)) return false;
 if(flt.to&&(!o.date||o.date>flt.to)) return false;
 return true;
 }
+function refreshFltOptions(prefix,records){
+/* Populate the Item/Range/Party dropdowns with only values found among the
+   given (pending-only) records, preserving the current selection if it's
+   still valid. */
+const itemSet=new Set(), rangeSet=new Set(), partySet=new Set();
+(records||[]).forEach(r=>{
+  (r.items||r.openItems||[]).forEach(i=>{ if(i.itemName) itemSet.add(i.itemName); if(i.range) rangeSet.add(i.range); });
+  if(r.custName) partySet.add(r.custName);
+});
+const mkOpts=(set,label,cur)=>{
+  const arr=[...set].sort((a,b)=>a.localeCompare(b));
+  return '<option value="">'+label+'</option>'+arr.map(v=>'<option value="'+v.replace(/"/g,'&quot;')+'"'+(v===cur?' selected':'')+'>'+v+'</option>').join('');
+};
+const itemSel=el(prefix+'-f-item'), rangeSel=el(prefix+'-f-range'), partySel=el(prefix+'-f-party');
+if(itemSel){ const cur=itemSel.value; itemSel.innerHTML=mkOpts(itemSet,'All Items',cur); if(cur&&!itemSet.has(cur)) itemSel.value=''; }
+if(rangeSel){ const cur=rangeSel.value; rangeSel.innerHTML=mkOpts(rangeSet,'All Ranges',cur); if(cur&&!rangeSet.has(cur)) rangeSel.value=''; }
+if(partySel){ const cur=partySel.value; partySel.innerHTML=mkOpts(partySet,'All Parties',cur); if(cur&&!partySet.has(cur)) partySel.value=''; }
+}
 function billPassesFlt(b,flt){
 if(flt.item&&!(b.items||[]).some(i=>(i.itemName||'').toLowerCase().includes(flt.item))) return false;
 if(flt.range&&!(b.items||[]).some(i=>(i.range||'').toLowerCase().includes(flt.range))) return false;
@@ -3444,6 +3462,7 @@ function renderOrders(q){
 const c=el('ordlst'); if(!c) return;
 if(q===undefined){const se=el('ord-search'); q=se?se.value:'';}
 const ql=(q||'').toLowerCase();
+refreshFltOptions('ord',STATE.orders.filter(o=>!o._deleted&&(o.status==='pending'||o.status==='billed')));
 const _flt=readFlt('ord');
 const f=STATE.orders.filter(o=>{
   if(o._deleted||o.status==='deleted') return false;
@@ -4845,6 +4864,7 @@ function saveBillOrderLink(billId,ordId){
 function renderBills(q){
 const c=el('billst')||el('billlst'); if(!c) return;
 if(q===undefined){const se=el('bil-search'); q=se?se.value:'';}
+refreshFltOptions('bil',liveBills().filter(b=>b.status!=='cancelled'&&b.payStatus!=='paid'));
 const _fltB=readFlt('bil');
 const f=liveBills().filter(b=>{
   if(!billPassesFlt(b,_fltB)) return false;
@@ -4949,9 +4969,52 @@ toast('Payment '+fmtRs(amt)+' recorded','ok');
 }
 function renderPayments(q=''){
 const c=el('paylst'); if(!c) return;
+/* ── Outstanding / Pending Payments (all payment-related info lives here, not in Pending tab) ── */
+const unpaidBills=STATE.bills.filter(b=>b.status!=='cancelled'&&!b._deleted&&b.payStatus!=='paid').sort((a,b)=>{
+const aNum=parseInt((a.billNo||'').replace(/\D/g,''))||0;
+const bNum=parseInt((b.billNo||'').replace(/\D/g,''))||0;
+if(aNum!==bNum) return bNum-aNum;
+return new Date(b.date)-new Date(a.date);
+});
+const totalBilled=unpaidBills.reduce((s,b)=>s+(b.grandTotal||0),0);
+const totalPaidSoFar=unpaidBills.reduce((s,b)=>s+(b.amtPaid||0),0);
+const totalBalance=totalBilled-totalPaidSoFar;
+const partlyPaidCount=unpaidBills.filter(b=>b.payStatus==='partial').length;
+const fullyUnpaidCount=unpaidBills.filter(b=>b.payStatus==='unpaid').length;
+let outHtml='';
+if(unpaidBills.length){
+outHtml='<div class="card" style="margin:0 0 8px;background:#FEE2E2;border:1.5px solid #FCA5A5">'+
+'<div style="font-size:10px;font-weight:800;color:#991B1B;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Payment Due</div>'+
+'<div style="font-size:24px;font-weight:900;color:#DC2626">'+fmtRs(Math.round(totalBalance))+'</div>'+
+'<div style="font-size:11px;color:#991B1B;font-weight:600;margin-top:2px">'+fullyUnpaidCount+' unpaid &bull; '+partlyPaidCount+' partial</div>'+
+'</div>'+
+'<div style="font-size:11px;font-weight:800;color:#991B1B;text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px;padding:6px 10px;background:#FEE2E2;border-radius:8px">&#x1F9FE; Pending Payments ('+unpaidBills.length+')</div>';
+unpaidBills.forEach(b=>{
+const bal=(b.grandTotal||0)-(b.amtPaid||0);
+const isPartial=b.payStatus==='partial';
+const badgeCls=isPartial?'bg-a':'bg-r';
+const badgeLbl=isPartial?'Partial':'Unpaid';
+const days=b.date?Math.floor((Date.now()-new Date(b.date).getTime())/(1000*60*60*24)):0;
+const overdue=days>(STATE.settings.nettDays||120);
+outHtml+='<div class="et" style="cursor:pointer;align-items:flex-start'+(overdue?';border-left:3px solid #DC2626':'')+'" onclick="showBillDetailView(\''+b.id+'\')">'+
+'<div class="ei" style="background:'+(isPartial?'#DBEAFE':'#FEE2E2')+';color:'+(isPartial?'#2563EB':'#DC2626')+';margin-top:4px">&#x1F9FE;</div>'+
+'<div class="eb">'+
+'<div class="etit mono cP">'+b.billNo+'</div>'+
+'<div class="esub fw7">'+escHtml(b.custName)+'</div>'+
+'<div class="esub">'+fmtDate(b.date)+(days>0?' &bull; '+days+'d ago':'')+(overdue?' <span style="color:#DC2626;font-weight:700">OVERDUE</span>':'')+'</div>'+
+(isPartial?'<div class="esub" style="color:#059669">Paid: '+fmtRs(b.amtPaid||0)+' / '+fmtRs(b.grandTotal)+'</div>':'')+
+'</div>'+
+'<div class="er" style="text-align:right;flex-shrink:0">'+
+'<div class="mono fw7 cR" style="font-size:14px">'+fmtRs(Math.round(bal))+'</div>'+
+'<span class="bdg '+badgeCls+'" style="margin-top:4px">'+badgeLbl+'</span>'+
+'</div>'+
+'</div>';
+});
+outHtml+='<div style="font-size:11px;font-weight:800;color:#065F46;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px;padding:6px 10px;background:#D1FAE5;border-radius:8px">&#x1F4B0; Payment History</div>';
+}
 const f=STATE.payments.filter(p=>!q||p.custName.toLowerCase().includes(q.toLowerCase())||(p.billNo||'').includes(q));
-if(!f.length){c.innerHTML='<div class="emp"><div class="emj">💰</div><h3>No Payments</h3><p>Record payments against bills</p></div>';return;}
-c.innerHTML=f.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=>'<div class="et"><div class="ei" style="background:var(--Gl);color:var(--Gd)">💰</div><div class="eb"><div class="etit">'+p.custName+'</div><div class="esub">'+p.billNo+' - '+p.mode+(p.ref?' - '+p.ref:'')+'</div><div class="esub">'+fmtDate(p.date)+'</div></div><div class="er"><div class="mono fw7 cG">'+fmtRs(p.amount)+'</div></div></div>').join('');
+if(!f.length){c.innerHTML=outHtml+(outHtml?'':'<div class="emp"><div class="emj">💰</div><h3>No Payments</h3><p>Record payments against bills</p></div>');return;}
+c.innerHTML=outHtml+f.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=>'<div class="et"><div class="ei" style="background:var(--Gl);color:var(--Gd)">💰</div><div class="eb"><div class="etit">'+p.custName+'</div><div class="esub">'+p.billNo+' - '+p.mode+(p.ref?' - '+p.ref:'')+'</div><div class="esub">'+fmtDate(p.date)+'</div></div><div class="er"><div class="mono fw7 cG">'+fmtRs(p.amount)+'</div></div></div>').join('');
 }
 function _recheckOrderStatuses(){
 /* Auto-fix orders that are fully dispatched but still marked pending/billed */
@@ -4979,6 +5042,7 @@ function renderPendingOrders(){
 const c=el('pendlst'); if(!c) return;
 _recheckOrderStatuses();
 const _pq=(el('pend-search')?.value||'').toLowerCase();
+refreshFltOptions('pend',STATE.orders.filter(o=>!o._deleted&&(o.status==='pending'||o.status==='billed')));
 const _pflt=readFlt('pend');
 /* Pending/billed orders — not yet fully dispatched */
 const pendingOrders=STATE.orders.filter(o=>!o._deleted&&(o.status==='pending'||o.status==='billed')).filter(o=>{
@@ -4991,40 +5055,17 @@ const bNum=parseInt((b.orderNo||'').replace(/\D/g,''))||0;
 if(aNum!==bNum) return bNum-aNum;
 const da=a.date?new Date(a.date).getTime():0, db=b.date?new Date(b.date).getTime():0; return db-da;
 });
-/* Bills that are unpaid or partly paid */
-const unpaidBills=STATE.bills.filter(b=>b.status!=='cancelled'&&!b._deleted&&b.payStatus!=='paid').filter(b=>{
-  if(!billPassesFlt(b,_pflt)) return false;
-  if(!_pq) return true;
-  return (b.billNo||'').toLowerCase().includes(_pq)||(b.custName||'').toLowerCase().includes(_pq)||(b.items||[]).some(i=>(i.itemName||'').toLowerCase().includes(_pq)||(i.sku||'').toLowerCase().includes(_pq));
-}).sort((a,b)=>{
-const aNum=parseInt((a.billNo||'').replace(/\D/g,''))||0;
-const bNum=parseInt((b.billNo||'').replace(/\D/g,''))||0;
-if(aNum!==bNum) return bNum-aNum;
-const da=a.date?new Date(a.date).getTime():0, db=b.date?new Date(b.date).getTime():0; return db-da;
-});
 /* Summary figures */
 const totalOrderValue=pendingOrders.reduce((s,o)=>s+(o.total||0),0);
-const totalBilled=unpaidBills.reduce((s,b)=>s+(b.grandTotal||0),0);
-const totalPaid=unpaidBills.reduce((s,b)=>s+(b.amtPaid||0),0);
-const totalBalance=totalBilled-totalPaid;
-const partlyPaidCount=unpaidBills.filter(b=>b.payStatus==='partial').length;
-const fullyUnpaidCount=unpaidBills.filter(b=>b.payStatus==='unpaid').length;
 let html='<div style="padding:8px 16px">';
-/* ── Summary cards ── */
-html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'+
-'<div class="card" style="margin:0;background:#FEF3C7;border:1.5px solid #FCD34D">'+
+/* ── Summary card ── */
+html+='<div class="card" style="margin:0 0 8px;background:#FEF3C7;border:1.5px solid #FCD34D">'+
 '<div style="font-size:10px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Open Orders</div>'+
 '<div style="font-size:24px;font-weight:900;color:#D97706">'+pendingOrders.length+'</div>'+
 '<div style="font-size:11px;color:#92400E;font-weight:600;margin-top:2px">Value: '+fmtRs(Math.round(totalOrderValue))+'</div>'+
-'</div>'+
-'<div class="card" style="margin:0;background:#FEE2E2;border:1.5px solid #FCA5A5">'+
-'<div style="font-size:10px;font-weight:800;color:#991B1B;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Payment Due</div>'+
-'<div style="font-size:24px;font-weight:900;color:#DC2626">'+fmtRs(Math.round(totalBalance))+'</div>'+
-'<div style="font-size:11px;color:#991B1B;font-weight:600;margin-top:2px">'+fullyUnpaidCount+' unpaid &bull; '+partlyPaidCount+' partial</div>'+
-'</div>'+
 '</div>';
-if(!pendingOrders.length&&!unpaidBills.length){
-c.innerHTML=html+'<div class="emp"><div class="emj">&#x2705;</div><h3>All Clear!</h3><p>No pending orders or outstanding payments</p></div></div>'; return;
+if(!pendingOrders.length){
+c.innerHTML=html+'<div class="emp"><div class="emj">&#x2705;</div><h3>All Clear!</h3><p>No pending orders. Check the Payments tab for outstanding bills.</p></div></div>'; return;
 }
 /* ── Pending Orders ── */
 if(pendingOrders.length){
@@ -5050,31 +5091,6 @@ html+='<div class="et" style="cursor:pointer;align-items:flex-start" onclick="sh
 '<div class="er" style="text-align:right;flex-shrink:0">'+
 '<div class="mono fw7 cP" style="font-size:13px">'+fmtRs(o.total)+'</div>'+
 '<span class="bdg '+stColor+'" style="margin-top:4px">'+o.status+'</span>'+
-'</div>'+
-'</div>';
-});
-}
-/* ── Unpaid / Partly Paid Bills ── */
-if(unpaidBills.length){
-html+='<div style="font-size:11px;font-weight:800;color:#991B1B;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px;padding:6px 10px;background:#FEE2E2;border-radius:8px">&#x1F9FE; Pending Payments ('+unpaidBills.length+')</div>';
-unpaidBills.forEach(b=>{
-const bal=(b.grandTotal||0)-(b.amtPaid||0);
-const isPartial=b.payStatus==='partial';
-const badgeCls=isPartial?'bg-a':'bg-r';
-const badgeLbl=isPartial?'Partial':'Unpaid';
-const days=b.date?Math.floor((Date.now()-new Date(b.date).getTime())/(1000*60*60*24)):0;
-const overdue=days>(STATE.settings.nettDays||120);
-html+='<div class="et" style="cursor:pointer;align-items:flex-start'+(overdue?';border-left:3px solid #DC2626':'')+'" onclick="showBillDetailView(\''+b.id+'\')">'+
-'<div class="ei" style="background:'+(isPartial?'#DBEAFE':'#FEE2E2')+';color:'+(isPartial?'#2563EB':'#DC2626')+';margin-top:4px">&#x1F9FE;</div>'+
-'<div class="eb">'+
-'<div class="etit mono cP">'+b.billNo+'</div>'+
-'<div class="esub fw7">'+escHtml(b.custName)+'</div>'+
-'<div class="esub">'+fmtDate(b.date)+(days>0?' &bull; '+days+'d ago':'')+(overdue?' <span style="color:#DC2626;font-weight:700">OVERDUE</span>':'')+'</div>'+
-(isPartial?'<div class="esub" style="color:#059669">Paid: '+fmtRs(b.amtPaid||0)+' / '+fmtRs(b.grandTotal)+'</div>':'')+
-'</div>'+
-'<div class="er" style="text-align:right;flex-shrink:0">'+
-'<div class="mono fw7 cR" style="font-size:14px">'+fmtRs(Math.round(bal))+'</div>'+
-'<span class="bdg '+badgeCls+'" style="margin-top:4px">'+badgeLbl+'</span>'+
 '</div>'+
 '</div>';
 });
@@ -8322,8 +8338,14 @@ brokerId:el('lead-broker')?.value||'',brokerName:brk?.name||'',
 source:el('lead-src')?.value,
 rateGiven:parseFloat(el('lead-rate')?.value)||undefined,
 interest:el('lead-interest')?.value.trim(),followupDate:el('lead-followup')?.value,followupTime:el('lead-followup-time')?.value||'',
-assignedId:smId,assignedName:smName,status,lastNote:note||undefined,
+assignedId:smId,assignedName:smName,status,
 updatedAt:today(),_ts:Date.now()};
+/* Only touch lastNote when the user actually typed a new note here — otherwise
+   leaving this field's key out of obj means the spread below won't wipe the
+   lead's existing lastNote/progress back to undefined on every plain edit
+   (this was causing WhatsApp messages to fall back to old, previously-sent
+   note text after editing unrelated lead details). */
+if(note) obj.lastNote=note;
 if(!STATE.leads) STATE.leads=[];
 if(id){
 const i=STATE.leads.findIndex(l=>l.id===id);
