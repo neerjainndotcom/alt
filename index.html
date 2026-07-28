@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.18.0';
-const APP_BUILD_DATE='2026-07-28b';
+const APP_VERSION='1.18.1';
+const APP_BUILD_DATE='2026-07-28c';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -700,11 +700,17 @@ if(!found&&GAS_URL){
   // GAS fallback only if no Firebase
   try{const gd=await api('getAll');if(gd&&gd.users){STATE.users=gd.users;lsSave('vs_users',STATE.users);found=findUser();cloudReached=true;}}catch(e){}
 }
-// If we could NOT reach the cloud, warn clearly — this is almost always a
-// content-blocker / privacy filter blocking firebaseio.com, or no internet.
+// If we could NOT reach the cloud, only hard-block when we also have no cached
+// record of this user at all — this is almost always a content-blocker / privacy
+// filter blocking firebaseio.com, or no internet. But if this device already has
+// this account cached locally from a previous successful sync, let login proceed
+// offline instead of blocking staff over a single refresh call failing.
 if(!cloudReached&&FIREBASE_URL){
-  el('le').innerHTML='⚠️ Can\'t reach the cloud server.<br><span style="font-size:11px">Turn off any ad/content blocker for this site, or check your internet, then try again.</span>';
-  return;
+  if(!found){
+    el('le').innerHTML='⚠️ Can\'t reach the cloud server.<br><span style="font-size:11px">Turn off any ad/content blocker for this site, or check your internet, then try again.</span>';
+    return;
+  }
+  if(s)s.innerHTML='<span style="color:#FCD34D">&#x26A0;&#xFE0F; Offline — signed in with last saved account</span>';
 }
 if(!found){
   el('le').textContent='Username not found. Check spelling or contact admin.';
