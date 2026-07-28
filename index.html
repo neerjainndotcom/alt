@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.16.1';
-const APP_BUILD_DATE='2026-07-27f';
+const APP_VERSION='1.17.0';
+const APP_BUILD_DATE='2026-07-27g';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -12045,7 +12045,7 @@ function addTaskComment(instanceId,text){
 const task=(STATE.taskInstances||[]).find(t=>t.id===instanceId); if(!task||!text.trim()) return;
 if(!task.comments) task.comments=[];
 if(task.note&&!task.comments.find(c=>c.isLegacy)){
-task.comments.unshift({id:'c_leg_'+task.id,userId:task.assignedUserId,userName:task.assignedUserName,role:'staff',text:task.nate,ts:task.generatedDate+'T08:00:00.000Z',isLegacy:true});
+task.comments.unshift({id:'c_leg_'+task.id,userId:task.assignedUserId,userName:task.assignedUserName,role:'staff',text:task.note,ts:task.generatedDate+'T08:00:00.000Z',isLegacy:true});
 }
 task.comments.push({id:'c_'+Date.now(),userId:STATE.user.id,userName:STATE.user.name,role:STATE.user.role||'staff',text:text.trim(),ts:new Date().toISOString()});
 task._ts=Date.now();
@@ -12060,7 +12060,7 @@ const all=[...legacyNote,...comments];
 if(!all.length) return '<div style="color:var(--t3);font-size:12px;text-align:center;padding:10px">No messages yet</div>';
 return all.map(c=>{
 const isAdmin2=c.role==='admin';
-const isMine=c.userId===STATE_user?.id;
+const isMine=c.userId===STATE.user?.id;
 const bg=c.isCompletion?'#ECFDF5':isAdmin2?'#EEF2FF':'#F9FAFB';
 const border=c.isCompletion?'#059669':isAdmin2?'#4F46E5':'#E5E7EB';
 const nameColor=c.isCompletion?'#059669':isAdmin2?'#4F46E5':'#374151';
