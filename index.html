@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.18.1';
-const APP_BUILD_DATE='2026-07-28c';
+const APP_VERSION='1.19.0';
+const APP_BUILD_DATE='2026-07-28d';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -8642,6 +8642,12 @@ const ok=await appConfirm('Switch Active Financial Year?',
 if(!ok) return;
 const ok2=await appConfirm('Confirm Switch','Switch the active financial year to FY '+fy+' now?','\u26A0\uFE0F','Yes, Switch Now','dr');
 if(!ok2) return;
+// Freeze the background poll/push cycle for the whole operation — this is a multi-step
+// mutation (tombstone old year, push, load+revive new year, push again) and if a periodic
+// pull or another device's push interleaves mid-way, a stale snapshot can overwrite the
+// revived data and everything looks "deleted". Locking prevents that race entirely.
+window._saveLock=true;
+try{
 const deepClone=x=>JSON.parse(JSON.stringify(x||[]));
 // 1. Snapshot the year we're leaving BEFORE tombstoning (archive stays clean/undeleted)
 const curArchive={
@@ -8656,7 +8662,7 @@ lsSave('vs_fy_archive_'+curFY,curArchive);
 (STATE.orders||[]).forEach(_tombOne);(STATE.bills||[]).forEach(_tombOne);
 (STATE.entries||[]).forEach(_tombOne);(STATE.payments||[]).forEach(_tombOne);(STATE.jobWork||[]).forEach(_tombOne);
 persistAllCollections();
-try{ await pushDeltaToFirebase(false); }catch(e){}
+try{ await pushDeltaToFirebase(true); }catch(e){}
 // 3. Load the target FY's archive and revive it (fresh _ts + _deleted:false so it wins on sync)
 const targetArchive=lsGet('vs_fy_archive_'+fy)||{orders:[],bills:[],entries:[],payments:[],jobWork:[]};
 STATE.orders=targetArchive.orders||[];
@@ -8674,9 +8680,13 @@ if(!STATE.settings.allFYs.includes(curFY)) STATE.settings.allFYs.push(curFY);
 if(!STATE.settings.allFYs.includes(fy)) STATE.settings.allFYs.push(fy);
 STATE.settings.currentFY=fy;
 try{recalcStockFromEntries();}catch(e){}
-persist();
+persistAllCollections();
+try{ await pushDeltaToFirebase(true); }catch(e){}
 _refreshAllFyScreens();
 toast('Switched! FY '+fy+' is now active and editable.','ok');
+}finally{
+window._saveLock=false;
+}
 }
 function _refreshAllFyScreens(){
 try{renderFYTab();}catch(e){}
@@ -8766,6 +8776,11 @@ async function deleteFYData(fy){
   if(!ok) return;
   const ok2=await appConfirm('Are you sure?','Type YES to confirm deletion of FY '+fy+' data. This is your last chance.','\u26A0\uFE0F','Yes, Delete','dr');
   if(!ok2) return;
+  // Freeze the background poll/push cycle for the whole operation — same reasoning as
+  // switchActiveFY: this is a multi-step push-then-prune sequence, and a periodic pull
+  // interleaving mid-way could re-merge stale data on top of the correct end state.
+  window._saveLock=true;
+  try{
   // Push delete-tombstones to the cloud for every record that ever lived in this FY
   // (via its archive), so the data cannot silently reappear on a future full sync/
   // login from any device — a plain local splice alone would not tell the cloud.
@@ -8785,7 +8800,7 @@ async function deleteFYData(fy){
   STATE.orders.forEach(o=>{if(o.fy===fy&&!o._deleted){o._deleted=true;o._ts=Date.now();}});
   STATE.bills.forEach(b=>{if(b.fy===fy&&!b._deleted){b._deleted=true;b._ts=Date.now();}});
   persistAllCollections();
-  try{ await pushDeltaToFirebase(false); }catch(e){}
+  try{ await pushDeltaToFirebase(true); }catch(e){}
   // Prune the tombstoned copies back out of live STATE — they only needed to exist
   // long enough to be pushed as delete-signals.
   STATE.orders=STATE.orders.filter(o=>!orderIds.has(o.id)&&o.fy!==fy);
@@ -8799,8 +8814,13 @@ async function deleteFYData(fy){
   if(STATE.settings.allFYs){
     STATE.settings.allFYs=STATE.settings.allFYs.filter(f=>f!==fy);
   }
-  persist();renderFYTab();
+  persistAllCollections();
+  try{ await pushDeltaToFirebase(true); }catch(e){}
+  renderFYTab();
   toast('FY '+fy+' data deleted permanently','ok');
+  }finally{
+  window._saveLock=false;
+  }
 }
 function downloadFYPdf(fy){
   const archive=lsGet('vs_fy_archive_'+fy);
@@ -12158,7 +12178,7 @@ closeBtn.textContent='Close';
 closeBtn.onclick=()=>hideMod('m-task-inst');
 const printTaskBtn=document.createElement('button');
 printTaskBtn.className='btn bfl';printTaskBtn.style.cssText='background:#059669;color:#fff;border:none';
-printTaskBtn.innerHTML='ð Print';printTaskBtn.onclick=()=>printTaskPdf(id);
+printTaskBtn.innerHTML='&#x1F4C4; Print';printTaskBtn.onclick=()=>printTaskPdf(id);
 foot.appendChild(printTaskBtn);
 foot.appendChild(closeBtn);
 showMod('m-task-inst');
@@ -12291,7 +12311,7 @@ html+='<div style="background:#F0FDF4;border-left:4px solid #22C55E;border-radiu
 done2.forEach(t=>{html+=taskCard(t);});
 }
 if(!filtered.length) html+='<div class="emp"><div class="emj">📋</div><h3>No tasks</h3></div>';
-var _sc=(STATE.taskInstances||[]).filter(function(t){return t.status!=='Done'&&t.generatedDate&&t.generatedDate<new Date().toISOString().split('T')[0];}).length;if(_sc>0)html='<div style="margin-bottom:12px;padding:10px 14px;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;display:flex;align-items:center;justify-content:space-between"><span style="color:#991b1b;font-size:13px;font-weight:600">⚠️ '+_sc+' old tasks from past days</span><button class="btn bs" onclick="clearStaleTaskInstances()" style="background:#dc2626;color:white;font-size:12px;padding:6px 12px">🧹 Clear All</button></div>'+html;
+var _sc=(STATE.taskInstances||[]).filter(function(t){return t.status!=='Done'&&t.generatedDate&&t.generatedDate<new Date().toISOString().split('T')[0];}).length;if(_sc>0&&STATE.user?.role==='admin')html='<div style="margin-bottom:12px;padding:10px 14px;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;display:flex;align-items:center;justify-content:space-between"><span style="color:#991b1b;font-size:13px;font-weight:600">⚠️ '+_sc+' old tasks from past days</span><button class="btn bs" onclick="clearStaleTaskInstances()" style="background:#dc2626;color:white;font-size:12px;padding:6px 12px">🧹 Clear All</button></div>'+html;
 c.innerHTML=html;
 }
 function nextTemplateOccurrence(tmpl){
