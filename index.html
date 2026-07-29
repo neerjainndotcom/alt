@@ -99,8 +99,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.25.1';
-const APP_BUILD_DATE='2026-07-29b';
+const APP_VERSION='1.26.0';
+const APP_BUILD_DATE='2026-07-29c';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -2779,6 +2779,7 @@ persist(); renderRecentAct(); renderInRec(); renderDash();
 toast('Voucher deleted','ok');
 }
 let _jwType='s2j', _jwRows=[{}], _rjwId=null;
+let _jwLots=[{id:0}]; let _jwLotId=0; let _jwMode='t';
 function nextJWRef(){ return 'JW-'+String(STATE.jobWork.length+1).padStart(3,'0'); }
 function nextInwardVoucher(){ const pfx=(STATE.settings.inwardPrefix||'GRN/').trim(); const n=(STATE.settings.nextInwardNo||1); return pfx+String(n).padStart(4,'0'); }
 /* ===== EXCHANGE MODULE ===== */
@@ -2978,7 +2979,7 @@ function markExchReady(id){
  ********************************************************************/
 
 function showJWForm(type){
-_jwType=type; _jwRows=[{}];
+_jwType=type; _jwRows=[{}]; _jwLots=[{id:0}]; _jwLotId=0; _jwMode='t';
 el('jwtit').textContent=type==='m2j'?'Mill → Job Work':'Shop → Job Work';
 el('jwsub').textContent=type==='m2j'?'Challan for mill material':'Send stock to processing';
 buildJWBody(); showMod('m-jw');
@@ -2990,42 +2991,273 @@ el('jwbod').innerHTML=
 '<div class="ir2"><div class="fg"><label>Date</label><input class="inp" type="date" id="jw-d" value="'+today()+'"/></div><div class="fg"><label>Challan Ref</label><input class="inp" id="jw-r" value="'+nextJWRef()+'"/></div></div>'+
 (_jwType==='m2j'?'<div class="fg"><label>Mill Party</label><select class="sel" id="jw-ml"><option value="">Select mill...</option>'+mills.map(s=>'<option value="'+s.id+'">'+s.name+'</option>').join('')+'</select></div>':'')+
 '<div class="fg"><label>JW Party (Processing Unit)</label><select class="sel" id="jw-p"><option value="">Select JW party...</option>'+nm.map(s=>'<option value="'+s.id+'">'+s.name+' ('+s.group+')</option>').join('')+'</select></div>'+
+'<div class="fg"><label>Entry Mode</label><div class="sg2"><button class="sw on" id="jw-mode-t" onclick="setJWMode(\'t\')">📦 Taka + TP</button><button class="sw" id="jw-mode-m" onclick="setJWMode(\'m\')">📏 Total Meters</button></div><div class="sub" style="margin-top:4px" id="jw-mode-sub">Enter Taka &amp; TP per colour — total meters &amp; avg taka auto-calculate.</div></div>'+
 '<div class="ir2"><div class="fg"><label>Expected Return</label><input class="inp" type="date" id="jw-exp"/></div><div class="fg"><label>Notes</label><input class="inp" id="jw-nt"/></div></div>'+
-'<div class="stl" style="padding:8px 0;font-size:10px">Items</div><div id="jw-rows"></div>'+
-'<button class="btn bs bfl mt8" onclick="addJWRow()">+ Add Item</button>';
-renderJWRows();
+'<div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs (Lots)</div><div id="jw-lots"></div><button class="btn bs bfl mt8" onclick="addJWLot()">+ Add LOT / Item</button>';
+renderJWLots();
 }
-function addJWRow(){_jwRows.push({});renderJWRows();}
-function remJWRow(i){_jwRows.splice(i,1);renderJWRows();}
-function renderJWRows(){
-const isShop=_jwType==='s2j';
-el('jw-rows').innerHTML=_jwRows.map((_,i)=>'<div class="sr su"><div class="srh"><span>Item '+(i+1)+'</span>'+(i>0?'<button onclick="remJWRow('+i+')" class="btn bd bxs">✕</button>':'')+'</div>'+
-buildCascade('jw'+i,isShop)+
-(isShop?'<div class="sg2"><button class="sw on" onclick="setJWM(\'t\','+i+',this)">📦 Taka</button><button class="sw" onclick="setJWM(\'m\','+i+',this)">📏 Meters</button></div>':'')+
-'<div id="jw'+i+'-tw"><div class="fg"><label>Taka</label><input class="inp big mono" type="number" id="jw'+i+'-t" step="1" min="1" oninput="updJWC('+i+')"/><div class="cb" id="jw'+i+'-c">0T x '+STATE.settings.avgMtrPerTaka+'m = 0 mtrs</div></div></div>'+
-'<div id="jw'+i+'-mw" class="hid"><div class="fg"><label>Finish Meters</label><input class="inp big mono" type="number" id="jw'+i+'-m" step="1" oninput="updJWCM('+i+')"/><div class="cb" id="jw'+i+'-mc">0m / '+STATE.settings.avgMtrPerTaka+' = 0T</div></div></div>'+
-'</div>').join('');
+/* ── Shop/Mill → Job Work: same Item+Range lot picker as Mill Inward, with
+   a single global Taka+TP / Total Meters mode toggle below JW Party. ── */
+function renderJWLots(){
+const c=el('jw-lots'); if(!c) return;
+c.innerHTML='';
+_jwLots.forEach((lot,li)=>appendJWLotCard(lot,li,c));
 }
-function setJWM(mode,i,btn){
-el('jw'+i+'-tw').style.display=mode==='t'?'':'none';
-el('jw'+i+'-mw').style.display=mode==='m'?'':'none';
-btn.closest('.sg2').querySelectorAll('.sw').forEach(b=>b.classList.remove('on')); btn.classList.add('on');
+function addJWLot(){
+_jwLotId++;
+const lot={id:_jwLotId};
+_jwLots.push(lot);
+const c=el('jw-lots'); if(!c) return;
+const li=_jwLots.length-1;
+appendJWLotCard(lot, li, c);
+setTimeout(()=>{ const last=el('jwl-'+lot.id); if(last) last.scrollIntoView({behavior:'smooth',block:'nearest'}); },100);
 }
-function updJWC(i){const t=parseInt(el('jw'+i+'-t')?.value)||0;const c=el('jw'+i+'-c');if(c) c.textContent=t+'T x '+STATE.settings.avgMtrPerTaka+'m = '+Math.round(t*STATE.settings.avgMtrPerTaka)+' mtrs';}
-function updJWCM(i){const m=parseInt(el('jw'+i+'-m')?.value)||0;const t=Math.round(m/STATE.settings.avgMtrPerTaka);const c=el('jw'+i+'-mc');if(c) c.textContent=m+'m / '+STATE.settings.avgMtrPerTaka+' = '+t+'T';}
+function remJWLot(id){
+_jwLots=_jwLots.filter(l=>l.id!==id);
+const card=el('jwl-'+id);
+if(card) card.remove();
+}
+function setJWMode(mode){
+_jwMode=mode;
+el('jw-mode-t')?.classList.toggle('on',mode==='t');
+el('jw-mode-m')?.classList.toggle('on',mode==='m');
+const sub=el('jw-mode-sub');
+if(sub) sub.innerHTML=mode==='t'?'Enter Taka &amp; TP per colour — total meters &amp; avg taka auto-calculate.':'Enter total finish meters per colour — it auto-converts to avg taka.';
+_jwLots.forEach(lot=>{
+  const iid=el('jwl-'+lot.id+'-i')?.value, rngRaw=el('jwl-'+lot.id+'-r')?.value;
+  const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
+  const rng=rngRaw==='__norange__'?'':rngRaw;
+  item.colours.filter(c=>c.range===rng).forEach(col=>{
+    const idx=item.colours.indexOf(col);
+    const chk=el('jwl-'+lot.id+'-ck-'+idx); if(!chk) return;
+    jwSetRowFieldStates(lot.id,idx,chk.checked);
+  });
+  calcJWLot(lot.id);
+});
+}
+function jwSetRowFieldStates(lid,idx,on){
+const tFld=el('jwl-'+lid+'-t-'+idx), tpFld=el('jwl-'+lid+'-tp-'+idx), mFld=el('jwl-'+lid+'-m-'+idx);
+const tOn=on&&_jwMode==='t', mOn=on&&_jwMode==='m';
+[[tFld,tOn],[tpFld,tOn],[mFld,mOn]].forEach(pair=>{
+  const fld=pair[0], active=pair[1];
+  if(!fld) return;
+  fld.disabled=!active;
+  fld.style.background=active?'#FFFBEB':'#F3F4F6';
+  fld.style.color=active?'#92400E':'#9CA3AF';
+  fld.style.border=active?'2px solid #F59E0B':'1.5px solid #D1D5DB';
+});
+}
+function appendJWLotCard(lot, li, c){
+if(!c) c=el('jw-lots'); if(!c) return;
+const lotColors=[
+{bg:'#EEF2FF',border:'#818CF8',label:'#3730A3',hdr:'#C7D2FE'},
+{bg:'#F0FDF4',border:'#4ADE80',label:'#166534',hdr:'#BBF7D0'},
+{bg:'#FFF7ED',border:'#FB923C',label:'#7C2D12',hdr:'#FED7AA'},
+{bg:'#FDF4FF',border:'#C084FC',label:'#581C87',hdr:'#E9D5FF'},
+{bg:'#FEFCE8',border:'#FACC15',label:'#713F12',hdr:'#FEF08A'},
+{bg:'#F0F9FF',border:'#38BDF8',label:'#0C4A6E',hdr:'#BAE6FD'},
+];
+const lc=lotColors[li%lotColors.length];
+const card=document.createElement('div');
+card.id='jwl-'+lot.id;
+card.style.cssText='border:2px solid '+lc.border+';border-radius:14px;overflow:hidden;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)';
+const hdr=document.createElement('div');
+hdr.style.cssText='background:'+lc.hdr+';padding:8px 12px';
+const row1=document.createElement('div');
+row1.style.cssText='display:flex;align-items:center;gap:8px';
+row1.innerHTML=
+'<div style="background:'+lc.border+';color:'+lc.label+';font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;letter-spacing:.5px;flex-shrink:0">LOT '+(li+1)+'</div>'+
+'<select id="jwl-'+lot.id+'-i" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="jwLotItemChange('+lot.id+')">'+
+'<option value="">Select Item...</option>'+
+[...STATE.items].filter(i=>!i._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+
+'</select>'+
+'<select id="jwl-'+lot.id+'-r" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="jwLotRangeChange('+lot.id+')" disabled>'+
+'<option value="">Range...</option>'+
+'</select>'+
+(li>0?'<button onclick="remJWLot('+lot.id+')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(220,38,38,.15);color:#DC2626;font-size:13px;cursor:pointer;flex-shrink:0;font-weight:700">&#x2715;</button>':'');
+hdr.appendChild(row1);
+card.appendChild(hdr);
+const body=document.createElement('div');
+body.id='jwl-'+lot.id+'-body';
+body.style.cssText='background:white';
+body.innerHTML='<div style="padding:14px;text-align:center;color:#9897B0;font-size:12px">&#x2191; Select item and range above</div>';
+card.appendChild(body);
+const foot=document.createElement('div');
+foot.id='jwl-'+lot.id+'-foot';
+foot.style.cssText='display:none;padding:7px 14px;background:'+lc.bg+';border-top:1.5px solid '+lc.border;
+card.appendChild(foot);
+c.appendChild(card);
+makeSearchable(el('jwl-'+lot.id+'-i'));
+makeSearchable(el('jwl-'+lot.id+'-r'));
+}
+function jwLotItemChange(lid){
+const iid=el('jwl-'+lid+'-i')?.value;
+const rSel=el('jwl-'+lid+'-r');
+const body=el('jwl-'+lid+'-body');
+if(!iid||!rSel){if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range above</div>';return;}
+const item=STATE.items.find(x=>x.id===iid);
+if(!item) return;
+const rngs=[...new Set(item.colours.map(c=>c.range))];
+rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+(r===''?'__norange__':r)+'">'+(r||'(No Range / Default)')+'</option>').join('');
+rSel.disabled=false;
+if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Now select a range</div>';
+const foot=el('jwl-'+lid+'-foot'); if(foot) foot.style.display='none';
+}
+function jwLotRangeChange(lid){
+const iid=el('jwl-'+lid+'-i')?.value;
+const rngRaw=el('jwl-'+lid+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid);
+const body=el('jwl-'+lid+'-body');
+if(!item||rngRaw===undefined||rngRaw===''||!body) return;
+const rng=rngRaw==='__norange__'?'':rngRaw;
+const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued);
+body.innerHTML='';
+const thead=document.createElement('div');
+thead.style.cssText='background:linear-gradient(135deg,#1e1b4b,#312e81);padding:8px 10px;border-bottom:2px solid #4F46E5';
+thead.innerHTML=
+'<div style="display:flex;align-items:center;gap:4px">'+
+'<div style="width:34px"></div>'+
+'<div style="flex:1;font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.6px">Colour</div>'+
+'<div style="font-size:7px;font-weight:800;color:#FBBF24;text-transform:uppercase;text-align:center;width:38px">Taka</div>'+
+'<div style="font-size:7px;font-weight:800;color:#FBBF24;text-transform:uppercase;text-align:center;width:38px">TP</div>'+
+'<div style="font-size:7px;font-weight:800;color:#38BDF8;text-transform:uppercase;text-align:center;width:44px">Mtrs</div>'+
+'<div style="font-size:7px;font-weight:800;color:#6EE7B7;text-transform:uppercase;text-align:right;width:40px">Avg T</div>'+
+'</div>';
+body.appendChild(thead);
+const selAll=document.createElement('div');
+selAll.style.cssText='display:flex;align-items:center;gap:10px;padding:7px 10px;background:#EEF2FF;border-bottom:1px solid #C7D2FE;cursor:pointer';
+selAll.innerHTML=
+'<input type="checkbox" id="jwl-'+lid+'-all" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer" onclick="jwLotToggleAll('+lid+')"/>'+
+'<span style="font-size:11px;font-weight:700;color:#3730A3;flex:1">&#x2714; Select All ('+cols.length+' colours)</span>';
+selAll.onclick=(e)=>{if(e.target.tagName!=='INPUT'){const chk=el('jwl-'+lid+'-all');chk.checked=!chk.checked;jwLotToggleAll(lid);}};
+body.appendChild(selAll);
+cols.forEach((col,ci)=>{
+const idx=item.colours.indexOf(col);
+const stk=col.stock_taka||0;
+const stkColor=stk===0?'#EF4444':stk<5?'#F59E0B':'#10B981';
+const stkBg=stk===0?'#FEE2E2':stk<5?'#FEF3C7':'#D1FAE5';
+const rowBg=ci%2===0?'#FFFFFF':'#F8F7FF';
+const row=document.createElement('div');
+row.id='jwl-'+lid+'-row-'+idx;
+row.style.cssText='padding:8px 10px;border-bottom:1px solid #E5E4F0;background:'+rowBg+';transition:.15s;border-left:3px solid transparent';
+row.innerHTML=
+'<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'+
+'<input type="checkbox" id="jwl-'+lid+'-ck-'+idx+'" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer;flex-shrink:0" onchange="jwLotClrToggle('+lid+','+idx+')"/>'+
+'<span style="width:14px;height:14px;border-radius:50%;background:'+(col.hex||'#ccc')+';display:inline-block;flex-shrink:0;border:1.5px solid rgba(0,0,0,.1);box-shadow:0 1px 3px rgba(0,0,0,.12)"></span>'+
+'<span style="font-size:11px;font-weight:700;color:#0F0E1A;flex:1;min-width:0;word-break:break-word">'+col.name+'</span>'+
+'<span style="font-size:9px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:2px 5px;border-radius:5px;white-space:nowrap;flex-shrink:0">'+stk+'T</span>'+
+'</div>'+
+'<div style="display:flex;align-items:center;gap:4px">'+
+'<div style="font-size:8px;color:#9897B0;font-family:monospace;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+col.sku+'</div>'+
+'<input type="number" id="jwl-'+lid+'-t-'+idx+'" step="1" min="0" placeholder="0" oninput="calcJWLot('+lid+')" disabled style="width:36px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;box-sizing:border-box"/>'+
+'<input type="number" id="jwl-'+lid+'-tp-'+idx+'" step="1" min="0" placeholder="0" oninput="calcJWLot('+lid+')" disabled style="width:36px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;box-sizing:border-box"/>'+
+'<input type="number" id="jwl-'+lid+'-m-'+idx+'" step="1" min="0" placeholder="0" oninput="calcJWLot('+lid+')" disabled style="width:42px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;box-sizing:border-box"/>'+
+'<div id="jwl-'+lid+'-avgtaka-'+idx+'" style="width:38px;text-align:right;font-size:11px;font-weight:800;color:#9897B0;white-space:nowrap">&#x2014;</div>'+
+'</div>';
+row.addEventListener('click', e=>{
+if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON') return;
+const chk=el('jwl-'+lid+'-ck-'+idx);
+if(chk){chk.checked=!chk.checked; jwLotClrToggle(lid,idx);}
+});
+body.appendChild(row);
+});
+calcJWLot(lid);
+}
+function jwLotToggleAll(lid){
+const allChk=el('jwl-'+lid+'-all');
+const iid=el('jwl-'+lid+'-i')?.value;
+const rngRaw=el('jwl-'+lid+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
+const rng=rngRaw==='__norange__'?'':rngRaw;
+item.colours.filter(c=>c.range===rng).forEach(col=>{
+const idx=item.colours.indexOf(col);
+const chk=el('jwl-'+lid+'-ck-'+idx); if(!chk) return;
+chk.checked=allChk.checked;
+jwLotClrToggle(lid,idx,true);
+});
+calcJWLot(lid);
+}
+function jwLotClrToggle(lid,idx,skipCalc){
+const chk=el('jwl-'+lid+'-ck-'+idx);
+const row=el('jwl-'+lid+'-row-'+idx);
+const on=chk?.checked;
+jwSetRowFieldStates(lid,idx,on);
+if(row){row.style.background=on?'#FEFCE8':'';row.style.borderLeft=on?'3px solid #F59E0B':'3px solid transparent';}
+if(!skipCalc) calcJWLot(lid);
+}
+function calcJWLot(lid){
+const iid=el('jwl-'+lid+'-i')?.value;
+const rngRaw=el('jwl-'+lid+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
+const rng=rngRaw==='__norange__'?'':rngRaw;
+const avgT=STATE.settings.avgMtrPerTaka||90;
+const avgTP=STATE.settings.avgMtrPerTP||45;
+let lotTaka=0, lotMtrs=0;
+item.colours.filter(c=>c.range===rng).forEach(col=>{
+const idx=item.colours.indexOf(col);
+const chk=el('jwl-'+lid+'-ck-'+idx); if(!chk?.checked) return;
+let mtrs=0, avgTaka=0;
+if(_jwMode==='t'){
+  const t=parseInt(el('jwl-'+lid+'-t-'+idx)?.value)||0;
+  const tp=parseInt(el('jwl-'+lid+'-tp-'+idx)?.value)||0;
+  mtrs=Math.round(t*avgT+tp*avgTP);
+  avgTaka=Math.round(t+Math.round(tp*avgTP/avgT));
+  const mFld=el('jwl-'+lid+'-m-'+idx); if(mFld) mFld.value=mtrs||'';
+}else{
+  mtrs=parseInt(el('jwl-'+lid+'-m-'+idx)?.value)||0;
+  avgTaka=Math.round(mtrs/avgT);
+}
+const avgEl=el('jwl-'+lid+'-avgtaka-'+idx);
+if(avgEl){avgEl.textContent=avgTaka>0?avgTaka+'T':'—'; avgEl.style.color=avgTaka>0?'#4F46E5':'#9897B0';}
+lotTaka+=avgTaka; lotMtrs+=mtrs;
+});
+const foot=el('jwl-'+lid+'-foot');
+if(foot){
+const lotN=(_jwLots.findIndex(l=>l.id===lid)+1);
+if(lotTaka>0||lotMtrs>0){
+foot.style.display='flex'; foot.style.justifyContent='space-between'; foot.style.alignItems='center';
+foot.innerHTML='<span style="font-size:12px;font-weight:700;color:#374151">LOT '+lotN+' &nbsp;<span style="color:#0891B2;font-weight:900">'+fmtN(lotMtrs)+'m</span></span>'+
+'<span style="font-size:15px;font-weight:900;color:#4F46E5">'+fmtN(lotTaka)+' T</span>';
+}else{
+foot.style.display='none';
+}
+}
+}
 async function saveJW(){
 const date=el('jw-d')?.value, ref=el('jw-r')?.value||nextJWRef();
 const jwPId=el('jw-p')?.value; if(!jwPId){toast('Select JW party','er');return;}
 const jwP=STATE.suppliers.find(s=>s.id===jwPId)?.name||'';
 const millId=el('jw-ml')?.value||'', millP=STATE.suppliers.find(s=>s.id===millId)?.name||'';
+const avgT=STATE.settings.avgMtrPerTaka||90;
+const avgTP=STATE.settings.avgMtrPerTP||45;
+const picks=[];
+_jwLots.forEach(lot=>{
+  const iid=el('jwl-'+lot.id+'-i')?.value;
+  const rngRaw=el('jwl-'+lot.id+'-r')?.value;
+  const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
+  const rng=rngRaw==='__norange__'?'':rngRaw;
+  item.colours.filter(c=>c.range===rng).forEach(col=>{
+    const idx=item.colours.indexOf(col);
+    const chk=el('jwl-'+lot.id+'-ck-'+idx); if(!chk?.checked) return;
+    let taka=0;
+    if(_jwMode==='m'){
+      const m=parseInt(el('jwl-'+lot.id+'-m-'+idx)?.value)||0;
+      taka=Math.round(m/avgT);
+    }else{
+      const t=parseInt(el('jwl-'+lot.id+'-t-'+idx)?.value)||0;
+      const tp=parseInt(el('jwl-'+lot.id+'-tp-'+idx)?.value)||0;
+      taka=Math.round(t+Math.round(tp*avgTP/avgT));
+    }
+    if(!taka) return;
+    picks.push({itemId:item.id,colIdx:idx,item,col,taka});
+  });
+});
+if(!picks.length){toast('Add at least one item','er');return;}
 const rows=[];
-for(let i=0;i<_jwRows.length;i++){
-const sel=getSel('jw'+i); if(!sel) continue;
-const isMtrs=el('jw'+i+'-mw')?.style.display!=='none';
-const taka=isMtrs?Math.round((parseInt(el('jw'+i+'-m')?.value)||0)/STATE.settings.avgMtrPerTaka):Math.round(parseInt(el('jw'+i+'-t')?.value)||0);
-if(!taka) continue;
-if(_jwType==='s2j'){ const ok=await checkAdj(sel.itemId,sel.colIdx,taka); if(!ok) continue; deductStock(sel.itemId,sel.colIdx,taka,'jobwork-out',jwP,ref); }
-rows.push({itemId:sel.itemId,colIdx:sel.colIdx,sku:sel.col.sku,taka,mtrs:Math.round(taka*STATE.settings.avgMtrPerTaka),itemName:sel.item.name,colourName:sel.col.name});
+for(let i=0;i<picks.length;i++){
+const p=picks[i];
+if(_jwType==='s2j'){ const ok=await checkAdj(p.itemId,p.colIdx,p.taka); if(!ok) continue; deductStock(p.itemId,p.colIdx,p.taka,'jobwork-out',jwP,ref); }
+rows.push({itemId:p.itemId,colIdx:p.colIdx,sku:p.col.sku,taka:p.taka,mtrs:Math.round(p.taka*avgT),itemName:p.item.name,colourName:p.col.name});
 }
 if(!rows.length){toast('Add at least one item','er');return;}
 STATE.jobWork.push({id:uid(),type:_jwType==='m2j'?'mill-to-jw':'shop-to-jw',direction:'out',date,ref,jwParty:jwP,jwPartyId:jwPId,millParty:millP,millPartyId:millId,rows,status:'pending',expDate:el('jw-exp')?.value,notes:el('jw-nt')?.value,by:STATE.user?.name||'',sentDate:today()});
@@ -3058,27 +3290,70 @@ const over=j.status==='pending'&&j.expDate&&new Date(j.expDate)<new Date();
 return '<div class="et '+(j.status==='pending'?'jwp':'jwr')+'"><div class="ei" style="background:'+(j.status==='pending'?'var(--Al)':'var(--Gl)')+';color:'+(j.status==='pending'?'var(--Ad)':'var(--Gd)')+'">⚙️</div><div class="eb"><div class="etit mono">'+j.ref+' - '+j.jwParty+'</div><div class="esub">'+j.rows.length+' SKU - '+fmtDate(j.date)+(j.millParty?' - '+j.millParty:'')+'</div>'+(over?'<span class="bdg bg-r">OVERDUE</span>':'')+'</div><div class="er"><div class="ev out">'+tot+'T</div><span class="bdg '+(j.status==='pending'?'bg-a':'bg-g')+'">'+j.status+'</span>'+'<div class="mt4 flx g8">'+(j.status==='pending'?'<button class="btn bsuc bxs" onclick="event.stopPropagation();openRecvJW(\''+j.id+'\')">Receive</button><button class="btn bd bxs" onclick="event.stopPropagation();deleteJW(\''+j.id+'\')">Del</button>':'')+'<button class="btn bxs" style="background:#059669;color:#fff;border:none" onclick="event.stopPropagation();printJWChallan(\''+j.id+'\')">📄</button></div>'+'</div></div>';
 }).join('');
 }
+let _rvMode='t';
 function openRecvJW(id){
-_rjwId=id;
+_rjwId=id; _rvMode='t';
 const j=STATE.jobWork.find(x=>x.id===id); if(!j) return;
 el('rjwbod').innerHTML=
 '<div class="card" style="background:var(--Pl);margin-bottom:12px"><div class="flx ic jb"><div><div class="fw8">'+j.ref+'</div><div class="sm ct2">'+j.jwParty+' - '+fmtDate(j.date)+'</div></div><span class="bdg bg-a">Pending</span></div></div>'+
 '<div class="ir2"><div class="fg"><label>Received Date</label><input class="inp" type="date" id="rv-d" value="'+today()+'"/></div><div class="fg"><label>DC/Ref No.</label><input class="inp" id="rv-r"/></div></div>'+
-j.rows.map((row,i)=>'<div class="sr"><div class="srh"><span>'+row.itemName+' - '+row.colourName+'</span></div><div class="sku" style="margin-bottom:8px">'+row.sku+'</div><div class="sm ct3 mt4" style="margin-bottom:8px">Sent: <strong>'+row.taka+'T</strong> ('+row.mtrs+'m)</div><div class="sg2"><button class="sw on" onclick="setRVM(\'t\','+i+',this)">📦 Taka</button><button class="sw" onclick="setRVM(\'m\','+i+',this)">📏 Meters</button></div><div id="rv'+i+'-tw"><div class="fg"><label>Received Taka</label><input class="inp big mono" type="number" id="rv'+i+'-t" step="1" value="'+row.taka+'" oninput="updRVC('+i+','+row.taka+')"/><div class="cb" id="rv'+i+'-c">'+row.taka+'T received</div></div></div><div id="rv'+i+'-mw" class="hid"><div class="fg"><label>Finish Meters</label><input class="inp big mono" type="number" id="rv'+i+'-m" step="1" oninput="updRVCM('+i+','+row.taka+')"/><div class="cb" id="rv'+i+'-mc">Enter meters</div></div></div><div class="mt8"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="rv'+i+'-sc" onchange="togSKUChg('+i+')"/> SKU Changed?</label><div id="rv'+i+'-ns" class="hid mt8"><div class="sm cA fw7 mt4" style="margin-bottom:6px">Select new SKU:</div>'+buildCascade('rvn'+i,false)+'</div></div></div>').join('')+
+'<div class="fg"><label>Entry Mode</label><div class="sg2"><button class="sw on" id="rv-mode-t" onclick="setRVMode(\'t\')">📦 Taka + TP</button><button class="sw" id="rv-mode-m" onclick="setRVMode(\'m\')">📏 Total Meters</button></div><div class="sub" style="margin-top:4px" id="rv-mode-sub">Enter Taka &amp; TP per SKU — total meters &amp; avg taka auto-calculate.</div></div>'+
+j.rows.map((row,i)=>'<div class="sr"><div class="srh"><span>'+row.itemName+' - '+row.colourName+'</span></div><div class="sku" style="margin-bottom:8px">'+row.sku+'</div><div class="sm ct3 mt4" style="margin-bottom:8px">Sent: <strong>'+row.taka+'T</strong> ('+row.mtrs+'m)</div><div class="ir2"><div class="fg"><label>Taka</label><input class="inp big mono" type="number" id="rv'+i+'-t" step="1" min="0" value="'+row.taka+'" oninput="calcRVRow('+i+','+row.taka+')"/></div><div class="fg"><label>TP (small taka)</label><input class="inp big mono" type="number" id="rv'+i+'-tp" step="1" min="0" placeholder="0" oninput="calcRVRow('+i+','+row.taka+')"/></div></div><div class="fg"><label>Total Meters</label><input class="inp big mono" type="number" id="rv'+i+'-m" step="1" min="0" disabled oninput="calcRVRow('+i+','+row.taka+')"/></div><div class="cb" id="rv'+i+'-c"></div><div class="mt8"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="rv'+i+'-sc" onchange="togSKUChg('+i+')"/> SKU Changed?</label><div id="rv'+i+'-ns" class="hid mt8"><div class="sm cA fw7 mt4" style="margin-bottom:6px">Select new SKU:</div>'+buildCascade('rvn'+i,false)+'</div></div></div>').join('')+
 '<div class="fg"><label>Notes</label><input class="inp" id="rv-nt"/></div>';
 showMod('m-rjw');
+j.rows.forEach((row,i)=>calcRVRow(i,row.taka));
 }
-function setRVM(m,i,btn){el('rv'+i+'-tw').style.display=m==='t'?'':'none';el('rv'+i+'-mw').style.display=m==='m'?'':'none';btn.closest('.sg2').querySelectorAll('.sw').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
-function updRVC(i,sent){const t=parseInt(el('rv'+i+'-t')?.value)||0;const d=t-sent;const c=el('rv'+i+'-c');if(c) c.textContent=t+'T received - '+(d>=0?'+':'')+d+'T vs sent';}
-function updRVCM(i,sent){const m=parseInt(el('rv'+i+'-m')?.value)||0;const t=Math.round(m/STATE.settings.avgMtrPerTaka);const d=t-sent;const c=el('rv'+i+'-mc');if(c) c.textContent=m+'m \u2192 '+t+'T - '+(d>=0?'+':'')+d+'T vs sent';}
+function setRVMode(mode){
+_rvMode=mode;
+el('rv-mode-t')?.classList.toggle('on',mode==='t');
+el('rv-mode-m')?.classList.toggle('on',mode==='m');
+const sub=el('rv-mode-sub');
+if(sub) sub.innerHTML=mode==='t'?'Enter Taka &amp; TP per SKU — total meters &amp; avg taka auto-calculate.':'Enter total finish meters per SKU — it auto-converts to avg taka.';
+const j=STATE.jobWork.find(x=>x.id===_rjwId); if(!j) return;
+j.rows.forEach((row,i)=>{
+  const tFld=el('rv'+i+'-t'), tpFld=el('rv'+i+'-tp'), mFld=el('rv'+i+'-m');
+  const tOn=mode==='t', mOn=mode==='m';
+  if(tFld) tFld.disabled=!tOn;
+  if(tpFld) tpFld.disabled=!tOn;
+  if(mFld) mFld.disabled=!mOn;
+  calcRVRow(i,row.taka);
+});
+}
+function calcRVRow(i,sentTaka){
+const avgT=STATE.settings.avgMtrPerTaka||90;
+const avgTP=STATE.settings.avgMtrPerTP||45;
+let totalTaka=0, mtrs=0;
+if(_rvMode==='m'){
+  mtrs=parseInt(el('rv'+i+'-m')?.value)||0;
+  totalTaka=Math.round(mtrs/avgT);
+}else{
+  const t=parseInt(el('rv'+i+'-t')?.value)||0;
+  const tp=parseInt(el('rv'+i+'-tp')?.value)||0;
+  mtrs=Math.round(t*avgT+tp*avgTP);
+  totalTaka=Math.round(t+Math.round(tp*avgTP/avgT));
+  const mFld=el('rv'+i+'-m'); if(mFld) mFld.value=mtrs||'';
+}
+const d=totalTaka-sentTaka;
+const c=el('rv'+i+'-c');
+if(c) c.textContent=totalTaka+'T received ('+fmtN(mtrs)+'m) — '+(d>=0?'+':'')+d+'T vs sent';
+}
 function togSKUChg(i){const chk=el('rv'+i+'-sc')?.checked;chk?showEl('rv'+i+'-ns'):hideEl('rv'+i+'-ns');}
 async function saveRecvJW(){
 const j=STATE.jobWork.find(x=>x.id===_rjwId); if(!j) return;
 const date=el('rv-d')?.value||today(), ref=el('rv-r')?.value||'', notes=el('rv-nt')?.value||'';
+const avgT=STATE.settings.avgMtrPerTaka||90;
+const avgTP=STATE.settings.avgMtrPerTP||45;
 for(let i=0;i<j.rows.length;i++){
 const row=j.rows[i], sc=el('rv'+i+'-sc')?.checked;
-const isMtrs=el('rv'+i+'-mw')?.style.display!=='none';
-const taka=isMtrs?Math.round((parseInt(el('rv'+i+'-m')?.value)||0)/STATE.settings.avgMtrPerTaka):Math.round(parseInt(el('rv'+i+'-t')?.value)||row.taka);
+let taka=0;
+if(_rvMode==='m'){
+  taka=Math.round((parseInt(el('rv'+i+'-m')?.value)||0)/avgT);
+}else{
+  const t=parseInt(el('rv'+i+'-t')?.value)||0;
+  const tp=parseInt(el('rv'+i+'-tp')?.value)||0;
+  taka=Math.round(t+Math.round(tp*avgTP/avgT));
+}
+if(!taka) taka=row.taka;
 let iid=row.itemId, cIdx=row.colIdx;
 if(sc){const ns=getSel('rvn'+i);if(ns){iid=ns.itemId;cIdx=ns.colIdx;}}
 addStock(iid,cIdx,taka,'jobwork',j.jwParty,ref,notes);
