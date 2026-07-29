@@ -101,8 +101,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.28.1';
-const APP_BUILD_DATE='2026-07-29g';
+const APP_VERSION='1.28.2';
+const APP_BUILD_DATE='2026-07-29h';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -477,6 +477,16 @@ let changed=false;
 (STATE.taskInstances||[]).forEach(t=>{
   if(t.deadline&&/Z$/.test(t.deadline)){
     try{ t.deadline=toLocalDT(new Date(t.deadline)); changed=true; }catch(e){}
+  }
+  /* A single-day task (manual/ad-hoc, or no linked multi-day template) whose
+     generatedDate no longer matches its deadline's date got stuck showing
+     under "Upcoming" after its deadline was edited to today/an earlier day —
+     editing only updated deadline, not generatedDate. Re-sync the two. */
+  const tmpl=(STATE.taskTemplates||[]).find(x=>x.id===t.templateId);
+  const isMultiDay=tmpl&&(tmpl.duration||1)>1;
+  if(!isMultiDay&&t.deadline&&t.generatedDate){
+    const dDate=t.deadline.split('T')[0];
+    if(dDate&&dDate!==t.generatedDate){ t.generatedDate=dDate; changed=true; }
   }
 });
 if(changed) lsSave('vs_task_instances',STATE.taskInstances);
@@ -13604,7 +13614,7 @@ autoSyncCloud();
 function snoozeTaskDeadline(instanceId,hours){
 const task=(STATE.taskInstances||[]).find(t=>t.id===instanceId);if(!task)return;
 const newDeadline=new Date(new Date(task.deadline).getTime()+hours*3600000);
-task.deadline=toLocalDT(newDeadline);task._ts=Date.now();
+task.deadline=toLocalDT(newDeadline);task.generatedDate=task.deadline.split('T')[0];task._ts=Date.now();
 lsSave('vs_task_instances',STATE.taskInstances);
 renderMyTasks();renderAllTasks();
 toast('Deadline snoozed by '+hours+'h → '+newDeadline.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),'ok');
@@ -14055,7 +14065,7 @@ function saveETI(id){
   const u2=el('etiu')?.value;
   if(u2){const u=STATE.users.find(x=>x.id===u2);task.assignedUserId=u2;task.assignedUserName=u?.name||task.assignedUserName;}
   task.priority=el('etip')?.value||task.priority;
-  const dl=el('etid')?.value;if(dl)task.deadline=dl;
+  const dl=el('etid')?.value;if(dl){task.deadline=dl;task.generatedDate=dl.split('T')[0];}
   task.note=el('etint')?.value||'';
   task._ts=Date.now();
   lsSave('vs_task_instances',STATE.taskInstances);rmEl('m-etit');
@@ -14348,8 +14358,18 @@ function mergeTaskInstances(local,remote){
     if((item._ts||0)>(existing._ts||0))map.set(item.id,item);
   });
   const out=Array.from(map.values());
-  /* Normalize any UTC-format deadline (from an older build) back to naive local */
-  out.forEach(t=>{ if(t.deadline&&/Z$/.test(t.deadline)){ try{ t.deadline=toLocalDT(new Date(t.deadline)); }catch(e){} } });
+  /* Normalize any UTC-format deadline (from an older build) back to naive local,
+     and re-sync generatedDate for single-day tasks whose deadline moved but
+     generatedDate (which drives Today/Upcoming placement) didn't. */
+  out.forEach(t=>{
+    if(t.deadline&&/Z$/.test(t.deadline)){ try{ t.deadline=toLocalDT(new Date(t.deadline)); }catch(e){} }
+    const tmpl=(STATE.taskTemplates||[]).find(x=>x.id===t.templateId);
+    const isMultiDay=tmpl&&(tmpl.duration||1)>1;
+    if(!isMultiDay&&t.deadline&&t.generatedDate){
+      const dDate=t.deadline.split('T')[0];
+      if(dDate&&dDate!==t.generatedDate) t.generatedDate=dDate;
+    }
+  });
   return out;
 }
 
