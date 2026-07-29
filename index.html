@@ -101,8 +101,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.27.0';
-const APP_BUILD_DATE='2026-07-29e';
+const APP_VERSION='1.28.0';
+const APP_BUILD_DATE='2026-07-29f';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -1617,6 +1617,13 @@ const col=item.colours[cIdx]; if(!col) return null;
 return {itemId:iid,colIdx:cIdx,item,col};
 }
 function toastMsg(m){ toast(m,'er'); }
+function quickAddSup(targetId,defaultGroup){
+window._supReturnTarget=targetId;
+el('sup-id').value=''; el('sup-name').value=''; el('sup-grp').value=defaultGroup||'Job Work';
+el('sup-ph').value=''; if(el('sup-gst'))el('sup-gst').value=''; el('sup-ct').value='';
+el('sup-addr').value=''; el('sup-nt').value='';
+showMod('m-sup');
+}
 function quickRng(pfx){
 const iid=el(pfx+'-i')?.value; if(!iid){toast('Select item first','er');return;}
 window._qrPfx=pfx; window._qrIid=iid;
@@ -2278,9 +2285,20 @@ function saveSup(){
   if(gstin){const dup=STATE.suppliers.find(s=>s.gstin===gstin&&s.id!==id);if(dup){toast('GSTIN exists: '+dup.name,'er');return;}}
   const obj={name,group:el('sup-grp').value,gstin,phone:el('sup-ph').value.trim(),
     contact:el('sup-ct').value.trim(),address:el('sup-addr').value.trim(),notes:el('sup-nt').value.trim()};
+  let newId=id;
   if(id){const i=STATE.suppliers.findIndex(s=>s.id===id);if(i>=0){STATE.suppliers[i]={...STATE.suppliers[i],...obj};STATE.suppliers[i]._ts=Date.now();}}
-  else STATE.suppliers.push(stamp({id:uid(),...obj}));
+  else{newId=uid();STATE.suppliers.push(stamp({id:newId,...obj}));}
   lsSave('vs_suppliers',STATE.suppliers);hideMod('m-sup');renderSups();toast('Supplier saved','ok');autoSyncCloud();
+  if(window._supReturnTarget){
+    const target=window._supReturnTarget; window._supReturnTarget=null;
+    if(target==='jw-p'){
+      const nm=STATE.suppliers.filter(s=>s.group!=='Mill');
+      const sel=el('jw-p'); if(sel){sel.innerHTML='<option value="">Select JW party...</option>'+nm.map(s=>'<option value="'+s.id+'">'+s.name+' ('+s.group+')</option>').join('');sel.value=newId;}
+    }else if(target==='jw-ml'){
+      const mills=STATE.suppliers.filter(s=>s.group==='Mill');
+      const sel=el('jw-ml'); if(sel){sel.innerHTML='<option value="">Select mill...</option>'+mills.map(s=>'<option value="'+s.id+'">'+s.name+'</option>').join('');sel.value=newId;}
+    }
+  }
 }
 function renderPrds(){
 const c=el('prdlst'); if(!c) return;
@@ -3014,8 +3032,8 @@ const nm=STATE.suppliers.filter(s=>s.group!=='Mill');
 const mills=STATE.suppliers.filter(s=>s.group==='Mill');
 el('jwbod').innerHTML=
 '<div class="ir2"><div class="fg"><label>Date</label><input class="inp" type="date" id="jw-d" value="'+today()+'"/></div><div class="fg"><label>Challan Ref</label><input class="inp" id="jw-r" value="'+nextJWRef()+'"/></div></div>'+
-(_jwType==='m2j'?'<div class="fg"><label>Mill Party</label><select class="sel" id="jw-ml"><option value="">Select mill...</option>'+mills.map(s=>'<option value="'+s.id+'">'+s.name+'</option>').join('')+'</select></div>':'')+
-'<div class="fg"><label>JW Party (Processing Unit)</label><select class="sel" id="jw-p"><option value="">Select JW party...</option>'+nm.map(s=>'<option value="'+s.id+'">'+s.name+' ('+s.group+')</option>').join('')+'</select></div>'+
+(_jwType==='m2j'?'<div class="fg"><label>Mill Party</label><div class="fi"><select class="sel" id="jw-ml"><option value="">Select mill...</option>'+mills.map(s=>'<option value="'+s.id+'">'+s.name+'</option>').join('')+'</select><button class="ai" onclick="quickAddSup(\'jw-ml\',\'Mill\')">+</button></div></div>':'')+
+'<div class="fg"><label>JW Party (Processing Unit)</label><div class="fi"><select class="sel" id="jw-p"><option value="">Select JW party...</option>'+nm.map(s=>'<option value="'+s.id+'">'+s.name+' ('+s.group+')</option>').join('')+'</select><button class="ai" onclick="quickAddSup(\'jw-p\',\'Job Work\')">+</button></div></div>'+
 '<div class="fg"><label>Entry Mode</label><div class="sg2"><button class="sw on" id="jw-mode-t" onclick="setJWMode(\'t\')">📦 Taka + TP</button><button class="sw" id="jw-mode-m" onclick="setJWMode(\'m\')">📏 Total Meters</button></div><div class="sub" style="margin-top:4px" id="jw-mode-sub">Enter Taka &amp; TP per colour — total meters &amp; avg taka auto-calculate.</div></div>'+
 '<div class="ir2"><div class="fg"><label>Expected Return</label><input class="inp" type="date" id="jw-exp"/></div><div class="fg"><label>Notes</label><input class="inp" id="jw-nt"/></div></div>'+
 '<div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs (Lots)</div><div id="jw-lots"></div><button class="btn bs bfl mt8" onclick="addJWLot()">+ Add LOT / Item</button>';
@@ -3328,7 +3346,7 @@ el('rjwbod').innerHTML=
 '<div class="ir2"><div class="fg"><label>Received Date</label><input class="inp" type="date" id="rv-d" value="'+today()+'"/></div><div class="fg"><label>DC/Ref No.</label><input class="inp" id="rv-r"/></div></div>'+
 '<div class="fg"><label>Entry Mode</label><div class="sg2"><button class="sw on" id="rv-mode-t" onclick="setRVMode(\'t\')">📦 Taka + TP</button><button class="sw" id="rv-mode-m" onclick="setRVMode(\'m\')">📏 Total Meters</button></div><div class="sub" style="margin-top:4px" id="rv-mode-sub">Enter Taka &amp; TP per SKU — total meters &amp; avg taka auto-calculate.</div></div>'+
 _rvJobs.map((j,ci)=>'<div class="card" style="background:var(--Pl);margin:12px 0"><div class="flx ic jb"><div><div class="fw8">'+j.ref+'</div><div class="sm ct2">'+j.jwParty+' - '+fmtDate(j.date)+'</div></div><span class="bdg bg-a">Pending</span></div></div>'+
-j.rows.map((row,ri)=>{const k=ci+'_'+ri;return '<div class="sr"><div class="srh"><span>'+row.itemName+' - '+row.colourName+'</span></div><div class="sku" style="margin-bottom:8px">'+row.sku+'</div><div class="sm ct3 mt4" style="margin-bottom:8px">Sent: <strong>'+row.taka+'T</strong> ('+row.mtrs+'m)</div><div class="ir2"><div class="fg"><label>Taka</label><input class="inp big mono" type="number" id="rv'+k+'-t" step="1" min="0" value="'+row.taka+'" oninput="calcRVRow(\''+k+'\','+row.taka+')"/></div><div class="fg"><label>TP (small taka)</label><input class="inp big mono" type="number" id="rv'+k+'-tp" step="1" min="0" placeholder="0" oninput="calcRVRow(\''+k+'\','+row.taka+')"/></div></div><div class="fg"><label>Total Meters</label><input class="inp big mono" type="number" id="rv'+k+'-m" step="1" min="0" disabled oninput="calcRVRow(\''+k+'\','+row.taka+')"/></div><div class="cb" id="rv'+k+'-c"></div><div class="mt8"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="rv'+k+'-sc" onchange="togSKUChg(\''+k+'\')"/> SKU Changed?</label><div id="rv'+k+'-ns" class="hid mt8"><div class="sm cA fw7 mt4" style="margin-bottom:6px">Select new SKU:</div>'+buildCascade('rvn'+k,false)+'</div></div></div>';}).join('')
+j.rows.map((row,ri)=>{const k=ci+'_'+ri;return '<div class="sr"><div class="srh"><span>'+row.itemName+' - '+row.colourName+'</span></div><div class="sku" style="margin-bottom:8px">'+row.sku+'</div><div class="sm ct3 mt4" style="margin-bottom:8px">Sent: <strong>'+row.taka+'T</strong> ('+row.mtrs+'m)</div><div class="ir2"><div class="fg"><label>Taka</label><input class="inp big mono" type="number" id="rv'+k+'-t" step="1" min="0" value="'+row.taka+'" oninput="calcRVRow(\''+k+'\','+row.taka+')"/></div><div class="fg"><label>TP (small taka)</label><input class="inp big mono" type="number" id="rv'+k+'-tp" step="1" min="0" placeholder="0" oninput="calcRVRow(\''+k+'\','+row.taka+')"/></div></div><div class="fg"><label>Total Meters <span class="sm ct3">(editable — adjust for shortage)</span></label><input class="inp big mono" type="number" id="rv'+k+'-m" step="1" min="0" oninput="calcRVRow(\''+k+'\','+row.taka+',\'m\')"/></div><div class="cb" id="rv'+k+'-c"></div><div class="mt8"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="rv'+k+'-sc" onchange="togSKUChg(\''+k+'\')"/> SKU Changed?</label><div id="rv'+k+'-ns" class="hid mt8"><div class="sm cA fw7 mt4" style="margin-bottom:6px">Select new SKU:</div>'+buildCascade('rvn'+k,false)+'</div></div></div>';}).join('')
 ).join('')+
 '<div class="fg" style="margin-top:8px"><label>Notes</label><input class="inp" id="rv-nt"/></div>';
 showMod('m-rjw');
@@ -3342,28 +3360,26 @@ const sub=el('rv-mode-sub');
 if(sub) sub.innerHTML=mode==='t'?'Enter Taka &amp; TP per SKU — total meters &amp; avg taka auto-calculate.':'Enter total finish meters per SKU — it auto-converts to avg taka.';
 _rvJobs.forEach((j,ci)=>j.rows.forEach((row,ri)=>{
   const k=ci+'_'+ri;
-  const tFld=el('rv'+k+'-t'), tpFld=el('rv'+k+'-tp'), mFld=el('rv'+k+'-m');
-  const tOn=mode==='t', mOn=mode==='m';
+  const tFld=el('rv'+k+'-t'), tpFld=el('rv'+k+'-tp');
+  const tOn=mode==='t';
   if(tFld) tFld.disabled=!tOn;
   if(tpFld) tpFld.disabled=!tOn;
-  if(mFld) mFld.disabled=!mOn;
   calcRVRow(k,row.taka);
 }));
 }
-function calcRVRow(k,sentTaka){
+function calcRVRow(k,sentTaka,src){
 const avgT=STATE.settings.avgMtrPerTaka||90;
 const avgTP=STATE.settings.avgMtrPerTP||45;
-let totalTaka=0, mtrs=0;
-if(_rvMode==='m'){
+let mtrs=0;
+if(_rvMode==='m'||src==='m'){
   mtrs=parseInt(el('rv'+k+'-m')?.value)||0;
-  totalTaka=Math.round(mtrs/avgT);
 }else{
   const t=parseInt(el('rv'+k+'-t')?.value)||0;
   const tp=parseInt(el('rv'+k+'-tp')?.value)||0;
   mtrs=Math.round(t*avgT+tp*avgTP);
-  totalTaka=Math.round(t+Math.round(tp*avgTP/avgT));
   const mFld=el('rv'+k+'-m'); if(mFld) mFld.value=mtrs||'';
 }
+const totalTaka=Math.round(mtrs/avgT);
 const d=totalTaka-sentTaka;
 const c=el('rv'+k+'-c');
 if(c) c.textContent=totalTaka+'T received ('+fmtN(mtrs)+'m) — '+(d>=0?'+':'')+d+'T vs sent';
@@ -3405,14 +3421,8 @@ _rvJobs.forEach((j,ci)=>{
 j.rows.forEach((row,ri)=>{
   const k=ci+'_'+ri;
   const sc=el('rv'+k+'-sc')?.checked;
-  let taka=0;
-  if(_rvMode==='m'){
-    taka=Math.round((parseInt(el('rv'+k+'-m')?.value)||0)/avgT);
-  }else{
-    const t=parseInt(el('rv'+k+'-t')?.value)||0;
-    const tp=parseInt(el('rv'+k+'-tp')?.value)||0;
-    taka=Math.round(t+Math.round(tp*avgTP/avgT));
-  }
+  const mtrs=parseInt(el('rv'+k+'-m')?.value)||0;
+  let taka=Math.round(mtrs/avgT);
   if(!taka) taka=row.taka;
   let iid=row.itemId, cIdx=row.colIdx;
   if(sc){const ns=getSel('rvn'+k);if(ns){iid=ns.itemId;cIdx=ns.colIdx;}}
