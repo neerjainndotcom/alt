@@ -99,8 +99,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.26.0';
-const APP_BUILD_DATE='2026-07-29c';
+const APP_VERSION='1.26.1';
+const APP_BUILD_DATE='2026-07-29d';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -1561,6 +1561,7 @@ return false;
 }
 function buildCascade(pfx,showStk){
 const opts=[...STATE.items].filter(i=>!i._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
+setTimeout(()=>{ try{ populateItemSelectRetry(el(pfx+'-i')); }catch(e){} },0);
 return '<div class="fg"><label>Item</label><div class="fi"><select class="sel" id="'+pfx+'-i" onchange="cascRng(\''+pfx+'\','+showStk+')"><option value="">Select item...</option>'+opts+'</select><button class="ai" onclick="toastMsg(\'Add items in Masters first\')">+</button></div></div><div class="fg hid" id="'+pfx+'-rg"><label>Range</label><div class="fi"><select class="sel" id="'+pfx+'-r" onchange="cascClr(\''+pfx+'\','+showStk+')"><option value="">Select range...</option></select><button class="ai" onclick="quickRng(\''+pfx+'\')">+</button></div></div><div class="fg hid" id="'+pfx+'-cg"><label>Colour</label><div class="fi"><select class="sel" id="'+pfx+'-c" onchange="onClrSel(\''+pfx+'\','+showStk+')"><option value="">Select colour...</option></select><button class="ai" onclick="quickClr(\''+pfx+'\')">+</button></div></div><div id="'+pfx+'-si"></div>';
 }
 function cascRng(pfx,showStk){
@@ -2523,6 +2524,28 @@ _inLots=_inLots.filter(l=>l.id!==id);
 const card=el('inl-'+id);
 if(card) card.remove();
 }
+/* Populates an item <select> from STATE.items, retrying for a few seconds if
+   the initial cloud pull hasn't landed yet (avoids a permanently-empty
+   dropdown when a lot-picker modal is opened right after page load). */
+function populateItemSelectRetry(selectEl){
+if(!selectEl) return;
+const build=()=>'<option value="">Select Item...</option>'+
+  [...(STATE.items||[])].filter(i=>!i._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('');
+if((STATE.items||[]).length){ selectEl.innerHTML=build(); return; }
+selectEl.innerHTML='<option value="">⏳ Loading items…</option>';
+let tries=0;
+const iv=setInterval(()=>{
+  tries++;
+  if(!selectEl.isConnected){clearInterval(iv);return;}
+  if((STATE.items||[]).length){
+    clearInterval(iv);
+    selectEl.innerHTML=build();
+  }else if(tries>40){
+    clearInterval(iv);
+    selectEl.innerHTML='<option value="">No items found — try closing &amp; reopening this form</option>';
+  }
+},600);
+}
 function appendInwLotCard(lot, li, c){
 if(!c) c=el('in-lots'); if(!c) return;
 const lotColors=[
@@ -2545,7 +2568,6 @@ row1.innerHTML=
 '<div style="background:'+lc.border+';color:'+lc.label+';font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;letter-spacing:.5px;flex-shrink:0">LOT '+(li+1)+'</div>'+
 '<select id="inl-'+lot.id+'-i" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="inwLotItemChange('+lot.id+')">'+
 '<option value="">Select Item...</option>'+
-[...STATE.items].filter(i=>!i._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+
 '</select>'+
 '<select id="inl-'+lot.id+'-r" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="inwLotRangeChange('+lot.id+')" disabled>'+
 '<option value="">Range...</option>'+
@@ -2553,6 +2575,7 @@ row1.innerHTML=
 (li>0?'<button onclick="remInwLot('+lot.id+')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(220,38,38,.15);color:#DC2626;font-size:13px;cursor:pointer;flex-shrink:0;font-weight:700">&#x2715;</button>':'');
 hdr.appendChild(row1);
 card.appendChild(hdr);
+populateItemSelectRetry(row1.querySelector('#inl-'+lot.id+'-i'));
 const body=document.createElement('div');
 body.id='inl-'+lot.id+'-body';
 body.style.cssText='background:white';
@@ -3069,7 +3092,6 @@ row1.innerHTML=
 '<div style="background:'+lc.border+';color:'+lc.label+';font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;letter-spacing:.5px;flex-shrink:0">LOT '+(li+1)+'</div>'+
 '<select id="jwl-'+lot.id+'-i" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="jwLotItemChange('+lot.id+')">'+
 '<option value="">Select Item...</option>'+
-[...STATE.items].filter(i=>!i._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+
 '</select>'+
 '<select id="jwl-'+lot.id+'-r" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="jwLotRangeChange('+lot.id+')" disabled>'+
 '<option value="">Range...</option>'+
@@ -3077,6 +3099,7 @@ row1.innerHTML=
 (li>0?'<button onclick="remJWLot('+lot.id+')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(220,38,38,.15);color:#DC2626;font-size:13px;cursor:pointer;flex-shrink:0;font-weight:700">&#x2715;</button>':'');
 hdr.appendChild(row1);
 card.appendChild(hdr);
+populateItemSelectRetry(row1.querySelector('#jwl-'+lot.id+'-i'));
 const body=document.createElement('div');
 body.id='jwl-'+lot.id+'-body';
 body.style.cssText='background:white';
