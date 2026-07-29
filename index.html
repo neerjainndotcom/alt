@@ -101,8 +101,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.28.0';
-const APP_BUILD_DATE='2026-07-29f';
+const APP_VERSION='1.28.1';
+const APP_BUILD_DATE='2026-07-29g';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -358,6 +358,13 @@ function isDuplicate(collection, matchField, value, editId){
   });
 }
 const today = () => { const _tz=(typeof STATE!=='undefined'&&STATE.settings&&STATE.settings.officeTimezone)||'Asia/Calcutta'; return new Intl.DateTimeFormat('en-CA',{timeZone:_tz}).format(new Date()); };
+/* Formats a Date object as a naive local "YYYY-MM-DDTHH:MM" string — the same
+   format <input type="datetime-local"> produces/consumes. All task.deadline
+   values must use this naive-local format (never toISOString(), which is UTC
+   and silently shifts the displayed date/time once re-parsed as if local). */
+function toLocalDT(d){
+return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
 const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '';
 const fmtN = n => Math.round(n||0).toLocaleString('en-IN');
 const fmtRs = n => '\u20B9'+Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -460,6 +467,20 @@ STATE.flaggedEntries=lsGet('vs_flagged')||[];
 STATE.recurringLeads=lsGet('vs_rec_leads')||[];
 STATE.taskTemplates=lsGet('vs_task_templates')||[];
 STATE.taskInstances=lsGet('vs_task_instances')||[];
+/* One-time repair: older deadlines were sometimes saved as UTC ISO strings
+   (via Edit Task / Snooze / Ad-hoc Task) instead of the naive local
+   "YYYY-MM-DDTHH:MM" format the rest of the app expects. Re-reading a UTC
+   string as if it were local time silently shifted the shown date/time —
+   fix any found in the local cache on load. */
+(function migrateTaskDeadlines(){
+let changed=false;
+(STATE.taskInstances||[]).forEach(t=>{
+  if(t.deadline&&/Z$/.test(t.deadline)){
+    try{ t.deadline=toLocalDT(new Date(t.deadline)); changed=true; }catch(e){}
+  }
+});
+if(changed) lsSave('vs_task_instances',STATE.taskInstances);
+})();
 STATE.staffLeave=lsGet('vs_staff_leave')||[];
 STATE.mixedSarees=lsGet('vs_mixed_sarees')||[];
 STATE.custGroups=lsGet('vs_cust_groups')||[];
@@ -13583,7 +13604,7 @@ autoSyncCloud();
 function snoozeTaskDeadline(instanceId,hours){
 const task=(STATE.taskInstances||[]).find(t=>t.id===instanceId);if(!task)return;
 const newDeadline=new Date(new Date(task.deadline).getTime()+hours*3600000);
-task.deadline=newDeadline.toISOString();task._ts=Date.now();
+task.deadline=toLocalDT(newDeadline);task._ts=Date.now();
 lsSave('vs_task_instances',STATE.taskInstances);
 renderMyTasks();renderAllTasks();
 toast('Deadline snoozed by '+hours+'h → '+newDeadline.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),'ok');
@@ -13637,7 +13658,7 @@ const genDate=deadline.split('T')[0];
 const inst={
 id:'ti_manual_'+Date.now(),templateId:'manual',taskName:name,category:cat,
 description:desc,priority:pri,assignedUserId:userId,assignedUserName:user?.name||userId,
-isSubstitute:false,generatedDate:genDate,deadline:new Date(deadline).toISOString(),
+isSubstitute:false,generatedDate:genDate,deadline:deadline,
 status:'Pending',completedAt:null,completedByUserId:null,completedByName:null,
 isOnTime:null,createdBy:STATE.user?.id,_ts:Date.now()
 };
@@ -14034,7 +14055,7 @@ function saveETI(id){
   const u2=el('etiu')?.value;
   if(u2){const u=STATE.users.find(x=>x.id===u2);task.assignedUserId=u2;task.assignedUserName=u?.name||task.assignedUserName;}
   task.priority=el('etip')?.value||task.priority;
-  const dl=el('etid')?.value;if(dl)task.deadline=new Date(dl).toISOString();
+  const dl=el('etid')?.value;if(dl)task.deadline=dl;
   task.note=el('etint')?.value||'';
   task._ts=Date.now();
   lsSave('vs_task_instances',STATE.taskInstances);rmEl('m-etit');
@@ -14326,7 +14347,10 @@ function mergeTaskInstances(local,remote){
     if(item.status==='Done'&&existing.status!=='Done'){map.set(item.id,item);return;}
     if((item._ts||0)>(existing._ts||0))map.set(item.id,item);
   });
-  return Array.from(map.values());
+  const out=Array.from(map.values());
+  /* Normalize any UTC-format deadline (from an older build) back to naive local */
+  out.forEach(t=>{ if(t.deadline&&/Z$/.test(t.deadline)){ try{ t.deadline=toLocalDT(new Date(t.deadline)); }catch(e){} } });
+  return out;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
