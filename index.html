@@ -99,8 +99,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.24.0';
-const APP_BUILD_DATE='2026-07-28i';
+const APP_VERSION='1.25.0';
+const APP_BUILD_DATE='2026-07-29a';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -2294,6 +2294,7 @@ else STATE.products.push({id:uid(),...obj});
 lsSave('vs_products',STATE.products); hideMod('m-prd'); renderPrds(); toast('Product saved','ok');
 }
 let _inType='mill', _inRows=[{}];
+let _inLots=[{id:0}]; let _inLotId=0; let _inMode='m';
 
 /*********************************************************************
  *                                                                   *
@@ -2305,7 +2306,7 @@ let _inType='mill', _inRows=[{}];
  ********************************************************************/
 
 function showInward(type){
-_inType=type; _inRows=[{}];
+_inType=type; _inRows=[{}]; _inLots=[{id:0}]; _inLotId=0; _inMode='m';
 const T={mill:'Mill G.P',jwin:'Job Work Inward',exch:'Exchange Inward'};
 el('inwtit').textContent=T[type]||'Inward'; el('inwsub').textContent='';
 buildInward(); showMod('m-inw');
@@ -2320,11 +2321,16 @@ el('inwbod').innerHTML=
 '<div class="ir2"><div class="fg"><label>Voucher No.</label><input class="inp mono fw8" id="in-vno" value="'+nextInwardVoucher()+'" placeholder="Auto-generated"/></div><div class="fg"><label>Date</label><input class="inp" type="date" id="in-date" value="'+today()+'"/></div></div>'+
 '<div class="fg"><label>Ref No.</label><input class="inp" id="in-ref" placeholder="Bill/DC no."/></div>'+
 '<div class="fg"><label>Party / Supplier</label><select class="sel" id="in-pty"><option value="">Select supplier...</option>'+supOpts+'</select></div>'+
+(_inType==='mill'
+  ?'<div class="fg"><label>Entry Mode</label><div class="sg2"><button class="sw'+(_inMode==='t'?' on':'')+'" id="in-mode-t" onclick="setInMode(\'t\')">📦 Taka + TP</button><button class="sw'+(_inMode==='m'?' on':'')+'" id="in-mode-m" onclick="setInMode(\'m\')">📏 Total Meters</button></div><div class="sub" style="margin-top:4px">'+(_inMode==='t'?'Enter Taka &amp; TP per colour — total meters &amp; avg taka auto-calculate.':'Enter total finish meters per colour — it auto-converts to avg taka.')+'</div></div>'
+  :'')+
 gpSec+exchSec+
-'<div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs</div><div id="in-rows"></div>'+
-'<button class="btn bs bfl mt8" onclick="addInRow()">+ Add SKU</button>'+
+(_inType==='mill'
+  ?'<div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs (Lots)</div><div id="in-lots"></div><button class="btn bs bfl mt8" onclick="addInwLot()">+ Add LOT / Item</button>'
+  :'<div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs</div><div id="in-rows"></div><button class="btn bs bfl mt8" onclick="addInRow()">+ Add SKU</button>'
+)+
 '<div class="fg mt12"><label>Notes</label><input class="inp" id="in-notes" placeholder="Optional"/></div>';
-renderInRows();
+if(_inType==='mill') renderInLots(); else renderInRows();
 }
 let _inDest='stk';
 function setDest(d,btn){
@@ -2378,23 +2384,47 @@ const pId=el('in-pty')?.value, party=STATE.suppliers.find(s=>s.id===pId)?.name||
 const gpNo=el('in-gpno')?.value?.trim()||'';
 const fullNote=gpNo?('GP: '+gpNo+(notes?' | '+notes:'')):notes;
 let saved=0;
-for(let i=0;i<_inRows.length;i++){
-const sel=getSel('ir'+i); if(!sel) continue;
-const _mw=el('ir'+i+'-mw');
-const _mMode=_inType==='mill'&&_mw&&_mw.style.display!=='none';
-const _mVal=_mMode?(parseInt(el('ir'+i+'-m')?.value)||0):0;
-const taka=_mMode?Math.round(_mVal/(STATE.settings.avgMtrPerTaka||90)):(parseInt(el('ir'+i+'-t')?.value)||0);
-const tpCount=parseInt(el('ir'+i+'-tp')?.value)||0;
 const avgT=STATE.settings.avgMtrPerTaka||90;
 const avgTP=STATE.settings.avgMtrPerTP||45;
+if(_inType==='mill'){
+_inLots.forEach(lot=>{
+  const iid=el('inl-'+lot.id+'-i')?.value;
+  const rng=el('inl-'+lot.id+'-r')?.value;
+  const item=STATE.items.find(x=>x.id===iid); if(!item||rng===undefined||rng==='') return;
+  item.colours.filter(c=>c.range===rng).forEach(col=>{
+    const idx=item.colours.indexOf(col);
+    const chk=el('inl-'+lot.id+'-ck-'+idx); if(!chk?.checked) return;
+    let totalTaka=0, tpCount=0;
+    if(_inMode==='m'){
+      const m=parseInt(el('inl-'+lot.id+'-m-'+idx)?.value)||0;
+      totalTaka=Math.round(m/avgT);
+    }else{
+      const t=parseInt(el('inl-'+lot.id+'-t-'+idx)?.value)||0;
+      tpCount=parseInt(el('inl-'+lot.id+'-tp-'+idx)?.value)||0;
+      const tpAsTaka=Math.round(tpCount*avgTP/avgT);
+      totalTaka=Math.round(t+tpAsTaka);
+    }
+    if(!totalTaka) return;
+    const tpNote=tpCount>0?(fullNote?fullNote+' | TP: '+tpCount:'TP: '+tpCount):fullNote;
+    addStock(item.id,idx,totalTaka,'mill',party,ref,tpNote);
+    STATE.entries[STATE.entries.length-1].voucherNo=vno;
+    saved++;
+  });
+});
+}else{
+for(let i=0;i<_inRows.length;i++){
+const sel=getSel('ir'+i); if(!sel) continue;
+const taka=parseInt(el('ir'+i+'-t')?.value)||0;
+const tpCount=parseInt(el('ir'+i+'-tp')?.value)||0;
 const tpAsTaka=Math.round(tpCount*avgTP/avgT);
 const totalTaka=Math.round(taka+tpAsTaka);
 if(!totalTaka) continue;
-const entryType=_inType==='mill'?'mill':(_inType==='jwin'?'jobwork':_inType);
+const entryType=_inType==='jwin'?'jobwork':_inType;
 const tpNote=tpCount>0?(fullNote?fullNote+' | TP: '+tpCount:'TP: '+tpCount):fullNote;
 addStock(sel.itemId,sel.colIdx,totalTaka,entryType,party,ref,tpNote);
 STATE.entries[STATE.entries.length-1].voucherNo=vno;
 saved++;
+}
 }
 if(!saved){toast('Add at least one SKU with taka','er');return;}
 STATE.settings.nextInwardNo=(STATE.settings.nextInwardNo||1)+1;
@@ -2439,6 +2469,231 @@ const avgT=STATE.settings.avgMtrPerTaka||90;
 const t=Math.round(m/avgT);
 const cd=el('ir'+i+'-mcalc');
 if(cd) cd.textContent=m+'m ÷ '+avgT+' = '+t+' T';
+}
+/* ── Mill Inward Lot Picker: select Item + Range once, tick colours from a
+   checklist (mirrors the Sale Order lot picker), with a single global
+   Taka+TP / Total Meters mode switch just below the Supplier field. ── */
+function setInMode(mode){
+_inMode=mode;
+el('in-mode-t')?.classList.toggle('on',mode==='t');
+el('in-mode-m')?.classList.toggle('on',mode==='m');
+const modeWrap=el('in-mode-t')?.closest('.fg');
+const sub=modeWrap?modeWrap.querySelector('.sub'):null;
+if(sub) sub.innerHTML=mode==='t'?'Enter Taka &amp; TP per colour — total meters &amp; avg taka auto-calculate.':'Enter total finish meters per colour — it auto-converts to avg taka.';
+_inLots.forEach(lot=>{
+  const iid=el('inl-'+lot.id+'-i')?.value, rng=el('inl-'+lot.id+'-r')?.value;
+  const item=STATE.items.find(x=>x.id===iid); if(!item||rng===undefined||rng==='') return;
+  item.colours.filter(c=>c.range===rng).forEach(col=>{
+    const idx=item.colours.indexOf(col);
+    const chk=el('inl-'+lot.id+'-ck-'+idx); if(!chk) return;
+    inwSetRowFieldStates(lot.id,idx,chk.checked);
+  });
+  calcInwLot(lot.id);
+});
+}
+function inwSetRowFieldStates(lid,idx,on){
+const tFld=el('inl-'+lid+'-t-'+idx), tpFld=el('inl-'+lid+'-tp-'+idx), mFld=el('inl-'+lid+'-m-'+idx);
+const tOn=on&&_inMode==='t', mOn=on&&_inMode==='m';
+[[tFld,tOn],[tpFld,tOn],[mFld,mOn]].forEach(pair=>{
+  const fld=pair[0], active=pair[1];
+  if(!fld) return;
+  fld.disabled=!active;
+  fld.style.background=active?'#FFFBEB':'#F3F4F6';
+  fld.style.color=active?'#92400E':'#9CA3AF';
+  fld.style.border=active?'2px solid #F59E0B':'1.5px solid #D1D5DB';
+});
+}
+function renderInLots(){
+const c=el('in-lots'); if(!c) return;
+c.innerHTML='';
+_inLots.forEach((lot,li)=>appendInwLotCard(lot,li,c));
+}
+function addInwLot(){
+_inLotId++;
+const lot={id:_inLotId};
+_inLots.push(lot);
+const c=el('in-lots'); if(!c) return;
+const li=_inLots.length-1;
+appendInwLotCard(lot, li, c);
+setTimeout(()=>{ const last=el('inl-'+lot.id); if(last) last.scrollIntoView({behavior:'smooth',block:'nearest'}); },100);
+}
+function remInwLot(id){
+_inLots=_inLots.filter(l=>l.id!==id);
+const card=el('inl-'+id);
+if(card) card.remove();
+}
+function appendInwLotCard(lot, li, c){
+if(!c) c=el('in-lots'); if(!c) return;
+const lotColors=[
+{bg:'#EEF2FF',border:'#818CF8',label:'#3730A3',hdr:'#C7D2FE'},
+{bg:'#F0FDF4',border:'#4ADE80',label:'#166534',hdr:'#BBF7D0'},
+{bg:'#FFF7ED',border:'#FB923C',label:'#7C2D12',hdr:'#FED7AA'},
+{bg:'#FDF4FF',border:'#C084FC',label:'#581C87',hdr:'#E9D5FF'},
+{bg:'#FEFCE8',border:'#FACC15',label:'#713F12',hdr:'#FEF08A'},
+{bg:'#F0F9FF',border:'#38BDF8',label:'#0C4A6E',hdr:'#BAE6FD'},
+];
+const lc=lotColors[li%lotColors.length];
+const card=document.createElement('div');
+card.id='inl-'+lot.id;
+card.style.cssText='border:2px solid '+lc.border+';border-radius:14px;overflow:hidden;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)';
+const hdr=document.createElement('div');
+hdr.style.cssText='background:'+lc.hdr+';padding:8px 12px';
+const row1=document.createElement('div');
+row1.style.cssText='display:flex;align-items:center;gap:8px';
+row1.innerHTML=
+'<div style="background:'+lc.border+';color:'+lc.label+';font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;letter-spacing:.5px;flex-shrink:0">LOT '+(li+1)+'</div>'+
+'<select id="inl-'+lot.id+'-i" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="inwLotItemChange('+lot.id+')">'+
+'<option value="">Select Item...</option>'+
+[...STATE.items].filter(i=>!i._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+
+'</select>'+
+'<select id="inl-'+lot.id+'-r" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="inwLotRangeChange('+lot.id+')" disabled>'+
+'<option value="">Range...</option>'+
+'</select>'+
+(li>0?'<button onclick="remInwLot('+lot.id+')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(220,38,38,.15);color:#DC2626;font-size:13px;cursor:pointer;flex-shrink:0;font-weight:700">&#x2715;</button>':'');
+hdr.appendChild(row1);
+card.appendChild(hdr);
+const body=document.createElement('div');
+body.id='inl-'+lot.id+'-body';
+body.style.cssText='background:white';
+body.innerHTML='<div style="padding:14px;text-align:center;color:#9897B0;font-size:12px">&#x2191; Select item and range above</div>';
+card.appendChild(body);
+const foot=document.createElement('div');
+foot.id='inl-'+lot.id+'-foot';
+foot.style.cssText='display:none;padding:7px 14px;background:'+lc.bg+';border-top:1.5px solid '+lc.border;
+card.appendChild(foot);
+c.appendChild(card);
+makeSearchable(el('inl-'+lot.id+'-i'));
+makeSearchable(el('inl-'+lot.id+'-r'));
+}
+function inwLotItemChange(lid){
+const iid=el('inl-'+lid+'-i')?.value;
+const rSel=el('inl-'+lid+'-r');
+const body=el('inl-'+lid+'-body');
+if(!iid||!rSel){if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range above</div>';return;}
+const item=STATE.items.find(x=>x.id===iid);
+if(!item) return;
+const rngs=[...new Set(item.colours.map(c=>c.range))];
+rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+r+'">'+(r||'(No Range)')+'</option>').join('');
+rSel.disabled=false;
+if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Now select a range</div>';
+const foot=el('inl-'+lid+'-foot'); if(foot) foot.style.display='none';
+}
+function inwLotRangeChange(lid){
+const iid=el('inl-'+lid+'-i')?.value;
+const rng=el('inl-'+lid+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid);
+const body=el('inl-'+lid+'-body');
+if(!item||rng===undefined||rng===''||!body) return;
+const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued);
+body.innerHTML='';
+const thead=document.createElement('div');
+thead.style.cssText='background:linear-gradient(135deg,#1e1b4b,#312e81);padding:8px 10px;border-bottom:2px solid #4F46E5';
+thead.innerHTML=
+'<div style="display:flex;align-items:center;gap:4px">'+
+'<div style="width:34px"></div>'+
+'<div style="flex:1;font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.6px">Colour</div>'+
+'<div style="font-size:7px;font-weight:800;color:#FBBF24;text-transform:uppercase;text-align:center;width:38px">Taka</div>'+
+'<div style="font-size:7px;font-weight:800;color:#FBBF24;text-transform:uppercase;text-align:center;width:38px">TP</div>'+
+'<div style="font-size:7px;font-weight:800;color:#38BDF8;text-transform:uppercase;text-align:center;width:44px">Mtrs</div>'+
+'<div style="font-size:7px;font-weight:800;color:#6EE7B7;text-transform:uppercase;text-align:right;width:40px">Avg T</div>'+
+'</div>';
+body.appendChild(thead);
+const selAll=document.createElement('div');
+selAll.style.cssText='display:flex;align-items:center;gap:10px;padding:7px 10px;background:#EEF2FF;border-bottom:1px solid #C7D2FE;cursor:pointer';
+selAll.innerHTML=
+'<input type="checkbox" id="inl-'+lid+'-all" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer" onclick="inwLotToggleAll('+lid+')"/>'+
+'<span style="font-size:11px;font-weight:700;color:#3730A3;flex:1">&#x2714; Select All ('+cols.length+' colours)</span>';
+selAll.onclick=(e)=>{if(e.target.tagName!=='INPUT'){const chk=el('inl-'+lid+'-all');chk.checked=!chk.checked;inwLotToggleAll(lid);}};
+body.appendChild(selAll);
+cols.forEach((col,ci)=>{
+const idx=item.colours.indexOf(col);
+const stk=col.stock_taka||0;
+const stkColor=stk===0?'#EF4444':stk<5?'#F59E0B':'#10B981';
+const stkBg=stk===0?'#FEE2E2':stk<5?'#FEF3C7':'#D1FAE5';
+const rowBg=ci%2===0?'#FFFFFF':'#F8F7FF';
+const row=document.createElement('div');
+row.id='inl-'+lid+'-row-'+idx;
+row.style.cssText='padding:8px 10px;border-bottom:1px solid #E5E4F0;background:'+rowBg+';transition:.15s;border-left:3px solid transparent';
+row.innerHTML=
+'<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'+
+'<input type="checkbox" id="inl-'+lid+'-ck-'+idx+'" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer;flex-shrink:0" onchange="inwLotClrToggle('+lid+','+idx+')"/>'+
+'<span style="width:14px;height:14px;border-radius:50%;background:'+(col.hex||'#ccc')+';display:inline-block;flex-shrink:0;border:1.5px solid rgba(0,0,0,.1);box-shadow:0 1px 3px rgba(0,0,0,.12)"></span>'+
+'<span style="font-size:11px;font-weight:700;color:#0F0E1A;flex:1;min-width:0;word-break:break-word">'+col.name+'</span>'+
+'<span style="font-size:9px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:2px 5px;border-radius:5px;white-space:nowrap;flex-shrink:0">'+stk+'T</span>'+
+'</div>'+
+'<div style="display:flex;align-items:center;gap:4px">'+
+'<div style="font-size:8px;color:#9897B0;font-family:monospace;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+col.sku+'</div>'+
+'<input type="number" id="inl-'+lid+'-t-'+idx+'" step="1" min="0" placeholder="0" oninput="calcInwLot('+lid+')" disabled style="width:36px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;box-sizing:border-box"/>'+
+'<input type="number" id="inl-'+lid+'-tp-'+idx+'" step="1" min="0" placeholder="0" oninput="calcInwLot('+lid+')" disabled style="width:36px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;box-sizing:border-box"/>'+
+'<input type="number" id="inl-'+lid+'-m-'+idx+'" step="1" min="0" placeholder="0" oninput="calcInwLot('+lid+')" disabled style="width:42px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;box-sizing:border-box"/>'+
+'<div id="inl-'+lid+'-avgtaka-'+idx+'" style="width:38px;text-align:right;font-size:11px;font-weight:800;color:#9897B0;white-space:nowrap">&#x2014;</div>'+
+'</div>';
+row.addEventListener('click', e=>{
+if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON') return;
+const chk=el('inl-'+lid+'-ck-'+idx);
+if(chk){chk.checked=!chk.checked; inwLotClrToggle(lid,idx);}
+});
+body.appendChild(row);
+});
+calcInwLot(lid);
+}
+function inwLotToggleAll(lid){
+const allChk=el('inl-'+lid+'-all');
+const iid=el('inl-'+lid+'-i')?.value;
+const rng=el('inl-'+lid+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid); if(!item||rng===undefined||rng==='') return;
+item.colours.filter(c=>c.range===rng).forEach(col=>{
+const idx=item.colours.indexOf(col);
+const chk=el('inl-'+lid+'-ck-'+idx); if(!chk) return;
+chk.checked=allChk.checked;
+inwLotClrToggle(lid,idx,true);
+});
+calcInwLot(lid);
+}
+function inwLotClrToggle(lid,idx,skipCalc){
+const chk=el('inl-'+lid+'-ck-'+idx);
+const row=el('inl-'+lid+'-row-'+idx);
+const on=chk?.checked;
+inwSetRowFieldStates(lid,idx,on);
+if(row){row.style.background=on?'#FEFCE8':'';row.style.borderLeft=on?'3px solid #F59E0B':'3px solid transparent';}
+if(!skipCalc) calcInwLot(lid);
+}
+function calcInwLot(lid){
+const iid=el('inl-'+lid+'-i')?.value;
+const rng=el('inl-'+lid+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid); if(!item||rng===undefined||rng==='') return;
+const avgT=STATE.settings.avgMtrPerTaka||90;
+const avgTP=STATE.settings.avgMtrPerTP||45;
+let lotTaka=0, lotMtrs=0;
+item.colours.filter(c=>c.range===rng).forEach(col=>{
+const idx=item.colours.indexOf(col);
+const chk=el('inl-'+lid+'-ck-'+idx); if(!chk?.checked) return;
+let mtrs=0, avgTaka=0;
+if(_inMode==='t'){
+  const t=parseInt(el('inl-'+lid+'-t-'+idx)?.value)||0;
+  const tp=parseInt(el('inl-'+lid+'-tp-'+idx)?.value)||0;
+  mtrs=Math.round(t*avgT+tp*avgTP);
+  avgTaka=Math.round(t+Math.round(tp*avgTP/avgT));
+  const mFld=el('inl-'+lid+'-m-'+idx); if(mFld) mFld.value=mtrs||'';
+}else{
+  mtrs=parseInt(el('inl-'+lid+'-m-'+idx)?.value)||0;
+  avgTaka=Math.round(mtrs/avgT);
+}
+const avgEl=el('inl-'+lid+'-avgtaka-'+idx);
+if(avgEl){avgEl.textContent=avgTaka>0?avgTaka+'T':'—'; avgEl.style.color=avgTaka>0?'#4F46E5':'#9897B0';}
+lotTaka+=avgTaka; lotMtrs+=mtrs;
+});
+const foot=el('inl-'+lid+'-foot');
+if(foot){
+const lotN=(_inLots.findIndex(l=>l.id===lid)+1);
+if(lotTaka>0||lotMtrs>0){
+foot.style.display='flex'; foot.style.justifyContent='space-between'; foot.style.alignItems='center';
+foot.innerHTML='<span style="font-size:12px;font-weight:700;color:#374151">LOT '+lotN+' &nbsp;<span style="color:#0891B2;font-weight:900">'+fmtN(lotMtrs)+'m</span></span>'+
+'<span style="font-size:15px;font-weight:900;color:#4F46E5">'+fmtN(lotTaka)+' T</span>';
+}else{
+foot.style.display='none';
+}
+}
 }
 function renderInRec(q){
 const c=el('inrec'); if(!c) return;
