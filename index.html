@@ -101,8 +101,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.29.0';
-const APP_BUILD_DATE='2026-07-30a';
+const APP_VERSION='1.30.0';
+const APP_BUILD_DATE='2026-07-30b';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -493,6 +493,7 @@ if(changed) lsSave('vs_task_instances',STATE.taskInstances);
 })();
 STATE.staffLeave=lsGet('vs_staff_leave')||[];
 STATE.mixedSarees=lsGet('vs_mixed_sarees')||[];
+STATE.exchanges=lsGet('vs_exchanges')||[];
 STATE.custGroups=lsGet('vs_cust_groups')||[];
 STATE.markets=lsGet('vs_markets')||[];
 // Ensure every item has a colours array — guards against any corrupt saved records
@@ -2857,190 +2858,348 @@ let _jwLots=[{id:0}]; let _jwLotId=0; let _jwMode='t';
 function nextJWRef(){ return 'JW-'+String(STATE.jobWork.length+1).padStart(3,'0'); }
 function nextInwardVoucher(){ const pfx=(STATE.settings.inwardPrefix||'GRN/').trim(); const n=(STATE.settings.nextInwardNo||1); return pfx+String(n).padStart(4,'0'); }
 /* ===== EXCHANGE MODULE ===== */
-let _exchF={skus:[{itemId:'',rangeName:'',colIdx:'',pcs:'',cut:''}]};
+/* ===== EXCHANGE MODULE — Order-style Item+Range lot picker.
+   Common CUT for the whole slip. Columns: Damage / Re-use / Exchange (sarees).
+   Flow: create with Damage only (status=pending) -> reopen, enter Re-use
+   (status=under_process, taka ADDED to stock) -> reopen, enter Exchange
+   (status=ready, taka DEDUCTED from stock, WhatsApp sent to rep). ===== */
+let _exF={id:null,vno:'',date:'',party:'',khata:'',rep:'',phone:'',cut:5,status:'pending',rows:[]};
+let _exLots=[{id:0}]; let _exLotId=0;
 function nextExVoucher(){
-  const pfx=(STATE.settings.exchPrefix||'EX/').replace(/-$/,'/');
-  const n=STATE.settings.nextExchNo||1;
-  return pfx+String(n).padStart(3,'0');
+const pfx=(STATE.settings.exchPrefix||'EX/').replace(/-$/,'/');
+const n=STATE.settings.nextExchNo||1;
+return pfx+String(n).padStart(3,'0');
 }
 function openExchange(id){
-  if(id){
-    const rec=(STATE.exchanges||[]).find(e=>e.id===id);
-    if(!rec)return;
-    _exchF=JSON.parse(JSON.stringify(rec));
-  } else {
-    _exchF={id:null,vno:nextExVoucher(),date:today(),party:'',khata:'',rep:'',phone:'',status:'pending',skus:[{itemId:'',rangeName:'',colIdx:'',cut:5,damagePcs:0,reusePcs:0,exchangePcs:0}]};
-  }
-  buildExchangeForm(); showMod('m-exch');
+if(id){
+const rec=(STATE.exchanges||[]).find(e=>e.id===id);
+if(!rec){toast('Exchange not found','er');return;}
+_exF=JSON.parse(JSON.stringify(rec));
+if(!_exF.rows)_exF.rows=[];
+}else{
+_exF={id:null,vno:nextExVoucher(),date:today(),party:'',khata:'',rep:'',phone:'',cut:5,status:'pending',rows:[]};
 }
+_exLots=[{id:0}]; _exLotId=0;
+buildExchangeForm();
+showMod('m-exch');
+if(_exF.rows&&_exF.rows.length) setTimeout(_exRestoreLots,60);
+}
+function openExchDet(id){ openExchange(id); }
 function buildExchangeForm(){
-  const f=_exchF, isEdit=!!f.id;
-  const status=f.status||'pending';
-  let skuOpts='<option value="">-- Select SKU --</option>';
-  (STATE.items||[]).filter(it=>!it._del).forEach(it=>{
-    (it.ranges||[]).filter(r=>!r._del).forEach(r=>{
-      (r.colours||[]).forEach((c,ci)=>{
-        if(c._del)return;
-        const lbl=it.name+' – '+r.name+' – '+c.name;
-        const cut=parseFloat(c.cut||r.cut||5);
-        skuOpts+='<option value="'+it.id+'|'+r.name+'|'+ci+'|'+cut+'">'+lbl+'</option>';
-      });
-    });
-  });
-  let rows='';
-  (f.skus||[]).forEach((sk,i)=>{rows+=exSkuRowHtml(i,sk,skuOpts,status);});
-  const badge=status==='checking'?'<span style="background:#3498db;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Checking</span>':status==='ready'?'<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Ready ✓</span>':'<span style="background:#f39c12;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Pending</span>';
-  const waBtn=status==='ready'?'<button class="btn" style="background:#25D366;color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer" onclick="sendExWA()">📱 WhatsApp Rep</button>':'';
-  const printBtn=f.id?'<button class="btn" style="background:#059669;color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer" onclick="printExchangeSlip()">📄 Print/PDF</button>':'';
-  el('exch-form-body').innerHTML='<div class="ir2"><div class="fg"><label>Voucher No</label><input class="inp mono" id="ex-vno" value="'+(f.vno||nextExVoucher())+'" readonly></div><div class="fg"><label>Date</label><input class="inp" type="date" id="ex-date" value="'+(f.date||today())+'"></div></div><div class="ir2"><div class="fg"><label>Party Name (Customer)</label><input class="inp" id="ex-party" placeholder="Customer name" value="'+(f.party||'')+'"></div><div class="fg"><label>Khata Name</label><input class="inp" id="ex-khata" placeholder="Khata / Ledger name" value="'+(f.khata||'')+'"></div></div><div class="ir2"><div class="fg"><label>Rep Name</label><input class="inp" id="ex-rep" placeholder="Representative name" value="'+(f.rep||'')+'"></div><div class="fg"><label>Rep Phone</label><input class="inp" id="ex-phone" type="tel" placeholder="10-digit mobile" value="'+(f.phone||'')+'"></div></div><div style="margin:16px 0 8px;display:flex;align-items:center;gap:10px"><span style="font-weight:600;font-size:13px;color:#444">ITEMS TO EXCHANGE</span>'+badge+'</div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#f8f8f8"><th style="text-align:left;padding:8px 6px;border-bottom:2px solid #ddd;min-width:220px">SKU</th><th style="padding:8px 6px;border-bottom:2px solid #ddd;min-width:90px;color:#e67e22;text-align:center">Damage<br><small>Sarees</small></th><th style="padding:8px 6px;border-bottom:2px solid #ddd;min-width:90px;color:#27ae60;text-align:center">Re-use<br><small>Sarees</small></th><th style="padding:8px 6px;border-bottom:2px solid #ddd;min-width:90px;color:#2980b9;text-align:center">Exchange<br><small>Sarees</small></th><th style="width:36px"></th></tr></thead><tbody id="exch-sku-body">'+rows+'</tbody></table></div><button class="btn bgl" onclick="addExchSku()" style="margin-top:8px;font-size:12px">+ Add SKU</button><div style="display:flex;gap:8px;margin-top:20px;padding-top:12px;border-top:1px solid var(--br);justify-content:flex-end;flex-wrap:wrap">'+waBtn+printBtn+'<button class="btn bgl" onclick="hideMod(&#39;m-exch&#39;)">Cancel</button><button class="btn bgp" onclick="saveExchange()">'+(isEdit?'Update':'Save Exchange')+'</button></div>';
+const f=_exF, isEdit=!!f.id;
+const status=f.status||'pending';
+const stBadge={pending:'<span style="background:#f59e0b;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">Pending</span>',
+under_process:'<span style="background:#3b82f6;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">Under Process</span>',
+ready:'<span style="background:#10b981;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">Ready ✓</span>'}[status]||'';
+const stepHint={pending:'Enter <b>Damage Sarees</b> and <b>Re-use Sarees</b> for what\'s coming back. Re-use adds stock once saved.',
+under_process:'Re-use already applied. Now enter <b>Exchange Sarees</b> — this deducts stock and marks the slip Ready.',
+ready:'This exchange is complete — Exchange sarees have been deducted from stock.'}[status]||'';
+const waBtn=(status==='ready'&&f.phone)?'<button class="btn" style="background:#25D366;color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer" onclick="sendExWA()">📲 WhatsApp Rep</button>':'';
+const printBtn=isEdit?'<button class="btn" style="background:#059669;color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer" onclick="printExchangeSlip()">📄 Print/PDF</button>':'';
+el('exch-form-body').innerHTML=
+'<div class="ir2"><div class="fg"><label>Voucher No</label><input class="inp mono" id="ex-vno" value="'+(f.vno||nextExVoucher())+'" readonly></div><div class="fg"><label>Date</label><input class="inp" type="date" id="ex-date" value="'+(f.date||today())+'"></div></div>'+
+'<div class="ir2"><div class="fg"><label>Party Name (Customer)</label><input class="inp" id="ex-party" placeholder="Customer name" value="'+(f.party||'')+'"></div><div class="fg"><label>Khata Name</label><input class="inp" id="ex-khata" placeholder="Khata / Ledger name" value="'+(f.khata||'')+'"></div></div>'+
+'<div class="ir2"><div class="fg"><label>Rep Name</label><input class="inp" id="ex-rep" placeholder="Representative name" value="'+(f.rep||'')+'"></div><div class="fg"><label>Rep Phone</label><input class="inp" id="ex-phone" type="tel" placeholder="10-digit mobile" value="'+(f.phone||'')+'"></div></div>'+
+'<div class="fg"><label>Cut (m) <span class="sub" style="font-weight:400">— common for this whole slip</span></label><input class="inp mono" type="number" step="0.25" id="ex-cut" value="'+(f.cut||5)+'" oninput="_exRecalcAll()" style="max-width:120px"></div>'+
+'<div style="margin:16px 0 8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-weight:700;font-size:13px;color:#374151">ITEMS TO EXCHANGE</span>'+stBadge+'</div>'+
+(stepHint?'<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400E;margin-bottom:10px">'+stepHint+'</div>':'')+
+'<div id="ex-lots"></div>'+
+'<button class="btn bs bfl mt8" onclick="addExLot()">+ Add LOT / Item</button>'+
+'<div style="display:flex;gap:8px;margin-top:20px;padding-top:12px;border-top:1px solid var(--br);justify-content:flex-end;flex-wrap:wrap">'+waBtn+printBtn+'<button class="btn bgh" onclick="hideMod(\'m-exch\')">Cancel</button><button class="btn bp" onclick="saveExchange()">'+(isEdit?'Save Changes':'Save Exchange')+'</button></div>';
+renderExLots();
 }
-function exSkuRowHtml(i,sk,skuOpts,status){
-  const canDmg=!status||status==='pending'||status==='checking';
-  const canRU=status==='checking';
-  const canEx=status==='checking';
-  const sv=(sk.itemId&&sk.rangeName!==''&&sk.colIdx!=='')?sk.itemId+'|'+sk.rangeName+'|'+sk.colIdx+'|'+(sk.cut||5):'';
-  const opts=sv?skuOpts.replace('value="'+sv+'"','value="'+sv+'" selected'):skuOpts;
-  return '<tr><td style="padding:6px"><select class="inp" style="font-size:12px;padding:4px;width:100%" onchange="exchSkuSel('+i+',this.value)">'+opts+'</select></td><td style="padding:6px;text-align:center"><input class="inp" type="number" min="0" style="width:68px;text-align:center" id="ex-dmg-'+i+'" value="'+(sk.damagePcs||0)+'"'+(canDmg?'':' readonly')+'></td><td style="padding:6px;text-align:center"><input class="inp" type="number" min="0" style="width:68px;text-align:center" id="ex-ru-'+i+'" value="'+(sk.reusePcs||0)+'"'+(canRU?'':' readonly')+'></td><td style="padding:6px;text-align:center"><input class="inp" type="number" min="0" style="width:68px;text-align:center" id="ex-ex-'+i+'" value="'+(sk.exchangePcs||0)+'"'+(canEx?'':' readonly')+'></td><td style="padding:6px;text-align:center"><button class="btn bgh bsm" onclick="removeExchSku('+i+')" style="padding:2px 7px">×</button></td></tr>';
+function renderExLots(){
+const c=el('ex-lots'); if(!c) return;
+c.innerHTML='';
+_exLots.forEach((lot,li)=>appendExLotCard(lot,li,c));
 }
-function exchSkuSel(i,val){
-  if(!val)return;
-  const p=val.split('|');
-  if(p.length<4)return;
-  _exchF.skus[i]={..._exchF.skus[i],itemId:p[0],rangeName:p[1],colIdx:p[2],cut:parseFloat(p[3])||5};
+function addExLot(){
+_exLotId++;
+const lot={id:_exLotId};
+_exLots.push(lot);
+appendExLotCard(lot,_exLots.length-1,el('ex-lots'));
 }
-function addExchSku(){
-  _exchF.skus.push({itemId:'',rangeName:'',colIdx:'',cut:5,damagePcs:0,reusePcs:0,exchangePcs:0});
-  buildExchangeForm();
+function remExLot(id){
+if(_exLots.length<=1) return;
+_exLots=_exLots.filter(l=>l.id!==id);
+renderExLots();
 }
-function removeExchSku(i){
-  if(_exchF.skus.length<=1)return;
-  _exchF.skus.splice(i,1);
-  buildExchangeForm();
+function appendExLotCard(lot,li,c){
+if(!c) c=el('ex-lots'); if(!c) return;
+const lotColors=[
+{border:'#818CF8',label:'#3730A3',hdr:'#C7D2FE'},
+{border:'#4ADE80',label:'#166534',hdr:'#BBF7D0'},
+{border:'#FB923C',label:'#7C2D12',hdr:'#FED7AA'},
+{border:'#C084FC',label:'#581C87',hdr:'#E9D5FF'},
+];
+const lc=lotColors[li%lotColors.length];
+const card=document.createElement('div');
+card.id='exl-'+lot.id;
+card.style.cssText='border:2px solid '+lc.border+';border-radius:14px;overflow:hidden;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)';
+const hdr=document.createElement('div');
+hdr.style.cssText='background:'+lc.hdr+';padding:8px 12px';
+hdr.innerHTML=
+'<div style="display:flex;align-items:center;gap:8px">'+
+'<div style="background:'+lc.border+';color:'+lc.label+';font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;letter-spacing:.5px;flex-shrink:0">LOT '+(li+1)+'</div>'+
+'<select id="exl-'+lot.id+'-i" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="exLotItemChange('+lot.id+')"><option value="">Select Item...</option></select>'+
+'<select id="exl-'+lot.id+'-r" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="exLotRangeChange('+lot.id+')" disabled><option value="">Range...</option></select>'+
+(li>0?'<button onclick="remExLot('+lot.id+')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(220,38,38,.15);color:#DC2626;font-size:13px;cursor:pointer;flex-shrink:0;font-weight:700">&#x2715;</button>':'')+
+'</div>';
+card.appendChild(hdr);
+const body=document.createElement('div');
+body.id='exl-'+lot.id+'-body';
+body.style.cssText='background:white';
+body.innerHTML='<div style="padding:14px;text-align:center;color:#9897B0;font-size:12px">&#x2191; Select item and range above</div>';
+card.appendChild(body);
+c.appendChild(card);
+populateItemSelectRetry(hdr.querySelector('#exl-'+lot.id+'-i'));
+makeSearchable(el('exl-'+lot.id+'-i'));
+makeSearchable(el('exl-'+lot.id+'-r'));
+}
+function exLotItemChange(lid){
+const iid=el('exl-'+lid+'-i')?.value;
+const rSel=el('exl-'+lid+'-r');
+const body=el('exl-'+lid+'-body');
+if(!iid||!rSel){ if(body) body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range above</div>'; return; }
+const item=STATE.items.find(x=>x.id===iid); if(!item) return;
+const rngs=[...new Set(item.colours.map(c=>c.range))];
+rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+(r||'__norange__')+'">'+(r||'(No Range)')+'</option>').join('');
+rSel.disabled=false;
+if(body) body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Now select a range</div>';
+}
+function exLotRangeChange(lid){
+const iid=el('exl-'+lid+'-i')?.value;
+const rngRaw=el('exl-'+lid+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid);
+const body=el('exl-'+lid+'-body');
+if(!item||rngRaw===undefined||rngRaw===''||!body) return;
+const rng=rngRaw==='__norange__'?'':rngRaw;
+const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued);
+body.innerHTML='';
+const thead=document.createElement('div');
+thead.style.cssText='background:linear-gradient(135deg,#1e1b4b,#312e81);padding:8px 10px;border-bottom:2px solid #4F46E5';
+thead.innerHTML='<div style="display:flex;align-items:center;gap:6px">'+
+'<div style="width:24px"></div>'+
+'<div style="flex:1;font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.8px">Colour</div>'+
+'<div style="font-size:8px;font-weight:800;color:#FCA5A5;text-transform:uppercase;text-align:center;width:56px">Damage</div>'+
+'<div style="font-size:8px;font-weight:800;color:#6EE7B7;text-transform:uppercase;text-align:center;width:56px">Re-use</div>'+
+'<div style="font-size:8px;font-weight:800;color:#93C5FD;text-transform:uppercase;text-align:center;width:56px">Exchange</div>'+
+'</div>';
+body.appendChild(thead);
+const selAll=document.createElement('div');
+selAll.style.cssText='display:flex;align-items:center;gap:10px;padding:7px 10px;background:#EEF2FF;border-bottom:1px solid #C7D2FE;cursor:pointer';
+selAll.innerHTML='<input type="checkbox" id="exl-'+lid+'-all" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer" onclick="exLotToggleAll('+lid+')"/><span style="font-size:11px;font-weight:700;color:#3730A3;flex:1">✔ Select All ('+cols.length+' colours)</span>';
+selAll.onclick=(e)=>{ if(e.target.tagName!=='INPUT'){ const chk=el('exl-'+lid+'-all'); chk.checked=!chk.checked; exLotToggleAll(lid); } };
+body.appendChild(selAll);
+cols.forEach(col=>{
+const idx=item.colours.indexOf(col);
+const stk=col.stock_taka||0;
+const stkColor=stk===0?'#EF4444':stk<5?'#F59E0B':'#10B981';
+const stkBg=stk===0?'#FEE2E2':stk<5?'#FEF3C7':'#D1FAE5';
+const row=document.createElement('div');
+row.id='exl-'+lid+'-row-'+idx;
+row.style.cssText='padding:8px 10px;border-bottom:1px solid #E5E4F0;background:#FFFFFF;border-left:3px solid transparent';
+row.innerHTML=
+'<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'+
+'<input type="checkbox" id="exl-'+lid+'-ck-'+idx+'" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer;flex-shrink:0" onchange="exLotClrToggle('+lid+','+idx+')"/>'+
+'<span style="width:14px;height:14px;border-radius:50%;background:'+(col.hex||'#ccc')+';display:inline-block;flex-shrink:0;border:1.5px solid rgba(0,0,0,.1)"></span>'+
+'<span style="font-size:11px;font-weight:700;color:#0F0E1A;flex:1;min-width:0;word-break:break-word">'+col.name+'</span>'+
+'<span style="font-size:9px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:2px 5px;border-radius:5px;white-space:nowrap;flex-shrink:0">'+stk+'T</span>'+
+'</div>'+
+'<div style="display:flex;align-items:center;gap:6px">'+
+'<div style="font-size:8px;color:#9897B0;font-family:monospace;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+col.sku+'</div>'+
+'<input type="number" id="exl-'+lid+'-d-'+idx+'" step="1" min="0" value="0" disabled oninput="_exCalcRow('+lid+','+idx+')" style="width:52px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF"/>'+
+'<input type="number" id="exl-'+lid+'-u-'+idx+'" step="1" min="0" value="0" disabled oninput="_exCalcRow('+lid+','+idx+')" style="width:52px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF"/>'+
+'<input type="number" id="exl-'+lid+'-x-'+idx+'" step="1" min="0" value="0" disabled oninput="_exCalcRow('+lid+','+idx+')" style="width:52px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF"/>'+
+'</div>'+
+'<div id="exl-'+lid+'-tk-'+idx+'" style="font-size:9px;font-weight:700;color:#6366F1;text-align:right;margin-top:2px;min-height:11px"></div>';
+row.addEventListener('click', e=>{
+if(e.target.tagName==='INPUT') return;
+const chk=el('exl-'+lid+'-ck-'+idx);
+if(chk){ chk.checked=!chk.checked; exLotClrToggle(lid,idx); }
+});
+body.appendChild(row);
+});
+_exApplyFieldGating(lid);
+}
+function _exApplyFieldGating(lid){
+const status=_exF.status||'pending';
+const iid=el('exl-'+lid+'-i')?.value, rngRaw=el('exl-'+lid+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
+const rng=rngRaw==='__norange__'?'':rngRaw;
+item.colours.filter(c=>c.range===rng).forEach(col=>{
+const idx=item.colours.indexOf(col);
+const dFld=el('exl-'+lid+'-d-'+idx), uFld=el('exl-'+lid+'-u-'+idx), xFld=el('exl-'+lid+'-x-'+idx);
+const chk=el('exl-'+lid+'-ck-'+idx);
+const checked=chk?.checked;
+const dOn=checked&&status==='pending';
+const uOn=checked&&status==='pending';
+const xOn=checked&&status==='under_process';
+[[dFld,dOn,'#FEF2F2','#991B1B','#FCA5A5'],[uFld,uOn,'#F0FDF4','#166534','#4ADE80'],[xFld,xOn,'#EFF6FF','#1E3A8A','#93C5FD']].forEach(cfg=>{
+const fld=cfg[0],on=cfg[1],bg=cfg[2],col2=cfg[3],bd=cfg[4];
+if(!fld) return;
+fld.disabled=!on;
+fld.style.background=on?bg:'#F3F4F6';
+fld.style.color=on?col2:'#9CA3AF';
+fld.style.border=on?'2px solid '+bd:'1.5px solid #D1D5DB';
+});
+});
+}
+function exLotToggleAll(lid){
+const allChk=el('exl-'+lid+'-all');
+const iid=el('exl-'+lid+'-i')?.value, rngRaw=el('exl-'+lid+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined) return;
+const rng=rngRaw==='__norange__'?'':rngRaw;
+item.colours.filter(c=>c.range===rng).forEach(col=>{
+const idx=item.colours.indexOf(col);
+const chk=el('exl-'+lid+'-ck-'+idx); if(!chk) return;
+chk.checked=allChk.checked;
+exLotClrToggle(lid,idx);
+});
+}
+function exLotClrToggle(lid,idx){
+_exApplyFieldGating(lid);
+_exCalcRow(lid,idx);
+}
+function _exCalcRow(lid,idx){
+const cut=parseFloat(el('ex-cut')?.value)||5;
+const avg=STATE.settings.avgMtrPerTaka||90;
+const d=parseInt(el('exl-'+lid+'-d-'+idx)?.value)||0;
+const u=parseInt(el('exl-'+lid+'-u-'+idx)?.value)||0;
+const x=parseInt(el('exl-'+lid+'-x-'+idx)?.value)||0;
+const tkEl=el('exl-'+lid+'-tk-'+idx);
+if(!tkEl) return;
+const parts=[];
+if(u>0){ const t=Math.round(u*cut/avg); parts.push('+'+t+'T to stock'); }
+if(x>0){ const t=Math.round(x*cut/avg); parts.push('-'+t+'T from stock'); }
+tkEl.textContent=parts.join(' · ');
+}
+function _exRecalcAll(){
+_exLots.forEach(lot=>{
+const iid=el('exl-'+lot.id+'-i')?.value, rngRaw=el('exl-'+lot.id+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
+const rng=rngRaw==='__norange__'?'':rngRaw;
+item.colours.filter(c=>c.range===rng).forEach(col=>{
+const idx=item.colours.indexOf(col);
+_exCalcRow(lot.id,idx);
+});
+});
+}
+function _exRestoreLots(){
+const rows=_exF.rows||[]; if(!rows.length) return;
+const groups=[];
+rows.forEach(r=>{
+let g=groups.find(gr=>gr.itemId===r.itemId&&gr.range===r.range);
+if(!g){ g={itemId:r.itemId,range:r.range,rows:[]}; groups.push(g); }
+g.rows.push(r);
+});
+while(_exLots.length<groups.length){ addExLot(); }
+let chain=Promise.resolve();
+groups.forEach((g,gi)=>{
+const lid=_exLots[gi].id;
+chain=chain.then(()=>new Promise(resolve=>{
+const iSel=el('exl-'+lid+'-i'); if(iSel){ iSel.value=g.itemId; exLotItemChange(lid); }
+setTimeout(()=>{
+const rSel=el('exl-'+lid+'-r'); if(rSel){ rSel.value=(g.range===''?'__norange__':g.range); exLotRangeChange(lid); }
+setTimeout(()=>{
+const item=STATE.items.find(x=>x.id===g.itemId);
+g.rows.forEach(r=>{
+let idx=r.colIdx;
+if(item&&r.sku){ const m=item.colours.findIndex(c=>c.sku===r.sku); if(m>=0) idx=m; }
+const chk=el('exl-'+lid+'-ck-'+idx);
+if(chk){ chk.checked=true; exLotClrToggle(lid,idx); }
+const dFld=el('exl-'+lid+'-d-'+idx); if(dFld) dFld.value=r.damagePcs||0;
+const uFld=el('exl-'+lid+'-u-'+idx); if(uFld) uFld.value=r.reusePcs||0;
+const xFld=el('exl-'+lid+'-x-'+idx); if(xFld) xFld.value=r.exchangePcs||0;
+_exCalcRow(lid,idx);
+});
+resolve();
+},150);
+},150);
+}));
+});
 }
 function saveExchange(){
-  const party=(el('ex-party')?el('ex-party').value:'').trim();
-  const date=el('ex-date')?el('ex-date').value:today();
-  const khata=(el('ex-khata')?el('ex-khata').value:'').trim();
-  const rep=(el('ex-rep')?el('ex-rep').value:'').trim();
-  const phone=(el('ex-phone')?el('ex-phone').value:'').trim();
-  const vno=(el('ex-vno')?el('ex-vno').value:nextExVoucher()).trim();
-  if(!party){alert('Please enter party name');return;}
-  const skus=(_exchF.skus||[]).map((sk,i)=>({
-    itemId:sk.itemId||'',rangeName:sk.rangeName||'',colIdx:sk.colIdx||'',cut:sk.cut||5,
-    damagePcs:parseInt((el('ex-dmg-'+i)||{value:'0'}).value)||0,
-    reusePcs:parseInt((el('ex-ru-'+i)||{value:'0'}).value)||0,
-    exchangePcs:parseInt((el('ex-ex-'+i)||{value:'0'}).value)||0
-  }));
-  const hasExch=skus.some(s=>s.exchangePcs>0);
-  const hasDmg=skus.some(s=>s.damagePcs>0);
-  const prevStatus=_exchF.status||'pending';
-  let newStatus=prevStatus;
-  if(hasExch)newStatus='ready';
-  else if(hasDmg)newStatus='checking';
-  if(newStatus==='ready'&&prevStatus!=='ready'){
-    skus.forEach(sk=>{
-      if(!sk.itemId||!sk.reusePcs)return;
-      const item=(STATE.items||[]).find(it=>it.id===sk.itemId);
-      if(!item)return;
-      const range=(item.ranges||[]).find(r=>r.name===sk.rangeName);
-      if(!range||!range.colours)return;
-      const ci=parseInt(sk.colIdx);
-      if(isNaN(ci)||!range.colours[ci])return;
-      const takaAdd=Math.round(sk.reusePcs*parseFloat(sk.cut||5));
-      range.colours[ci].qty=(range.colours[ci].qty||0)+takaAdd;
-      range.colours[ci]._ts=Date.now();
-    });
-  }
-  if(_exchF.id){
-    const idx=(STATE.exchanges||[]).findIndex(e=>e.id===_exchF.id);
-    if(idx>=0)STATE.exchanges[idx]={...STATE.exchanges[idx],party,date,khata,rep,phone,skus,status:newStatus,_ts:Date.now()};
-  } else {
-    if(!STATE.exchanges)STATE.exchanges=[];
-    STATE.exchanges.push({id:vno,vno,date,party,khata,rep,phone,skus,status:newStatus,_ts:Date.now(),_del:false});
-    if(!STATE.settings)STATE.settings={};
-    STATE.settings.nextExchNo=(STATE.settings.nextExchNo||1)+1;
-  }
-  persist();
-  hideMod('m-exch');
-  toast('Exchange slip saved');
-  renderExchangeList();
+const party=(el('ex-party')?.value||'').trim();
+const date=el('ex-date')?.value||today();
+const khata=(el('ex-khata')?.value||'').trim();
+const rep=(el('ex-rep')?.value||'').trim();
+const phone=(el('ex-phone')?.value||'').trim();
+const vno=(el('ex-vno')?.value||nextExVoucher()).trim();
+const cut=parseFloat(el('ex-cut')?.value)||5;
+if(!party){toast('Please enter party name','er');return;}
+const avg=STATE.settings.avgMtrPerTaka||90;
+const rows=[];
+_exLots.forEach(lot=>{
+const iid=el('exl-'+lot.id+'-i')?.value, rngRaw=el('exl-'+lot.id+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
+const rng=rngRaw==='__norange__'?'':rngRaw;
+item.colours.filter(c=>c.range===rng).forEach(col=>{
+const idx=item.colours.indexOf(col);
+const chk=el('exl-'+lot.id+'-ck-'+idx); if(!chk?.checked) return;
+const d=parseInt(el('exl-'+lot.id+'-d-'+idx)?.value)||0;
+const u=parseInt(el('exl-'+lot.id+'-u-'+idx)?.value)||0;
+const x=parseInt(el('exl-'+lot.id+'-x-'+idx)?.value)||0;
+if(!d&&!u&&!x) return;
+rows.push({itemId:item.id,colIdx:idx,itemName:item.name,colourName:col.name,sku:col.sku,range:rng,damagePcs:d,reusePcs:u,exchangePcs:x});
+});
+});
+if(!rows.length){toast('Add at least one SKU with a quantity','er');return;}
+const prevStatus=_exF.status||'pending';
+const hasReuse=rows.some(r=>r.reusePcs>0);
+const hasExchange=rows.some(r=>r.exchangePcs>0);
+let newStatus=prevStatus;
+if(prevStatus==='pending'&&hasReuse){
+newStatus='under_process';
+rows.forEach(r=>{ if(r.reusePcs>0){ const taka=r.reusePcs*cut/avg; addStock(r.itemId,r.colIdx,taka,'exchange-reuse',party,vno,'Exchange reuse '+r.reusePcs+' pcs x '+cut+'m'); } });
+}else if(prevStatus==='under_process'&&hasExchange){
+newStatus='ready';
+rows.forEach(r=>{ if(r.exchangePcs>0){ const taka=r.exchangePcs*cut/avg; deductStock(r.itemId,r.colIdx,taka,'exchange-out',party,vno); } });
 }
-function sendExWA(phone,vno,status,party,date,skus){
-  let f;
-  if(!arguments.length){
-    f=_exchF;
-    phone=(el('ex-phone')?el('ex-phone').value:f.phone||'').replace(/\D/g,'');
-    vno=f.vno; status=f.status; party=f.party; date=f.date; skus=f.skus;
-  } else { phone=(phone||'').replace(/\D/g,''); }
-  if(!phone||phone.length<10){alert('Rep phone number required');return;}
-  const lines=(skus||[]).map(sk=>{
-    if(!sk.itemId)return null;
-    const item=(STATE.items||[]).find(it=>it.id===sk.itemId);
-    const nm=item?item.name:sk.itemId;
-    return '• '+nm+' – '+(sk.rangeName||'')+' (Exchange: '+(sk.exchangePcs||sk.pcs||0)+' pcs)';
-  }).filter(Boolean).join('\n');
-  const stLbl={pending:'Pending',checking:'Under Process – sarees being checked',ready:'Ready for Collection'};
-  const msg='*Exchange Slip – '+vno+'*\nParty: '+party+'\nDate: '+date+'\nStatus: '+(stLbl[status]||status)+'\n\n'+lines+'\n\n_Slip is ready. Please collect._';
-  window.open('https://wa.me/91'+phone+'?text='+encodeURIComponent(msg),'_blank');
+const rec={vno,date,party,khata,rep,phone,cut,status:newStatus,rows,_ts:Date.now(),by:STATE.user?.name||''};
+if(_exF.id){
+const i=(STATE.exchanges||[]).findIndex(e=>e.id===_exF.id);
+if(i>=0) STATE.exchanges[i]={...STATE.exchanges[i],...rec};
+}else{
+if(!STATE.exchanges) STATE.exchanges=[];
+STATE.exchanges.push({id:vno,...rec,createdAt:Date.now()});
+if(!STATE.settings) STATE.settings={};
+STATE.settings.nextExchNo=(STATE.settings.nextExchNo||1)+1;
 }
-
+persist();
+hideMod('m-exch');
+toast(newStatus!==prevStatus?'Exchange moved to '+({under_process:'Under Process',ready:'Ready'}[newStatus]||newStatus):'Exchange slip saved','ok');
+renderExchangeList();
+if(newStatus==='ready'&&prevStatus!=='ready'&&phone){
+const savedId=_exF.id||vno;
+setTimeout(()=>{ const saved=(STATE.exchanges||[]).find(e=>e.id===savedId); if(saved){ _exF=JSON.parse(JSON.stringify(saved)); sendExWA(); } },400);
+}
+}
+function sendExWA(phone,vno,status,party,date,rows){
+let f;
+if(!arguments.length){
+f=_exF;
+phone=(f.phone||'');
+vno=f.vno; status=f.status; party=f.party; date=f.date; rows=f.rows;
+}
+if(!phone||String(phone).replace(/\D/g,'').length<10){toast('Rep phone number required','er');return;}
+const lines=(rows||[]).map(r=>'• '+r.itemName+' – '+r.colourName+' (Exchange: '+(r.exchangePcs||0)+' pcs)').filter(Boolean).join('\n');
+const stLbl={pending:'Pending',under_process:'Under Process',ready:'Ready for Collection'};
+const msg='*Exchange Slip – '+vno+'*\nParty: '+party+'\nDate: '+fmtDate(date)+'\nStatus: '+(stLbl[status]||status)+'\n\n'+lines+'\n\nThis challan is ready. Please collect at your earliest convenience.\n— '+(STATE.settings.companyName||'ALT Stock');
+openWA(phone,msg);
+}
 function renderExchangeList(){
-  var c = el('exch-list-body'); if(!c) return;
-  var filt = el('exch-status-filter') ? el('exch-status-filter').value : '';
-  var exchs = (STATE.exchanges||[]).filter(e=>!filt||e.status===filt).sort((a,b)=>b.createdAt-a.createdAt);
-  var stCol = {pending:'#f59e0b', under_process:'#3b82f6', ready:'#10b981'};
-  var stLbl = {pending:'Pending', under_process:'Under Process', ready:'Ready'};
-  if(!exchs.length){ c.innerHTML='<div style="text-align:center;padding:20px;color:var(--t2)">No exchanges found</div>'; return; }
-  c.innerHTML = exchs.map(e=>'<div class="rec-row" data-exid="'+e.id+'" style="cursor:pointer;border-left:4px solid '+(stCol[e.status]||'#888')+';margin-bottom:6px"><div style="display:flex;justify-content:space-between;align-items:center"><div><span class="mono" style="font-weight:700">'+e.vno+'</span>&nbsp;<span style="color:var(--t2);font-size:13px">'+e.date+'</span></div><span style="background:'+(stCol[e.status]||'#888')+';color:#fff;border-radius:12px;padding:2px 10px;font-size:12px">'+(stLbl[e.status]||e.status)+'</span></div><div style="margin-top:4px;font-size:14px">'+e.party+(e.khata?' · '+e.khata:'')+'</div><div style="color:var(--t2);font-size:12px">'+e.rep+' · '+e.phone+' · '+(e.skus?e.skus.length:0)+' item(s)</div></div>').join('');
-  c.querySelectorAll('[data-exid]').forEach(function(d){ d.onclick=function(){ openExchDet(this.getAttribute('data-exid')); }; });
-}
-var _curExchView=null;
-function openExchDet(id){
-  var e = (STATE.exchanges||[]).find(x=>x.id===id);
-  if(!e){ toast('Exchange not found','er'); return; }
-  _curExchView = e;
-  var stCol = {pending:'#f59e0b', under_process:'#3b82f6', ready:'#10b981'};
-  var stLbl = {pending:'Pending', under_process:'Under Process', ready:'Ready'};
-  var skuRows = (e.skus||[]).map(function(s,i){
-    var inp = e.status==='pending' ? '<input class="inp" type="number" id="exr-'+i+'" min="0" max="'+s.pcs+'" placeholder="0" value="'+(s.reusable||0)+'" style="width:70px"> / '+s.pcs : '<b>'+(s.reusable||0)+'</b> / '+s.pcs;
-    return '<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:5px">'+s.itemName+'</td><td style="padding:5px">'+s.rangeName+'</td><td style="padding:5px">'+s.colourName+'</td><td style="padding:5px">'+s.pcs+' x '+s.cut+'m</td><td style="padding:5px">'+inp+'</td></tr>';
-  }).join('');
-  var actBtns = (e.status==='pending' ? '<button class="btn-pri" id="ex-save-btn" style="margin-top:14px;width:100%">Save Reusable &amp; Mark Under Process</button>' : '') + (e.status==='under_process' ? '<button class="btn-pri" id="ex-ready-btn" style="margin-top:14px;width:100%;background:#10b981">Mark as Ready</button>' : '');
-  el('exch-det-body').innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span class="mono" style="font-size:18px;font-weight:700">'+e.vno+'</span><span style="background:'+(stCol[e.status]||'#888')+';color:#fff;border-radius:12px;padding:4px 14px">'+(stLbl[e.status]||e.status)+'</span></div><div class="ir2" style="margin-bottom:10px;font-size:14px"><div><b>Party:</b> '+e.party+'</div><div><b>Khata:</b> '+(e.khata||'--')+'</div><div><b>Rep:</b> '+e.rep+'</div><div><b>Phone:</b> '+e.phone+'</div><div><b>Date:</b> '+e.date+'</div><div><b>By:</b> '+(e.by||'--')+'</div></div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:var(--bg2)"><th style="padding:6px;text-align:left">Item</th><th>Range</th><th>Colour</th><th>Pcs x Cut</th><th>Reusable</th></tr>'+skuRows+'</table>'+actBtns+'<div style="margin-top:10px;text-align:center"><button id="ex-wa-btn" class="btn-sec">Resend WhatsApp</button></div>';
-  showMod('m-exch-det');
-  var sb = document.getElementById('ex-save-btn'); if(sb) sb.onclick = function(){ saveExchReusable(_curExchView.id); };
-  var rb = document.getElementById('ex-ready-btn'); if(rb) rb.onclick = function(){ markExchReady(_curExchView.id); };
-  var wb = document.getElementById('ex-wa-btn'); if(wb) wb.onclick = function(){ sendExWA(_curExchView.phone,_curExchView.vno,_curExchView.status,_curExchView.party,_curExchView.date,_curExchView.skus); };
-}
-function saveExchReusable(id){
-  const e=(STATE.exchanges||[]).find(x=>x.id===id);
-  if(!e||e.status!=='pending'){toast('Cannot update','er');return;}
-  (e.skus||[]).forEach((s,i)=>{
-    const inp=el('exr-'+i);
-    s.reusable=inp?Math.min(parseInt(inp.value)||0,s.pcs):0;
-    const mtrs=Math.round(s.reusable*s.cut*100)/100;
-    s.mtrs=mtrs;
-    if(s.reusable>0){
-      const it=(STATE.items||[]).find(x=>x.id===s.itemId);
-      const cIdx=it?(it.colours||[]).findIndex(c=>c.code===s.colCode):-1;
-      STATE.entries.push({id:uid(),date:e.date,type:'exchange_return',direction:'in',party:e.party,ref:e.vno,itemId:s.itemId,itemName:s.itemName,colIdx:cIdx,colourName:s.colourName,sku:s.skuId,taka:0,mtrs,note:'Exchange reusable '+s.reusable+' pcs x '+s.cut+'m',by:(STATE.user?STATE.user.name:''),_ts:Date.now(),voucherNo:e.vno,fy:STATE.settings.curFY||''});
-      if(it&&cIdx>-1){it.colours[cIdx].stock_mtrs=(it.colours[cIdx].stock_mtrs||0)+mtrs;it._ts=Date.now();}
-    }
-  });
-  e.status='under_process'; e._ts=Date.now();
-  persist(); hideMod('m-exch-det'); renderExchangeList();
-  toast(e.vno+' Under Process -- WhatsApp sending...','ok');
-  setTimeout(()=>sendExWA(e.phone,e.vno,'under_process',e.party,e.date,e.skus),500);
-}
-function markExchReady(id){
-  const e=(STATE.exchanges||[]).find(x=>x.id===id);
-  if(!e||e.status==='ready'){toast('Already ready','er');return;}
-  e.status='ready'; e._ts=Date.now();
-  persist(); hideMod('m-exch-det'); renderExchangeList();
-  toast(e.vno+' Ready -- WhatsApp sending...','ok');
-  setTimeout(()=>sendExWA(e.phone,e.vno,'ready',e.party,e.date,e.skus),500);
+var c = el('exch-list-body'); if(!c) return;
+var filt = el('exch-status-filter') ? el('exch-status-filter').value : '';
+var exchs = (STATE.exchanges||[]).filter(e=>!e._deleted&&(!filt||e.status===filt)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+var stCol = {pending:'#f59e0b', under_process:'#3b82f6', ready:'#10b981'};
+var stLbl = {pending:'Pending', under_process:'Under Process', ready:'Ready'};
+if(!exchs.length){ c.innerHTML='<div style="text-align:center;padding:20px;color:var(--t2)">No exchanges found</div>'; return; }
+c.innerHTML = exchs.map(e=>'<div class="rec-row" data-exid="'+e.id+'" style="cursor:pointer;border-left:4px solid '+(stCol[e.status]||'#888')+';margin-bottom:6px"><div style="display:flex;justify-content:space-between;align-items:center"><div><span class="mono" style="font-weight:700">'+e.vno+'</span>&nbsp;<span style="color:var(--t2);font-size:13px">'+fmtDate(e.date)+'</span></div><span style="background:'+(stCol[e.status]||'#888')+';color:#fff;border-radius:12px;padding:2px 10px;font-size:12px">'+(stLbl[e.status]||e.status)+'</span></div><div style="margin-top:4px;font-size:14px">'+e.party+(e.khata?' · '+e.khata:'')+'</div><div style="color:var(--t2);font-size:12px">'+(e.rep||'')+' · '+(e.phone||'')+' · '+(e.rows?e.rows.length:0)+' item(s)</div></div>').join('');
+c.querySelectorAll('[data-exid]').forEach(function(d){ d.onclick=function(){ openExchange(this.getAttribute('data-exid')); }; });
 }
 /* ===== END EXCHANGE MODULE ===== */
+
 
 
 /*********************************************************************
@@ -9863,22 +10022,20 @@ function _pdfCo(){
   return '<div class="hdr"><div><div class="co">'+(s.companyName||'ALT Stock')+'</div><div class="sub">'+(s.address||'')+(s.address&&s.phone?' &nbsp;|&nbsp; ':'')+(s.phone?'Ph: '+s.phone:'')+( s.gstin?' &nbsp;|&nbsp; GSTIN: '+s.gstin:'')+'</div></div></div><div class="dvd"></div>';
 }
 function printExchangeSlip(){
-  const f=_exchF; if(!f||!f.vno) return;
-  const statusLbl=f.status==='ready'?'Ready':f.status==='checking'?'Checking':'Pending';
-  const statusCls=f.status==='ready'?'bdg-g':f.status==='checking'?'bdg-b':'bdg-o';
+  const f=_exF; if(!f||!f.vno) return;
+  const stLbl={pending:'Pending',under_process:'Under Process',ready:'Ready'};
+  const stCls={pending:'bdg-o',under_process:'bdg-b',ready:'bdg-g'};
+  const statusLbl=stLbl[f.status]||f.status;
+  const statusCls=stCls[f.status]||'bdg-o';
   let rows='';
-  (f.skus||[]).forEach(sk=>{
-    if(!sk.itemId) return;
-    const item=(STATE.items||[]).find(it=>it.id===sk.itemId);
-    const rng=item?(item.ranges||[]).find(r=>r.name===sk.rangeName):null;
-    const col=rng&&rng.colours?rng.colours[parseInt(sk.colIdx)]:null;
-    const lbl=item?item.name+' – '+(sk.rangeName||'')+(col?' – '+col.name:''):'—';
+  (f.rows||[]).forEach(sk=>{
+    const lbl=sk.itemName+' – '+(sk.range||'')+' – '+sk.colourName;
     rows+='<tr><td>'+lbl+'</td><td class="tr">'+(sk.damagePcs||0)+'</td><td class="tr">'+(sk.reusePcs||0)+'</td><td class="tr">'+(sk.exchangePcs||0)+'</td></tr>';
   });
   let html=_pdfHead('Exchange Slip '+f.vno);
   html+=_pdfCo();
   html+='<div class="hdr"><div><div class="doc-lbl">Exchange Slip</div><div class="doc-no">'+f.vno+'</div><div class="doc-date">'+fmtDate(f.date)+'</div></div><div><span class="bdg '+statusCls+'">'+statusLbl+'</span></div></div>';
-  html+='<div class="meta"><div><div class="ml">Party</div><div class="mv">'+(f.party||'—')+'</div></div><div><div class="ml">Khata</div><div class="mv">'+(f.khata||'—')+'</div></div><div><div class="ml">Rep Name</div><div class="mv">'+(f.rep||'—')+'</div></div><div><div class="ml">Rep Phone</div><div class="mv">'+(f.phone||'—')+'</div></div></div>';
+  html+='<div class="meta"><div><div class="ml">Party</div><div class="mv">'+(f.party||'—')+'</div></div><div><div class="ml">Khata</div><div class="mv">'+(f.khata||'—')+'</div></div><div><div class="ml">Rep Name</div><div class="mv">'+(f.rep||'—')+'</div></div><div><div class="ml">Rep Phone</div><div class="mv">'+(f.phone||'—')+'</div></div><div><div class="ml">Cut</div><div class="mv">'+(f.cut||5)+'m</div></div></div>';
   html+='<table><tr><th>SKU</th><th class="tr">Damage (Pcs)</th><th class="tr">Re-use (Pcs)</th><th class="tr">Exchange (Pcs)</th></tr>'+rows+'</table>';
   html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;•&nbsp; Exchange Slip '+f.vno+' &nbsp;•&nbsp; Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
   _printWin(html,'Exchange Slip '+f.vno);
