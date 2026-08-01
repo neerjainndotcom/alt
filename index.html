@@ -94,8 +94,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.30.4';
-const APP_BUILD_DATE='2026-08-01d';
+const APP_VERSION='1.30.5';
+const APP_BUILD_DATE='2026-08-01e';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -1761,8 +1761,10 @@ rHdr.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 12px 8px
 rHdr.innerHTML=
 '<div style="background:var(--Ps);color:var(--Pd);font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;flex-shrink:0">Range '+rng+'</div>'+
 '<span style="font-size:10px;color:var(--t3);flex:1">'+cols.length+' colour(s)</span>'+
-'<button class="btn bs bxs">+ Colour</button>';
-rHdr.querySelector('button').onclick = e=>{e.stopPropagation(); openAddClr(item.id, rng);};
+'<button class="btn bs bxs rng-add-btn">+ Colour</button>'+
+'<button class="btn bd bxs rng-del-btn" title="Delete entire range">🗑 Range</button>';
+rHdr.querySelector('.rng-add-btn').onclick = e=>{e.stopPropagation(); openAddClr(item.id, rng);};
+rHdr.querySelector('.rng-del-btn').onclick = e=>{e.stopPropagation(); deleteRange(item.id, rng);};
 exp.appendChild(rHdr);
 cols.forEach(col=>{
 const cIdx=item.colours.indexOf(col);
@@ -1860,7 +1862,7 @@ if(defaultCol){
 }
 html+=namedRngs.map(rng=>{
 const cols=item.colours.filter(c=>c.range===rng);
-return '<div class="sr"><div class="srh"><span>Range '+rng+'</span><button class="btn bs bxs" onclick="openAddClr(\''+item.id+'\',\''+rng+'\')">+ Colour</button></div>'+
+return '<div class="sr"><div class="srh"><span>Range '+rng+'</span><div style="display:flex;gap:6px"><button class="btn bs bxs" onclick="openAddClr(\''+item.id+'\',\''+rng+'\')">+ Colour</button><button class="btn bd bxs" title="Delete entire range" onclick="deleteRange(\''+item.id+'\',\''+rng+'\')">🗑 Range</button></div></div>'+
 cols.map(col=>{
 const cIdx=item.colours.indexOf(col);
 return '<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--sf);border-radius:8px;border:1px solid var(--br);margin-top:4px;transition:.12s'+(col.discontinued?';opacity:.55':'')+'">'+
@@ -7125,6 +7127,36 @@ persist();
 renderItems(document.querySelector('#tp-itm .srch input')?.value||'');
 if(el('m-item')?.classList.contains('on')&&el('itm-id')?.value===itemId) renderItemRanges(item);
 toast('Colour "'+col.name+'" deleted','ok');
+}
+async function deleteRange(itemId, rng){
+const item=STATE.items.find(i=>i.id===itemId); if(!item) return;
+const cols=item.colours.filter(c=>c.range===rng&&!c._deleted);
+if(!cols.length){toast('No colours in this range','er');return;}
+const skus=cols.map(c=>c.sku);
+const ledgerEntries=STATE.entries.filter(e=>e.itemId===itemId&&skus.includes(e.sku));
+const totalStock=cols.reduce((s,c)=>s+(c.stock_taka||0),0);
+if(ledgerEntries.length>0){
+  const choice=await appConfirm(
+    'Range Has Ledger History',
+    'Range: '+rng+' — '+cols.length+' colour(s)\n'+ledgerEntries.length+' ledger entr'+(ledgerEntries.length===1?'y':'ies')+' exist across this range.\n\n'+(totalStock>0?'Total stock: '+totalStock+'T — will also be lost.\n\n':'')+
+    '⚠️ Deleting will remove all ledger entries for every colour in this range.\n\n'+
+    '💡 Recommended: Discontinue each colour instead (no data loss).\n\n'+
+    'Press OK only if you are sure.',
+    '🗑️','Force Delete Range','dr'
+  );
+  if(!choice) return;
+  STATE.entries.filter(e=>e.itemId===itemId&&skus.includes(e.sku)).forEach(e=>{e._deleted=true;e._ts=Date.now();});
+}else{
+  const msg='Delete entire range: '+rng+'\n'+cols.length+' colour(s)'+(totalStock>0?'\n\n⚠️ Total stock '+totalStock+'T will be removed from records.':'');
+  const ok=await appConfirm('Delete Range?',msg,'🗑️','Delete Range','dr');
+  if(!ok) return;
+}
+cols.forEach(col=>{col.discontinued=true;col._deleted=true;col.stock_taka=0;col.stock_mtrs=0;});
+item._ts=Date.now();
+persist();
+renderItems(document.querySelector('#tp-itm .srch input')?.value||'');
+if(el('m-item')?.classList.contains('on')&&el('itm-id')?.value===itemId) renderItemRanges(item);
+toast('Range "'+rng+'" deleted ('+cols.length+' colour'+(cols.length===1?'':'s')+')','ok');
 }
 let _skuItemId=null, _skuCIdx=null;
 function showSKUDetail(itemId, cIdx){
