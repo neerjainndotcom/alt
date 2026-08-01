@@ -94,8 +94,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.30.3';
-const APP_BUILD_DATE='2026-08-01c';
+const APP_VERSION='1.30.4';
+const APP_BUILD_DATE='2026-08-01d';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -1849,18 +1849,25 @@ let html='';
 if(defaultCol){
   const cIdx=item.colours.indexOf(defaultCol);
   html+='<div class="sr" style="border:1.5px solid rgba(79,70,229,.25);background:var(--Pl);margin-bottom:6px"><div class="srh" style="background:var(--Pl)"><span style="font-weight:800;color:var(--Pd)">Default SKU (No Range / Colour)</span></div>'+
-    '<div onclick="openEditClr(\''+item.id+'\','+cIdx+')" style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--sf);border-radius:8px;border:1px solid var(--Ps);cursor:pointer;margin-top:4px;transition:.12s" onmouseenter="this.style.background=\'var(--Pl)\'" onmouseleave="this.style.background=\'var(--sf)\'">'+
+    '<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--sf);border-radius:8px;border:1px solid var(--Ps);margin-top:4px;transition:.12s'+(defaultCol.discontinued?';opacity:.55':'')+'">'+
+    '<div onclick="openEditClr(\''+item.id+'\','+cIdx+')" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;cursor:pointer" title="Tap to edit colour / SKU">'+
     '<span class="cdot" style="background:'+(defaultCol.hex||'#ccc')+'"></span>'+
     '<div style="flex:1;min-width:0"><div class="sm fw7" style="color:var(--t3)">(No colour name)</div><span class="sku" style="font-size:13px;font-weight:800;color:var(--Pd)">'+defaultCol.sku+'</span></div>'+
-    '<span class="stk '+(defaultCol.stock_taka===0?'no':'ok')+'">'+(defaultCol.stock_taka||0)+'T</span>'+
-    '<span style="font-size:11px;color:var(--P);font-weight:700;flex-shrink:0">✏️ Edit</span></div></div>';
+    '<span class="stk '+(defaultCol.stock_taka===0?'no':'ok')+'">'+(defaultCol.stock_taka||0)+'T</span></div>'+
+    '<button onclick="event.stopPropagation();discontinueSKU(\''+item.id+'\','+cIdx+')" style="height:28px;padding:0 8px;border-radius:7px;border:none;font-size:10px;font-weight:800;cursor:pointer;flex-shrink:0;background:'+(defaultCol.discontinued?'#D1FAE5':'#FEF3C7')+';color:'+(defaultCol.discontinued?'#065F46':'#92400E')+'">'+(defaultCol.discontinued?'✓ Active':'⏸ Disc')+'</button>'+
+    '<button onclick="event.stopPropagation();deleteColour(\''+item.id+'\','+cIdx+')" style="width:28px;height:28px;border-radius:7px;border:none;background:var(--Rl);color:var(--Rd);font-size:13px;cursor:pointer;flex-shrink:0">🗑</button>'+
+    '</div></div>';
 }
 html+=namedRngs.map(rng=>{
 const cols=item.colours.filter(c=>c.range===rng);
 return '<div class="sr"><div class="srh"><span>Range '+rng+'</span><button class="btn bs bxs" onclick="openAddClr(\''+item.id+'\',\''+rng+'\')">+ Colour</button></div>'+
 cols.map(col=>{
 const cIdx=item.colours.indexOf(col);
-return '<div onclick="openEditClr(\''+item.id+'\','+cIdx+')" style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--sf);border-radius:8px;border:1px solid var(--br);cursor:pointer;margin-top:4px;transition:.12s" onmouseenter="this.style.background=\'var(--Pl)\'" onmouseleave="this.style.background=\'var(--sf)\'" title="Tap to edit colour / SKU"><span class="cdot" style="background:'+(col.hex||'#ccc')+'"></span><div style="flex:1;min-width:0"><div class="sm fw7">'+col.name+'</div><span class="sku">'+col.sku+'</span></div><span class="stk '+(col.stock_taka===0?'no':'ok')+'">'+(col.stock_taka||0)+'T</span><span style="font-size:11px;color:var(--P);font-weight:700;flex-shrink:0">✏️ Edit</span></div>';
+return '<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--sf);border-radius:8px;border:1px solid var(--br);margin-top:4px;transition:.12s'+(col.discontinued?';opacity:.55':'')+'">'+
+'<div onclick="openEditClr(\''+item.id+'\','+cIdx+')" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;cursor:pointer" title="Tap to edit colour / SKU"><span class="cdot" style="background:'+(col.hex||'#ccc')+'"></span><div style="flex:1;min-width:0"><div class="sm fw7">'+col.name+'</div><span class="sku">'+col.sku+'</span></div><span class="stk '+(col.stock_taka===0?'no':'ok')+'">'+(col.stock_taka||0)+'T</span></div>'+
+'<button onclick="event.stopPropagation();discontinueSKU(\''+item.id+'\','+cIdx+')" style="height:28px;padding:0 8px;border-radius:7px;border:none;font-size:10px;font-weight:800;cursor:pointer;flex-shrink:0;background:'+(col.discontinued?'#D1FAE5':'#FEF3C7')+';color:'+(col.discontinued?'#065F46':'#92400E')+'">'+(col.discontinued?'✓ Active':'⏸ Disc')+'</button>'+
+'<button onclick="event.stopPropagation();deleteColour(\''+item.id+'\','+cIdx+')" style="width:28px;height:28px;border-radius:7px;border:none;background:var(--Rl);color:var(--Rd);font-size:13px;cursor:pointer;flex-shrink:0">🗑</button>'+
+'</div>';
 }).join('')+
 '</div>';
 }).join('');
@@ -7116,6 +7123,7 @@ col.discontinued=true;col._deleted=true;col.stock_taka=0;col.stock_mtrs=0;
 item._ts=Date.now();
 persist();
 renderItems(document.querySelector('#tp-itm .srch input')?.value||'');
+if(el('m-item')?.classList.contains('on')&&el('itm-id')?.value===itemId) renderItemRanges(item);
 toast('Colour "'+col.name+'" deleted','ok');
 }
 let _skuItemId=null, _skuCIdx=null;
@@ -11746,6 +11754,7 @@ const ok=await appConfirm('Re-activate SKU?',col.name+' ('+col.sku+')\nThis SKU 
 if(!ok) return;
 col.discontinued=false;
 lsSave('vs_items',STATE.items); renderItems(); renderDash();
+if(el('m-item')?.classList.contains('on')&&el('itm-id')?.value===itemId) renderItemRanges(item);
 toast(col.name+' re-activated','ok');
 }else{
 const ok=await appConfirm(
@@ -11756,6 +11765,7 @@ col.name+' ('+col.sku+')\n\nDiscontinued SKUs:\n\u2022 Hidden from new order for
 if(!ok) return;
 col.discontinued=true;
 lsSave('vs_items',STATE.items); renderItems(); renderDash();
+if(el('m-item')?.classList.contains('on')&&el('itm-id')?.value===itemId) renderItemRanges(item);
 toast(col.name+' discontinued','ok');
 }
 }
