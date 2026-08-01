@@ -101,8 +101,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.30.0';
-const APP_BUILD_DATE='2026-07-30b';
+const APP_VERSION='1.30.1';
+const APP_BUILD_DATE='2026-08-01';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -2865,6 +2865,7 @@ function nextInwardVoucher(){ const pfx=(STATE.settings.inwardPrefix||'GRN/').tr
    (status=ready, taka DEDUCTED from stock, WhatsApp sent to rep). ===== */
 let _exF={id:null,vno:'',date:'',party:'',khata:'',rep:'',phone:'',cut:5,status:'pending',rows:[]};
 let _exLots=[{id:0}]; let _exLotId=0;
+let _exUnlocked=false;
 function nextExVoucher(){
 const pfx=(STATE.settings.exchPrefix||'EX/').replace(/-$/,'/');
 const n=STATE.settings.nextExchNo||1;
@@ -2880,32 +2881,59 @@ if(!_exF.rows)_exF.rows=[];
 _exF={id:null,vno:nextExVoucher(),date:today(),party:'',khata:'',rep:'',phone:'',cut:5,status:'pending',rows:[]};
 }
 _exLots=[{id:0}]; _exLotId=0;
+_exUnlocked=false;
 buildExchangeForm();
 showMod('m-exch');
 if(_exF.rows&&_exF.rows.length) setTimeout(_exRestoreLots,60);
 }
 function openExchDet(id){ openExchange(id); }
+function _exToggleUnlock(){
+_exUnlocked=!_exUnlocked;
+buildExchangeForm();
+if(_exF.rows&&_exF.rows.length) setTimeout(_exRestoreLots,60);
+}
+async function deleteExchange(){
+if(!_exF.id) return;
+const ok=await appConfirm('Delete Exchange Slip?','This reverses any stock already added/deducted by '+(_exF.vno||'this voucher')+' and removes it. This cannot be undone.','?','Delete','dr');
+if(!ok) return;
+const avg=STATE.settings.avgMtrPerTaka||90;
+const cut=_exF.cut||5;
+(_exF.rows||[]).forEach(r=>{
+if(r.reusePcs>0){ const taka=r.reusePcs*cut/avg; deductStock(r.itemId,r.colIdx,taka,'exchange-delete',_exF.party,_exF.vno,'Exchange voucher deleted'); }
+if(r.exchangePcs>0){ const taka=r.exchangePcs*cut/avg; addStock(r.itemId,r.colIdx,taka,'exchange-delete',_exF.party,_exF.vno,'Exchange voucher deleted - stock restored'); }
+});
+const i=(STATE.exchanges||[]).findIndex(e=>e.id===_exF.id);
+if(i>=0){ STATE.exchanges[i]._deleted=true; STATE.exchanges[i]._ts=Date.now(); }
+persist();
+hideMod('m-exch');
+toast('Exchange slip deleted, stock reversed','ok');
+renderExchangeList();
+}
 function buildExchangeForm(){
 const f=_exF, isEdit=!!f.id;
 const status=f.status||'pending';
 const stBadge={pending:'<span style="background:#f59e0b;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">Pending</span>',
 under_process:'<span style="background:#3b82f6;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">Under Process</span>',
 ready:'<span style="background:#10b981;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">Ready ✓</span>'}[status]||'';
-const stepHint={pending:'Enter <b>Damage Sarees</b> and <b>Re-use Sarees</b> for what\'s coming back. Re-use adds stock once saved.',
+const stepHint=_exUnlocked?'<b>Edit mode</b> — all fields unlocked for correction. Saving will adjust stock by the difference only (no double counting).':
+{pending:'Enter <b>Damage Sarees</b> and <b>Re-use Sarees</b> for what\'s coming back. Re-use adds stock once saved.',
 under_process:'Re-use already applied. Now enter <b>Exchange Sarees</b> — this deducts stock and marks the slip Ready.',
 ready:'This exchange is complete — Exchange sarees have been deducted from stock.'}[status]||'';
 const waBtn=(status==='ready'&&f.phone)?'<button class="btn" style="background:#25D366;color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer" onclick="sendExWA()">📲 WhatsApp Rep</button>':'';
 const printBtn=isEdit?'<button class="btn" style="background:#059669;color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer" onclick="printExchangeSlip()">📄 Print/PDF</button>':'';
+const isAdmin=STATE.user?.role==='admin';
+const unlockBtn=(isEdit&&isAdmin)?'<button class="btn" style="background:'+(_exUnlocked?'#374151':'#F59E0B')+';color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px" onclick="_exToggleUnlock()">'+(_exUnlocked?'🔒 Lock Fields':'🔓 Edit All Fields')+'</button>':'';
+const delBtn=(isEdit&&isAdmin)?'<button class="btn" style="background:#DC2626;color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer" onclick="deleteExchange()">🗑 Delete</button>':'';
 el('exch-form-body').innerHTML=
 '<div class="ir2"><div class="fg"><label>Voucher No</label><input class="inp mono" id="ex-vno" value="'+(f.vno||nextExVoucher())+'" readonly></div><div class="fg"><label>Date</label><input class="inp" type="date" id="ex-date" value="'+(f.date||today())+'"></div></div>'+
 '<div class="ir2"><div class="fg"><label>Party Name (Customer)</label><input class="inp" id="ex-party" placeholder="Customer name" value="'+(f.party||'')+'"></div><div class="fg"><label>Khata Name</label><input class="inp" id="ex-khata" placeholder="Khata / Ledger name" value="'+(f.khata||'')+'"></div></div>'+
 '<div class="ir2"><div class="fg"><label>Rep Name</label><input class="inp" id="ex-rep" placeholder="Representative name" value="'+(f.rep||'')+'"></div><div class="fg"><label>Rep Phone</label><input class="inp" id="ex-phone" type="tel" placeholder="10-digit mobile" value="'+(f.phone||'')+'"></div></div>'+
 '<div class="fg"><label>Cut (m) <span class="sub" style="font-weight:400">— common for this whole slip</span></label><input class="inp mono" type="number" step="0.25" id="ex-cut" value="'+(f.cut||5)+'" oninput="_exRecalcAll()" style="max-width:120px"></div>'+
-'<div style="margin:16px 0 8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-weight:700;font-size:13px;color:#374151">ITEMS TO EXCHANGE</span>'+stBadge+'</div>'+
-(stepHint?'<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400E;margin-bottom:10px">'+stepHint+'</div>':'')+
+'<div style="margin:16px 0 8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-weight:700;font-size:13px;color:#374151">ITEMS TO EXCHANGE</span>'+stBadge+'<span style="flex:1"></span>'+unlockBtn+'</div>'+
+(stepHint?'<div style="background:'+(_exUnlocked?'#FEF3C7':'#FFFBEB')+';border:1px solid #FDE68A;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400E;margin-bottom:10px">'+stepHint+'</div>':'')+
 '<div id="ex-lots"></div>'+
 '<button class="btn bs bfl mt8" onclick="addExLot()">+ Add LOT / Item</button>'+
-'<div style="display:flex;gap:8px;margin-top:20px;padding-top:12px;border-top:1px solid var(--br);justify-content:flex-end;flex-wrap:wrap">'+waBtn+printBtn+'<button class="btn bgh" onclick="hideMod(\'m-exch\')">Cancel</button><button class="btn bp" onclick="saveExchange()">'+(isEdit?'Save Changes':'Save Exchange')+'</button></div>';
+'<div style="display:flex;gap:8px;margin-top:20px;padding-top:12px;border-top:1px solid var(--br);justify-content:space-between;flex-wrap:wrap"><div>'+delBtn+'</div><div style="display:flex;gap:8px;flex-wrap:wrap">'+waBtn+printBtn+'<button class="btn bgh" onclick="hideMod(\'m-exch\')">Cancel</button><button class="btn bp" onclick="saveExchange()">'+(isEdit?'Save Changes':'Save Exchange')+'</button></div></div>';
 renderExLots();
 }
 function renderExLots(){
@@ -2980,10 +3008,10 @@ const thead=document.createElement('div');
 thead.style.cssText='background:linear-gradient(135deg,#1e1b4b,#312e81);padding:8px 10px;border-bottom:2px solid #4F46E5';
 thead.innerHTML='<div style="display:flex;align-items:center;gap:6px">'+
 '<div style="width:24px"></div>'+
-'<div style="flex:1;font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.8px">Colour</div>'+
-'<div style="font-size:8px;font-weight:800;color:#FCA5A5;text-transform:uppercase;text-align:center;width:56px">Damage</div>'+
-'<div style="font-size:8px;font-weight:800;color:#6EE7B7;text-transform:uppercase;text-align:center;width:56px">Re-use</div>'+
-'<div style="font-size:8px;font-weight:800;color:#93C5FD;text-transform:uppercase;text-align:center;width:56px">Exchange</div>'+
+'<div style="flex:1;font-size:10px;font-weight:800;color:#C7D2FE;text-transform:uppercase;letter-spacing:.6px">Colour</div>'+
+'<div style="font-size:10px;font-weight:800;color:#FCA5A5;text-transform:uppercase;text-align:center;width:56px">Damage</div>'+
+'<div style="font-size:10px;font-weight:800;color:#6EE7B7;text-transform:uppercase;text-align:center;width:56px">Re-use</div>'+
+'<div style="font-size:10px;font-weight:800;color:#93C5FD;text-transform:uppercase;text-align:center;width:56px">Exchange</div>'+
 '</div>';
 body.appendChild(thead);
 const selAll=document.createElement('div');
@@ -3003,16 +3031,16 @@ row.innerHTML=
 '<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'+
 '<input type="checkbox" id="exl-'+lid+'-ck-'+idx+'" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer;flex-shrink:0" onchange="exLotClrToggle('+lid+','+idx+')"/>'+
 '<span style="width:14px;height:14px;border-radius:50%;background:'+(col.hex||'#ccc')+';display:inline-block;flex-shrink:0;border:1.5px solid rgba(0,0,0,.1)"></span>'+
-'<span style="font-size:11px;font-weight:700;color:#0F0E1A;flex:1;min-width:0;word-break:break-word">'+col.name+'</span>'+
-'<span style="font-size:9px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:2px 5px;border-radius:5px;white-space:nowrap;flex-shrink:0">'+stk+'T</span>'+
+'<span style="font-size:12px;font-weight:700;color:#0F0E1A;flex:1;min-width:0;word-break:break-word">'+col.name+'</span>'+
+'<span style="font-size:11px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:3px 7px;border-radius:5px;white-space:nowrap;flex-shrink:0">'+stk+' Taka</span>'+
 '</div>'+
 '<div style="display:flex;align-items:center;gap:6px">'+
-'<div style="font-size:8px;color:#9897B0;font-family:monospace;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+col.sku+'</div>'+
-'<input type="number" id="exl-'+lid+'-d-'+idx+'" step="1" min="0" value="0" disabled oninput="_exCalcRow('+lid+','+idx+')" style="width:52px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF"/>'+
-'<input type="number" id="exl-'+lid+'-u-'+idx+'" step="1" min="0" value="0" disabled oninput="_exCalcRow('+lid+','+idx+')" style="width:52px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF"/>'+
-'<input type="number" id="exl-'+lid+'-x-'+idx+'" step="1" min="0" value="0" disabled oninput="_exCalcRow('+lid+','+idx+')" style="width:52px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF"/>'+
+'<div style="font-size:9px;color:#6B7280;font-family:monospace;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+col.sku+'</div>'+
+'<input type="number" id="exl-'+lid+'-d-'+idx+'" step="1" min="0" value="0" disabled oninput="_exCalcRow('+lid+','+idx+')" style="width:52px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#E5E7EB;color:#4B5563"/>'+
+'<input type="number" id="exl-'+lid+'-u-'+idx+'" step="1" min="0" value="0" disabled oninput="_exCalcRow('+lid+','+idx+')" style="width:52px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#E5E7EB;color:#4B5563"/>'+
+'<input type="number" id="exl-'+lid+'-x-'+idx+'" step="1" min="0" value="0" disabled oninput="_exCalcRow('+lid+','+idx+')" style="width:52px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#E5E7EB;color:#4B5563"/>'+
 '</div>'+
-'<div id="exl-'+lid+'-tk-'+idx+'" style="font-size:9px;font-weight:700;color:#6366F1;text-align:right;margin-top:2px;min-height:11px"></div>';
+'<div id="exl-'+lid+'-tk-'+idx+'" style="font-size:10px;font-weight:700;color:#4F46E5;text-align:right;margin-top:2px;min-height:12px"></div>';
 row.addEventListener('click', e=>{
 if(e.target.tagName==='INPUT') return;
 const chk=el('exl-'+lid+'-ck-'+idx);
@@ -3032,15 +3060,15 @@ const idx=item.colours.indexOf(col);
 const dFld=el('exl-'+lid+'-d-'+idx), uFld=el('exl-'+lid+'-u-'+idx), xFld=el('exl-'+lid+'-x-'+idx);
 const chk=el('exl-'+lid+'-ck-'+idx);
 const checked=chk?.checked;
-const dOn=checked&&status==='pending';
-const uOn=checked&&status==='pending';
-const xOn=checked&&status==='under_process';
+const dOn=checked&&(_exUnlocked||status==='pending');
+const uOn=checked&&(_exUnlocked||status==='pending');
+const xOn=checked&&(_exUnlocked||status==='under_process');
 [[dFld,dOn,'#FEF2F2','#991B1B','#FCA5A5'],[uFld,uOn,'#F0FDF4','#166534','#4ADE80'],[xFld,xOn,'#EFF6FF','#1E3A8A','#93C5FD']].forEach(cfg=>{
 const fld=cfg[0],on=cfg[1],bg=cfg[2],col2=cfg[3],bd=cfg[4];
 if(!fld) return;
 fld.disabled=!on;
-fld.style.background=on?bg:'#F3F4F6';
-fld.style.color=on?col2:'#9CA3AF';
+fld.style.background=on?bg:'#E5E7EB';
+fld.style.color=on?col2:'#4B5563';
 fld.style.border=on?'2px solid '+bd:'1.5px solid #D1D5DB';
 });
 });
@@ -3146,15 +3174,38 @@ rows.push({itemId:item.id,colIdx:idx,itemName:item.name,colourName:col.name,sku:
 });
 if(!rows.length){toast('Add at least one SKU with a quantity','er');return;}
 const prevStatus=_exF.status||'pending';
+let newStatus=prevStatus;
+if(_exUnlocked&&_exF.id){
+/* Correction mode: reconcile stock by the DELTA between old and new
+   values only, so we never double-apply what a normal save already did. */
+const oldRows=_exF.rows||[];
+rows.forEach(r=>{
+const old=oldRows.find(o=>o.itemId===r.itemId&&o.colIdx===r.colIdx);
+const oldU=old?old.reusePcs||0:0, oldX=old?old.exchangePcs||0:0;
+const deltaU=(r.reusePcs||0)-oldU, deltaX=(r.exchangePcs||0)-oldX;
+const net=(deltaU-deltaX)*cut/avg;
+if(net>0.001) addStock(r.itemId,r.colIdx,net,'exchange-correction',party,vno,'Correction adjustment');
+else if(net<-0.001) deductStock(r.itemId,r.colIdx,-net,'exchange-correction',party,vno);
+});
+oldRows.forEach(old=>{
+const stillThere=rows.find(r=>r.itemId===old.itemId&&r.colIdx===old.colIdx);
+if(!stillThere){
+const net=(-(old.reusePcs||0)+(old.exchangePcs||0))*cut/avg;
+if(net>0.001) addStock(old.itemId,old.colIdx,net,'exchange-correction',party,vno,'Row removed - stock restored');
+else if(net<-0.001) deductStock(old.itemId,old.colIdx,-net,'exchange-correction',party,vno);
+}
+});
+_exUnlocked=false;
+}else{
 const hasReuse=rows.some(r=>r.reusePcs>0);
 const hasExchange=rows.some(r=>r.exchangePcs>0);
-let newStatus=prevStatus;
 if(prevStatus==='pending'&&hasReuse){
 newStatus='under_process';
 rows.forEach(r=>{ if(r.reusePcs>0){ const taka=r.reusePcs*cut/avg; addStock(r.itemId,r.colIdx,taka,'exchange-reuse',party,vno,'Exchange reuse '+r.reusePcs+' pcs x '+cut+'m'); } });
 }else if(prevStatus==='under_process'&&hasExchange){
 newStatus='ready';
 rows.forEach(r=>{ if(r.exchangePcs>0){ const taka=r.exchangePcs*cut/avg; deductStock(r.itemId,r.colIdx,taka,'exchange-out',party,vno); } });
+}
 }
 const rec={vno,date,party,khata,rep,phone,cut,status:newStatus,rows,_ts:Date.now(),by:STATE.user?.name||''};
 if(_exF.id){
