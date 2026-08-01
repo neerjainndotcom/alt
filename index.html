@@ -94,8 +94,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.30.2';
-const APP_BUILD_DATE='2026-08-01b';
+const APP_VERSION='1.30.3';
+const APP_BUILD_DATE='2026-08-01c';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -148,8 +148,26 @@ inp.type='text'; inp.placeholder='Search...';
 inp.style.cssText='width:100%;padding:8px 10px 8px 30px;border:1.5px solid var(--br,#D1D5DB);border-radius:8px;font-size:13px;font-family:inherit;background:white;box-sizing:border-box;cursor:pointer';
 inp.className='inp';
 const list=document.createElement('div');
-list.style.cssText='position:absolute;top:100%;left:0;right:0;max-height:240px;overflow-y:auto;background:white;border:1.5px solid #C7D2FE;border-top:none;border-radius:0 0 10px 10px;z-index:9999;display:none;box-shadow:0 8px 20px rgba(79,70,229,.12)';
-wrap.appendChild(srch); wrap.appendChild(inp); wrap.appendChild(list);
+/* Rendered on document.body (not inside wrap) and position:fixed, because many
+   callers wrap this select in a card/lot with overflow:hidden (for rounded
+   corners) — an absolutely-positioned child there gets silently clipped,
+   which is why the dropdown looked "cut off" / not fully visible. Fixed
+   positioning is computed against the input's own bounding rect instead. */
+list.style.cssText='position:fixed;max-height:240px;overflow-y:auto;background:white;border:1.5px solid #C7D2FE;border-radius:10px;z-index:99999;display:none;box-shadow:0 10px 28px rgba(79,70,229,.18)';
+list.className='searchable-float-list';
+list._wrap=wrap;
+document.body.appendChild(list);
+wrap.appendChild(srch); wrap.appendChild(inp);
+function positionList(){
+const r=inp.getBoundingClientRect();
+const spaceBelow=window.innerHeight-r.bottom;
+const openUp=spaceBelow<180&&r.top>180;
+list.style.left=r.left+'px';
+list.style.width=r.width+'px';
+if(openUp){ list.style.top=''; list.style.bottom=(window.innerHeight-r.top)+'px'; }
+else{ list.style.bottom=''; list.style.top=r.bottom+'px'; }
+}
+function closeList(){ list.style.display='none'; }
 function syncDisplay(){
 const so=selectEl.options[selectEl.selectedIndex];
 inp.value=(so&&so.value)?so.textContent:'';
@@ -199,14 +217,17 @@ if(selectEl.disabled){inp.blur();return;}
    somehow still only has the placeholder option (e.g. STATE.items wasn't
    ready the first time it was built), rebuild it now before showing the list. */
 if(typeof selectEl._itemRebuild==='function'&&selectEl.options.length<=1&&(STATE.items||[]).length){ selectEl.innerHTML=selectEl._itemRebuild(); }
-renderList(''); inp.value=''; list.style.display='block';
+renderList(''); inp.value=''; positionList(); list.style.display='block';
 });
-inp.addEventListener('input',()=>{renderList(inp.value); list.style.display='block';});
+inp.addEventListener('input',()=>{renderList(inp.value); positionList(); list.style.display='block';});
 inp.addEventListener('keydown',e=>{
-if(e.key==='Escape'){list.style.display='none';syncDisplay();inp.blur();}
+if(e.key==='Escape'){closeList();syncDisplay();inp.blur();}
 if(e.key==='Enter'){e.preventDefault();const f=list.querySelector('div');if(f)f.click();}
 });
-document.addEventListener('click',e=>{if(!wrap.contains(e.target)){list.style.display='none';syncDisplay();}});
+document.addEventListener('click',e=>{if(!wrap.contains(e.target)&&!list.contains(e.target)){closeList();syncDisplay();}});
+/* Keep the floating list glued to the input while the page/modal scrolls or resizes. */
+window.addEventListener('scroll',()=>{if(list.style.display==='block')positionList();},true);
+window.addEventListener('resize',()=>{if(list.style.display==='block')positionList();});
 let _busy=false;
 new MutationObserver(()=>{if(_busy)return;_busy=true;syncDisplay();if(list.style.display==='block')renderList(inp.value);_busy=false;}).observe(selectEl,{childList:true,attributes:true});
 syncDisplay();
@@ -645,6 +666,10 @@ const e=el(id); if(!e) return;
 e.classList.remove('on');
 e.style.zIndex='';
 if(!document.querySelector('.ov.on')) document.body.style.overflow='';
+/* Searchable dropdowns float on document.body (see makeSearchable) to avoid
+   being clipped by overflow:hidden lot cards — sweep out any left behind by
+   selects whose card content was rebuilt/removed while this modal was open. */
+document.querySelectorAll('.searchable-float-list').forEach(l=>{ if(!l._wrap||!l._wrap.isConnected) l.remove(); });
 }
 function ovc(e,o){ if(e.target===o){o.classList.remove('on');document.body.style.overflow='';} }
 function devId(){ let d=ls('vs_did'); if(!d){d=uid();lsSet('vs_did',d);} return d; }
