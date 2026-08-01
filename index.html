@@ -94,8 +94,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.30.5';
-const APP_BUILD_DATE='2026-08-01e';
+const APP_VERSION='1.30.6';
+const APP_BUILD_DATE='2026-08-01f';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -1645,12 +1645,12 @@ return '<div class="fg"><label>Item</label><div class="fi"><select class="sel" i
 function cascRng(pfx,showStk){
 const iid=el(pfx+'-i')?.value, item=STATE.items.find(i=>i.id===iid);
 if(!item){hideEl(pfx+'-rg');hideEl(pfx+'-cg');return;}
-const rngs=[...new Set(item.colours.map(c=>c.range).filter(r=>r!==''))];
-const hasDefault=item.colours.some(c=>c.range===''&&!c.discontinued);
+const rngs=[...new Set(item.colours.filter(c=>!c.discontinued&&!c._deleted).map(c=>c.range).filter(r=>r!==''))];
+const hasDefault=item.colours.some(c=>c.range===''&&!c.discontinued&&!c._deleted);
 // Item has only the default no-range colour → skip range step, show colour directly
 if(hasDefault&&rngs.length===0){
   hideEl(pfx+'-rg');
-  const cols=item.colours.filter(c=>c.range===''&&!c.discontinued);
+  const cols=item.colours.filter(c=>c.range===''&&!c.discontinued&&!c._deleted);
   el(pfx+'-c').innerHTML='<option value="">Select colour...</option>'+cols.map(c=>{
     const idx=item.colours.indexOf(c);
     return '<option value="'+idx+'">'+(c.name||'['+c.sku+']')+(c.code?' ('+c.code+')':'')+'</option>';
@@ -1661,7 +1661,7 @@ if(hasDefault&&rngs.length===0){
 // Has named ranges (may also have a default)
 let opts='';
 if(hasDefault) opts+='<option value="__norange__">(No Range / Default)</option>';
-opts+=rngs.map(r=>'<option value="'+r+'">'+r+' ('+item.colours.filter(c=>c.range===r).length+' clrs)</option>').join('');
+opts+=rngs.map(r=>'<option value="'+r+'">'+r+' ('+item.colours.filter(c=>c.range===r&&!c.discontinued&&!c._deleted).length+' clrs)</option>').join('');
 el(pfx+'-r').innerHTML='<option value="">Select range...</option>'+opts;
 showEl(pfx+'-rg');hideEl(pfx+'-cg');el(pfx+'-si').innerHTML='';
 }
@@ -1732,8 +1732,8 @@ return;
 }
 c.innerHTML='';
 f.forEach(item=>{
-const tot=item.colours.reduce((s,c)=>s+(c.stock_taka||0),0);
-const rngs=[...new Set(item.colours.map(c=>c.range))];
+const tot=item.colours.filter(c=>!c._deleted).reduce((s,c)=>s+(c.stock_taka||0),0);
+const rngs=[...new Set(item.colours.filter(c=>!c._deleted).map(c=>c.range))];
 const wrap=document.createElement('div');
 wrap.style.cssText='background:var(--sf);border-bottom:1px solid var(--br)';
 wrap.dataset.iid=item.id;
@@ -1741,7 +1741,7 @@ const hdr=document.createElement('div');
 hdr.style.cssText='display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer';
 hdr.innerHTML=
 '<div class="ei" style="background:var(--Pl);color:var(--Pd);font-size:13px;font-weight:800;flex-shrink:0">'+item.name.substring(0,2)+'</div>'+
-'<div style="flex:1;min-width:0"><div class="etit">'+item.name+'</div><div class="esub">'+rngs.length+' range(s) - '+item.colours.length+' colour(s)</div></div>'+
+'<div style="flex:1;min-width:0"><div class="etit">'+item.name+'</div><div class="esub">'+rngs.length+' range(s) - '+item.colours.filter(c=>!c._deleted).length+' colour(s)</div></div>'+
 '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'+
 '<div style="text-align:right;margin-right:2px"><div class="ev in">'+tot+'T</div><div class="ed">'+fmtN(tot*STATE.settings.avgMtrPerTaka)+'m</div></div>'+
 '<button class="itmact-rng btn bs bxs">+ Range</button>'+
@@ -1755,7 +1755,7 @@ const exp=document.createElement('div');
 exp.style.display='none';
 exp.className='item-expand';
 rngs.forEach(rng=>{
-const cols=item.colours.filter(c=>c.range===rng);
+const cols=item.colours.filter(c=>c.range===rng&&!c._deleted);
 const rHdr=document.createElement('div');
 rHdr.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 12px 8px 52px;background:var(--bg);border-top:1px solid var(--br)';
 rHdr.innerHTML=
@@ -1844,8 +1844,8 @@ renderItemRanges(item); showMod('m-item');
 function renderItemRanges(item){
 const c=el('itmrng'); if(!c) return;
 if(!item?.colours?.length){c.innerHTML='<div class="ct3 sm tc" style="padding:14px">No ranges. Click + Add Range.</div>';return;}
-const defaultCol=item.colours.find(col=>col.range===''&&col.isDefault);
-const namedRngs=[...new Set(item.colours.filter(col=>col.range!=='').map(col=>col.range))];
+const defaultCol=item.colours.find(col=>col.range===''&&col.isDefault&&!col._deleted);
+const namedRngs=[...new Set(item.colours.filter(col=>col.range!==''&&!col._deleted).map(col=>col.range))];
 let html='';
 // Show default (no-range) colour at top if it exists
 if(defaultCol){
@@ -1861,7 +1861,7 @@ if(defaultCol){
     '</div></div>';
 }
 html+=namedRngs.map(rng=>{
-const cols=item.colours.filter(c=>c.range===rng);
+const cols=item.colours.filter(c=>c.range===rng&&!c._deleted);
 return '<div class="sr"><div class="srh"><span>Range '+rng+'</span><div style="display:flex;gap:6px"><button class="btn bs bxs" onclick="openAddClr(\''+item.id+'\',\''+rng+'\')">+ Colour</button><button class="btn bd bxs" title="Delete entire range" onclick="deleteRange(\''+item.id+'\',\''+rng+'\')">🗑 Range</button></div></div>'+
 cols.map(col=>{
 const cIdx=item.colours.indexOf(col);
@@ -7056,8 +7056,8 @@ hideEl('qclr-form'); el('qclr-save-btn').style.display='none';
 if(!iid){ hideEl('qclr-rg'); return; }
 const item=STATE.items.find(i=>i.id===iid);
 if(!item||!item.colours.length){ toast('This item has no ranges yet. Add a range first.','er'); hideEl('qclr-rg'); return; }
-const rngs=[...new Set(item.colours.map(c=>c.range))];
-el('qclr-rng').innerHTML='<option value="">Select range...</option>'+rngs.map(r=>'<option value="'+r+'">'+r+' ('+item.colours.filter(c=>c.range===r).length+' colours)</option>').join('');
+const rngs=[...new Set(item.colours.filter(c=>!c.discontinued&&!c._deleted).map(c=>c.range))];
+el('qclr-rng').innerHTML='<option value="">Select range...</option>'+rngs.map(r=>'<option value="'+r+'">'+r+' ('+item.colours.filter(c=>c.range===r&&!c.discontinued&&!c._deleted).length+' colours)</option>').join('');
 showEl('qclr-rg');
 }
 function onQClrRng(){
