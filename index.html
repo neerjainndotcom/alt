@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.31.6';
-const APP_BUILD_DATE='2026-08-03g';
+const APP_VERSION='1.31.7';
+const APP_BUILD_DATE='2026-08-03h';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -4477,9 +4477,9 @@ if(_ordType==='open'){
   if(_ordId){const idx=STATE.orders.findIndex(o=>o.id===_ordId);
     if(idx>=0)STATE.orders[idx]={...STATE.orders[idx],...stamp(ordObj)};else STATE.orders.push(stamp(ordObj));
   }else{STATE.orders.push(stamp(ordObj));}
-  lsSave('vs_orders',STATE.orders); hideMod('m-ord'); renderOrders();
+  persist(); hideMod('m-ord'); renderOrders();
   toast('Open Order '+ordNo+' saved — add programmes when party confirms colours','ok');
-  api('saveOrder',{orders:STATE.orders}); return;
+  return;
 }
 
 /* ── FIXED ORDER ── */
@@ -4506,8 +4506,8 @@ if(_ordId){
 const idx=STATE.orders.findIndex(o=>o.id===_ordId);
 if(idx>=0) STATE.orders[idx]={...STATE.orders[idx],...stamp(ordObj)}; else STATE.orders.push(stamp(ordObj));
 }else{ STATE.orders.push(stamp(ordObj)); }
-lsSave('vs_orders',STATE.orders); hideMod('m-ord'); renderOrders();
-toast('Order '+ordNo+' saved','ok'); api('saveOrder',{orders:STATE.orders});
+persist(); hideMod('m-ord'); renderOrders();
+toast('Order '+ordNo+' saved','ok');
 }
 function toggleFltPanel(prefix){
 const p=el(prefix+'-flt-panel'); if(!p) return;
@@ -5045,12 +5045,11 @@ async function saveProgramme(){
   o.total=(o.programmes||[]).reduce((s,p)=>s+(p.amount||0),0);
   if(calcProgStats(o).remaining<=0) o.status='programmed';
   stamp(o);
-  lsSave('vs_orders',STATE.orders);
+  persist();
   hideMod('m-prog');
   renderOrders();
   const msg=toSave.length===1?'Programme added: '+toSave[0].col.name+' \u2014 '+fmtN(toSave[0].pcs)+' pcs':toSave.length+' lots programmed successfully';
   toast(msg,'ok');
-  api('saveOrder',{orders:STATE.orders});
   /* Offer to bill */
   setTimeout(async()=>{
     const bill=await appConfirm('Bill Now?',
@@ -5227,8 +5226,7 @@ function saveProgEdit(){
   prog.pcs=newPcs;prog.cut=newCut;prog.rate=newRate;prog.date=newDate;prog.remark=newRem;
   prog.amount=newRate>0?Math.round(newPcs*newCut*newRate):0;
   o.total=(o.programmes||[]).reduce((s,p)=>s+(p.amount||0),0);
-  stamp(o);lsSave('vs_orders',STATE.orders);
-  api('saveOrder',{orders:STATE.orders});
+  stamp(o);persist();
   hideMod('m-prog');
   renderOrders();
   showOrderDetail(ordId);
@@ -5242,8 +5240,7 @@ async function deleteProg(ordId,progId){
   if(!ok) return;
   o.programmes=(o.programmes||[]).filter(p=>p.id!==progId);
   o.total=(o.programmes||[]).reduce((s,p)=>s+(p.amount||0),0);
-  stamp(o);lsSave('vs_orders',STATE.orders);
-  api('saveOrder',{orders:STATE.orders});
+  stamp(o);persist();
   renderOrders();
   showOrderDetail(ordId);
   toast('Lot deleted','ok');
@@ -6138,7 +6135,7 @@ if(!extBills.length) return;
 const totalDispatched=extBills.reduce((s,b)=>s+(b.items||[]).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
 if(totalDispatched>=totalOrdered){o.status='fulfilled';o._ts=Date.now();changed=true;}
 });
-if(changed) lsSave('vs_orders',STATE.orders);
+if(changed) persist();
 }
 function renderPendingOrders(){
 const c=el('pendlst'); if(!c) return;
