@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.31.1';
-const APP_BUILD_DATE='2026-08-03b';
+const APP_VERSION='1.31.2';
+const APP_BUILD_DATE='2026-08-03c';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -6787,6 +6787,16 @@ let _ldf='all';
  *                                                                   *
  ********************************************************************/
 
+/* Used after any ledger delete that triggers recalcStockFromEntries() — surfaces
+   SKUs that ended up negative, which means a still-present entry (a sale,
+   job work, etc.) depended on stock that the deleted entry had provided. */
+function _findNegativeStock(){
+const out=[];
+STATE.items.forEach(item=>{ if(item._deleted) return; (item.colours||[]).forEach(col=>{
+if(!col._deleted && (col.stock_taka||0)<0) out.push({sku:col.sku,itemName:item.name,colourName:col.name,stock:col.stock_taka});
+});});
+return out;
+}
 let _ledSelected=new Set();
 function renderLedger(q=''){
 const c=el('ledbod'); if(!c) return;
@@ -6854,9 +6864,11 @@ _ledSelected.clear();
    movement whose history row no longer exists (exactly what was reported:
    stock stayed put after deleting an adjustment entry). */
 recalcStockFromEntries();
+const negatives=_findNegativeStock();
 STATE.items.forEach(i=>{i._ts=Date.now();});
 persist();
 renderLedger(document.querySelector('#tp-led .srch input')?.value||'');
+if(negatives.length) appConfirm('⚠️ Stock Went Negative','Deleting these entr'+(n===1?'y':'ies')+' left '+negatives.length+' SKU(s) with negative stock — that means another entry still on the ledger (a sale, job work, etc.) relied on the one you just deleted:\n\n'+negatives.slice(0,8).map(x=>x.sku+': '+x.stock+'T').join('\n')+(negatives.length>8?'\n…and '+(negatives.length-8)+' more':'')+'\n\nCheck these SKUs and either restore the deleted entry or add a manual adjustment.','⚠️','OK','ok','');
 renderDash();
 toast(n+' entr'+(n===1?'y':'ies')+' deleted — stock recalculated','ok');
 }
@@ -8738,7 +8750,7 @@ skuMap[col.sku]={itemName:item.name,rng,colName:col.name,hex:col.hex,stock:col.s
 });
 });
 });
-STATE.orders.filter(o=>o.status==='pending'||o.status==='billed').forEach(o=>{
+STATE.orders.filter(o=>!o._deleted&&(o.status==='pending'||o.status==='billed')).forEach(o=>{
 (o.items||[]).forEach(item=>{
 if(skuMap[item.sku]){
 const pcs=item.pcs||0;
@@ -8835,7 +8847,7 @@ let lines='*'+STATE.settings.companyName+'*\n*Stock vs Orders - '+fmtDate(today(
 STATE.items.filter(item=>!item._deleted).forEach(item=>{
 item.colours.filter(col=>!col._deleted).forEach(col=>{
 const stk=col.stock_taka||0;
-const ord=STATE.orders.filter(o=>o.status==='pending'||o.status==='billed').reduce((s,o)=>s+(o.items||[]).filter(i=>i.sku===col.sku).reduce((ss,i)=>ss+(i.taka||0),0),0);
+const ord=STATE.orders.filter(o=>!o._deleted&&(o.status==='pending'||o.status==='billed')).reduce((s,o)=>s+(o.items||[]).filter(i=>i.sku===col.sku).reduce((ss,i)=>ss+(i.taka||0),0),0);
 if(stk>0||ord>0) lines+=col.sku+': Stock '+stk+'T | Ordered '+ord+'T'+(ord>stk?' SHORT '+(ord-stk)+'T':'')+'\n';
 });
 });
@@ -10869,11 +10881,11 @@ lowStock.sort((a,b)=>(_velMap[b.sku]||0)-(_velMap[a.sku]||0));
 const shortStock=[];
 const skuStk={};
 STATE.items.filter(item=>!item._deleted).forEach(item=>item.colours.forEach(col=>{
-if(col.discontinued) return;
+if(col.discontinued||col._deleted) return;
 skuStk[col.sku]={stock:col.stock_taka||0,itemName:item.name,range:col.range||'',colName:col.name,hex:col.hex};
 }));
 const orderedMap={};
-STATE.orders.filter(o=>o.status==='pending'||o.status==='billed').forEach(o=>{
+STATE.orders.filter(o=>!o._deleted&&(o.status==='pending'||o.status==='billed')).forEach(o=>{
 (o.items||[]).forEach(item=>{
 orderedMap[item.sku]=(orderedMap[item.sku]||0)+(item.taka||0);
 });
