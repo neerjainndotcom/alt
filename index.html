@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.31.5';
-const APP_BUILD_DATE='2026-08-03f';
+const APP_VERSION='1.31.6';
+const APP_BUILD_DATE='2026-08-03g';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -1674,7 +1674,7 @@ const iid=el(pfx+'-i')?.value, rng=el(pfx+'-r')?.value;
 const item=STATE.items.find(i=>i.id===iid); if(!item||rng===undefined||rng===null){hideEl(pfx+'-cg');return;}
 if(rng===''&&!item.colours.some(c=>c.range==='')){hideEl(pfx+'-cg');return;} // placeholder not yet chosen
 const actualRng=rng==='__norange__'?'':rng;
-const cols=item.colours.filter(c=>c.range===actualRng&&!c.discontinued);
+const cols=item.colours.filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted);
 el(pfx+'-c').innerHTML='<option value="">Select colour...</option>'+cols.map(c=>{
 const idx=item.colours.indexOf(c);
 return '<option value="'+idx+'">'+(c.name||'['+c.sku+']')+(c.code?' ('+c.code+')':'')+'</option>';
@@ -2564,7 +2564,7 @@ _inLots.forEach(lot=>{
   const rngRaw=el('inl-'+lot.id+'-r')?.value;
   const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
   const rng=rngRaw==='__norange__'?'':rngRaw;
-  item.colours.filter(c=>c.range===rng).forEach(col=>{
+  item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
     const idx=item.colours.indexOf(col);
     const chk=el('inl-'+lot.id+'-ck-'+idx); if(!chk?.checked) return;
     let totalTaka=0, tpCount=0;
@@ -2657,7 +2657,7 @@ _inLots.forEach(lot=>{
   const iid=el('inl-'+lot.id+'-i')?.value, rngRaw=el('inl-'+lot.id+'-r')?.value;
   const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
   const rng=rngRaw==='__norange__'?'':rngRaw;
-  item.colours.filter(c=>c.range===rng).forEach(col=>{
+  item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
     const idx=item.colours.indexOf(col);
     const chk=el('inl-'+lot.id+'-ck-'+idx); if(!chk) return;
     inwSetRowFieldStates(lot.id,idx,chk.checked);
@@ -2769,7 +2769,7 @@ const body=el('inl-'+lid+'-body');
 if(!iid||!rSel){if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range above</div>';return;}
 const item=STATE.items.find(x=>x.id===iid);
 if(!item) return;
-const rngs=[...new Set(item.colours.map(c=>c.range))];
+const rngs=[...new Set(item.colours.filter(c=>!c._deleted&&!c.discontinued).map(c=>c.range))];
 rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+(r===''?'__norange__':r)+'">'+(r||'(No Range / Default)')+'</option>').join('');
 rSel.disabled=false;
 if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Now select a range</div>';
@@ -2782,7 +2782,7 @@ const item=STATE.items.find(x=>x.id===iid);
 const body=el('inl-'+lid+'-body');
 if(!item||rngRaw===undefined||rngRaw===''||!body) return;
 const rng=rngRaw==='__norange__'?'':rngRaw;
-const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued);
+const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted);
 body.innerHTML='';
 const thead=document.createElement('div');
 thead.style.cssText='background:linear-gradient(135deg,#1e1b4b,#312e81);padding:8px 10px;border-bottom:2px solid #4F46E5';
@@ -2841,7 +2841,7 @@ const iid=el('inl-'+lid+'-i')?.value;
 const rngRaw=el('inl-'+lid+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
 const rng=rngRaw==='__norange__'?'':rngRaw;
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('inl-'+lid+'-ck-'+idx); if(!chk) return;
 chk.checked=allChk.checked;
@@ -2865,7 +2865,7 @@ const rng=rngRaw==='__norange__'?'':rngRaw;
 const avgT=STATE.settings.avgMtrPerTaka||90;
 const avgTP=STATE.settings.avgMtrPerTP||45;
 let lotTaka=0, lotMtrs=0;
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('inl-'+lid+'-ck-'+idx); if(!chk?.checked) return;
 let mtrs=0, avgTaka=0;
@@ -3111,7 +3111,7 @@ const rSel=el('exl-'+lid+'-r');
 const body=el('exl-'+lid+'-body');
 if(!iid||!rSel){ if(body) body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range above</div>'; return; }
 const item=STATE.items.find(x=>x.id===iid); if(!item) return;
-const rngs=[...new Set(item.colours.map(c=>c.range))];
+const rngs=[...new Set(item.colours.filter(c=>!c._deleted&&!c.discontinued).map(c=>c.range))];
 rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+(r||'__norange__')+'">'+(r||'(No Range)')+'</option>').join('');
 rSel.disabled=false;
 if(body) body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Now select a range</div>';
@@ -3123,7 +3123,7 @@ const item=STATE.items.find(x=>x.id===iid);
 const body=el('exl-'+lid+'-body');
 if(!item||rngRaw===undefined||rngRaw===''||!body) return;
 const rng=rngRaw==='__norange__'?'':rngRaw;
-const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued);
+const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted);
 body.innerHTML='';
 const thead=document.createElement('div');
 thead.style.cssText='background:linear-gradient(135deg,#1e1b4b,#312e81);padding:8px 10px;border-bottom:2px solid #4F46E5';
@@ -3176,7 +3176,7 @@ const status=_exF.status||'pending';
 const iid=el('exl-'+lid+'-i')?.value, rngRaw=el('exl-'+lid+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
 const rng=rngRaw==='__norange__'?'':rngRaw;
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const dFld=el('exl-'+lid+'-d-'+idx), uFld=el('exl-'+lid+'-u-'+idx), xFld=el('exl-'+lid+'-x-'+idx);
 const chk=el('exl-'+lid+'-ck-'+idx);
@@ -3199,7 +3199,7 @@ const allChk=el('exl-'+lid+'-all');
 const iid=el('exl-'+lid+'-i')?.value, rngRaw=el('exl-'+lid+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined) return;
 const rng=rngRaw==='__norange__'?'':rngRaw;
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('exl-'+lid+'-ck-'+idx); if(!chk) return;
 chk.checked=allChk.checked;
@@ -3228,7 +3228,7 @@ _exLots.forEach(lot=>{
 const iid=el('exl-'+lot.id+'-i')?.value, rngRaw=el('exl-'+lot.id+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
 const rng=rngRaw==='__norange__'?'':rngRaw;
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 _exCalcRow(lot.id,idx);
 });
@@ -3283,7 +3283,7 @@ _exLots.forEach(lot=>{
 const iid=el('exl-'+lot.id+'-i')?.value, rngRaw=el('exl-'+lot.id+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
 const rng=rngRaw==='__norange__'?'':rngRaw;
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('exl-'+lot.id+'-ck-'+idx); if(!chk?.checked) return;
 const d=parseInt(el('exl-'+lot.id+'-d-'+idx)?.value)||0;
@@ -3450,7 +3450,7 @@ _jwLots.forEach(lot=>{
   const iid=el('jwl-'+lot.id+'-i')?.value, rngRaw=el('jwl-'+lot.id+'-r')?.value;
   const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
   const rng=rngRaw==='__norange__'?'':rngRaw;
-  item.colours.filter(c=>c.range===rng).forEach(col=>{
+  item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
     const idx=item.colours.indexOf(col);
     const chk=el('jwl-'+lot.id+'-ck-'+idx); if(!chk) return;
     jwSetRowFieldStates(lot.id,idx,chk.checked);
@@ -3520,7 +3520,7 @@ const body=el('jwl-'+lid+'-body');
 if(!iid||!rSel){if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range above</div>';return;}
 const item=STATE.items.find(x=>x.id===iid);
 if(!item) return;
-const rngs=[...new Set(item.colours.map(c=>c.range))];
+const rngs=[...new Set(item.colours.filter(c=>!c._deleted&&!c.discontinued).map(c=>c.range))];
 rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+(r===''?'__norange__':r)+'">'+(r||'(No Range / Default)')+'</option>').join('');
 rSel.disabled=false;
 if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Now select a range</div>';
@@ -3533,7 +3533,7 @@ const item=STATE.items.find(x=>x.id===iid);
 const body=el('jwl-'+lid+'-body');
 if(!item||rngRaw===undefined||rngRaw===''||!body) return;
 const rng=rngRaw==='__norange__'?'':rngRaw;
-const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued);
+const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted);
 body.innerHTML='';
 const thead=document.createElement('div');
 thead.style.cssText='background:linear-gradient(135deg,#1e1b4b,#312e81);padding:8px 10px;border-bottom:2px solid #4F46E5';
@@ -3592,7 +3592,7 @@ const iid=el('jwl-'+lid+'-i')?.value;
 const rngRaw=el('jwl-'+lid+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
 const rng=rngRaw==='__norange__'?'':rngRaw;
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('jwl-'+lid+'-ck-'+idx); if(!chk) return;
 chk.checked=allChk.checked;
@@ -3616,7 +3616,7 @@ const rng=rngRaw==='__norange__'?'':rngRaw;
 const avgT=STATE.settings.avgMtrPerTaka||90;
 const avgTP=STATE.settings.avgMtrPerTP||45;
 let lotTaka=0, lotMtrs=0;
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('jwl-'+lid+'-ck-'+idx); if(!chk?.checked) return;
 let mtrs=0, avgTaka=0;
@@ -3659,7 +3659,7 @@ _jwLots.forEach(lot=>{
   const rngRaw=el('jwl-'+lot.id+'-r')?.value;
   const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
   const rng=rngRaw==='__norange__'?'':rngRaw;
-  item.colours.filter(c=>c.range===rng).forEach(col=>{
+  item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
     const idx=item.colours.indexOf(col);
     const chk=el('jwl-'+lot.id+'-ck-'+idx); if(!chk?.checked) return;
     let taka=0;
@@ -4082,7 +4082,7 @@ const rng=el('od-lot-'+lot.id+'-r')?.value;
 if(!item||!rng) return;
 const cutFld=el('od-lot-'+lot.id+'-cut');
 if(cutFld) cutFld.value=defCut;
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('od-lot-'+lot.id+'-ck-'+idx); if(!chk?.checked) return;
 const pcsFld=el('od-lot-'+lot.id+'-p-'+idx);
@@ -4103,7 +4103,7 @@ if(!item||!rng){toast('Select item & range first','er');return;}
 /* Apply cut */
 if(qcut){ const cutFld=el('od-lot-'+lid+'-cut'); if(cutFld) cutFld.value=qcut; }
 /* Apply pcs and rate to all checked (or all if none checked) colours */
-const cols=item.colours.filter(c=>c.range===rng);
+const cols=item.colours.filter(c=>c.range===rng&&!c._deleted&&!c.discontinued);
 let anyChecked=cols.some(col=>{const idx=item.colours.indexOf(col);return el('od-lot-'+lid+'-ck-'+idx)?.checked;});
 cols.forEach(col=>{
   const idx=item.colours.indexOf(col);
@@ -4146,7 +4146,7 @@ row1.innerHTML=
 '<div style="background:'+lc.border+';color:'+lc.label+';font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;letter-spacing:.5px;flex-shrink:0">LOT '+(li+1)+'</div>'+
 '<select id="od-lot-'+lot.id+'-i" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="ordLotItemChange('+lot.id+')">'+
 '<option value="">Select Item...</option>'+
-[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+
+[...STATE.items].filter(it=>!it._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+
 '</select>'+
 '<select id="od-lot-'+lot.id+'-r" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="ordLotRangeChange('+lot.id+')" disabled>'+
 '<option value="">Range...</option>'+
@@ -4217,7 +4217,7 @@ const body=el('od-lot-'+lid+'-body');
 if(!iid||!rSel){if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range above</div>';return;}
 const item=STATE.items.find(x=>x.id===iid);
 if(!item){return;}
-const rngs=[...new Set(item.colours.map(c=>c.range))];
+const rngs=[...new Set(item.colours.filter(c=>!c._deleted&&!c.discontinued).map(c=>c.range))];
 rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+r+'">'+r+'</option>').join('');
 rSel.disabled=false;
 if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Now select a range</div>';
@@ -4229,7 +4229,7 @@ const rng=el('od-lot-'+lid+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid);
 const body=el('od-lot-'+lid+'-body');
 if(!item||!rng||!body) return;
-const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued);
+const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted);
 /* Per-lot defaults take priority over global defaults */
 const defCut=parseFloat(el('od-lot-'+lid+'-qcut')?.value||el('od-def-cut')?.value)||6;
 const defPcs=el('od-lot-'+lid+'-qpcs')?.value||el('od-def-pcs')?.value||'';
@@ -4304,7 +4304,7 @@ const allChk=el('od-lot-'+lid+'-all');
 const iid=el('od-lot-'+lid+'-i')?.value;
 const rng=el('od-lot-'+lid+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid); if(!item||!rng) return;
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('od-lot-'+lid+'-ck-'+idx); if(!chk) return;
 chk.checked=allChk.checked;
@@ -4349,7 +4349,7 @@ const item=STATE.items.find(x=>x.id===iid); if(!item||!rng) return;
 const cut=parseFloat(el('od-lot-'+lid+'-cut')?.value)||6;
 const avg=STATE.settings.avgMtrPerTaka||90;
 let lotTotal=0; let lotPcs=0;
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('od-lot-'+lid+'-ck-'+idx); if(!chk?.checked) return;
 const pcs=parseInt(el('od-lot-'+lid+'-p-'+idx)?.value)||0;
@@ -4400,7 +4400,7 @@ const iid=el('od-lot-'+lot.id+'-i')?.value;
 const rng=el('od-lot-'+lot.id+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid); if(!item||!rng) return;
 const cut=parseFloat(el('od-lot-'+lot.id+'-cut')?.value)||6;
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('od-lot-'+lot.id+'-ck-'+idx); if(!chk?.checked) return;
 const pcs=parseInt(el('od-lot-'+lot.id+'-p-'+idx)?.value)||0;
@@ -4489,7 +4489,7 @@ const iid=el('od-lot-'+lot.id+'-i')?.value;
 const rng=el('od-lot-'+lot.id+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid); if(!item) return;
 const cut=parseFloat(el('od-lot-'+lot.id+'-cut')?.value)||6;
-item.colours.filter(c=>c.range===rng).forEach(col=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('od-lot-'+lot.id+'-ck-'+idx); if(!chk?.checked) return;
 const pcs=parseInt(el('od-lot-'+lot.id+'-p-'+idx)?.value)||0; if(!pcs) return;
@@ -4681,7 +4681,7 @@ function setOrdType(t){
 
 function renderOpenItems(){
   const c=el('od-open-rows'); if(!c) return;
-  const iOpts=[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('');
+  const iOpts=[...STATE.items].filter(it=>!it._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('');
   c.innerHTML=_openItems.map((oi,i)=>
     '<div id="od-oi-'+oi.id+'" style="display:grid;grid-template-columns:2fr 1fr 1fr 28px;gap:8px;align-items:center;margin-bottom:8px">'+
     '<select class="sel" id="od-oi-'+oi.id+'-itm"><option value="">Select Item...</option>'+iOpts+'</select>'+
@@ -5587,7 +5587,7 @@ row1.innerHTML=
 '<div style="background:'+lc.border+';color:'+lc.label+';font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px;letter-spacing:.5px;flex-shrink:0">LOT '+(li+1)+'</div>'+
 '<select id="bl-lot-'+lot.id+'-i" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="billLotItemChange('+lot.id+')">'+
 '<option value="">Select Item...</option>'+
-[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+
+[...STATE.items].filter(it=>!it._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+
 '</select>'+
 '<select id="bl-lot-'+lot.id+'-r" style="flex:1;font-size:12px;padding:5px 8px;border:1.5px solid '+lc.border+';border-radius:8px;background:white;font-family:inherit;font-weight:600;color:#1a1a2e;min-width:0" onchange="billLotRangeChange('+lot.id+')" disabled>'+
 '<option value="">Range...</option></select>'+
@@ -5613,8 +5613,8 @@ function billLotItemChange(lid){
 const iid=el('bl-lot-'+lid+'-i')?.value,rSel=el('bl-lot-'+lid+'-r'),body=el('bl-lot-'+lid+'-body');
 if(!iid||!rSel){if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range above</div>';return;}
 const item=STATE.items.find(x=>x.id===iid);if(!item)return;
-const namedRngs=[...new Set(item.colours.filter(c=>c.range!=='').map(c=>c.range))];
-const hasDefault=item.colours.some(c=>c.range===''&&!c.discontinued);
+const namedRngs=[...new Set(item.colours.filter(c=>c.range!==''&&!c._deleted&&!c.discontinued).map(c=>c.range))];
+const hasDefault=item.colours.some(c=>c.range===''&&!c.discontinued&&!c._deleted);
 if(hasDefault&&namedRngs.length===0){
   rSel.innerHTML='<option value="__norange__">—</option>';rSel.disabled=true;rSel.value='__norange__';
   billLotRangeChange(lid);
@@ -5641,7 +5641,7 @@ const lotColors=[
 {bg:'#F0F9FF',border:'#38BDF8',label:'#0C4A6E',hdr:'#BAE6FD'},
 ];
 const lc=lotColors[(li<0?0:li)%lotColors.length];
-const cols=item.colours.filter(c=>c.range===actualRng&&!c.discontinued);
+const cols=item.colours.filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted);
 body.innerHTML='';
 const thead=document.createElement('div');
 thead.style.cssText='display:grid;grid-template-columns:26px 1fr 48px 64px 80px 80px;gap:4px;background:linear-gradient(135deg,#1e1b4b,#312e81);padding:8px 10px';
@@ -5684,7 +5684,7 @@ function billLotToggleAll(lid){
 const allChk=el('bl-lot-'+lid+'-all');
 const iid=el('bl-lot-'+lid+'-i')?.value,rng=el('bl-lot-'+lid+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid);if(!item||(rng!=='__norange__'&&!rng))return;const actualRng=rng==='__norange__'?'':rng;
-item.colours.filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
+item.colours.filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('bl-lot-'+lid+'-ck-'+idx);if(!chk)return;
 chk.checked=allChk.checked;billLotClrToggle(lid,idx,true);
@@ -5707,7 +5707,7 @@ const qp=el('bl-lot-'+lid+'-qpcs')?.value,qr=el('bl-lot-'+lid+'-qrate')?.value;
 const iid=el('bl-lot-'+lid+'-i')?.value,rng=el('bl-lot-'+lid+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid);if(!item||(rng!=='__norange__'&&!rng))return;
 const actualRng=rng==='__norange__'?'':rng;
-item.colours.filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
+item.colours.filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('bl-lot-'+lid+'-ck-'+idx);if(!chk?.checked)return;
 if(qp){const p=el('bl-lot-'+lid+'-p-'+idx);if(p)p.value=qp;}
@@ -5718,7 +5718,7 @@ calcBillLot(lid);
 function calcBillLot(lid){
 const iid=el('bl-lot-'+lid+'-i')?.value,rng=el('bl-lot-'+lid+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid);if(!item||(rng!=='__norange__'&&!rng))return;const actualRng=rng==='__norange__'?'':rng;
-item.colours.filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
+item.colours.filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('bl-lot-'+lid+'-ck-'+idx);if(!chk?.checked)return;
 const p=parseInt(el('bl-lot-'+lid+'-p-'+idx)?.value)||0;
@@ -5742,7 +5742,7 @@ _billLots.forEach(lot=>{
 const iid=el('bl-lot-'+lot.id+'-i')?.value,rng=el('bl-lot-'+lot.id+'-r')?.value;
 const item=STATE.items.find(x=>x.id===iid);if(!item||(rng!=='__norange__'&&!rng))return;
 const actualRng=rng==='__norange__'?'':rng;
-item.colours.filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
+item.colours.filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted).forEach(col=>{
 const idx=item.colours.indexOf(col);
 const chk=el('bl-lot-'+lot.id+'-ck-'+idx);if(!chk?.checked)return;
 const cut=parseFloat(el('bl-lot-'+lot.id+'-cut')?.value)||6;
@@ -5792,7 +5792,7 @@ for(const lot of _billLots){
 const iid=el('bl-lot-'+lot.id+'-i')?.value;
 const item=STATE.items.find(x=>x.id===iid);if(!item)continue;
 const rng=el('bl-lot-'+lot.id+'-r')?.value;if(rng!=='__norange__'&&!rng)continue;const actualRng=rng==='__norange__'?'':rng;
-for(const col of item.colours.filter(c=>c.range===actualRng&&!c.discontinued)){
+for(const col of item.colours.filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted)){
 const idx=item.colours.indexOf(col);
 const chk=el('bl-lot-'+lot.id+'-ck-'+idx);if(!chk?.checked)continue;
 const p=parseInt(el('bl-lot-'+lot.id+'-p-'+idx)?.value)||0;
@@ -6439,7 +6439,7 @@ function onMixItemChange(){
   const rw=el('mix-rng-wrap'); const cw=el('mix-clr-wrap'); const pv=el('mix-preview');
   if(!iid){if(rw)rw.style.display='none';if(cw)cw.style.display='none';if(pv)pv.style.display='none';return;}
   const item=STATE.items.find(i=>i.id===iid); if(!item) return;
-  const rngs=[...new Set(item.colours.filter(c=>!c.discontinued&&(c.stock_taka||0)>0).map(c=>c.range))];
+  const rngs=[...new Set(item.colours.filter(c=>!c._deleted&&!c.discontinued&&(c.stock_taka||0)>0).map(c=>c.range))];
   if(!rngs.length){toast('No colours with stock for this item','er');if(rw)rw.style.display='none';return;}
   const rb=el('mix-rng-btns');
   if(rb) rb.innerHTML=rngs.map(r=>'<button onclick="onMixRangeSelect(\''+r+'\')" data-rng="'+r+'" style="padding:8px 16px;border-radius:8px;border:1.5px solid var(--br);background:var(--sf);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;color:var(--t2);transition:.15s">Range '+r+'</button>').join('');
@@ -6705,7 +6705,7 @@ async function saveMoveTaka(){
 }
 function openAdjust(){
 const sel=el('adj-itm');
-if(sel) sel.innerHTML='<option value="">Select item...</option>'+[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
+if(sel) sel.innerHTML='<option value="">Select item...</option>'+[...STATE.items].filter(i=>!i._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
 el('adj-rows').innerHTML=''; el('adj-rsn').value=''; showMod('m-adj');
 }
 function renderAdjRows(){
@@ -7116,7 +7116,7 @@ c.code === (code||'').trim()
 }
 function openQuickRange(){
 const sel=el('qrng-itm');
-sel.innerHTML='<option value="">Select item...</option>'+[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
+sel.innerHTML='<option value="">Select item...</option>'+[...STATE.items].filter(i=>!i._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
 hideEl('qrng-form'); hideEl('qrng-empty');
 el('qrng-n').value=''; el('qrng-cnt').value=1; el('qrng-rows').innerHTML='';
 el('qrng-save-btn').style.display='none';
@@ -7164,7 +7164,7 @@ api('saveItem',{items:STATE.items});
 }
 function openQuickColour(){
 const iSel=el('qclr-itm');
-iSel.innerHTML='<option value="">Select item...</option>'+[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
+iSel.innerHTML='<option value="">Select item...</option>'+[...STATE.items].filter(i=>!i._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>'<option value="'+i.id+'">'+i.name+'</option>').join('');
 hideEl('qclr-rg'); hideEl('qclr-form');
 el('qclr-rows').innerHTML=''; el('qclr-save-btn').style.display='none';
 showMod('m-qclr');
@@ -7973,13 +7973,13 @@ if(!iSel) return;
 if(ctx.mode==='item'){
 const newItem=STATE.items[STATE.items.length-1];
 if(!newItem) return;
-iSel.innerHTML='<option value="">Select Item...</option>'+[...STATE.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('');
+iSel.innerHTML='<option value="">Select Item...</option>'+[...STATE.items].filter(it=>!it._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('');
 iSel.value=newItem.id;
 ordLotItemChange(lid);
 toast('Item "'+newItem.name+'" added and selected','ok');
 }else if(ctx.mode==='range'){
 const item=STATE.items.find(x=>x.id===ctx.iid); if(!item) return;
-const rngs=[...new Set(item.colours.map(c=>c.range))];
+const rngs=[...new Set(item.colours.filter(c=>!c._deleted&&!c.discontinued).map(c=>c.range))];
 const rSel=el('od-lot-'+lid+'-r'); if(!rSel) return;
 rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+r+'">'+r+'</option>').join('');
 rSel.disabled=false;
