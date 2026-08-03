@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.32.2';
-const APP_BUILD_DATE='2026-08-03k';
+const APP_VERSION='1.32.3';
+const APP_BUILD_DATE='2026-08-03l';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -3037,11 +3037,22 @@ const stBadge={pending:'<span style="background:#f59e0b;color:#fff;padding:2px 1
 under_process:'<span style="background:#3b82f6;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">Under Process</span>',
 ready:'<span style="background:#10b981;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">Ready ✓</span>',
 collected:'<span style="background:#6B7280;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">Collected ✔</span>'}[status]||'';
-const stepHint=_exUnlocked?'<b>Edit mode</b> — all fields unlocked for correction. Saving will adjust stock by the difference only (no double counting).':
-{pending:'Enter <b>Damage Sarees</b> and <b>Re-use Sarees</b> for what\'s coming back. Re-use adds stock once saved.',
+const _isAdminForHint=STATE.user?.role==='admin';
+let stepHint;
+if(_exUnlocked){
+stepHint='<b>Edit mode</b> — all fields unlocked for correction. Saving will adjust stock by the difference only (no double counting).';
+}else{
+stepHint={pending:'Enter <b>Damage Sarees</b> and <b>Re-use Sarees</b> for what\'s coming back. Re-use adds stock once saved.',
 under_process:'Re-use already applied. Now enter <b>Exchange Sarees</b> — this deducts stock and marks the slip Ready.',
 ready:'This exchange is complete — Exchange sarees have been deducted from stock. Mark it Collected once the representative picks it up.',
 collected:'This challan has been collected by the representative.'}[status]||'';
+/* Damage/Re-use (and Exchange, once past Under Process) are locked after the
+   stage that fills them has passed. Only admin can correct them from here. */
+if(isEdit&&status!=='pending'){
+if(_isAdminForHint) stepHint+=' <span style="display:block;margin-top:4px">🔒 Damage/Re-use'+(status!=='under_process'?'/Exchange':'')+' are locked now — tap <b>🔓 Edit All Fields</b> above to correct them.</span>';
+else stepHint+=' <span style="display:block;margin-top:4px">🔒 Damage/Re-use'+(status!=='under_process'?'/Exchange':'')+' are locked — only an admin can edit them at this stage.</span>';
+}
+}
 const waBtn=(isEdit&&f.phone)?'<button class="btn" style="background:#25D366;color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer" onclick="sendExWA()">📲 WhatsApp Rep</button>':'';
 const printBtn=isEdit?'<button class="btn" style="background:#059669;color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer" onclick="printExchangeSlip()">📄 Print/PDF</button>':'';
 const isAdmin=STATE.user?.role==='admin';
