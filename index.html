@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.31.3';
-const APP_BUILD_DATE='2026-08-03d';
+const APP_VERSION='1.31.4';
+const APP_BUILD_DATE='2026-08-03e';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -10698,10 +10698,18 @@ function filterInvCusts(){
 const q=(el('inv-cust-search')?.value||'').toLowerCase().trim();
 const dd=el('inv-cust-dd'); if(!dd) return;
 const pendingIds=_custIdsWithPendingOrders();
-const sorted=[...STATE.customers].filter(c=>!c._deleted&&pendingIds.has(c.id)).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+/* Show ALL live customers, not just ones with a pending order — a party may need
+   a direct invoice with no order form at all. Customers with pending orders are
+   bubbled to the top for convenience. */
+const all=[...STATE.customers].filter(c=>!c._deleted);
+const sorted=all.sort((a,b)=>{
+  const ap=pendingIds.has(a.id)?0:1, bp=pendingIds.has(b.id)?0:1;
+  if(ap!==bp) return ap-bp;
+  return (a.name||'').localeCompare(b.name||'');
+});
 const filtered=q?sorted.filter(c=>(c.name||'').toLowerCase().includes(q)||String(c.phone||'').includes(q)):sorted;
-if(!filtered.length){dd.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--t3)">'+(q?'No matching customers with pending orders':'No customers with pending orders')+'</div>';dd.style.display='block';return;}
-dd.innerHTML=filtered.map(c=>'<div onmousedown="selectInvCust(\''+c.id+'\',\''+c.name.replace(/'/g,'&#39;')+'\')" style="padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--br)" onmouseover="this.style.background=\'var(--Pl)\'" onmouseout="this.style.background=\'\'"><div>'+c.name+'</div>'+(c.address?'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+c.address+'</div>':'')+'</div>').join('');
+if(!filtered.length){dd.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--t3)">'+(q?'No matching customers':'No customers yet — add one in Masters')+'</div>';dd.style.display='block';return;}
+dd.innerHTML=filtered.map(c=>'<div onmousedown="selectInvCust(\''+c.id+'\',\''+c.name.replace(/'/g,'&#39;')+'\')" style="padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--br)" onmouseover="this.style.background=\'var(--Pl)\'" onmouseout="this.style.background=\'\'"><div style="display:flex;align-items:center;gap:6px">'+c.name+(pendingIds.has(c.id)?'<span class="bdg bg-a" style="font-size:9px">Pending Order</span>':'')+'</div>'+(c.address?'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+c.address+'</div>':'')+'</div>').join('');
 dd.style.display='block';
 }
 function selectInvCust(id,name){
