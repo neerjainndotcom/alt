@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.31.0';
-const APP_BUILD_DATE='2026-08-03';
+const APP_VERSION='1.31.1';
+const APP_BUILD_DATE='2026-08-03b';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -6844,14 +6844,21 @@ if(delBtn){ delBtn.disabled=!_ledSelected.size; delBtn.innerHTML='🗑 Delete Se
 async function deleteSelectedLedgerEntries(){
 if(!_ledSelected.size) return;
 const n=_ledSelected.size;
-const ok=await appConfirm('Delete '+n+' Ledger Entr'+(n===1?'y':'ies')+'?','This permanently removes the selected entr'+(n===1?'y':'ies')+' from the ledger history.\n\n⚠️ Stock balances will NOT be affected — only the history row(s) are deleted.','🗑️','Delete '+n,'dr');
+const ok=await appConfirm('Delete '+n+' Ledger Entr'+(n===1?'y':'ies')+'?','This permanently removes the selected entr'+(n===1?'y':'ies')+' from the ledger history.\n\n⚠️ Stock will be RECALCULATED from the remaining ledger entries — if a deleted entry added or removed stock, that SKU\'s balance will change accordingly.','🗑️','Delete '+n,'dr');
 if(!ok) return;
 const ids=new Set(_ledSelected);
 STATE.entries.forEach(e=>{ if(ids.has(e.id)){ e._deleted=true; e._ts=Date.now(); } });
 _ledSelected.clear();
+/* Deleting a ledger entry removes a real stock movement, so stock must be
+   rebuilt from what's left — otherwise the SKU balance keeps reflecting a
+   movement whose history row no longer exists (exactly what was reported:
+   stock stayed put after deleting an adjustment entry). */
+recalcStockFromEntries();
+STATE.items.forEach(i=>{i._ts=Date.now();});
 persist();
 renderLedger(document.querySelector('#tp-led .srch input')?.value||'');
-toast(n+' entr'+(n===1?'y':'ies')+' deleted','ok');
+renderDash();
+toast(n+' entr'+(n===1?'y':'ies')+' deleted — stock recalculated','ok');
 }
 function renderUsers(){
 const c=el('usrlst'); if(!c) return;
@@ -8601,13 +8608,14 @@ if(chev) chev.style.transform='rotate('+(open?'0':'90')+'deg)';
 function renderStockReport(q){
 const c=el('rep-stock-body'); if(!c) return;
 if(q===undefined){const se=el('rep-stock-search'); q=se?se.value:'';}
-if(!STATE.items.length){c.innerHTML='<div class="emp"><h3>No items</h3></div>';return;}
+const liveItems=STATE.items.filter(item=>!item._deleted);
+if(!liveItems.length){c.innerHTML='<div class="emp"><h3>No items</h3></div>';return;}
 const query=(q||'').trim().toLowerCase();
-const items=!query?STATE.items:STATE.items.filter(item=>
+const items=!query?liveItems:liveItems.filter(item=>
 item.name.toLowerCase().includes(query)||
 item.colours.some(col=>(col.name||'').toLowerCase().includes(query)||(col.sku||'').toLowerCase().includes(query)||(col.range||'').toLowerCase().includes(query))
 );
-const totAllT=STATE.items.reduce((s,item)=>s+item.colours.reduce((ss,col)=>ss+(col.stock_taka||0),0),0);
+const totAllT=liveItems.reduce((s,item)=>s+item.colours.reduce((ss,col)=>ss+(col.stock_taka||0),0),0);
 let html=
 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'+
 '<div>'+
@@ -8618,8 +8626,8 @@ let html=
 '</div>';
 if(query&&!items.length){ html+='<div class="emp"><div class="emj">🔍</div><h3>No matches</h3></div>'; }
 items.forEach(item=>{
-const totT=item.colours.reduce((s,col)=>s+(col.stock_taka||0),0);
-const rngs=[...new Set(item.colours.map(c=>c.range))];
+const totT=item.colours.filter(c=>!c._deleted).reduce((s,col)=>s+(col.stock_taka||0),0);
+const rngs=[...new Set(item.colours.filter(c=>!c._deleted).map(c=>c.range))];
 const bodyId='srb-'+item.id;
 /* Expand automatically when a search narrowed it down to this item so the
    match is immediately visible; otherwise stay collapsed by default. */
@@ -8635,7 +8643,7 @@ html+=
 '</div>'+
 '<div id="'+bodyId+'" style="display:'+(openByDefault?'block':'none')+'">';
 rngs.forEach((rng,ri)=>{
-const rngCols=item.colours.filter(c=>c.range===rng);
+const rngCols=item.colours.filter(c=>c.range===rng&&!c._deleted);
 const rngT=rngCols.reduce((s,c)=>s+(c.stock_taka||0),0);
 const rangePalette=[
 {bg:'#4F46E5',text:'white'},
@@ -8710,9 +8718,9 @@ c.innerHTML=html;
 }
 function waStockReport(){
 let lines='*'+STATE.settings.companyName+'*\n*Stock Report - '+fmtDate(today())+'*\n\n';
-STATE.items.forEach(item=>{
+STATE.items.filter(item=>!item._deleted).forEach(item=>{
 lines+='🧵 *'+item.name+'*\n';
-item.colours.forEach(col=>{
+item.colours.filter(col=>!col._deleted).forEach(col=>{
 const stk=col.stock_taka||0;
 lines+='  '+col.name+': '+stk+'T ('+fmtN(Math.round(stk*STATE.settings.avgMtrPerTaka))+'m)\n';
 });
@@ -8723,9 +8731,9 @@ openWA(STATE.settings.adminWhatsApp,lines);
 function renderVsOrderReport(){
 const c=el('rep-vsorder-body'); if(!c) return;
 const skuMap={};
-STATE.items.forEach(item=>{
-[...new Set(item.colours.map(c=>c.range))].forEach(rng=>{
-item.colours.filter(c=>c.range===rng&&!c.discontinued).forEach(col=>{
+STATE.items.filter(item=>!item._deleted).forEach(item=>{
+[...new Set(item.colours.filter(c=>!c._deleted).map(c=>c.range))].forEach(rng=>{
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
 skuMap[col.sku]={itemName:item.name,rng,colName:col.name,hex:col.hex,stock:col.stock_taka||0,orderedPcs:0,orderedTaka:0};
 });
 });
@@ -8824,8 +8832,8 @@ c.innerHTML=html;
 }
 function waVsOrderReport(){
 let lines='*'+STATE.settings.companyName+'*\n*Stock vs Orders - '+fmtDate(today())+'*\n\n';
-STATE.items.forEach(item=>{
-item.colours.forEach(col=>{
+STATE.items.filter(item=>!item._deleted).forEach(item=>{
+item.colours.filter(col=>!col._deleted).forEach(col=>{
 const stk=col.stock_taka||0;
 const ord=STATE.orders.filter(o=>o.status==='pending'||o.status==='billed').reduce((s,o)=>s+(o.items||[]).filter(i=>i.sku===col.sku).reduce((ss,i)=>ss+(i.taka||0),0),0);
 if(stk>0||ord>0) lines+=col.sku+': Stock '+stk+'T | Ordered '+ord+'T'+(ord>stk?' SHORT '+(ord-stk)+'T':'')+'\n';
@@ -11957,7 +11965,7 @@ const count=STATE.entries.length;
 if(!count){toast('Ledger is already empty','ok');return;}
 const ok=await appConfirm(
 'Clear Entire Ledger?',
-'This will permanently delete ALL '+count+' ledger entries for FY '+fy+'.\n\n\u26a0\ufe0f This CANNOT be undone.\n\nStock balances will NOT be affected \u2014 only the history entries are deleted.',
+'This will permanently delete ALL '+count+' ledger entries for FY '+fy+'.\n\n\u26a0\ufe0f This CANNOT be undone.\n\n\u26a0\ufe0f Stock is rebuilt from the ledger, so every SKU\'s stock will reset to 0 once its history is gone. Only do this if you\'re starting the FY completely fresh.',
 '?',
 'Delete ALL '+count+' Entries',
 'dr'
@@ -11971,9 +11979,14 @@ if(!ok) return;
    the delete like every other delete in this app (see deleteColour, etc). */
 STATE.entries.forEach(e=>{ e._deleted=true; e._ts=Date.now(); });
 _ledSelected.clear();
+/* Stock is a running balance derived from ledger entries \u2014 once the entries
+   are gone it must be rebuilt from what's left (nothing, in this case) so
+   stock and ledger never silently disagree. */
+recalcStockFromEntries();
+STATE.items.forEach(i=>{i._ts=Date.now();});
 persist();
 renderLedger(); renderDash();
-toast('Ledger cleared \u2014 '+count+' entries deleted','ok');
+toast('Ledger cleared \u2014 '+count+' entries deleted, stock recalculated','ok');
 }
 function applyRoleUI(){
 refreshCurrentUser();
