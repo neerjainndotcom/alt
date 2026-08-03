@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.31.4';
-const APP_BUILD_DATE='2026-08-03e';
+const APP_VERSION='1.31.5';
+const APP_BUILD_DATE='2026-08-03f';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -8044,7 +8044,7 @@ if(info) info.innerHTML=
 (cust?.address?'<div class="xs ct3 mt4">'+cust.address+'</div>':'');
 const sel=el('disp-ord-sel');
 if(sel){
-const pendOrds=STATE.orders.filter(o=>o.custId===custId&&(o.status==='pending'||o.status==='billed'));
+const pendOrds=STATE.orders.filter(o=>!o._deleted&&o.custId===custId&&(o.status==='pending'||o.status==='billed'));
 sel.innerHTML='<option value="">Select pending order...</option>'+
 pendOrds.map(o=>'<option value="'+o.id+'">'+o.orderNo+' ('+fmtDate(o.date)+') - '+o.items.length+' items</option>').join('');
 if(ordId) sel.value=ordId;
@@ -8141,7 +8141,7 @@ const idx=_dispExtraOrds.length;
 _dispExtraOrds.push(null);
 const c=el('disp-extra-ords'); if(!c) return;
 const usedIds=[_dispOrdId,..._dispExtraOrds.slice(0,-1)].filter(Boolean);
-const pendOrds=STATE.orders.filter(o=>o.custId===_dispCustId&&(o.status==='pending'||o.status==='billed')&&!usedIds.includes(o.id));
+const pendOrds=STATE.orders.filter(o=>!o._deleted&&o.custId===_dispCustId&&(o.status==='pending'||o.status==='billed')&&!usedIds.includes(o.id));
 const div=document.createElement('div');
 div.id='disp-extra-'+idx;
 div.style.cssText='margin-top:10px;border:2px solid var(--P);border-radius:12px;overflow:hidden;background:var(--Pl)';
@@ -9957,7 +9957,7 @@ STATE.items.forEach(item=>{
   });
 });
 // Step 3: Start new FY fresh — keep only pending orders and pending job work
-const pendingOrders=STATE.orders.filter(o=>o.status==='pending'||o.status==='billed');
+const pendingOrders=STATE.orders.filter(o=>!o._deleted&&(o.status==='pending'||o.status==='billed'));
 pendingOrders.forEach(o=>o.fy=nextFY);
 const pendingJW=(STATE.jobWork||[]).filter(j=>j.status==='pending');
 pendingJW.forEach(j=>j.fy=nextFY);
@@ -10745,7 +10745,7 @@ html+='</div>';
 /* Party group: find all members in the same group as this customer */
 const custGroup=(STATE.custGroups||[]).find(g=>g.memberIds&&g.memberIds.includes(custId));
 const groupMemberIds=custGroup?custGroup.memberIds:[custId];
-const pendOrds=STATE.orders.filter(o=>groupMemberIds.includes(o.custId)&&((o.status==='pending'||o.status==='billed')||(o.type==='open'&&(o.programmes||[]).some(p=>p.status!=='billed'&&!p.billId))));
+const pendOrds=STATE.orders.filter(o=>!o._deleted&&groupMemberIds.includes(o.custId)&&((o.status==='pending'||o.status==='billed')||(o.type==='open'&&(o.programmes||[]).some(p=>p.status!=='billed'&&!p.billId))));
 /* Party group banner */
 if(custGroup&&custGroup.memberIds.length>1){
 const memberNames=custGroup.memberIds.map(mid=>{const m=STATE.customers.find(c=>c.id===mid);return m?m.name:'?';}).join(', ');
