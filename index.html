@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.32.1';
-const APP_BUILD_DATE='2026-08-03j';
+const APP_VERSION='1.32.2';
+const APP_BUILD_DATE='2026-08-03k';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -3262,10 +3262,15 @@ tu+=parseInt(el('exl-'+lot.id+'-u-'+idx)?.value)||0;
 tx+=parseInt(el('exl-'+lot.id+'-x-'+idx)?.value)||0;
 });
 });
+/* Total Sarees tracks whatever's relevant to the current stage: Damage while the
+   slip is Pending/Under Process (exchange hasn't happened yet), Exchange once
+   it's Ready/Collected (the exchange is what actually went out). */
+const status=_exF.status||'pending';
+const totalSarees=(status==='ready'||status==='collected')?tx:td;
 t.innerHTML='<div style="flex:1;text-align:center"><div style="font-size:9px;font-weight:800;color:#991B1B;text-transform:uppercase;letter-spacing:.5px">Damage</div><div style="font-size:18px;font-weight:900;color:#991B1B">'+td+'</div></div>'+
 '<div style="flex:1;text-align:center;border-left:1px solid var(--br)"><div style="font-size:9px;font-weight:800;color:#166534;text-transform:uppercase;letter-spacing:.5px">Re-use</div><div style="font-size:18px;font-weight:900;color:#166534">'+tu+'</div></div>'+
 '<div style="flex:1;text-align:center;border-left:1px solid var(--br)"><div style="font-size:9px;font-weight:800;color:#1E3A8A;text-transform:uppercase;letter-spacing:.5px">Exchange</div><div style="font-size:18px;font-weight:900;color:#1E3A8A">'+tx+'</div></div>'+
-'<div style="flex:1;text-align:center;border-left:1px solid var(--br)"><div style="font-size:9px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px">Total Sarees</div><div style="font-size:18px;font-weight:900;color:#374151">'+(td+tx)+'</div></div>';
+'<div style="flex:1;text-align:center;border-left:1px solid var(--br)"><div style="font-size:9px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px">Total Sarees</div><div style="font-size:18px;font-weight:900;color:#374151">'+totalSarees+'</div></div>';
 }
 function _exRecalcAll(){
 _exLots.forEach(lot=>{
@@ -3420,7 +3425,9 @@ return '• '+r.itemName+' – '+r.colourName+' ('+r.sku+') — '+(showExchangeO
 }).filter(Boolean).join('\n');
 const totD=(rows||[]).reduce((s,r)=>s+(r.damagePcs||0),0);
 const totX=(rows||[]).reduce((s,r)=>s+(r.exchangePcs||0),0);
-const totalSarees=totD+totX;
+/* Total Sarees follows the same stage-relevant quantity as the line items above:
+   Damage while Pending/Under Process, Exchange once Ready/Collected. */
+const totalSarees=showExchangeOnly?totX:totD;
 const stLbl={pending:'Pending',under_process:'Under Process',ready:'Ready for Collection',collected:'Collected'};
 const tplKey={pending:'exchWaTplPending',under_process:'exchWaTplUnderProcess',ready:'exchWaTplReady',collected:'exchWaTplCollected'}[status];
 const customTpl=tplKey?(STATE.settings[tplKey]||''):'';
@@ -3442,7 +3449,7 @@ const closing={pending:'We have noted the damage details for this challan.',
 under_process:'This challan is under process. Exchange sarees will be updated soon.',
 ready:'This challan is ready. Please collect at your earliest convenience.',
 collected:'This challan has been collected. Thank you.'}[status]||'';
-msg='*Exchange Slip – '+vno+'*\nParty: '+party+'\nDate: '+fmtDate(date)+'\nStatus: '+(stLbl[status]||status)+'\n\n'+lines+'\n\nTotal Sarees (Damaged + Exchanged): '+totalSarees+'\n\n'+closing+'\n— '+(STATE.settings.companyName||'ALT Stock');
+msg='*Exchange Slip – '+vno+'*\nParty: '+party+'\nDate: '+fmtDate(date)+'\nStatus: '+(stLbl[status]||status)+'\n\n'+lines+'\n\nTotal Sarees ('+(showExchangeOnly?'Exchanged':'Damaged')+'): '+totalSarees+'\n\n'+closing+'\n— '+(STATE.settings.companyName||'ALT Stock');
 }
 openWA(phone,msg);
 }
@@ -7104,7 +7111,7 @@ c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Compa
 '<div style="font-size:11px;color:var(--t3);margin-top:4px">Example: Hi {salesman}, Lead update for *{name}* ({market}). Status: {status}. Follow-up: {followup}. Interest: {interest}.</div>'+
 '</div>'+
 '<div class="card mt12"><div class="fw8" style="margin-bottom:8px">🔄 Exchange Slip — WhatsApp Templates</div>'+
-'<div style="font-size:12px;color:var(--t2);margin-bottom:12px;line-height:1.6">Customize the message sent to the representative at each stage of an Exchange Slip. Leave any box blank to use the default. Variables: <b>{vno}</b>, <b>{party}</b>, <b>{date}</b>, <b>{status}</b>, <b>{lines}</b> (per-SKU list), <b>{totalDamage}</b>, <b>{totalExchange}</b>, <b>{totalSarees}</b> (Damaged+Exchanged), <b>{rep}</b>, <b>{company}</b>. Re-use quantities are never included in this message.</div>'+
+'<div style="font-size:12px;color:var(--t2);margin-bottom:12px;line-height:1.6">Customize the message sent to the representative at each stage of an Exchange Slip. Leave any box blank to use the default. Variables: <b>{vno}</b>, <b>{party}</b>, <b>{date}</b>, <b>{status}</b>, <b>{lines}</b> (per-SKU list), <b>{totalDamage}</b>, <b>{totalExchange}</b>, <b>{totalSarees}</b> (Damaged qty while Pending/Under Process, Exchanged qty once Ready/Collected),<b>{rep}</b>, <b>{company}</b>. Re-use quantities are never included in this message.</div>'+
 '<div class="fg"><label>Pending</label><textarea class="ta" id="s-ex-tpl-pending" rows="5" placeholder="Default: damage details only">'+(s.exchWaTplPending||'')+'</textarea></div>'+
 '<div class="fg mt8"><label>Under Process</label><textarea class="ta" id="s-ex-tpl-uprocess" rows="5" placeholder="Default: damage details only">'+(s.exchWaTplUnderProcess||'')+'</textarea></div>'+
 '<div class="fg mt8"><label>Ready for Collection</label><textarea class="ta" id="s-ex-tpl-ready" rows="5" placeholder="Default: exchange details only">'+(s.exchWaTplReady||'')+'</textarea></div>'+
