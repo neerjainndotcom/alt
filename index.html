@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.32.5';
-const APP_BUILD_DATE='2026-08-04b';
+const APP_VERSION='1.32.6';
+const APP_BUILD_DATE='2026-08-04c';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -4392,16 +4392,16 @@ row.id='od-lot-'+lid+'-row-'+idx;
 row.style.cssText=
 'padding:8px 10px;border-bottom:1px solid #E5E4F0;background:'+rowBg+';transition:.15s;border-left:3px solid transparent';
 row.innerHTML=
-/* Line 1: checkbox + colour dot + full colour name + stk badge */
+/* Line 1: checkbox + colour dot + full colour name */
 '<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'+
 '<input type="checkbox" id="od-lot-'+lid+'-ck-'+idx+'" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer;flex-shrink:0" onchange="ordLotClrToggle('+lid+','+idx+')"/>'+
 '<span style="width:14px;height:14px;border-radius:50%;background:'+(col.hex||'#ccc')+';display:inline-block;flex-shrink:0;border:1.5px solid rgba(0,0,0,.1);box-shadow:0 1px 3px rgba(0,0,0,.12)"></span>'+
 '<span style="font-size:11px;font-weight:700;color:#0F0E1A;flex:1;min-width:0;word-break:break-word">'+col.name+'</span>'+
-(!_ordId?'<span style="font-size:9px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:2px 5px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Live stock available">'+stk+'T</span>':'')+
 '</div>'+
-/* Line 2: sku + pcs input + rate input + amount */
+/* Line 2: sku + stock (new orders only) + pcs input + rate input + amount — aligned under header columns */
 '<div style="display:flex;align-items:center;gap:6px">'+
 '<div style="font-size:8px;color:#9897B0;font-family:monospace;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+col.sku+'</div>'+
+(!_ordId?'<div style="width:44px;text-align:center;flex-shrink:0"><span style="font-size:10px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:3px 6px;border-radius:6px;white-space:nowrap;display:inline-block" title="Live stock available">'+stk+'T</span></div>':'')+
 '<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">'+
 '<input type="number" id="od-lot-'+lid+'-p-'+idx+'" step="1" min="1" value="'+defPcs+'" oninput="calcOrdLot('+lid+')" disabled '+
 'style="width:52px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;transition:.15s;box-sizing:border-box"/>'+
