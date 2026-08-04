@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.32.3';
-const APP_BUILD_DATE='2026-08-03l';
+const APP_VERSION='1.32.4';
+const APP_BUILD_DATE='2026-08-04a';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -4748,7 +4748,7 @@ btns.style.cssText='width:100%;display:flex;gap:6px;padding:4px 12px 10px 64px;f
 const mk=(cls,txt,fn)=>{const b=document.createElement('button');b.className='btn '+cls+' bxs';b.innerHTML=txt;b.onclick=fn;return b;};
 if(o.status==='fulfilled'){
   /* Fulfilled: show View Bills button if bills exist */
-  const ordBills=STATE.bills.filter(b=>b.ordId===o.id&&b.status!=='cancelled');
+  const ordBills=STATE.bills.filter(b=>!b._deleted&&b.ordId===o.id&&b.status!=='cancelled'&&b.status!=='deleted');
   if(ordBills.length) btns.appendChild(mk('bp','&#x1F9FE; View Bills',()=>showOrderDetail(o.id)));
 }else if(isOpen&&o.status!=='cancelled'){
   btns.appendChild(mk('bp','&#x1F4CB; Programme Lot',()=>openProgModal(o.id)));
@@ -6293,7 +6293,7 @@ c.innerHTML=html+'<div class="emp"><div class="emj">&#x2705;</div><h3>All Clear!
 if(pendingOrders.length){
 html+='<div style="font-size:11px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;padding:6px 10px;background:#FEF3C7;border-radius:8px">&#x1F4CB; Pending Orders ('+pendingOrders.length+')</div>';
 pendingOrders.forEach(o=>{
-const ordBills=STATE.bills.filter(b=>b.ordId===o.id&&b.status!=='cancelled');
+const ordBills=STATE.bills.filter(b=>!b._deleted&&b.ordId===o.id&&b.status!=='cancelled'&&b.status!=='deleted');
 const billedAmt=ordBills.reduce((s,b)=>s+(b.grandTotal||0),0);
 const paidAmt=ordBills.reduce((s,b)=>s+(b.amtPaid||0),0);
 const balAmt=billedAmt-paidAmt;
@@ -6324,7 +6324,7 @@ function renderCompletedOrders(){
 const c=el('donelst'); if(!c) return;
 const _dq=(el('pend-search')?.value||'').toLowerCase();
 const _dflt=readFlt('pend');
-const done=STATE.orders.filter(o=>o.status==='fulfilled'||o.status==='cancelled').filter(o=>{
+const done=STATE.orders.filter(o=>!o._deleted&&(o.status==='fulfilled'||o.status==='cancelled')).filter(o=>{
   if(!orderPassesFlt(o,_dflt)) return false;
   if(!_dq) return true;
   return (o.orderNo||'').toLowerCase().includes(_dq)||(o.custName||'').toLowerCase().includes(_dq)||(o.items||[]).some(i=>(i.itemName||'').toLowerCase().includes(_dq)||(i.sku||'').toLowerCase().includes(_dq));
@@ -6348,7 +6348,7 @@ html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bot
 '</div>';
 done.forEach(o=>{
 const isFulfilled=o.status==='fulfilled';
-const ordBills=STATE.bills.filter(b=>b.ordId===o.id&&b.status!=='cancelled');
+const ordBills=STATE.bills.filter(b=>!b._deleted&&b.ordId===o.id&&b.status!=='cancelled'&&b.status!=='deleted');
 const billedAmt=ordBills.reduce((s,b)=>s+(b.grandTotal||0),0);
 const paidAmt=ordBills.reduce((s,b)=>s+(b.amtPaid||0),0);
 const totalPcs=(o.items||[]).reduce((s,i)=>s+(i.pcs||0),0);
@@ -6372,7 +6372,7 @@ c.innerHTML=html;
 }
 function renderOutstanding(){
 const c=el('outlst'); if(!c) return;
-const unpaid=STATE.bills.filter(b=>b.status!=='cancelled'&&b.payStatus!=='paid');
+const unpaid=STATE.bills.filter(b=>!b._deleted&&b.status!=='cancelled'&&b.status!=='deleted'&&b.payStatus!=='paid');
 if(!unpaid.length){c.innerHTML='<div class="emp"><div class="emj">&#x2705;</div><h3>All Cleared!</h3><p>No outstanding payments</p></div>';return;}
 const tot=unpaid.reduce((s,b)=>s+((b.grandTotal||0)-(b.amtPaid||0)),0);
 c.innerHTML='<div class="card" style="margin:0 0 12px;background:var(--Rl)"><div class="slbl ct2">Total Outstanding</div><div class="sval cR">'+fmtRs(Math.round(tot))+'</div><div class="xs cR mt4">'+unpaid.length+' bill(s) pending</div></div>';
@@ -8988,7 +8988,7 @@ openWA(STATE.settings.adminWhatsApp,lines);
 function renderDailyReport(){
 const c=el('rep-daily-body'); if(!c) return;
 const date=el('rep-daily-date')?.value||today();
-const dayBills=STATE.bills.filter(b=>b.date===date&&b.status!=='cancelled');
+const dayBills=STATE.bills.filter(b=>!b._deleted&&b.date===date&&b.status!=='cancelled'&&b.status!=='deleted');
 const total=dayBills.reduce((s,b)=>s+(b.grandTotal||0),0);
 const custMap={};
 dayBills.forEach(b=>{ custMap[b.custName]=(custMap[b.custName]||0)+(b.grandTotal||0); });
@@ -9027,7 +9027,7 @@ html+=
 c.innerHTML=html;
 }
 function waDailyReport(date){
-const dayBills=STATE.bills.filter(b=>b.date===date&&b.status!=='cancelled');
+const dayBills=STATE.bills.filter(b=>!b._deleted&&b.date===date&&b.status!=='cancelled'&&b.status!=='deleted');
 const total=dayBills.reduce((s,b)=>s+(b.grandTotal||0),0);
 let lines='*'+STATE.settings.companyName+'*\n*Daily Sales - '+fmtDate(date)+'*\n\n';
 dayBills.forEach(b=>{ lines+=b.billNo+' - '+b.custName+': \u20B9'+fmtN(Math.round(b.grandTotal||0))+'\n'; });
@@ -9042,9 +9042,9 @@ function renderTrends(days,btn){
   const cutoff=new Date(now);cutoff.setDate(cutoff.getDate()-days);
   const cutoffStr=cutoff.toISOString().split('T')[0];
   // Get all outward entries (sales/dispatches) in the period
-  const outEntries=(STATE.entries||[]).filter(e=>e.direction==='out'&&e.date>=cutoffStr&&e.type!=='opening');
+  const outEntries=(STATE.entries||[]).filter(e=>!e._deleted&&e.direction==='out'&&e.date>=cutoffStr&&e.type!=='opening');
   // Also check bills in period
-  const periodBills=(STATE.bills||[]).filter(b=>b.date>=cutoffStr&&b.status!=='cancelled');
+  const periodBills=(STATE.bills||[]).filter(b=>!b._deleted&&b.status!=='cancelled'&&b.status!=='deleted'&&b.date>=cutoffStr);
   if(!outEntries.length&&!periodBills.length){
     c.innerHTML='<div class="emp"><div class="emj">\uD83D\uDCC9</div><h3>No Sales Data</h3><p>No outward movement in the last '+days+' days. Add more data to see trends.</p></div>';return;
   }
@@ -9211,7 +9211,7 @@ function renderTrends(days,btn){
 function renderTopSKUReport(){
 const c=el('rep-topsku-body'); if(!c) return;
 const skuMap={};
-STATE.bills.filter(b=>b.status!=='cancelled').forEach(b=>{
+STATE.bills.filter(b=>!b._deleted&&b.status!=='cancelled'&&b.status!=='deleted').forEach(b=>{
 (b.items||[]).forEach(item=>{
 const k=item.sku||item.colourName;
 if(!skuMap[k]) skuMap[k]={sku:k,name:item.colourName,itemName:item.itemName,qty:0,amount:0,orderCount:0};
@@ -9219,7 +9219,7 @@ skuMap[k].qty+=(item.dispQty||item.pcs||0);
 skuMap[k].amount+=(item.amount||0);
 });
 });
-STATE.orders.forEach(o=>{
+STATE.orders.filter(o=>!o._deleted&&o.status!=='cancelled').forEach(o=>{
 (o.items||[]).forEach(item=>{
 const k=item.sku||item.colourName;
 if(skuMap[k]) skuMap[k].orderCount++;
@@ -9259,7 +9259,7 @@ c.innerHTML=html;
 }
 function waTopSKU(){
 const skuMap={};
-STATE.bills.filter(b=>b.status!=='cancelled').forEach(b=>{
+STATE.bills.filter(b=>!b._deleted&&b.status!=='cancelled'&&b.status!=='deleted').forEach(b=>{
 (b.items||[]).forEach(item=>{
 const k=item.sku; if(!skuMap[k]) skuMap[k]={sku:k,name:item.colourName,qty:0,amount:0};
 skuMap[k].qty+=(item.dispQty||item.pcs||0);
@@ -12275,7 +12275,7 @@ window.open('https://web.whatsapp.com/send?phone='+ph+'&text='+encoded,'_wa_wind
 }
 }
 function waOutstanding(){
-const unpaid=STATE.bills.filter(b=>b.status!=='cancelled'&&b.payStatus!=='paid');
+const unpaid=STATE.bills.filter(b=>!b._deleted&&b.status!=='cancelled'&&b.status!=='deleted'&&b.payStatus!=='paid');
 if(!unpaid.length){toast('No outstanding bills','ok');return;}
 const custMap={};
 unpaid.forEach(b=>{
