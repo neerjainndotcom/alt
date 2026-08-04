@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.32.4';
-const APP_BUILD_DATE='2026-08-04a';
+const APP_VERSION='1.32.5';
+const APP_BUILD_DATE='2026-08-04b';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -4365,7 +4365,7 @@ thead.innerHTML=
 '<div style="display:flex;align-items:center;gap:6px">'+
 '<div style="width:38px"></div>'+
 '<div style="flex:1;font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.8px">Colour</div>'+
-'<div style="font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.5px;text-align:center;width:38px">Stk</div>'+
+(!_ordId?'<div style="font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.5px;text-align:center;width:44px">Stock</div>':'')+
 '<div style="font-size:8px;font-weight:800;color:#FBBF24;text-transform:uppercase;letter-spacing:.5px;text-align:center;width:52px">Pcs</div>'+
 '<div style="font-size:8px;font-weight:800;color:#FBBF24;text-transform:uppercase;letter-spacing:.5px;text-align:center;width:58px">Rate ₹/m</div>'+
 '<div style="font-size:8px;font-weight:800;color:#6EE7B7;text-transform:uppercase;letter-spacing:.5px;text-align:right;width:62px">Amt (pcs×cut×₹/m)</div>'+
@@ -4397,7 +4397,7 @@ row.innerHTML=
 '<input type="checkbox" id="od-lot-'+lid+'-ck-'+idx+'" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer;flex-shrink:0" onchange="ordLotClrToggle('+lid+','+idx+')"/>'+
 '<span style="width:14px;height:14px;border-radius:50%;background:'+(col.hex||'#ccc')+';display:inline-block;flex-shrink:0;border:1.5px solid rgba(0,0,0,.1);box-shadow:0 1px 3px rgba(0,0,0,.12)"></span>'+
 '<span style="font-size:11px;font-weight:700;color:#0F0E1A;flex:1;min-width:0;word-break:break-word">'+col.name+'</span>'+
-'<span style="font-size:9px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:2px 5px;border-radius:5px;white-space:nowrap;flex-shrink:0">'+stk+'T</span>'+
+(!_ordId?'<span style="font-size:9px;font-weight:800;color:'+stkColor+';background:'+stkBg+';padding:2px 5px;border-radius:5px;white-space:nowrap;flex-shrink:0" title="Live stock available">'+stk+'T</span>':'')+
 '</div>'+
 /* Line 2: sku + pcs input + rate input + amount */
 '<div style="display:flex;align-items:center;gap:6px">'+
