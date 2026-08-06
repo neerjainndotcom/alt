@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.33.0';
-const APP_BUILD_DATE='2026-08-05a';
+const APP_VERSION='1.33.1';
+const APP_BUILD_DATE='2026-08-06a';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -2386,7 +2386,7 @@ openCustGroup(grpId);
 function renderBrks(q){
 const c=el('brklst'); if(!c) return;
 if(q===undefined){const se=el('brk-search'); q=se?se.value:'';}
-const list=STATE.brokers.filter(b=>!q||b.name.toLowerCase().includes(q.toLowerCase())||(b.phone||'').includes(q));
+const list=STATE.brokers.filter(b=>!q||(b.name||'').toLowerCase().includes(q.toLowerCase())||(''+(b.phone||'')).includes(q));
 if(!STATE.brokers.length){c.innerHTML='<div class="emp"><div class="emj">🤝</div><h3>No Brokers</h3><p>Add commission agents</p></div>';return;}
 if(!list.length){c.innerHTML='<div class="emp"><div class="emj">🔍</div><h3>No matches</h3></div>';return;}
 c.innerHTML=list.map(b=>'<div class="et" onclick="openBrokerDetail(\''+b.id+'\')"><div class="ei" style="background:var(--Al);color:var(--Ad)">🤝</div><div class="eb"><div class="etit">'+b.name+'</div><div class="esub">'+(b.phone||'')+'</div></div><div class="er"><div class="ev cA">'+(b.commission||0)+'%</div></div></div>').join('');
