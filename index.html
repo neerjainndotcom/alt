@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.35.0';
-const APP_BUILD_DATE='2026-08-07b';
+const APP_VERSION='1.36.0';
+const APP_BUILD_DATE='2026-08-07c';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -9778,6 +9778,7 @@ if(tab==='won'){
 });
 }
 function _attachLeadCustAutoFill(){
+window._leadAutoFill={custId:null,values:{}};
 const inp=el('lead-name'); const addrInp=el('lead-address'); const mktSel=el('lead-market');
 if(inp){ inp.removeEventListener('input',_onLeadAutoFillTrigger); inp.addEventListener('input',_onLeadAutoFillTrigger); }
 if(addrInp){ addrInp.removeEventListener('input',_onLeadAutoFillTrigger); addrInp.addEventListener('input',_onLeadAutoFillTrigger); }
@@ -9801,17 +9802,34 @@ if(marketV&&addrV.length>=2){
 }
 return null;
 }
+/* Remembers which customer we last auto-filled from and exactly what values we put in
+   each field. If the typed name (or market+shop-no) now points at a DIFFERENT customer
+   — or no customer at all — we update/clear those fields to match, but only for fields
+   still holding what WE put there. If the user has since edited a field by hand, we
+   leave it alone rather than clobbering their manual entry. */
 function _onLeadAutoFillTrigger(){
-const c=_findMasterCustomerMatch(); if(!c) return;
-let filled=false;
-if(!el('lead-name').value.trim()){ el('lead-name').value=c.name; filled=true; }
-if(c.phone&&!el('lead-ph').value){ el('lead-ph').value=c.phone; filled=true; }
-if(c.whatsapp&&!el('lead-wa').value){ el('lead-wa').value=c.whatsapp; filled=true; }
-if(c.address&&!el('lead-address').value){ el('lead-address').value=c.address; filled=true; }
-if(c.market&&!el('lead-market').value){ populateLeadMarketSel(c.market); filled=true; }
-if(c.defaultBrokerId){const bs=el('lead-broker');if(bs&&!bs.value){ bs.value=c.defaultBrokerId; filled=true; }}
-if(c.defaultSalesmanId){const ss=el('lead-sm');if(ss&&!ss.value){ ss.value=c.defaultSalesmanId; filled=true; }}
-if(filled) toast('Pulled details from Customer Master: '+c.name,'ok');
+if(!window._leadAutoFill) window._leadAutoFill={custId:null,values:{}};
+const st=window._leadAutoFill;
+const c=_findMasterCustomerMatch();
+const newCustId=c?c.id:null;
+if(newCustId===st.custId) return;
+let changed=false;
+[['lead-ph','ph',c?.phone||''],['lead-wa','wa',c?.whatsapp||''],['lead-address','address',c?.address||''],
+ ['lead-broker','broker',c?.defaultBrokerId||''],['lead-sm','sm',c?.defaultSalesmanId||'']].forEach(([id,key,val])=>{
+  const fEl=el(id); if(!fEl) return;
+  const prevAuto=st.values[key]||'';
+  if(fEl.value===prevAuto&&fEl.value!==val){ fEl.value=val; changed=true; }
+});
+const mktEl=el('lead-market');
+if(mktEl){
+  const prevAutoMkt=st.values.market||'';
+  const newMkt=c?.market||'';
+  if(mktEl.value===prevAutoMkt&&mktEl.value!==newMkt){ populateLeadMarketSel(newMkt); changed=true; }
+}
+if(c&&!el('lead-name').value.trim()){ el('lead-name').value=c.name; changed=true; }
+st.custId=newCustId;
+st.values={ph:c?.phone||'',wa:c?.whatsapp||'',address:c?.address||'',market:c?.market||'',broker:c?.defaultBrokerId||'',sm:c?.defaultSalesmanId||''};
+if(changed) toast(c?('Pulled details from Customer Master: '+c.name):'Cleared auto-filled details — no matching customer','ok');
 }
 function openNewLead(){
 window._isRecurringLead=false;window._recLeadEditId=null;
