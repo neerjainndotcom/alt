@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.37.1';
-const APP_BUILD_DATE='2026-08-11a';
+const APP_VERSION='1.38.0';
+const APP_BUILD_DATE='2026-08-11b';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -14049,7 +14049,12 @@ if(staffFilter!==undefined) window._taskStaffFilter=staffFilter;
 const activeFilter=window._taskStaffFilter||'all';
 const today_s=today();
 const _rawAll=(STATE.taskInstances||[]).filter(t=>!t._deleted&&(t.generatedDate===today_s||t.status==='Pending'));
-_rawAll.sort((a,b)=>(a.generatedDate||'').localeCompare(b.generatedDate||''));
+/* Sort NEWEST-first before dedup so each recurring task keeps its most recent
+   instance — otherwise a backlogged recurring task (e.g. 5 days overdue) would
+   permanently show its OLDEST still-pending copy and hide the fact that a more
+   recent (possibly already-completed) instance exists, making the list look
+   frozen even after staff mark today's task done. */
+_rawAll.sort((a,b)=>(b.generatedDate||'').localeCompare(a.generatedDate||''));
 const _seenAll=new Set();
 const todayInst=_rawAll.filter(t=>{if(!t.templateId||t.templateId==='manual')return true;if(_seenAll.has(t.templateId))return false;_seenAll.add(t.templateId);return true;});
 const staffColors=['#4F46E5','#0891B2','#D97706','#059669','#DC2626','#7C3AED','#B45309','#0F766E','#BE185D','#1D4ED8','#047857','#9333EA','#C2410C','#0369A1','#A16207','#4338CA','#DB2777','#15803D','#7E22CE','#EA580C'];
@@ -14983,7 +14988,9 @@ function renderDashTaskWidget(){
   const td=today(),myId=STATE.user?.id,isAdmin=STATE.user?.role==='admin';
   const _allInstRaw=(STATE.taskInstances||[]).filter(t=>!t._deleted&&(t.generatedDate===td||(t.status==='Pending'&&t.generatedDate<td)));
   const _dashSeen=new Set();
-  const allInst=[..._allInstRaw].sort((a,b)=>(a.generatedDate||'').localeCompare(b.generatedDate||'')).filter(t=>{if(!t.templateId||t.templateId==='manual')return true;if(_dashSeen.has(t.templateId))return false;_dashSeen.add(t.templateId);return true;});
+  /* Newest-first dedup — see renderAllTasks for why: keeps each recurring task's
+     most recent instance so completions aren't hidden behind an old backlog copy. */
+  const allInst=[..._allInstRaw].sort((a,b)=>(b.generatedDate||'').localeCompare(a.generatedDate||'')).filter(t=>{if(!t.templateId||t.templateId==='manual')return true;if(_dashSeen.has(t.templateId))return false;_dashSeen.add(t.templateId);return true;});
   const mine=allInst.filter(t=>t.assignedUserId===myId||(t.assignedUserName&&STATE.user?.name&&t.assignedUserName.toLowerCase()===STATE.user.name.toLowerCase()));
   const staffColors=['#4F46E5','#0891B2','#D97706','#059669','#DC2626','#7C3AED','#B45309','#0F766E','#BE185D','#1D4ED8','#047857','#9333EA','#C2410C','#0369A1','#A16207','#4338CA','#DB2777','#15803D','#7E22CE','#EA580C'];
   let h='';
