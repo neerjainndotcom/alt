@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.36.1';
-const APP_BUILD_DATE='2026-08-07d';
+const APP_VERSION='1.37.0';
+const APP_BUILD_DATE='2026-08-07e';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -762,21 +762,40 @@ const s=el('ls-sync-status');
 let cloudReached=false;
 if(FIREBASE_URL){
   if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading accounts…</span>';
-  try{
+  const _tryFbUsers=async(url)=>{
     const ctrl=new AbortController();
-    setTimeout(()=>ctrl.abort(),10000);
-    const fr=await fetch(FIREBASE_URL+'/altstock/users.json?nocache='+Date.now(),{cache:'no-store',signal:ctrl.signal});
-    if(fr.ok){
-      const usersRaw=await fr.json();
+    const t=setTimeout(()=>ctrl.abort(),10000);
+    try{
+      const fr=await fetch(url+'/altstock/users.json?nocache='+Date.now(),{cache:'no-store',signal:ctrl.signal});
+      clearTimeout(t);
+      return fr.ok?await fr.json():null;
+    }catch(e){ clearTimeout(t); return null; }
+  };
+  let usersRaw=await _tryFbUsers(FIREBASE_URL);
+  if(usersRaw){
+    cloudReached=true;
+  }else if(FIREBASE_URL!==DEFAULT_FIREBASE_URL){
+    /* This device's saved Firebase URL didn't respond — almost always a stale/wrong
+       override left over from an earlier setup attempt (e.g. someone saved a
+       different project's URL by mistake). Self-heal by falling back to the correct
+       default database; if THAT works, permanently fix the local setting so this
+       device never hits the wrong host again on any future login or sync. */
+    usersRaw=await _tryFbUsers(DEFAULT_FIREBASE_URL);
+    if(usersRaw){
       cloudReached=true;
-      // /altstock/users is now a keyed object ({id: record}), not an array
-      const users=Array.isArray(usersRaw)?usersRaw:Object.values(usersRaw||{});
-      if(users.length>0){
-        STATE.users=users;           // full replace — no merge, no stale records
-        lsSave('vs_users',STATE.users);
-      }
+      FIREBASE_URL=DEFAULT_FIREBASE_URL;
+      delete STATE.settings.firebaseUrl;
+      lsSave('vs_settings',STATE.settings);
     }
-  }catch(e){cloudReached=false;}
+  }
+  if(usersRaw){
+    // /altstock/users is now a keyed object ({id: record}), not an array
+    const users=Array.isArray(usersRaw)?usersRaw:Object.values(usersRaw||{});
+    if(users.length>0){
+      STATE.users=users;           // full replace — no merge, no stale records
+      lsSave('vs_users',STATE.users);
+    }
+  }
   if(s)s.innerHTML='';
 }
 let found=findUser();
@@ -11789,9 +11808,22 @@ function forceRepairStock(){
   try{renderItems();}catch(e){}
   toast('✅ Stock rebuilt from '+STATE.entries.length+' ledger entries','ok');
 }
-function saveSheetSetup(){
+async function saveSheetSetup(){
 const fbUrl=(el('firebase-url')?.value||'').trim().replace(/\/$/,'');
 if(!fbUrl){toast('Paste your Firebase Database URL','er');return;}
+/* Test the URL actually works BEFORE saving it as an override — this is what
+   prevents a mistyped/wrong-project URL from ever getting saved and locking this
+   device out of the cloud (the exact bug this function used to allow). */
+toast('Testing connection…','ok');
+let ok=false;
+try{
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),8000);
+  const r=await fetch(fbUrl+'/_meta.json?nocache='+Date.now(),{cache:'no-store',signal:ctrl.signal});
+  clearTimeout(t);
+  ok=r.ok;
+}catch(e){ok=false;}
+if(!ok){toast('Could not reach that URL — double-check it and try again. This device was NOT switched.','er');return;}
 STATE.settings.firebaseUrl=fbUrl;
 FIREBASE_URL=fbUrl;
 lsSave('vs_settings',STATE.settings);
@@ -15464,7 +15496,18 @@ async function pushDeltaToFirebase(full){
 async function pullDeltaFromFirebase(){
   if(!FIREBASE_URL) return false;
   try{
-    const metaR=await fetch(FIREBASE_URL+'/_meta.json');
+    let metaR=await fetch(FIREBASE_URL+'/_meta.json');
+    if(!metaR.ok&&FIREBASE_URL!==DEFAULT_FIREBASE_URL){
+      /* Same self-heal as login: if this device's saved Firebase URL is bad, fall
+         back to the correct default and fix the setting so it stops recurring. */
+      const fallbackR=await fetch(DEFAULT_FIREBASE_URL+'/_meta.json');
+      if(fallbackR.ok){
+        FIREBASE_URL=DEFAULT_FIREBASE_URL;
+        delete STATE.settings.firebaseUrl;
+        lsSave('vs_settings',STATE.settings);
+        metaR=fallbackR;
+      }
+    }
     if(!metaR.ok) return false;
     const meta=(await metaR.json())||{};
     const pullMap=_dsPullTsMap();
