@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.38.1';
-const APP_BUILD_DATE='2026-08-11c';
+const APP_VERSION='1.39.0';
+const APP_BUILD_DATE='2026-08-11d';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -9868,7 +9868,11 @@ el('lead-note').value=''; el('lead-src').value='WhatsApp';
 el('lead-title').textContent='New Lead'; el('lead-sub').textContent='';
 el('lead-convert-btn').style.display='none';
 buildLeadStatusBtns('Enquiry Received');
-refreshLeadSalesmanDropdown();
+/* Salesmen creating their own lead default to assigning it to themselves — an
+   unassigned lead can silently fall through the cracks (no "Mine" tab, no
+   follow-up reminders). Admins keep the blank default since they're usually
+   assigning on someone else's behalf. Either way it stays fully editable. */
+refreshLeadSalesmanDropdown(STATE.user?.role!=='admin'?STATE.user?.id:'');
 refreshLeadBrokerDropdown();
 /* Populate customer name datalist for party name autocomplete */
 const dl=el('lead-name-list');
@@ -9947,6 +9951,12 @@ return {admins,staff};
 function refreshLeadSalesmanDropdown(selId){
 const sel=el('lead-sm'); if(!sel) return;
 const {admins,staff}=getAssignableSalesmen();
+/* The person filling out this form must always be able to assign the lead to
+   themselves, even if their staff type doesn't match the usual salesman/CRE
+   filter used for the general assignable-staff list. */
+if(STATE.user&&STATE.user.role!=='admin'&&!staff.some(u=>u.id===STATE.user.id)&&!admins.some(u=>u.id===STATE.user.id)){
+  staff.unshift(STATE.user);
+}
 const adminOpts=admins.map(u=>'<option value="'+u.id+'"'+(u.id===selId?' selected':'')+'>👑 '+u.name+' (Admin)</option>').join('');
 const staffOpts=staff.map(u=>'<option value="'+u.id+'"'+(u.id===selId?' selected':'')+'>'+taskUserLabel(u)+'</option>').join('');
 sel.innerHTML='<option value="">Unassigned</option>'+adminOpts+(adminOpts&&staffOpts?'<option disabled>──────</option>':'')+staffOpts;
