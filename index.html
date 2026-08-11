@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.38.0';
-const APP_BUILD_DATE='2026-08-11b';
+const APP_VERSION='1.38.1';
+const APP_BUILD_DATE='2026-08-11c';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -14176,7 +14176,15 @@ html+='<div style="background:#F0FDF4;border-left:4px solid #22C55E;border-radiu
 done2.forEach(t=>{html+=taskCard(t);});
 }
 if(!filtered.length) html+='<div class="emp"><div class="emj">📋</div><h3>No tasks</h3></div>';
-var _sc=(STATE.taskInstances||[]).filter(function(t){return t.status!=='Done'&&t.generatedDate&&t.generatedDate<new Date().toISOString().split('T')[0];}).length;if(_sc>0&&STATE.user?.role==='admin')html='<div style="margin-bottom:12px;padding:10px 14px;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;display:flex;align-items:center;justify-content:space-between"><span style="color:#991b1b;font-size:13px;font-weight:600">⚠️ '+_sc+' old tasks from past days</span><button class="btn bs" onclick="clearStaleTaskInstances()" style="background:#dc2626;color:white;font-size:12px;padding:6px 12px">🧹 Clear All</button></div>'+html;
+/* _sc = every individual leftover daily copy in the raw data (what "Clear All" actually
+   resolves). _scUniq = how many DISTINCT recurring tasks those copies belong to — this is
+   what the Overdue section above actually displays one row per. These numbers legitimately
+   differ (a single recurring task stuck for a week produces ~7 raw copies but 1 visible
+   row), so the banner spells out both to avoid the "I see 46 but the list only shows a
+   few" confusion. */
+var _sc=(STATE.taskInstances||[]).filter(function(t){return t.status!=='Done'&&t.generatedDate&&t.generatedDate<new Date().toISOString().split('T')[0];}).length;
+var _scUniq=todayInst.filter(function(t){return t.status!=='Done'&&t.generatedDate&&t.generatedDate<today_s;}).length;
+if(_sc>0&&STATE.user?.role==='admin')html='<div style="margin-bottom:12px;padding:10px 14px;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><span style="color:#991b1b;font-size:13px;font-weight:600">⚠️ '+_sc+' old task copies from past days, across '+_scUniq+' recurring task(s) below — each day it\'s missed adds another copy behind the scenes, even though the list only shows one row per task</span><button class="btn bs" onclick="clearStaleTaskInstances()" style="background:#dc2626;color:white;font-size:12px;padding:6px 12px;white-space:nowrap">🧹 Clear All '+_sc+'</button></div>'+html;
 c.innerHTML=html;
 }
 function nextTemplateOccurrence(tmpl){
