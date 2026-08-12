@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.39.0';
-const APP_BUILD_DATE='2026-08-11d';
+const APP_VERSION='1.40.0';
+const APP_BUILD_DATE='2026-08-12a';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -14053,8 +14053,41 @@ foot.appendChild(printTaskBtn);
 foot.appendChild(closeBtn);
 showMod('m-task-inst');
 }
+/* Resolves the real user id behind a task instance/template, even when
+   assignedUserId is missing or points at a stale/deleted user record —
+   falls back to matching assignedUserName against STATE.users so the same
+   person never gets split into two different staff-filter buckets. */
+function taskEffectiveUid(t){
+  if(t.assignedUserId && STATE.users?.some(u=>u.id===t.assignedUserId)) return t.assignedUserId;
+  if(t.assignedUserName){
+    const nm=t.assignedUserName.trim().toLowerCase();
+    const match=STATE.users?.find(u=>(u.name||'').trim().toLowerCase()===nm);
+    if(match) return match.id;
+    return '~n:'+t.assignedUserName;
+  }
+  return t.assignedUserId||'~unassigned';
+}
+function healTaskAssignedIds(){
+  let changed=0;
+  const heal=(arr)=>{(arr||[]).forEach(t=>{
+    if(t._deleted||!t.assignedUserName) return;
+    const nm=t.assignedUserName.trim().toLowerCase();
+    const match=STATE.users?.find(u=>(u.name||'').trim().toLowerCase()===nm);
+    if(match&&(t.assignedUserId!==match.id||t.assignedUserName!==match.name)){
+      t.assignedUserId=match.id; t.assignedUserName=match.name; t._ts=Date.now(); changed++;
+    }
+  });};
+  heal(STATE.taskInstances); heal(STATE.taskTemplates);
+  if(changed>0){
+    lsSave('vs_taskInstances',STATE.taskInstances);
+    lsSave('vs_taskTemplates',STATE.taskTemplates);
+    try{autoSyncCloud();}catch(e){}
+  }
+  return changed;
+}
 function renderAllTasks(staffFilter){
 const c=el('task-lst-all'); if(!c) return;
+if(!window._taskIdsHealed){window._taskIdsHealed=true; try{healTaskAssignedIds();}catch(e){}}
 if(staffFilter!==undefined) window._taskStaffFilter=staffFilter;
 const activeFilter=window._taskStaffFilter||'all';
 const today_s=today();
@@ -14070,7 +14103,7 @@ const todayInst=_rawAll.filter(t=>{if(!t.templateId||t.templateId==='manual')ret
 const staffColors=['#4F46E5','#0891B2','#D97706','#059669','#DC2626','#7C3AED','#B45309','#0F766E','#BE185D','#1D4ED8','#047857','#9333EA','#C2410C','#0369A1','#A16207','#4338CA','#DB2777','#15803D','#7E22CE','#EA580C'];
 const staffMap={};const staffOrder=[];
 todayInst.forEach(t=>{
-const uid=t.assignedUserId||(t.assignedUserName?'~n:'+t.assignedUserName:'~unassigned');
+const uid=taskEffectiveUid(t);
 const uname=t.assignedUserName||t.assignedUserId||'Unassigned';
 if(!staffMap[uid]){staffMap[uid]={id:uid,name:uname,total:0,done:0,onTime:0,late:0,pending:0};staffOrder.push(uid);}
 const s=staffMap[uid];s.total++;
@@ -14154,8 +14187,7 @@ html+='<button onclick="window._taskSortBy=\''+val+'\';renderAllTasks()" style="
 html+='</div>';
 // ── Task list ──
 const filtered=activeFilter==='all'?todayInst:todayInst.filter(t=>{
-const uid=t.assignedUserId||(t.assignedUserName?'~n:'+t.assignedUserName:'~unassigned');
-return uid===activeFilter;
+return taskEffectiveUid(t)===activeFilter;
 });
 const sortFn=(a,b)=>{
 const sb=window._taskSortBy||'deadline';
@@ -15016,7 +15048,7 @@ function renderDashTaskWidget(){
   if(isAdmin&&allInst.length){
     const sm={};const so=[];
     allInst.forEach(t=>{
-      const uid=t.assignedUserId||(t.assignedUserName?'~n:'+t.assignedUserName:'~unassigned');
+      const uid=taskEffectiveUid(t);
       const uname=t.assignedUserName||t.assignedUserId||'Unassigned';
       if(!sm[uid]){sm[uid]={name:uname,pending:0,done:0,overdue:0};so.push(uid);}
       if(t.status==='Done')sm[uid].done++;
