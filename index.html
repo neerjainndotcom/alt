@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.1';
-const APP_BUILD_DATE='2026-08-12b';
+const APP_VERSION='1.40.2';
+const APP_BUILD_DATE='2026-08-12c';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -14079,8 +14079,8 @@ function healTaskAssignedIds(){
   });};
   heal(STATE.taskInstances); heal(STATE.taskTemplates);
   if(changed>0){
-    lsSave('vs_taskInstances',STATE.taskInstances);
-    lsSave('vs_taskTemplates',STATE.taskTemplates);
+    lsSave('vs_task_instances',STATE.taskInstances);
+    lsSave('vs_task_templates',STATE.taskTemplates);
     try{autoSyncCloud();}catch(e){}
   }
   return changed;
@@ -14698,6 +14698,11 @@ if(note){
 if(!task.comments)task.comments=[];
 task.comments.push({id:uid(),userId:STATE.user.id,userName:STATE.user.name,text:note,at:now.toISOString(),isCompletionNote:true});
 }
+/* Completing today's occurrence of a recurring task also resolves its
+   backlog — every older still-pending copy of the same templateId gets
+   marked Done too, so finishing "the" task doesn't leave phantom old
+   copies behind that keep tripping the "old task copies" banner. */
+if(task.templateId){var _td=new Date().toISOString().split('T')[0];(STATE.taskInstances||[]).forEach(function(_t){if(_t.templateId===task.templateId&&_t.id!==task.id&&_t.status!=='Done'&&_t.generatedDate<_td){_t.status='Done';_t.completedAt=now.toISOString();_t.completedByUserId=STATE.user.id;_t.completedByName=STATE.user.name;_t.isOnTime=false;}});}
 lsSave('vs_task_instances',STATE.taskInstances);
 renderMyTasks();renderAllTasks();updateTaskDot();
 try{renderDashTaskWidget();}catch(e){}
