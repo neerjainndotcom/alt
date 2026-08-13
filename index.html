@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.2';
-const APP_BUILD_DATE='2026-08-12c';
+const APP_VERSION='1.40.3';
+const APP_BUILD_DATE='2026-08-12d';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -14085,9 +14085,46 @@ function healTaskAssignedIds(){
   }
   return changed;
 }
+/* One-time self-heal: a stale/offline device can come back online with an old
+   cached copy of taskTemplates (from before its logged-in account was
+   recreated) and sync it back up — since those records carry brand-new ids,
+   they land as full duplicates of the current templates instead of
+   overwriting them, and each duplicate then generates its own daily task
+   copy forever ("double entries" that keep growing even after clearing).
+   Detect these by createdBy pointing at a user id that no longer exists,
+   soft-delete the ghost templates, and soft-delete every instance they
+   already spawned. */
+function healGhostTaskTemplates(){
+  let removedTemplates=0,removedInstances=0;
+  const ghostIds=new Set();
+  (STATE.taskTemplates||[]).forEach(function(t){
+    if(t._deleted||!t.createdBy) return;
+    const knownCreator=STATE.users?.some(function(u){return u.id===t.createdBy;});
+    if(!knownCreator){
+      ghostIds.add(t.id);
+      t._deleted=true; t.active=false; t._ts=Date.now();
+      removedTemplates++;
+    }
+  });
+  if(ghostIds.size){
+    (STATE.taskInstances||[]).forEach(function(inst){
+      if(!inst._deleted&&ghostIds.has(inst.templateId)){
+        inst._deleted=true; inst._ts=Date.now();
+        removedInstances++;
+      }
+    });
+  }
+  if(removedTemplates>0){
+    lsSave('vs_task_templates',STATE.taskTemplates);
+    lsSave('vs_task_instances',STATE.taskInstances);
+    try{autoSyncCloud();}catch(e){}
+  }
+  return {removedTemplates,removedInstances};
+}
 function renderAllTasks(staffFilter){
 const c=el('task-lst-all'); if(!c) return;
 if(!window._taskIdsHealed){window._taskIdsHealed=true; try{healTaskAssignedIds();}catch(e){}}
+if(!window._ghostTemplatesHealed){window._ghostTemplatesHealed=true; try{const _gh=healGhostTaskTemplates();if(_gh.removedTemplates>0)toast('Cleaned up '+_gh.removedTemplates+' duplicate task setups ('+_gh.removedInstances+' copies) ✓','ok');}catch(e){}}
 if(staffFilter!==undefined) window._taskStaffFilter=staffFilter;
 const activeFilter=window._taskStaffFilter||'all';
 const today_s=today();
