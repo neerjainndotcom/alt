@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.3';
-const APP_BUILD_DATE='2026-08-12d';
+const APP_VERSION='1.40.4';
+const APP_BUILD_DATE='2026-08-16a';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -14493,9 +14493,23 @@ fromDate:from,toDate:to,reason:el('lv-reason')?.value||'Personal'};
 if(!STATE.staffLeave) STATE.staffLeave=[];
 STATE.staffLeave.push(obj);
 lsSave('vs_staff_leave',STATE.staffLeave);
+/* Leave only controls who gets assigned when NEW instances are generated —
+   it doesn't touch instances that already exist. Without this, marking
+   someone on leave today does nothing to their already-generated tasks for
+   today, which is confusing ("I added leave, why does it still show under
+   their name?"). If a substitute was picked, hand off any already-generated
+   still-Pending instances in the leave range right now. */
+let _reassigned=0;
+if(subId){
+const affected=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.status==='Pending'&&t.assignedUserId===userId&&t.generatedDate>=from&&t.generatedDate<=to);
+affected.forEach(t=>{t.assignedUserId=subId;t.assignedUserName=sub?.name||'';t.isSubstitute=true;t._ts=Date.now();});
+_reassigned=affected.length;
+if(_reassigned)lsSave('vs_task_instances',STATE.taskInstances);
+}
 hideMod('m-leave');
 renderLeaveList();
-toast(user?.name+' on leave '+from+' to '+to,'ok');
+try{renderAllTasks();renderMyTasks();}catch(e){}
+toast(user?.name+' on leave '+from+' to '+to+(_reassigned?' — '+_reassigned+' existing task(s) handed to '+(sub?.name||'substitute'):''),'ok');
 autoSyncCloud();
 }
 async function deleteLeave(id){
