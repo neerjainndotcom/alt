@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.6';
-const APP_BUILD_DATE='2026-08-17b';
+const APP_VERSION='1.40.7';
+const APP_BUILD_DATE='2026-08-17c';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -2068,12 +2068,20 @@ const f=STATE.customers.filter(x=>{
   return x.name.toLowerCase().includes(q.toLowerCase())||(x.gstin||'').includes(q);
 });
 if(!f.length){c.innerHTML='<div class="emp"><div class="emj">👥</div><h3>No Customers</h3><p>Add wholesale buyers</p></div>';return;}
-c.innerHTML=f.map(x=>'<div class="et" onclick="openCustomerDetail(\''+x.id+'\')"><div class="ei" style="background:var(--Tl);color:var(--Td);font-weight:800;font-size:13px">'+x.name.substring(0,2)+'</div><div class="eb"><div class="etit">'+(x.isStar?'&#11088; ':'')+x.name+'</div><div class="esub">'+(x.gstin||'No GSTIN')+' - '+(x.state||'')+(x.market?' &bull; 📍 '+escHtml(x.market):'')+'</div></div><div class="er"><div class="ed">'+(x.phone||'')+'</div>'+(x.gstin?'<span class="bdg '+(gstType(x.gstin)==='same'?'bg-g':'bg-a')+'">'+(gstType(x.gstin)==='same'?'SGST':'IGST')+'</span>':'')+'</div></div>').join('');
+c.innerHTML=f.map(x=>{
+const _cBrk=x.defaultBrokerId?STATE.brokers.find(b=>b.id===x.defaultBrokerId):null;
+const _cSm=x.defaultSalesmanId?STATE.users.find(u=>u.id===x.defaultSalesmanId):null;
+const _cSmName=_cSm?.name||x.defaultSalesmanName||'';
+const _cExtra=(_cBrk||_cSmName||x.address)?'<div class="esub" style="margin-top:2px">'+(_cBrk?'🏷 '+escHtml(_cBrk.name):'')+(_cBrk&&_cSmName?' · ':'')+(_cSmName?'👤 '+escHtml(_cSmName):'')+(x.address?((_cBrk||_cSmName)?' · ':'')+escHtml(x.address):'')+   '</div>':'';
+return '<div class="et" onclick="openCustomerDetail(\''+x.id+'\')"><div class="ei" style="background:var(--Tl);color:var(--Td);font-weight:800;font-size:13px">'+x.name.substring(0,2)+'</div><div class="eb"><div class="etit">'+(x.isStar?'&#11088; ':'')+x.name+'</div><div class="esub">'+(x.gstin||'No GSTIN')+' - '+(x.state||'')+(x.market?' &bull; 📍 '+escHtml(x.market):'')+'</div>'+_cExtra+'</div><div class="er"><div class="ed">'+(x.phone||'')+'</div>'+(x.gstin?'<span class="bdg '+(gstType(x.gstin)==='same'?'bg-g':'bg-a')+'">'+(gstType(x.gstin)==='same'?'SGST':'IGST')+'</span>':'')+'</div></div>';
+}).join('');
 }
 function openCustomerDetail(id){
 const x=STATE.customers.find(c=>c.id===id); if(!x) return;
 const stats=_partySalesStats(bill=>bill.custId===id);
 const brk=x.defaultBrokerId?STATE.brokers.find(b=>b.id===x.defaultBrokerId):null;
+const _pdSm=x.defaultSalesmanId?STATE.users.find(u=>u.id===x.defaultSalesmanId):null;
+const _pdSmName=_pdSm?.name||x.defaultSalesmanName||'';
 const statCard=(lbl,val)=>'<div style="background:var(--sf);border:1px solid var(--br);border-radius:12px;padding:12px;text-align:center"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">'+lbl+'</div><div style="font-size:17px;font-weight:900;color:var(--tx);margin-top:4px">'+val+'</div></div>';
 el('pd-title').textContent=(x.isStar?'⭐ ':'')+x.name;
 el('pd-sub').textContent=(x.gstin||'No GSTIN')+(x.market?' · 📍 '+escHtml(x.market):'')+(brk?' · Broker: '+brk.name:'');
@@ -2095,6 +2103,7 @@ statCard('Bills',stats.billCount)+statCard('Total Sale','₹'+fmtN(stats.totalSa
 '</div>'+
 (stats.topItem?'<div class="fg"><label>Top-Selling Item</label><div style="background:var(--Pl);border-radius:10px;padding:10px 14px"><div class="fw8">'+stats.topItem.name+'</div><div class="sm ct3">'+fmtN(stats.topItem.mtrs)+'m · ₹'+fmtN(stats.topItem.amount)+'</div></div></div>':'<div class="sm ct3" style="padding:8px 0">No billed sales yet</div>')+
 (stats.items.length>1?'<div class="fg"><label>All Items Purchased</label>'+stats.items.map(it=>'<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--br)"><span class="sm fw7">'+it.name+'</span><span class="sm ct3">'+fmtN(it.mtrs)+'m · ₹'+fmtN(it.amount)+'</span></div>').join('')+'</div>':'')+
+((brk||_pdSmName)?'<div class="fg"><label>Details</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+(brk?'<div style="background:var(--sf);border:1px solid var(--br);border-radius:10px;padding:10px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">Broker</div><div style="font-size:13px;font-weight:700;color:var(--tx);margin-top:3px">🏷 '+escHtml(brk.name)+'</div></div>':'')+(_pdSmName?'<div style="background:var(--sf);border:1px solid var(--br);border-radius:10px;padding:10px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">Salesman</div><div style="font-size:13px;font-weight:700;color:var(--tx);margin-top:3px">👤 '+escHtml(_pdSmName)+'</div></div>':'')+'</div></div>':'')+
 '<div class="fg"><label>Contact</label><div class="sm">'+(x.phone||'—')+(x.address?'<br>'+x.address:'')+'</div></div>';
 el('pd-edit-btn').onclick=()=>{ hideMod('m-party-detail'); editCust(id); };
 showMod('m-party-detail');
