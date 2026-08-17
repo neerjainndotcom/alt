@@ -98,8 +98,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.4';
-const APP_BUILD_DATE='2026-08-16a';
+const APP_VERSION='1.40.6';
+const APP_BUILD_DATE='2026-08-17b';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -9798,6 +9798,7 @@ if(tab==='won'){
 }
 function _attachLeadCustAutoFill(){
 window._leadAutoFill={custId:null,values:{}};
+const _smSeed=el('lead-sm'); if(_smSeed) window._leadAutoFill.values.sm=_smSeed.value;
 const inp=el('lead-name'); const addrInp=el('lead-address'); const mktSel=el('lead-market');
 if(inp){ inp.removeEventListener('input',_onLeadAutoFillTrigger); inp.addEventListener('input',_onLeadAutoFillTrigger); }
 if(addrInp){ addrInp.removeEventListener('input',_onLeadAutoFillTrigger); addrInp.addEventListener('input',_onLeadAutoFillTrigger); }
@@ -9842,11 +9843,14 @@ const newCustId=c?c.id:null;
 if(newCustId===st.custId) return;
 let changed=false;
 [['lead-ph','ph',c?.phone||''],['lead-wa','wa',c?.whatsapp||''],['lead-address','address',c?.address||''],
- ['lead-broker','broker',c?.defaultBrokerId||''],['lead-sm','sm',c?.defaultSalesmanId||'']].forEach(([id,key,val])=>{
+ ['lead-broker','broker',c?.defaultBrokerId||'']].forEach(([id,key,val])=>{
   const fEl=el(id); if(!fEl) return;
   const prevAuto=st.values[key]||'';
   if(fEl.value===prevAuto&&fEl.value!==val){ fEl.value=val; changed=true; }
 });
+const _smVal=c?.defaultSalesmanId||'';
+const _smEl=el('lead-sm');
+if(_smEl&&_smEl.value===(st.values.sm||'')&&_smEl.value!==_smVal){ refreshLeadSalesmanDropdown(_smVal); changed=true; }
 const mktEl=el('lead-market');
 if(mktEl){
   const prevAutoMkt=st.values.market||'';
@@ -12618,15 +12622,15 @@ if(ph.length===10){ ph='91'+ph; }
 else if(ph.length===11&&ph.startsWith('0')){ ph='91'+ph.slice(1); }
 else if(!ph.startsWith('91')&&ph.length<11){ ph='91'+ph; }
 const encoded=encodeURIComponent(msg||'');
-const isMobile=/Android|iPhone|iPad|iPod|webOS|BlackBerry|Opera Mini|IEMobile/i.test(navigator.userAgent);
-if(isMobile){
-/* Deep link — opens WhatsApp app directly, no web load */
 const a=document.createElement('a');a.href='whatsapp://send?phone='+ph+'&text='+encoded;a.setAttribute('rel','noopener noreferrer');
 document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),100);
-}else{
-/* Desktop: open WhatsApp Web in a named window so it reuses the same tab */
-window.open('https://web.whatsapp.com/send?phone='+ph+'&text='+encoded,'_wa_window');
-}
+let _waAppOpened=false;
+const _waOnHide=()=>{_waAppOpened=true;};
+document.addEventListener('visibilitychange',_waOnHide,{once:true});
+setTimeout(()=>{
+  document.removeEventListener('visibilitychange',_waOnHide);
+  if(!_waAppOpened) window.open('https://web.whatsapp.com/send?phone='+ph+'&text='+encoded,'_wa_window');
+},1500);
 }
 function waOutstanding(){
 const unpaid=STATE.bills.filter(b=>!b._deleted&&b.status!=='cancelled'&&b.status!=='deleted'&&b.payStatus!=='paid');
@@ -13854,12 +13858,16 @@ let html=
 '</div>'+
 (overdueUniq.length?'<div style="background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#DC2626;font-weight:700">⚠️ '+overdueUniq.length+' missed task'+(overdueUniq.length>1?'s':'')+' from previous days — complete or mark done below</div>':'');
 ['High','Medium','Low'].forEach(pri=>{
-const priTasks=todayTasks.filter(t=>t.priority===pri);
+const priTasks=todayTasks.filter(t=>t.priority===pri&&t.status==='Pending');
 if(!priTasks.length) return;
 const pc=TASK_PRIORITY_COLORS[pri]||'#6366F1';
 html+='<div style="font-size:11px;font-weight:800;color:'+pc+';text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px">● '+pri+' PRIORITY</div>';
 priTasks.forEach(task=>{html+=taskCard(task);});
 });
+if(done.length){
+html+='<div style="font-size:11px;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px">✅ Completed Today ('+done.length+')</div>';
+done.forEach(task=>{html+=taskCard(task);});
+}
 if(overdueUniq.length){
 html+='<div style="font-size:11px;font-weight:800;color:#DC2626;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px">⚠ Missed from Previous Days</div>';
 overdueUniq.forEach(task=>{
