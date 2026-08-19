@@ -109,8 +109,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.14';
-const APP_BUILD_DATE='2026-08-19';
+const APP_VERSION='1.40.15';
+const APP_BUILD_DATE='2026-08-19b';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -939,6 +939,12 @@ if(FIREBASE_URL)initFirebaseListener();
       const got=await pullAllFromFirebase(true);
       if(got){refreshCurrentView();setLiveStatus('live');}
       else{setLiveStatus('off');}
+      /* One-time cleanup: tombstone any template that isn't one of the
+         canonical tpl_task001…tpl_task040 IDs. Old ms* IDs and any other
+         leftovers survived in localStorage on devices that never got the
+         Firebase delete — tombstoning here propagates the delete to Firebase
+         and then to every other device via the normal delta sync. */
+      try{cleanupLegacyTemplates();}catch(e){console.warn('template cleanup error:',e);}
     }catch(e){setLiveStatus('off');}
     window._initialPullDone=true;
     return;
@@ -14268,10 +14274,37 @@ function healGhostTaskTemplates(){
   }
   return {removedTemplates,removedInstances};
 }
+function cleanupLegacyTemplates(){
+  const FLAG='vs_tpl_cleanup_v2';
+  if(localStorage.getItem(FLAG)==='done') return;
+  /* Build the set of valid canonical IDs */
+  const validIds=new Set();
+  for(let i=1;i<=40;i++) validIds.add('tpl_task'+String(i).padStart(3,'0'));
+  const nowTs=Date.now();
+  let cleaned=0;
+  (STATE.taskTemplates||[]).forEach(t=>{
+    if(t&&!t._deleted&&!validIds.has(t.id)){
+      t._deleted=true; t._ts=nowTs; cleaned++;
+    }
+  });
+  localStorage.setItem(FLAG,'done');
+  if(cleaned>0){
+    /* persist() saves to localStorage AND triggers autoSyncCloud() which
+       pushes tombstones to Firebase within 1.5s, propagating to all devices */
+    persist();
+    toast('Cleaned up '+cleaned+' old task template(s) ✓','ok');
+    console.log('[ALT] cleanupLegacyTemplates: tombstoned',cleaned,'old templates');
+  }
+}
 function renderAllTasks(staffFilter){
 const c=el('task-lst-all'); if(!c) return;
 if(!window._taskIdsHealed){window._taskIdsHealed=true; try{healTaskAssignedIds();}catch(e){}}
 if(!window._ghostTemplatesHealed){window._ghostTemplatesHealed=true; /* auto-heal disabled: templates are now safe (createdBy=adminId) */}
+/* ── cleanupLegacyTemplates ──────────────────────────────────────────────
+   Runs ONCE per device (gated by localStorage flag) after the initial full
+   Firebase pull. Tombstones any template whose ID is not in the canonical
+   tpl_task001…tpl_task040 set, so old ms* and other stale IDs in localStorage
+   get wiped and the deletion propagates to Firebase → all devices. */
 if(staffFilter!==undefined) window._taskStaffFilter=staffFilter;
 const activeFilter=window._taskStaffFilter||'all';
 const today_s=today();
