@@ -109,8 +109,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.13';
-const APP_BUILD_DATE='2026-08-17c';
+const APP_VERSION='1.40.14';
+const APP_BUILD_DATE='2026-08-19';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -643,7 +643,7 @@ function autoSyncCloud(){
     window._saveLock=false;
     /* If a save was requested while we were pushing, fire another push now */
     if(window._needsResync){window._needsResync=false;setTimeout(autoSyncCloud,100);}
-  },7000);
+  },1500);/* Reduced 7000→1500ms for near-real-time writes */
 }
 let _tt;
 function toast(msg,type=''){
@@ -12188,8 +12188,37 @@ function initFirebaseListener(){
     /* Delta pull: checks the tiny per-collection meta first, downloads only
        the records that actually changed (not the whole database). */
     await pullDeltaFromFirebase();
-  },10000);/* Poll meta every 10s */
+  },3000);/* Poll meta every 3s (reduced from 10s) */
+  /* SSE streaming for instant cross-device push — no polling latency */
+  initFirebaseSSE();
   setLiveStatus(FIREBASE_URL?'live':'off');
+}
+function initFirebaseSSE(){
+  if(!FIREBASE_URL||typeof EventSource==='undefined')return;
+  if(window._fbSSE){try{window._fbSSE.close();}catch(e){} window._fbSSE=null;}
+  /* Listen to /_meta.json via SSE — Firebase streams an event the instant any
+     collection's meta timestamp changes, meaning every write on any device
+     triggers a pull here within ~200ms instead of up to 10 seconds. */
+  try{
+    const es=new EventSource(FIREBASE_URL+'/_meta.json');
+    es.addEventListener('put',async function(){
+      if(window._saveLock||window._syncRunning)return;
+      if(window._lastSaveAt&&Date.now()-window._lastSaveAt<2000)return;
+      await pullDeltaFromFirebase();
+    });
+    es.addEventListener('patch',async function(){
+      if(window._saveLock||window._syncRunning)return;
+      if(window._lastSaveAt&&Date.now()-window._lastSaveAt<2000)return;
+      await pullDeltaFromFirebase();
+    });
+    es.onerror=function(){
+      /* SSE disconnected (network blip, idle timeout, etc.) — close and let
+         the 3s poll carry the load; reconnect on next initFirebaseListener call */
+      try{es.close();}catch(e){}
+      window._fbSSE=null;
+    };
+    window._fbSSE=es;
+  }catch(e){console.warn('Firebase SSE unavailable:',e);}
 }
 function refreshCurrentView(){
   // Re-render whichever tab is open so live cloud data appears immediately.
@@ -12560,34 +12589,41 @@ toast(col.name+' discontinued','ok');
 }
 async function clearLedger(){
 const fy=STATE.settings.currentFY||getCurrentFY();
-const count=STATE.entries.length;
-if(!count){toast('Ledger is already empty','ok');return;}
+/* Count all transactional records that will be wiped */
+const txCollections=['entries','orders','bills','payments','jobWork','flaggedEntries','exchanges','mixedSarees'];
+let totalCount=0;
+txCollections.forEach(c=>{totalCount+=(STATE[c]||[]).filter(r=>!r._deleted).length;});
+if(!totalCount){toast('All transaction records are already empty','ok');return;}
+const entryCnt=(STATE.entries||[]).filter(r=>!r._deleted).length;
+const orderCnt=(STATE.orders||[]).filter(r=>!r._deleted).length;
+const billCnt=(STATE.bills||[]).filter(r=>!r._deleted).length;
 const ok=await appConfirm(
-'Clear Entire Ledger?',
-'This will permanently delete ALL '+count+' ledger entries for FY '+fy+'.\n\n\u26a0\ufe0f This CANNOT be undone.\n\n\u26a0\ufe0f Stock is rebuilt from the ledger, so every SKU\'s stock will reset to 0 once its history is gone. Only do this if you\'re starting the FY completely fresh.',
+'Clear All Transaction Data?',
+'This will permanently delete ALL transaction records for FY '+fy+':\n\n\u2022 '+entryCnt+' ledger entries (stock resets to 0)\n\u2022 '+orderCnt+' orders\n\u2022 '+billCnt+' bills/invoices\n\u2022 Payments, Job Work, Exchanges & more\n\n\u26a0\ufe0f Master data (Items, Customers, Users) is kept.\n\u26a0\ufe0f This CANNOT be undone.',
 '?',
-'Delete ALL '+count+' Entries',
+'Delete ALL '+totalCount+' Records',
 'dr'
 );
 if(!ok) return;
-const pinOk=await appPinConfirm('Danger PIN Required','Enter your Danger PIN to clear the entire ledger.');
+const pinOk=await appPinConfirm('Danger PIN Required','Enter your Danger PIN to clear all transaction data.');
 if(!pinOk) return;
-/* Tombstone every entry (mark _deleted + bump _ts) instead of wiping the
-   array outright. This app syncs by pushing only records with a newer _ts
-   than the last push, so an outright STATE.entries=[] never told Firebase
-   anything was deleted \u2014 the next full pull (e.g. on login) re-fetched every
-   old record from the cloud and they all "came back". Tombstones propagate
-   the delete like every other delete in this app (see deleteColour, etc). */
-STATE.entries.forEach(e=>{ e._deleted=true; e._ts=Date.now(); });
+const nowTs=Date.now();
+/* Tombstone every transactional record (mark _deleted + bump _ts) instead of
+   wiping arrays outright. This app syncs by pushing only records with a newer
+   _ts than the last push, so an outright [] never tells Firebase anything was
+   deleted \u2014 the next pull would restore everything. Tombstones propagate
+   deletes across all devices via the normal delta sync. */
+txCollections.forEach(col=>{
+  (STATE[col]||[]).forEach(r=>{ if(r&&!r._deleted){ r._deleted=true; r._ts=nowTs; }});
+});
 _ledSelected.clear();
-/* Stock is a running balance derived from ledger entries \u2014 once the entries
-   are gone it must be rebuilt from what's left (nothing, in this case) so
-   stock and ledger never silently disagree. */
+/* Stock is a running balance derived from ledger entries \u2014 rebuild it from
+   what's left (nothing) so stock never silently disagrees with the ledger. */
 recalcStockFromEntries();
-STATE.items.forEach(i=>{i._ts=Date.now();});
+STATE.items.forEach(i=>{i._ts=nowTs;});
 persist();
 renderLedger(); renderDash();
-toast('Ledger cleared \u2014 '+count+' entries deleted, stock recalculated','ok');
+toast('All transaction data cleared \u2014 '+totalCount+' records deleted, stock recalculated','ok');
 }
 function applyRoleUI(){
 refreshCurrentUser();
