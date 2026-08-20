@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.17';
+const APP_VERSION='1.40.18';
 const APP_BUILD_DATE='2026-08-20';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -2047,6 +2047,7 @@ lsSave('vs_items',STATE.items); renderItemRanges(item); hideMod('m-rng');
 toast('Range '+rName+' added with '+cols.length+' colours','ok');
 if(window._qrPfx) cascRng(window._qrPfx,true);
 if(window._returnToLot) refreshOrdLotAfterAdd();
+if(window._returnToBillLot) refreshBillLotAfterAdd();
 }
 function saveAddClrs(){
 const iid=window._qcIid, rng=window._qcRng;
@@ -2068,6 +2069,7 @@ lsSave('vs_items',STATE.items); renderItemRanges(item); hideMod('m-aclr');
 toast(added+' colours added','ok');
 if(window._qcPfx) cascClr(window._qcPfx,true);
 if(window._returnToLot) refreshOrdLotAfterAdd();
+if(window._returnToBillLot) refreshBillLotAfterAdd();
 }
 function saveItem(){
 const name=(el('itm-name').value||'').trim().toUpperCase(); if(!name){toast('Enter item name','er');return;}
@@ -2088,6 +2090,7 @@ STATE.items.push(item); window._pRng=[];
 lsSave('vs_items',STATE.items); hideMod('m-item'); renderItems(); renderDash();
 toast('Item saved','ok'); api('saveItem',{items:STATE.items});
 if(window._returnToLot) refreshOrdLotAfterAdd();
+if(window._returnToBillLot) refreshBillLotAfterAdd();
 }
 function clearCustFlt(){
 if(el('cst-flt-market')) el('cst-flt-market').value='';
@@ -5915,6 +5918,11 @@ row1.innerHTML=
 '<option value="">Range...</option></select>'+
 (li>0?'<button onclick="remBillLot('+lot.id+')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(220,38,38,.15);color:#DC2626;font-size:13px;cursor:pointer;flex-shrink:0;font-weight:700">&#x2715;</button>':'');
 hdr.appendChild(row1);
+/* + New Item / + New Range buttons (bill form) */
+const blIsel=row1.querySelector('#bl-lot-'+lot.id+'-i');
+const blRsel=row1.querySelector('#bl-lot-'+lot.id+'-r');
+if(blIsel){const bn=document.createElement('button');bn.textContent='+';bn.title='Add new item';bn.style.cssText='flex-shrink:0;width:26px;height:26px;border-radius:7px;border:none;background:'+lc.border+';color:white;font-size:15px;cursor:pointer;font-weight:800;line-height:1;margin-left:2px';bn.onclick=()=>blLotNewItem(lot.id);blIsel.insertAdjacentElement('afterend',bn);}
+if(blRsel){const bn2=document.createElement('button');bn2.textContent='+';bn2.title='Add new range to selected item';bn2.style.cssText='flex-shrink:0;width:26px;height:26px;border-radius:7px;border:none;background:'+lc.border+';color:white;font-size:15px;cursor:pointer;font-weight:800;line-height:1;margin-left:2px';bn2.onclick=()=>blLotNewRange(lot.id);blRsel.insertAdjacentElement('afterend',bn2);}
 const qf=document.createElement('div');
 qf.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;align-items:end;margin-top:8px;padding:6px 8px;background:rgba(0,0,0,.06);border-radius:8px';
 qf.innerHTML=
@@ -5977,8 +5985,9 @@ body.appendChild(thead);
 const selAll=document.createElement('div');
 selAll.style.cssText='display:flex;align-items:center;gap:10px;padding:7px 10px;background:#EEF2FF;border-bottom:1px solid #C7D2FE;cursor:pointer';
 selAll.innerHTML='<input type="checkbox" id="bl-lot-'+lid+'-all" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer" onclick="billLotToggleAll('+lid+')"/>'+
-'<span style="font-size:11px;font-weight:700;color:#3730A3;flex:1">\u2714 Select All ('+cols.length+' colours)</span>';
-selAll.onclick=e=>{if(e.target.tagName!=='INPUT'){const chk=el('bl-lot-'+lid+'-all');chk.checked=!chk.checked;billLotToggleAll(lid);}};
+'<span style="font-size:11px;font-weight:700;color:#3730A3;flex:1">\u2714 Select All ('+cols.length+' colours)</span>'+
+'<button onclick="blLotNewColour('+lid+')" style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;border:none;background:#3730A3;color:white;cursor:pointer;flex-shrink:0">+ Colour</button>';
+selAll.onclick=e=>{if(e.target.tagName!=='INPUT'&&e.target.tagName!=='BUTTON'){const chk=el('bl-lot-'+lid+'-all');chk.checked=!chk.checked;billLotToggleAll(lid);}};
 body.appendChild(selAll);
 cols.forEach((col,ci)=>{
 const idx=item.colours.indexOf(col);
@@ -8348,6 +8357,54 @@ toast('Range added and selected','ok');
 }else if(ctx.mode==='colour'){
 ordLotRangeChange(lid);
 toast('Colour(s) added','ok');
+}
+}
+/* ── Bill form: inline new-item / new-range / new-colour ───────────────── */
+function blLotNewItem(lid){
+window._returnToBillLot={lid,mode:'item'};
+openItem();
+}
+function blLotNewRange(lid){
+const iid=el('bl-lot-'+lid+'-i')?.value;
+if(!iid){toast('Select an item first, then add a range','er');return;}
+window._returnToBillLot={lid,mode:'range',iid};
+window._qrIid=iid; window._qrPfx=null;
+el('rng-n').value=''; el('rng-cnt').value=1; buildClrRows('rng-rows','rng-cnt'); showMod('m-rng');
+}
+function blLotNewColour(lid){
+const iid=el('bl-lot-'+lid+'-i')?.value;
+const rng=el('bl-lot-'+lid+'-r')?.value;
+if(!iid||!rng){toast('Select item and range first','er');return;}
+const actualRng=rng==='__norange__'?'':rng;
+window._returnToBillLot={lid,mode:'colour',iid,rng:actualRng};
+window._qcIid=iid; window._qcRng=actualRng; window._qcPfx=null;
+el('aclr-cnt').value=1; buildClrRows('aclr-rows','aclr-cnt');
+el('aclrtit').textContent='Add Colours to Range '+actualRng; showMod('m-aclr');
+}
+function refreshBillLotAfterAdd(){
+const ctx=window._returnToBillLot; if(!ctx) return;
+window._returnToBillLot=null;
+const lid=ctx.lid;
+const iSel=el('bl-lot-'+lid+'-i'); if(!iSel) return;
+if(ctx.mode==='item'){
+  const newItem=STATE.items.filter(it=>!it._deleted).sort((a,b)=>b._ts-a._ts)[0];
+  if(!newItem) return;
+  iSel.innerHTML='<option value="">Select Item...</option>'+[...STATE.items].filter(it=>!it._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('');
+  iSel.value=newItem.id; billLotItemChange(lid);
+  toast('Item "'+newItem.name+'" added and selected','ok');
+}else if(ctx.mode==='range'){
+  const item=STATE.items.find(x=>x.id===ctx.iid); if(!item) return;
+  const namedRngs=[...new Set(item.colours.filter(c=>!c._deleted&&!c.discontinued).map(c=>c.range).filter(r=>r!==''))];
+  const hasDefault=item.colours.some(c=>c.range===''&&!c.discontinued&&!c._deleted);
+  const rSel=el('bl-lot-'+lid+'-r'); if(!rSel) return;
+  let opts=hasDefault?'<option value="__norange__">(No Range)</option>':'';
+  opts+=namedRngs.map(r=>'<option value="'+r+'">'+r+'</option>').join('');
+  rSel.innerHTML='<option value="">Range...</option>'+opts; rSel.disabled=false;
+  const lastRng=namedRngs[namedRngs.length-1];
+  if(lastRng) rSel.value=lastRng;
+  billLotRangeChange(lid); toast('Range added and selected','ok');
+}else if(ctx.mode==='colour'){
+  billLotRangeChange(lid); toast('Colour(s) added','ok');
 }
 }
 let _dispOrdId=null;
