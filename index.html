@@ -109,8 +109,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.15';
-const APP_BUILD_DATE='2026-08-19b';
+const APP_VERSION='1.40.16';
+const APP_BUILD_DATE='2026-08-20';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -5652,14 +5652,23 @@ grpBillHtml+
 '<div id="bl-gi" class="xs ct3" style="margin:-8px 0 10px;padding-left:2px"></div>'+
 '<div class="ir2"><div class="fg"><label>Broker</label><select class="sel" id="bl-b"><option value="">No broker</option>'+bo+'</select></div><div class="fg"><label>Discount %</label><input class="inp mono" type="number" id="bl-disc" step="0.1" min="0" max="100" placeholder="0" value="'+(pre?.disc||0)+'" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'"/></div></div>'+
 
-'<div style="background:var(--Pl);border-radius:10px;padding:10px 12px;margin-bottom:10px">'
-+'<div style="font-size:10px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Adjustment (after discount, before GST)</div>'
-+'<div class="ir2"><div class="fg"><label>Label</label><input class="inp" id="bl-brok-lbl" placeholder="e.g. Brokerage / Freight / Rounding" value="">'
-+'</div><div class="fg"><label>Amount % <span style=\"font-weight:400;color:var(--t3)\">+add / −deduct</span></label><input class="inp mono" type="number" id="bl-brok-pct" step="0.01" placeholder="0" value="0" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'\" ></div></div>'
-+'<div class="fg"><label>Flat ₹ Amount <span style=\"font-weight:400;color:var(--t3)\">+add / −deduct (for freight, rounding etc.)</span></label><input class="inp mono" type="number" id="bl-brok-flat" step="0.01" placeholder="0" value="0" oninput="'+((pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()')+'\" ></div>'
+/* Build adjustment HTML as a variable so it can be placed before or after lots per user preference */
+(()=>{
+const calcFn=(pre?.ordId&&!pre?.fromProgLot)?'calcBillTot()':'calcBillLotTotal()';
+const adjPos=localStorage.getItem('vs_bill_adj_pos')||'after';
+const adjHtml='<div id="bl-adj-sec" style="background:var(--Pl);border-radius:10px;padding:10px 12px;margin-bottom:10px">'
++'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
++'<div style="font-size:10px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.4px">Adjustment (after discount, before GST)</div>'
++'<button type="button" onclick="toggleBillAdjPos()" title="Move section up/down" style="font-size:10px;padding:2px 8px;background:var(--Pb);color:var(--P);border:1px solid var(--Pb);border-radius:6px;cursor:pointer;font-weight:700">⇅ Move</button>'
 +'</div>'
-+'<div style="margin:12px 0 4px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:10px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.5px">Lots / SKUs</span><button type="button" onclick="addBillLot()" style="font-size:11px;padding:3px 10px;background:var(--P);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700">+ Add Lot</button></div><div id="bl-lots"></div></div>'
- +'<div id="bl-sum" class="bsum mt12"></div>'+
++'<div class="ir2"><div class="fg"><label>Label</label><input class="inp" id="bl-brok-lbl" placeholder="e.g. Brokerage / Freight / Rounding" value="">'
++'</div><div class="fg"><label>Amount % <span style="font-weight:400;color:var(--t3)">+add / −deduct</span></label><input class="inp mono" type="number" id="bl-brok-pct" step="0.01" placeholder="0" value="0" oninput="'+calcFn+'" ></div></div>'
++'<div class="fg"><label>Flat ₹ Amount <span style="font-weight:400;color:var(--t3)">+add / −deduct (for freight, rounding etc.)</span></label><input class="inp mono" type="number" id="bl-brok-flat" step="0.01" placeholder="0" value="0" oninput="'+calcFn+'" ></div>'
++'</div>';
+const lotsHtml='<div id="bl-lots-sec" style="margin:12px 0 4px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:10px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.5px">Lots / SKUs</span><button type="button" onclick="addBillLot()" style="font-size:11px;padding:3px 10px;background:var(--P);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700">+ Add Lot</button></div><div id="bl-lots"></div></div>';
+return adjPos==='before' ? adjHtml+lotsHtml : lotsHtml+adjHtml;
+})()
++'<div id="bl-sum" class="bsum mt12"></div>'+
 '<div class="fg mt12"><label>Notes</label><textarea class="ta" id="bl-nt" rows="2" placeholder="Payment terms, delivery notes..."></textarea></div>';
 if(el('bl-brok-lbl'))el('bl-brok-lbl').value='';
   if(el('bl-brok-pct'))el('bl-brok-pct').value='0';
@@ -5669,6 +5678,21 @@ if(el('bl-brok-lbl'))el('bl-brok-lbl').value='';
   detBillGST();
 },50);
 if(pre?.ordId&&!pre?.fromProgLot){renderBillRows();}else{if(!pre?.fromProgLot){_billLots=[];_billLotId=0;_mixSareLots=[];_mixSareLotId=0;}setTimeout(()=>{if(pre?.fromProgLot)prefillProgLots();else addBillLot();},80);}
+}
+function toggleBillAdjPos(){
+  const cur=localStorage.getItem('vs_bill_adj_pos')||'after';
+  const next=cur==='after'?'before':'after';
+  localStorage.setItem('vs_bill_adj_pos',next);
+  /* Move the section in the DOM without rebuilding the whole form */
+  const adj=el('bl-adj-sec');
+  const lots=el('bl-lots-sec');
+  if(!adj||!lots)return;
+  if(next==='before'){
+    lots.parentNode.insertBefore(adj,lots);
+  }else{
+    lots.parentNode.insertBefore(adj,lots.nextSibling);
+  }
+  toast('Adjustment section moved '+(next==='before'?'above':'below')+' lots ✓','ok');
 }
 function detBillGST(){
 const cust=STATE.customers.find(c=>c.id===el('bl-c')?.value);
@@ -5726,7 +5750,22 @@ let gH='',grand=netTaxable;
 if(cust?.gstin){const t=gstType(cust.gstin),gA=Math.round(netTaxable*0.05);
 grand=netTaxable+gA;
 gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
-const s=el('bl-sum');if(s)s.innerHTML='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>'+(discAmt>0?'<div class="brow" style="color:#059669"><span>Discount ('+disc+'%)</span><span class="mono">- '+fmtRs(discAmt)+'</span></div><div class="brow"><span>After Discount</span><span class="mono">'+fmtRs(afterDisc)+'</span></div>':'')+(brokAmt!==0&&brokLbl?'<div class="brow" style="color:'+(brokAmt<0?'#DC2626':'#059669')+'"><span>'+brokLbl+(brokPct!==0?' ('+brokPct+'%)':'')+'</span><span class="mono">'+(brokAmt<0?'− '+fmtRs(-brokAmt):'+ '+fmtRs(brokAmt))+'</span></div><div class="brow"><span>Net Taxable</span><span class="mono">'+fmtRs(netTaxable)+'</span></div>':'')+gH+'<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div>';
+const s=el('bl-sum');
+if(s){
+  let _sh='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>';
+  if(discAmt>0){
+    _sh+='<div class="brow" style="color:#059669"><span>Discount ('+disc+'%)</span><span class="mono">− '+fmtRs(discAmt)+'</span></div>';
+    _sh+='<div class="brow" style="border-top:1px dashed var(--t4);padding-top:4px"><span><b>After Discount</b></span><span class="mono fw7">'+fmtRs(afterDisc)+'</span></div>';
+  }
+  if(brokAmt!==0){
+    const _bl=brokLbl||(brokFlat!==0?'Flat Adjustment':'Adjustment');
+    _sh+='<div class="brow" style="color:'+(brokAmt<0?'#DC2626':'#059669')+'"><span>'+_bl+(brokPct!==0?' ('+brokPct+'%)':'')+'</span><span class="mono">'+(brokAmt<0?'− '+fmtRs(-brokAmt):'+ '+fmtRs(brokAmt))+'</span></div>';
+    _sh+='<div class="brow" style="border-top:1px dashed var(--t4);padding-top:4px"><span><b>Net Taxable</b></span><span class="mono fw7">'+fmtRs(netTaxable)+'</span></div>';
+  }
+  _sh+=gH;
+  _sh+='<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div>';
+  s.innerHTML=_sh;
+}
 }
 /* ── BILL LOT CARD SYSTEM (standalone bills without an order) ── */
 let _billLots=[],_billLotId=0;
@@ -6044,7 +6083,22 @@ let gH='',grand=netTaxable;
 if(cust?.gstin){const t=gstType(cust.gstin),gA=Math.round(netTaxable*0.05);
 grand=netTaxable+gA;
 gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
-const s=el('bl-sum');if(s)s.innerHTML='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>'+(discAmt>0?'<div class="brow" style="color:#059669"><span>Discount ('+disc+'%)</span><span class="mono">- '+fmtRs(discAmt)+'</span></div><div class="brow"><span>After Discount</span><span class="mono">'+fmtRs(afterDisc)+'</span></div>':'')+(brokAmt!==0&&brokLbl?'<div class="brow" style="color:'+(brokAmt<0?'#DC2626':'#059669')+'"><span>'+brokLbl+(brokPct!==0?' ('+brokPct+'%)':'')+'</span><span class="mono">'+(brokAmt<0?'− '+fmtRs(-brokAmt):'+ '+fmtRs(brokAmt))+'</span></div><div class="brow"><span>Net Taxable</span><span class="mono">'+fmtRs(netTaxable)+'</span></div>':'')+gH+'<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div>';
+const s=el('bl-sum');
+if(s){
+  let _sh='<div class="brow"><span>Subtotal</span><span class="mono">'+fmtRs(sub)+'</span></div>';
+  if(discAmt>0){
+    _sh+='<div class="brow" style="color:#059669"><span>Discount ('+disc+'%)</span><span class="mono">− '+fmtRs(discAmt)+'</span></div>';
+    _sh+='<div class="brow" style="border-top:1px dashed var(--t4);padding-top:4px"><span><b>After Discount</b></span><span class="mono fw7">'+fmtRs(afterDisc)+'</span></div>';
+  }
+  if(brokAmt!==0){
+    const _bl=brokLbl||(brokFlat!==0?'Flat Adjustment':'Adjustment');
+    _sh+='<div class="brow" style="color:'+(brokAmt<0?'#DC2626':'#059669')+'"><span>'+_bl+(brokPct!==0?' ('+brokPct+'%)':'')+'</span><span class="mono">'+(brokAmt<0?'− '+fmtRs(-brokAmt):'+ '+fmtRs(brokAmt))+'</span></div>';
+    _sh+='<div class="brow" style="border-top:1px dashed var(--t4);padding-top:4px"><span><b>Net Taxable</b></span><span class="mono fw7">'+fmtRs(netTaxable)+'</span></div>';
+  }
+  _sh+=gH;
+  _sh+='<div class="brow tot"><span>Grand Total</span><span class="mono">'+fmtRs(grand)+'</span></div>';
+  s.innerHTML=_sh;
+}
 }
 async function saveBill(){
 if(_savingBill){return;}_savingBill=true;
