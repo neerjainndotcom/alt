@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.16';
+const APP_VERSION='1.40.17';
 const APP_BUILD_DATE='2026-08-20';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -4171,6 +4171,10 @@ const co=[...STATE.customers].filter(c=>!c._deleted).sort((a,b)=>(a.name||'').lo
 const bo=[...STATE.brokers].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(b=>'<option value="'+b.id+'">'+b.name+'</option>').join('');
 const isOpenOrd=(_ordType==='open');
 el('ordbod').innerHTML=
+/* Salesman first — order number prefix is determined by salesman, so select them before anything else */
+'<div class="fg"><label>Salesman *</label>'+
+'<select class="sel" id="od-sm" onchange="onSalesmanChange()"><option value="">Select salesman...</option>'+smOpts+'</select>'+
+'</div>'+
 '<div class="fg"><label>Order Number (editable)</label><input class="inp mono" type="text" id="od-ordno-edit" style="font-size:18px;font-weight:800;color:var(--P)" value="'+(_ordId?'':nextOrdNo(window._ordPfx||STATE.user?.orderPrefix||STATE.settings.orderPrefix||'B/'))+'"/></div>'+
 /* Order Type Toggle */
 '<div class="fg"><label>Order Type</label>'+
@@ -4179,9 +4183,6 @@ el('ordbod').innerHTML=
 '<button id="ord-type-btn-open" class="btn '+(isOpenOrd?'bp':'bgh')+' bfl" onclick="setOrdType(\'open\')" style="padding:10px 6px;line-height:1.4">&#x1F4C2; Open / Programme<br><span style="font-size:10px;opacity:.75">Colours TBD, dispatch in lots</span></button>'+
 '</div></div>'+
 '<div class="fg"><label>Date</label><input class="inp" type="date" id="od-d" value="'+today()+'"/></div>'+
-'<div class="fg"><label>Salesman *</label>'+
-'<select class="sel" id="od-sm" onchange="onSalesmanChange()"><option value="">Select salesman...</option>'+smOpts+'</select>'+
-'</div>'+
 '<div class="fg"><label>Customer *</label>'+
 '<div class="fi"><select class="sel" id="od-c" onchange="onOrderCustChange()"><option value="">Select customer...</option>'+co+'</select>'+
 '<button class="ai" onclick="openCustFromOrder()">+New</button>'+
