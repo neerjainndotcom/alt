@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.25';
+const APP_VERSION='1.40.26';
 const APP_BUILD_DATE='2026-08-21';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -16061,19 +16061,19 @@ const lcs=[{bd:'#818CF8',lb:'#3730A3'},{bd:'#4ADE80',lb:'#166534'},{bd:'#FB923C'
 const lc=lcs[(li<0?0:li)%lcs.length];
 const cols=item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted);
 body.innerHTML='';
-const th=document.createElement('div');th.style.cssText='display:grid;grid-template-columns:26px 1fr 50px 60px 60px;gap:4px;background:linear-gradient(135deg,#1e1b4b,#312e81);padding:8px 10px';
-th.innerHTML='<div></div><div style="font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase">Colour</div><div style="font-size:8px;font-weight:800;color:#A5B4FC;text-align:center;text-transform:uppercase">Stock</div><div style="font-size:8px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Pcs</div><div style="font-size:8px;font-weight:800;color:#34D399;text-align:center;text-transform:uppercase">Cut</div>';
+const th=document.createElement('div');th.style.cssText='display:grid;grid-template-columns:28px 1fr 60px 60px;gap:6px;background:linear-gradient(135deg,#1e1b4b,#312e81);padding:10px 12px';
+th.innerHTML='<div></div><div style="font-size:9px;font-weight:800;color:#A5B4FC;letter-spacing:.6px;text-transform:uppercase">Colour</div><div style="font-size:9px;font-weight:800;color:#FBBF24;text-align:center;letter-spacing:.6px;text-transform:uppercase">Pcs</div><div style="font-size:9px;font-weight:800;color:#34D399;text-align:center;letter-spacing:.6px;text-transform:uppercase">Cut</div>';
 body.appendChild(th);
-const sa=document.createElement('div');sa.style.cssText='display:flex;align-items:center;gap:10px;padding:7px 10px;background:#EEF2FF;border-bottom:1px solid #C7D2FE;cursor:pointer';
-sa.innerHTML='<input type="checkbox" id="ssl-'+lid+'-all" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer" onclick="ssLotToggleAll('+lid+')"/><span style="font-size:11px;font-weight:700;color:#3730A3;flex:1">&#x2714; Select All ('+cols.length+' colours)</span>';
+const sa=document.createElement('div');sa.style.cssText='display:flex;align-items:center;gap:10px;padding:9px 12px;background:#EEF2FF;border-bottom:1px solid #C7D2FE;cursor:pointer';
+sa.innerHTML='<input type="checkbox" id="ssl-'+lid+'-all" style="width:17px;height:17px;accent-color:#4F46E5;cursor:pointer" onclick="ssLotToggleAll('+lid+')"/><span style="font-size:11px;font-weight:700;color:#3730A3;flex:1">Select All &nbsp;<span style="color:#6366F1;font-weight:800">('+cols.length+')</span></span>';
 sa.onclick=e=>{if(e.target.tagName!=='INPUT'){const ch=el('ssl-'+lid+'-all');ch.checked=!ch.checked;ssLotToggleAll(lid);}};
 body.appendChild(sa);
 cols.forEach((col,ci)=>{
 const idx=item.colours.indexOf(col);const stk=col.stock_taka||0;
 const sc=stk===0?'#EF4444':stk<5?'#F59E0B':'#10B981';const sb=stk===0?'#FEE2E2':stk<5?'#FEF3C7':'#D1FAE5';
 const row=document.createElement('div');row.id='ssl-'+lid+'-row-'+idx;
-row.style.cssText='display:grid;grid-template-columns:26px 1fr 50px 60px 60px;gap:4px;align-items:center;padding:8px 10px;border-bottom:1px solid #E5E4F0;background:'+(ci%2===0?'#FFF':'#F8F7FF')+';transition:.15s;border-left:3px solid transparent';
-row.innerHTML='<input type="checkbox" id="ssl-'+lid+'-ck-'+idx+'" style="width:16px;height:16px;accent-color:#4F46E5;cursor:pointer" onchange="ssLotClrToggle('+lid+','+idx+')"/><div style="min-width:0"><div style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:50%;background:'+(col.hex||'#ccc')+';display:inline-block;flex-shrink:0;border:1.5px solid rgba(0,0,0,.1)"></span><span style="font-size:11px;font-weight:700;color:#0F0E1A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+col.name+'</span></div><div style="font-size:8px;color:#9897B0;font-family:monospace">'+col.sku+'</div></div><div style="text-align:center"><span style="font-size:9px;font-weight:800;color:'+sc+';background:'+sb+';padding:2px 4px;border-radius:5px">'+stk+'T</span></div><input type="number" id="ssl-'+lid+'-p-'+idx+'" step="1" min="1" disabled placeholder="—" style="width:100%;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;transition:.15s;box-sizing:border-box"/><input type="text" id="ssl-'+lid+'-c-'+idx+'" disabled placeholder="—" style="width:100%;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:700;font-family:monospace;background:#F3F4F6;color:#9CA3AF;transition:.15s;box-sizing:border-box"/>';
+row.style.cssText='display:grid;grid-template-columns:28px 1fr 60px 60px;gap:6px;align-items:center;padding:10px 12px;border-bottom:1px solid #EEEDF6;background:'+(ci%2===0?'#FFFFFF':'#F9F8FF')+';transition:.15s;border-left:3px solid transparent';
+row.innerHTML='<input type="checkbox" id="ssl-'+lid+'-ck-'+idx+'" style="width:17px;height:17px;accent-color:#4F46E5;cursor:pointer;flex-shrink:0" onchange="ssLotClrToggle('+lid+','+idx+')"/>'+'<div style="min-width:0">'+'<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">'+'<span style="width:11px;height:11px;border-radius:50%;background:'+(col.hex||'#ccc')+';display:inline-block;flex-shrink:0;border:1.5px solid rgba(0,0,0,.12)"></span>'+'<span style="font-size:12px;font-weight:700;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+col.name+'</span>'+'<span style="font-size:8px;font-weight:800;color:'+sc+';background:'+sb+';padding:1px 5px;border-radius:4px;flex-shrink:0;margin-left:2px">'+stk+'T</span>'+'</div>'+'<div style="font-size:8px;color:#B0AECF;font-family:monospace;letter-spacing:.2px">'+col.sku+'</div>'+'</div>'+'<input type="number" id="ssl-'+lid+'-p-'+idx+'" step="1" min="1" disabled placeholder="0" style="width:100%;text-align:center;border:1.5px solid #DDD9F5;border-radius:10px;padding:7px 2px;font-size:14px;font-weight:800;font-family:monospace;background:#F4F3FC;color:#B0AECF;transition:.15s;box-sizing:border-box"/>'+'<input type="text" id="ssl-'+lid+'-c-'+idx+'" disabled placeholder="—" style="width:100%;text-align:center;border:1.5px solid #DDD9F5;border-radius:10px;padding:7px 2px;font-size:12px;font-weight:700;font-family:monospace;background:#F4F3FC;color:#B0AECF;transition:.15s;box-sizing:border-box"/>';
 row.addEventListener('click',e=>{if(e.target.tagName==='INPUT')return;const ch=el('ssl-'+lid+'-ck-'+idx);if(ch){ch.checked=!ch.checked;ssLotClrToggle(lid,idx);}});
 body.appendChild(row);
 });
