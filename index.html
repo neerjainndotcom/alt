@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.35';
+const APP_VERSION='1.40.36';
 const APP_BUILD_DATE='2026-08-22';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -16541,11 +16541,11 @@ return '<div style="border-left:4px solid '+(pending?'#F59E0B':'#10B981')+';back
 '<div style="background:#F8F7FF;border-radius:8px;padding:8px;margin-bottom:8px">'+ls+'</div>'+
 (ss.note?'<div style="font-size:11px;color:var(--t2);margin-bottom:8px;font-style:italic">'+escHtml(ss.note)+'</div>':'')+
 '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
-(ss.carrierId?'<button onclick="waSampleSetSingle('+ss.id+',\'carrier\')" class="btn bsm" style="background:#6D28D9;color:white;border:none;font-size:11px">&#x1F4F2; WA Staff</button>':'')+
-'<button onclick="waSampleSetSingle('+ss.id+',\'salesman\')" class="btn bsm" style="background:#25D366;color:white;border:none;font-size:11px">&#x1F4F2; WA SM</button>'+
-'<button onclick="waSampleSetSingle('+ss.id+',\'broker\')" class="btn bsm" style="background:#059669;color:white;border:none;font-size:11px">&#x1F4F2; WA Brk</button>'+
-(pending?'<button onclick="markSampleSetReturned('+ss.id+')" class="btn bsm" style="background:#10B981;color:white;border:none;font-size:11px">&#x2714; Returned</button>':'')+
-'<button onclick="openEditSampleSet('+ss.id+')" class="btn bsm bd" style="font-size:11px">&#x270E; Edit</button>'+
+(ss.carrierId?'<button onclick="waSampleSetSingle(\''+ss.id+'\',\'carrier\')" class="btn bsm" style="background:#6D28D9;color:white;border:none;font-size:11px">&#x1F4F2; WA Staff</button>':'')+
+'<button onclick="waSampleSetSingle(\''+ss.id+'\',\'salesman\')" class="btn bsm" style="background:#25D366;color:white;border:none;font-size:11px">&#x1F4F2; WA SM</button>'+
+'<button onclick="waSampleSetSingle(\''+ss.id+'\',\'broker\')" class="btn bsm" style="background:#059669;color:white;border:none;font-size:11px">&#x1F4F2; WA Brk</button>'+
+(pending?'<button onclick="markSampleSetReturned(\''+ss.id+'\')" class="btn bsm" style="background:#10B981;color:white;border:none;font-size:11px">&#x2714; Returned</button>':'')+
+'<button onclick="openEditSampleSet(\''+ss.id+'\')" class="btn bsm bd" style="font-size:11px">&#x270E; Edit</button>'+
 '</div></div>';
 }).join('');
 }
