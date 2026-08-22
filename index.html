@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.32';
+const APP_VERSION='1.40.34';
 const APP_BUILD_DATE='2026-08-22';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -976,6 +976,41 @@ if(FIREBASE_URL)initFirebaseListener();
   scheduleWAReminder();
   try{autoDeleteOldCompletedTasks();}catch(e){}
   try{checkLeaveReversals();}catch(e){console.warn('leaveReversals:',e);}
+  /* Auto-clear stale pending task copies from past days (admin only).
+     Recurring tasks missed each day create an extra pending instance per day.
+     This silently marks them Done on load so they never accumulate. */
+  try{autoCleanStaleTaskInstances();}catch(e){console.warn('staleClean:',e);}
+}
+function autoCleanStaleTaskInstances(){
+  if(STATE.user?.role!=='admin')return;
+  const today=new Date().toISOString().split('T')[0];
+  /* Group pending past-day instances by templateId+assignedUserId.
+     For each group keep the MOST RECENT copy (so overdue tasks still show)
+     and mark older duplicates as Done. This removes phantom extras without
+     hiding any genuinely overdue tasks. */
+  const groups={};
+  (STATE.taskInstances||[]).forEach(t=>{
+    if(t._deleted||t.status==='Done'||!t.generatedDate||t.generatedDate>=today)return;
+    if(!t.templateId)return; /* ad-hoc/manual tasks: never auto-clean */
+    const key=t.templateId+'|'+(t.assignedUserId||'');
+    if(!groups[key])groups[key]=[];
+    groups[key].push(t);
+  });
+  let cleaned=0;
+  Object.values(groups).forEach(list=>{
+    if(list.length<=1)return; /* single overdue copy — keep it, it's legitimate */
+    /* Sort newest first; keep index 0, mark the older extras Done */
+    list.sort((a,b)=>(b.generatedDate||'').localeCompare(a.generatedDate||''));
+    list.slice(1).forEach(t=>{
+      t.status='Done';t.completedAt=new Date().toISOString();
+      t.completedByUserId='system';t.completedByName='Auto-Cleaned (duplicate)';
+      t.isOnTime=false;t._ts=Date.now();cleaned++;
+    });
+  });
+  if(!cleaned)return;
+  lsSave('vs_task_instances',STATE.taskInstances);
+  autoSyncCloud();
+  console.log('Auto-cleaned '+cleaned+' duplicate stale task instances');
 }
 async function syncAPI(){
 if(window._saveLock) return;
