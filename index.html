@@ -15224,20 +15224,8 @@ const reqUser=STATE.users.find(u=>u.id==(lv.requestedById||lv.userId));
 const phone=reqUser?.whatsapp||reqUser?.phone||'';
 const staffName=lv.userName||origUser?.name||'';
 const waMsg=sub?
-  'Hello '+staffName+'!
-
-Your leave request from '+lv.fromDate+' to '+lv.toDate+' has been *APPROVED*. ✅
-
-Your tasks & leads will be handled by *'+sub.name+'* during this period.
-
-Enjoy your leave! 🏖':
-  'Hello '+staffName+'!
-
-Your leave request from '+lv.fromDate+' to '+lv.toDate+' has been *APPROVED*. ✅
-
-Please coordinate with the team for task coverage.
-
-Enjoy your leave! 🏖';
+  'Hello '+staffName+'!\n\nYour leave request from '+lv.fromDate+' to '+lv.toDate+' has been *APPROVED*. ✅\n\nYour tasks & leads will be handled by *'+sub.name+'* during this period.\n\nEnjoy your leave! 🏖':
+  'Hello '+staffName+'!\n\nYour leave request from '+lv.fromDate+' to '+lv.toDate+' has been *APPROVED*. ✅\n\nPlease coordinate with the team for task coverage.\n\nEnjoy your leave! 🏖';
 if(phone)openWA(phone,waMsg);
 hideMod('m-leave-approve');
 renderLeaveList();
@@ -15253,11 +15241,7 @@ lv.status='rejected';lv._ts=Date.now();
 lsSave('vs_staff_leave',STATE.staffLeave);
 const reqUser=STATE.users.find(u=>u.id==(lv.requestedById||lv.userId));
 const phone=reqUser?.whatsapp||reqUser?.phone||'';
-if(phone)openWA(phone,'Hello '+escHtml(lv.userName||'')+'!
-
-Your leave request from '+lv.fromDate+' to '+lv.toDate+' could not be approved at this time.
-
-Please speak with your manager for further details. 🙏');
+if(phone)openWA(phone,'Hello '+escHtml(lv.userName||'')+'!\n\nYour leave request from '+lv.fromDate+' to '+lv.toDate+' could not be approved at this time.\n\nPlease speak with your manager for further details. 🙏');
 hideMod('m-leave-approve');
 renderLeaveList();
 toast('Leave rejected','ok');
