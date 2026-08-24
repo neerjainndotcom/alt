@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.44';
+const APP_VERSION='1.40.46';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -1413,7 +1413,8 @@ function renderDashHolidayPrompt(){
     const daysAway=Math.round((dt1-new Date())/(1000*60*60*24));
     const urgency=daysAway<=2?'#FEF2F2':daysAway<=7?'#FFFBEB':'#F0FDF4';
     const urgencyBdr=daysAway<=2?'#FCA5A5':daysAway<=7?'#FCD34D':'#86EFAC';
-    const datesJson=JSON.stringify(g.map(x=>x.date));
+    /* Use pipe delimiter — JSON double-quotes break onclick HTML attributes */
+    const datesStr=g.map(x=>x.date).join('|');
     return '<div style="background:'+urgency+';border:1.5px solid '+urgencyBdr+';border-radius:12px;padding:12px 14px;margin-bottom:8px">'
       +'<div style="display:flex;align-items:flex-start;gap:10px">'
       +'<span style="font-size:22px;flex-shrink:0">📅</span>'
@@ -1423,14 +1424,16 @@ function renderDashHolidayPrompt(){
       +'<div style="font-size:12px;color:#374151;margin-top:6px;font-weight:600">Will the shop be open on this day?</div>'
       +'</div></div>'
       +'<div style="display:flex;gap:8px;margin-top:10px">'
-      +'<button onclick="confirmHoliday('+datesJson+',\'open\')" style="flex:1;padding:10px;border-radius:10px;border:none;background:#16A34A;color:white;font-weight:800;font-size:13px;cursor:pointer">✅ Yes, Open</button>'
-      +'<button onclick="confirmHoliday('+datesJson+',\'closed\')" style="flex:1;padding:10px;border-radius:10px;border:none;background:#DC2626;color:white;font-weight:800;font-size:13px;cursor:pointer">🔴 No, Closed</button>'
+      +'<button onclick="confirmHoliday(\''+datesStr+'\',\'open\')" style="flex:1;padding:10px;border-radius:10px;border:none;background:#16A34A;color:white;font-weight:800;font-size:13px;cursor:pointer">✅ Yes, Open</button>'
+      +'<button onclick="confirmHoliday(\''+datesStr+'\',\'closed\')" style="flex:1;padding:10px;border-radius:10px;border:none;background:#DC2626;color:white;font-weight:800;font-size:13px;cursor:pointer">🔴 No, Closed</button>'
       +'</div>'
       +'</div>';
   }).join('');
   c.innerHTML='<div style="padding:12px 16px 0">'+cards+'</div>';
 }
-function confirmHoliday(dates,choice){
+function confirmHoliday(datesInput,choice){
+  /* datesInput is a pipe-delimited string: '2026-10-29|2026-10-30' */
+  const dates=typeof datesInput==='string'?datesInput.split('|'):datesInput;
   if(!STATE.settings.holidayTypes)STATE.settings.holidayTypes={};
   if(!STATE.settings.holidayConfirmed)STATE.settings.holidayConfirmed={};
   dates.forEach(d=>{
@@ -1452,9 +1455,24 @@ function confirmHoliday(dates,choice){
       });
     });
     if(cleared>0)persist();
-    toast('Marked Closed — '+dates.length+' day(s) blocked, '+(cleared?cleared+' tasks cleared':'no tasks to clear'),'ok');
+    /* Push leads whose follow-up falls on any of the closed dates */
+    let pushedLeads=0;
+    dates.forEach(d=>{pushedLeads+=_pushLeadsForClosedDay(d);});
+    toast('Marked Closed — '+dates.length+' day(s) blocked, '+(cleared?cleared+' tasks cleared':'no tasks to clear')+(pushedLeads>0?', '+pushedLeads+' lead follow-up(s) moved to next working day':''),'ok');
   }else{
-    toast('Marked Open — tasks will run normally on '+(dates.length===1?'this day':dates.length+' days'),'ok');
+    /* Reopen: restore auto-cleared tasks and pushed leads, regenerate tasks for today */
+    let restoredTasks=0,restoredLeads=0;
+    dates.forEach(d=>{
+      restoredTasks+=_restoreSystemClearedTasks(d);
+      restoredLeads+=_restoreLeadsForReopenedDay(d);
+    });
+    if(restoredTasks>0)persist();
+    const td=today();
+    if(dates.includes(td))try{generateTaskInstances(td);}catch(e){}
+    const extras=[];
+    if(restoredTasks>0)extras.push(restoredTasks+' task(s) restored to Pending');
+    if(restoredLeads>0)extras.push(restoredLeads+' lead follow-up(s) moved back');
+    toast('Marked Open — tasks will run normally on '+(dates.length===1?'this day':dates.length+' days')+(extras.length?' ('+extras.join(', ')+')':''),'ok');
   }
   renderDashHolidayPrompt();
   try{renderDashTaskWidget();}catch(e){}
@@ -7807,13 +7825,73 @@ function isShopClosed(dateStr){
   const types=STATE.settings?.holidayTypes||{};
   return types[dateStr]!=='public'; /* undefined / 'closed' both = closed */
 }
+/* ── Holiday restoration helpers ─────────────────────────────────────────── */
+/* Restore tasks that were auto-cleared by the system (Shop Closed) on a date */
+function _restoreSystemClearedTasks(d){
+  let restored=0;
+  (STATE.taskInstances||[]).forEach(t=>{
+    if(!t._deleted&&t.status==='Done'&&t.completedByUserId==='system'
+       &&(t.completedByName||'').includes('Shop Closed')&&t.generatedDate===d){
+      t.status='Pending';t.completedAt=null;t.completedByUserId=null;
+      t.completedByName=null;t.isOnTime=null;t._ts=Date.now();
+      restored++;
+    }
+  });
+  return restored;
+}
+/* Push leads whose follow-up falls on a closed day to the next working day */
+function _pushLeadsForClosedDay(d){
+  let pushed=0;
+  (STATE.leads||[]).forEach(l=>{
+    if(!l._deleted&&l.followupDate===d&&!l._origFollowUp){
+      l._origFollowUp=d;
+      const next=_effFollowup(d);
+      if(next&&next!==d){l.followupDate=next;l._ts=Date.now();pushed++;}
+    }
+  });
+  if(pushed>0){lsSave('vs_leads',STATE.leads);autoSyncCloud();}
+  return pushed;
+}
+/* Restore leads that were pushed away due to a closure on a given day */
+function _restoreLeadsForReopenedDay(d){
+  let restored=0;
+  (STATE.leads||[]).forEach(l=>{
+    if(!l._deleted&&l._origFollowUp===d){
+      l.followupDate=d;delete l._origFollowUp;l._ts=Date.now();restored++;
+    }
+  });
+  if(restored>0){lsSave('vs_leads',STATE.leads);autoSyncCloud();}
+  return restored;
+}
+/* ── End helpers ──────────────────────────────────────────────────────────── */
+
 function toggleHolidayType(d){
   if(!STATE.settings.holidayTypes)STATE.settings.holidayTypes={};
+  if(!STATE.settings.holidayConfirmed)STATE.settings.holidayConfirmed={};
   const cur=STATE.settings.holidayTypes[d]||'closed';
-  STATE.settings.holidayTypes[d]=cur==='public'?'closed':'public';
+  const newType=cur==='public'?'closed':'public';
+  STATE.settings.holidayTypes[d]=newType;
+  /* Clear confirmed flag so dashboard prompt re-appears for the re-opened day */
+  delete STATE.settings.holidayConfirmed[d];
   persist();api('saveSettings',{settings:STATE.settings});
   const listEl=el('s-hol-list');if(listEl)listEl.innerHTML=renderHolidayList();
-  toast(STATE.settings.holidayTypes[d]==='public'?'Marked as Public Holiday (tasks still run)':'Marked as Shop Closed (no tasks)','ok');
+  if(newType==='public'){
+    /* Switching to OPEN: restore auto-cleared tasks + restore pushed leads */
+    const restoredTasks=_restoreSystemClearedTasks(d);
+    const restoredLeads=_restoreLeadsForReopenedDay(d);
+    if(restoredTasks>0)persist();
+    if(d===today())try{generateTaskInstances(d);renderDashTaskWidget();}catch(e){}
+    try{renderDashHolidayPrompt();}catch(e){}
+    const extras=[];
+    if(restoredTasks>0)extras.push(restoredTasks+' task(s) restored to Pending');
+    if(restoredLeads>0)extras.push(restoredLeads+' lead follow-up(s) moved back');
+    toast('Reopened — tasks will run on this date'+(extras.length?' ('+extras.join(', ')+')':''),'ok');
+  }else{
+    /* Switching to CLOSED: push leads forward */
+    const pushedLeads=_pushLeadsForClosedDay(d);
+    try{renderDashHolidayPrompt();}catch(e){}
+    toast('Marked Closed — no tasks on this date'+(pushedLeads>0?'; '+pushedLeads+' lead follow-up(s) moved to next working day':''),'ok');
+  }
 }
 function renderHolidayList(){
   const hols=STATE.settings.holidays||[];
@@ -7916,19 +7994,37 @@ function addHolidayToday(){
   });
   /* persist() saves locally AND pushes delta to Firebase → all devices see the change */
   persist();
+  /* Push any leads with today's follow-up date to the next working day */
+  const pushedLeads=_pushLeadsForClosedDay(d);
   /* Re-render whatever is currently visible */
   const listEl=el('s-hol-list');if(listEl)listEl.innerHTML=renderHolidayList();
   try{renderDash();}catch(e){}
   try{renderTasks();}catch(e){}
-  toast('Today marked closed — '+cleared+' task(s) cleared & synced to all devices','ok');
+  toast('Today marked closed — '+cleared+' task(s) cleared & synced to all devices'+(pushedLeads>0?'; '+pushedLeads+' lead follow-up(s) moved to next working day':''),'ok');
 }
 function removeHoliday(d){
   if(!STATE.settings.holidays)return;
+  const wasClosed=isShopClosed(d);
+  /* Before removing: restore tasks and leads that were affected by this closure */
+  let restoredTasks=0,restoredLeads=0;
+  if(wasClosed){
+    restoredTasks=_restoreSystemClearedTasks(d);
+    restoredLeads=_restoreLeadsForReopenedDay(d);
+  }
   STATE.settings.holidays=STATE.settings.holidays.filter(x=>x!==d);
   if(STATE.settings.holidayLabels)delete STATE.settings.holidayLabels[d];
+  if(STATE.settings.holidayTypes)delete STATE.settings.holidayTypes[d];
+  if(STATE.settings.holidayConfirmed)delete STATE.settings.holidayConfirmed[d];
   persist();api('saveSettings',{settings:STATE.settings});
+  /* If the removed day was today and it was closed, regenerate tasks now */
+  if(wasClosed&&d===today())try{generateTaskInstances(d);renderDashTaskWidget();}catch(e){}
   const listEl=el('s-hol-list');if(listEl)listEl.innerHTML=renderHolidayList();
-  toast('Holiday removed','ok');
+  try{renderDashHolidayPrompt();}catch(e){}
+  const extras=[];
+  if(restoredTasks>0)extras.push(restoredTasks+' task(s) restored');
+  if(restoredLeads>0)extras.push(restoredLeads+' lead follow-up(s) moved back');
+  if(wasClosed&&d===today())extras.push('tasks regenerated for today');
+  toast('Holiday removed'+(extras.length?' — '+extras.join(', '):''),'ok');
 }
 function renderDBSetup(){
 const c=el('dbbod'); if(!c) return;
