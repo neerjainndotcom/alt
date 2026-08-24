@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.53';
+const APP_VERSION='1.40.54';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -1238,9 +1238,10 @@ const DASH_WIDGETS=[
   {id:'shortcuts', label:'Quick Actions',      icon:'⚡', desc:'Shortcut buttons'},
   {id:'stock',     label:'Stock Overview',     icon:'📦', desc:'Current stock levels'},
   {id:'mixedsarees',label:'Mixed Sarees',        icon:'🎨', desc:'Mixed saree batches in stock'},
+  {id:'exchanges', label:'Exchange Slips',     icon:'🔄', desc:'Ready exchange slips awaiting collection, with WhatsApp action'},
   {id:'recent',    label:'Recent Activity',    icon:'🕐', desc:'Latest ledger entries'}
 ];
-const DEFAULT_DASH_ORDER=['stats','alerts','tasks','leadspipeline','daywrap','followups','recurring','shortcuts','stock','mixedsarees','recent'];
+const DEFAULT_DASH_ORDER=['stats','alerts','tasks','leadspipeline','daywrap','followups','recurring','shortcuts','stock','mixedsarees','exchanges','recent'];
 
 
 /*********************************************************************
@@ -1327,6 +1328,7 @@ const widgetMap={
   shortcuts:{els:[shortcutsEl], render:()=>{}/* already rendered above */},
   stock:{els:[stockHdr,stockSearch,stockEl], render:()=>renderStock()},
   mixedsarees:{els:[el('dash-mixed-sarees')], render:()=>renderMixedSareesWidget()},
+  exchanges:{els:[(()=>{let e=el('dash-exchange-widget');if(!e){e=document.createElement('div');e.id='dash-exchange-widget';const scr=document.querySelector('#s-dash .scr-body');if(scr)scr.appendChild(e);}return e;})()], render:()=>renderDashExchangeWidget()},
   recent:{els:[recentHdr,recentEl], render:()=>renderRecentAct()}
 };
 
@@ -2199,6 +2201,7 @@ toast('Range '+rName+' added with '+cols.length+' colours','ok');
 if(window._qrPfx) cascRng(window._qrPfx,true);
 if(window._returnToLot) refreshOrdLotAfterAdd();
 if(window._returnToBillLot) refreshBillLotAfterAdd();
+if(window._returnToExLot) refreshExLotAfterAdd();
 if(window._ssNewRangeForLot!=null){
   const _lid=window._ssNewRangeForLot;window._ssNewRangeForLot=null;
   const iSel=el('ssl-'+_lid+'-i');if(iSel)iSel.dispatchEvent(new Event('change',{bubbles:true}));
@@ -2228,6 +2231,7 @@ toast(added+' colours added','ok');
 if(window._qcPfx) cascClr(window._qcPfx,true);
 if(window._returnToLot) refreshOrdLotAfterAdd();
 if(window._returnToBillLot) refreshBillLotAfterAdd();
+if(window._returnToExLot) refreshExLotAfterAdd();
 if(window._ssAddClrForLot!=null){
   const _lid=window._ssAddClrForLot;window._ssAddClrForLot=null;
   const rv=el('ssl-'+_lid+'-r')?.value;
@@ -2268,6 +2272,7 @@ lsSave('vs_items',STATE.items); hideMod('m-item'); renderItems(); renderDash();
 toast('Item saved','ok'); api('saveItem',{items:STATE.items});
 if(window._returnToLot) refreshOrdLotAfterAdd();
 if(window._returnToBillLot) refreshBillLotAfterAdd();
+if(window._returnToExLot) refreshExLotAfterAdd();
 if(window._ssNewItemForLot!=null){
   const _lid=window._ssNewItemForLot;window._ssNewItemForLot=null;
   const iSel=el('ssl-'+_lid+'-i');
@@ -3665,7 +3670,7 @@ const delBtn=(isEdit&&isAdmin)?'<button class="btn" style="background:#DC2626;co
 const collectBtn=(isEdit&&status==='ready')?'<button class="btn" style="background:#10B981;color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer;font-weight:700" onclick="markExchangeCollected()">✅ Mark as Collected</button>':'';
 el('exch-form-body').innerHTML=
 '<div class="ir2"><div class="fg"><label>Voucher No</label><input class="inp mono" id="ex-vno" value="'+(f.vno||nextExVoucher())+'"></div><div class="fg"><label>Date</label><input class="inp" type="date" id="ex-date" value="'+(f.date||today())+'"></div></div>'+
-'<div class="ir2"><div class="fg"><label>Party Name (Customer)</label><select class="sel" id="ex-party"><option value="">— Select customer —</option>'+
+'<div class="ir2"><div class="fg"><label>Party Name (Customer)</label><select class="sel" id="ex-party" onchange="exPartyChange()"><option value="">— Select customer —</option>'+
 (()=>{
   const custs=[...STATE.customers].filter(c=>!c._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   const matchId=f.partyId||(f.party?(custs.find(c=>c.name===f.party)||{}).id:'');
@@ -3676,8 +3681,9 @@ el('exch-form-body').innerHTML=
 })()+
 '</select></div><div class="fg"><label>Khata Name</label><input class="inp" id="ex-khata" placeholder="Khata / Ledger name" value="'+(f.khata||'')+'"></div></div>'+
 '<div class="ir2"><div class="fg"><label>Rep Name</label><input class="inp" id="ex-rep" placeholder="Representative name" value="'+(f.rep||'')+'"></div><div class="fg"><label>Rep Phone</label><input class="inp" id="ex-phone" type="tel" placeholder="10-digit mobile" value="'+(f.phone||'')+'"></div></div>'+
+'<div id="ex-bill-wrap" style="display:none"><div class="fg" style="margin-top:0"><label>📋 Load from Bill (optional)</label><select class="sel" id="ex-bill-sel" onchange="exBillSelect()"><option value="">— Select a bill to pre-fill items —</option></select><div style="font-size:11px;color:var(--t3);margin-top:3px">Select a past bill to auto-fill the items and quantities for this exchange.</div></div></div>'+
 '<div class="fg"><label>Cut (m) <span class="sub" style="font-weight:400">— common for this whole slip</span></label><input class="inp mono" type="number" step="0.25" id="ex-cut" value="'+(f.cut||5)+'" oninput="_exRecalcAll()" style="max-width:120px"></div>'+
-'<div style="margin:16px 0 8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-weight:700;font-size:13px;color:#374151">ITEMS TO EXCHANGE</span>'+stBadge+'<span style="flex:1"></span>'+unlockBtn+'</div>'+
+'<div style="margin:16px 0 8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-weight:700;font-size:13px;color:#374151">ITEMS TO EXCHANGE</span><span id="ex-status-badge">'+stBadge+'</span><span style="flex:1"></span>'+unlockBtn+'</div>'+
 (stepHint?'<div style="background:'+(_exUnlocked?'#FEF3C7':'#FFFBEB')+';border:1px solid #FDE68A;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400E;margin-bottom:10px">'+stepHint+'</div>':'')+
 '<div id="ex-lots"></div>'+
 '<button class="btn bs bfl mt8" onclick="addExLot()">+ Add LOT / Item</button>'+
@@ -3687,6 +3693,7 @@ el('exch-form-body').innerHTML=
 renderExLots();
 makeSearchable(el('ex-party'));
 _exUpdateTotals();
+exPartyChange();
 }
 function renderExLots(){
 const c=el('ex-lots'); if(!c) return;
@@ -3726,6 +3733,11 @@ hdr.innerHTML=
 (li>0?'<button onclick="remExLot('+lot.id+')" style="width:26px;height:26px;border-radius:7px;border:none;background:rgba(220,38,38,.15);color:#DC2626;font-size:13px;cursor:pointer;flex-shrink:0;font-weight:700">&#x2715;</button>':'')+
 '</div>';
 card.appendChild(hdr);
+/* + buttons for adding new item / range / colour — like the order form */
+const _exiSel=hdr.querySelector('#exl-'+lot.id+'-i');
+const _exrSel=hdr.querySelector('#exl-'+lot.id+'-r');
+if(_exiSel){const _b=document.createElement('button');_b.textContent='+';_b.title='Add new item';_b.style.cssText='flex-shrink:0;width:26px;height:26px;border-radius:7px;border:none;background:'+lc.border+';color:white;font-size:15px;cursor:pointer;font-weight:800;line-height:1';_b.onclick=()=>exLotNewItem(lot.id);_exiSel.insertAdjacentElement('afterend',_b);}
+if(_exrSel){const _b2=document.createElement('button');_b2.textContent='+';_b2.title='Add new range / colour';_b2.style.cssText='flex-shrink:0;width:26px;height:26px;border-radius:7px;border:none;background:'+lc.border+';color:white;font-size:15px;cursor:pointer;font-weight:800;line-height:1';_b2.onclick=()=>exLotNewRange(lot.id);_exrSel.insertAdjacentElement('afterend',_b2);}
 const body=document.createElement('div');
 body.id='exl-'+lot.id+'-body';
 body.style.cssText='background:white';
@@ -3861,6 +3873,7 @@ if(u>0){ const t=Math.round(u*cut/avg); parts.push('+'+t+'T to stock'); }
 if(x>0){ const t=Math.round(x*cut/avg); parts.push('-'+t+'T from stock'); }
 tkEl.textContent=parts.join(' · ');
 _exUpdateTotals();
+_exUpdateLiveStatus();
 }
 function _exUpdateTotals(){
 const t=el('ex-totals'); if(!t) return;
@@ -3986,6 +3999,11 @@ if(net>0.001) addStock(old.itemId,old.colIdx,net,'exchange-correction',party,vno
 else if(net<-0.001) deductStock(old.itemId,old.colIdx,-net,'exchange-correction',party,vno);
 }
 });
+/* Auto-revert status if quantities zeroed out during correction */
+const _totalNewReuse=rows.reduce((s,r)=>s+(r.reusePcs||0),0);
+const _totalNewExchange=rows.reduce((s,r)=>s+(r.exchangePcs||0),0);
+if(prevStatus==='under_process'&&_totalNewReuse===0&&_totalNewExchange===0) newStatus='pending';
+else if(prevStatus==='ready'&&_totalNewExchange===0) newStatus='under_process';
 _exUnlocked=false;
 }else{
 const hasReuse=rows.some(r=>r.reusePcs>0);
@@ -4014,11 +4032,17 @@ STATE.settings.nextExchNo=(STATE.settings.nextExchNo||1)+1;
 }
 persist();
 hideMod('m-exch');
-toast(newStatus!==prevStatus?'Exchange moved to '+({under_process:'Under Process',ready:'Ready'}[newStatus]||newStatus):'Exchange slip saved','ok');
+const _statusLbl={under_process:'Under Process',ready:'Ready',pending:'Pending',collected:'Collected'};
+toast(newStatus!==prevStatus?'Exchange moved to '+(_statusLbl[newStatus]||newStatus):'Exchange slip saved','ok');
 renderExchangeList();
-if(newStatus==='ready'&&prevStatus!=='ready'&&phone){
-const savedId=_exF.id||vno;
-setTimeout(()=>{ const saved=(STATE.exchanges||[]).find(e=>e.id===savedId); if(saved){ _exF=JSON.parse(JSON.stringify(saved)); sendExWA(); } },400);
+/* Feature 4: Ask whether to send WhatsApp on every save */
+if(phone){
+(function(){
+const _waPhone=phone,_waVno=vno,_waStatus=newStatus,_waParty=party,_waDate=date,_waRows=rows;
+appConfirm('Send WhatsApp?','Send status update to '+(_waPhone)+' via WhatsApp?','📲','Send WhatsApp','ok','Not now').then(function(doWA){
+if(doWA) sendExWA(_waPhone,_waVno,_waStatus,_waParty,_waDate,_waRows);
+});
+})();
 }
 }
 function sendExWA(phone,vno,status,party,date,rows){
@@ -4114,6 +4138,172 @@ return '<div class="rec-row" data-exid="'+e.id+'" style="cursor:pointer;backgrou
 }).join('');
 c.querySelectorAll('[data-exid]').forEach(function(d){ d.onclick=function(){ openExchange(this.getAttribute('data-exid')); }; });
 c.querySelectorAll('[data-exwa]').forEach(function(d){ d.onclick=function(e){ e.stopPropagation(); const ex=(STATE.exchanges||[]).find(x=>x.id===this.getAttribute('data-exwa')); if(ex) sendExWA(ex.phone,ex.vno,ex.status,ex.party,ex.date,ex.rows); }; });
+}
+/* ── Feature 1: Bill lookup on party selection ──────────────────────── */
+function exPartyChange(){
+const sel=el('ex-party'); if(!sel) return;
+const custId=sel.value;
+const wrap=el('ex-bill-wrap'); const billSel=el('ex-bill-sel');
+if(!wrap||!billSel) return;
+if(!custId||custId==='__legacy__'){ wrap.style.display='none'; return; }
+const bills=(STATE.bills||[]).filter(b=>b.custId===custId&&!b._deleted&&b.status!=='cancelled').sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+if(!bills.length){ wrap.style.display='none'; return; }
+wrap.style.display='';
+billSel.innerHTML='<option value="">— Select a bill to pre-fill items —</option>'+
+bills.map(b=>'<option value="'+b.id+'">'+escHtml(b.billNo||'')+(b.date?' ('+fmtDate(b.date)+')':'')+' — '+(b.items||[]).length+' items</option>').join('');
+}
+function exBillSelect(){
+const billId=el('ex-bill-sel')?.value; if(!billId) return;
+const bill=(STATE.bills||[]).find(b=>b.id===billId); if(!bill) return;
+// Group bill items by itemId+range (skip mixed sarees)
+const groups=[];
+(bill.items||[]).forEach(bi=>{
+if(bi.isMixSaree||!bi.itemId) return;
+const key=bi.itemId+'|'+(bi.range||'');
+let g=groups.find(x=>x.key===key);
+if(!g){g={key,itemId:bi.itemId,range:bi.range||'',items:[]};groups.push(g);}
+g.items.push(bi);
+});
+if(!groups.length){ toast('No items found in selected bill','er'); return; }
+// Set cut from first bill item if available
+const billCut=(bill.items||[])[0]?.cut;
+if(billCut){ const cutFld=el('ex-cut'); if(cutFld) cutFld.value=billCut; }
+// Reset lots and rebuild from bill groups
+_exLots=[{id:0}]; _exLotId=0;
+renderExLots();
+setTimeout(()=>{
+while(_exLots.length<groups.length) addExLot();
+let chain=Promise.resolve();
+groups.forEach((g,gi)=>{
+chain=chain.then(()=>new Promise(resolve=>{
+const lid=_exLots[gi].id;
+const iSel=el('exl-'+lid+'-i');
+if(iSel){ iSel.value=g.itemId; exLotItemChange(lid); }
+setTimeout(()=>{
+const rngVal=g.range===''?'__norange__':g.range;
+const rSel=el('exl-'+lid+'-r');
+if(rSel){ rSel.value=rngVal; exLotRangeChange(lid); }
+setTimeout(()=>{
+const item=STATE.items.find(x=>x.id===g.itemId);
+if(item){
+g.items.forEach(bi=>{
+const idx=item.colours.findIndex(c=>c.sku===bi.sku);
+if(idx<0) return;
+const chk=el('exl-'+lid+'-ck-'+idx);
+if(chk){ chk.checked=true; exLotClrToggle(lid,idx); }
+});
+}
+resolve();
+},200);
+},200);
+}));
+});
+chain.then(()=>toast('Items loaded from bill '+bill.billNo,'ok'));
+},80);
+}
+/* ── Feature 2: + buttons for new item/range/colour in exchange lot ─── */
+function exLotNewItem(lid){
+window._returnToExLot={lid,mode:'item'};
+openItem();
+}
+function exLotNewRange(lid){
+const iid=el('exl-'+lid+'-i')?.value;
+if(!iid){toast('Select an item first, then add a range','er');return;}
+window._returnToExLot={lid,mode:'range',iid};
+window._qrIid=iid; window._qrPfx=null;
+el('rng-n').value=''; el('rng-cnt').value=1; buildClrRows('rng-rows','rng-cnt');
+showMod('m-rng');
+}
+function exLotNewColour(lid){
+const iid=el('exl-'+lid+'-i')?.value;
+const rng=el('exl-'+lid+'-r')?.value;
+if(!iid||!rng){toast('Select item and range first','er');return;}
+const actualRng=rng==='__norange__'?'':rng;
+window._returnToExLot={lid,mode:'colour',iid,rng:actualRng};
+window._qcIid=iid; window._qcRng=actualRng; window._qcPfx=null;
+el('aclr-cnt').value=1; buildClrRows('aclr-rows','aclr-cnt');
+el('aclrtit').textContent='Add Colours to Range '+actualRng; showMod('m-aclr');
+}
+function refreshExLotAfterAdd(){
+const ctx=window._returnToExLot; if(!ctx) return;
+window._returnToExLot=null;
+const lid=ctx.lid;
+const iSel=el('exl-'+lid+'-i'); if(!iSel) return;
+if(ctx.mode==='item'){
+const newItem=STATE.items.filter(it=>!it._deleted).sort((a,b)=>(b._ts||0)-(a._ts||0))[0];
+if(!newItem) return;
+populateItemSelectRetry(iSel);
+setTimeout(()=>{ iSel.value=newItem.id; exLotItemChange(lid); toast('Item "'+newItem.name+'" added and selected','ok'); },120);
+}else if(ctx.mode==='range'){
+const item=STATE.items.find(x=>x.id===ctx.iid); if(!item) return;
+const rngs=[...new Set(item.colours.filter(c=>!c._deleted&&!c.discontinued).map(c=>c.range))];
+const rSel=el('exl-'+lid+'-r'); if(!rSel) return;
+rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+(r||'__norange__')+'">'+(r||'(No Range)')+'</option>').join('');
+rSel.disabled=false;
+const lastRng=item.colours[item.colours.length-1]?.range;
+if(lastRng!==undefined){ rSel.value=lastRng||'__norange__'; exLotRangeChange(lid); }
+toast('Range added and selected','ok');
+}else if(ctx.mode==='colour'){
+exLotRangeChange(lid);
+toast('Colour(s) added','ok');
+}
+}
+/* ── Feature 5: Live status badge update when re-use / exchange entered ─ */
+function _exUpdateLiveStatus(){
+const badge=el('ex-status-badge'); if(!badge) return;
+const status=_exF.status||'pending';
+const stBadges={
+pending:'<span style="background:#f59e0b;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">Pending</span>',
+under_process:'<span style="background:#3b82f6;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">Under Process</span>',
+ready:'<span style="background:#10b981;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">Ready ✓</span>',
+collected:'<span style="background:#6B7280;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">Collected ✔</span>'
+};
+let hasReuse=false, hasExchange=false;
+_exLots.forEach(lot=>{
+const iid=el('exl-'+lot.id+'-i')?.value, rngRaw=el('exl-'+lot.id+'-r')?.value;
+const item=STATE.items.find(x=>x.id===iid); if(!item||rngRaw===undefined||rngRaw==='') return;
+const rng=rngRaw==='__norange__'?'':rngRaw;
+item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
+const idx=item.colours.indexOf(col);
+const chk=el('exl-'+lot.id+'-ck-'+idx); if(!chk?.checked) return;
+const u=parseInt(el('exl-'+lot.id+'-u-'+idx)?.value)||0;
+const x=parseInt(el('exl-'+lot.id+'-x-'+idx)?.value)||0;
+if(u>0) hasReuse=true;
+if(x>0) hasExchange=true;
+});
+});
+let liveStatus=status;
+if(_exUnlocked){
+// In correction mode: check if status should revert
+if(status==='under_process'&&!hasReuse&&!hasExchange) liveStatus='pending';
+else if(status==='ready'&&!hasExchange) liveStatus='under_process';
+}else{
+// Normal progression
+if(status==='pending'&&hasReuse) liveStatus='under_process';
+else if(status==='under_process'&&hasExchange) liveStatus='ready';
+}
+const arrowLbl={under_process:'Under Process',ready:'Ready ✓',pending:'Pending'};
+if(liveStatus!==status){
+badge.innerHTML=stBadges[status]+' <span style="font-size:13px;color:#4F46E5;font-weight:700">⇒</span> <span style="background:#4F46E5;color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700;animation:pulse .8s infinite">'+arrowLbl[liveStatus]+'</span>';
+}else{
+badge.innerHTML=stBadges[status]||'';
+}
+}
+function renderDashExchangeWidget(){
+const c=el('dash-exchange-widget'); if(!c) return;
+const ready=(STATE.exchanges||[]).filter(e=>!e._deleted&&e.status==='ready').sort((a,b)=>(b.createdAt||b._ts||0)-(a.createdAt||a._ts||0));
+const user=STATE.user;
+const canSend=!user||user.role==='admin'||(user.permissions&&user.permissions.sendExchangeWA!==false);
+c.innerHTML='<div class="stl" style="margin-bottom:6px">🔄 Exchange Slips Ready <span style="background:#10B981;color:#fff;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:700">'+ready.length+'</span></div>'+
+(ready.length?ready.map(e=>'<div style="background:#ECFDF5;border:1.5px solid #10B981;border-left:4px solid #059669;border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:box-shadow .15s" onclick="openExchange(\''+e.id+'\')" onmouseenter="this.style.boxShadow=\'0 2px 8px rgba(0,0,0,.1)\'" onmouseleave="this.style.boxShadow=\'none\'">'+
+'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'+
+'<span class="mono" style="font-weight:800;font-size:14px;color:#065F46">'+escHtml(e.vno||'')+'</span>'+
+'<span style="font-size:11px;color:#047857">'+fmtDate(e.date)+'</span>'+
+'</div>'+
+'<div style="font-size:13px;font-weight:700;color:#111827;margin-top:2px">'+escHtml(e.party||'')+'</div>'+
+(e.rep?'<div style="font-size:11px;color:#374151;margin-top:1px">👤 '+escHtml(e.rep)+(e.phone?' · '+e.phone:'')+'</div>':'')+
+((canSend&&e.phone)?'<button onclick="event.stopPropagation();(function(){const _ex=(STATE.exchanges||[]).find(x=>x.id===\''+e.id+'\');if(_ex)sendExWA(_ex.phone,_ex.vno,_ex.status,_ex.party,_ex.date,_ex.rows);})()" style="margin-top:6px;background:#25D366;color:#fff;border:none;padding:6px 12px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:700;width:100%;text-align:center">📲 Send WhatsApp to Rep</button>':'')+
+'</div>').join(''):'<div style="padding:12px;background:var(--s2);border-radius:10px;text-align:center;color:var(--t3);font-size:12px">✅ No exchange slips awaiting collection</div>');
 }
 /* ===== END EXCHANGE MODULE ===== */
 
