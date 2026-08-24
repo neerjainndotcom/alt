@@ -109,8 +109,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.36';
-const APP_BUILD_DATE='2026-08-22';
+const APP_VERSION='1.40.42';
+const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -136,7 +136,7 @@ const DATA_VERSION=2;
 let GAS_URL='';
 const DEFAULT_FIREBASE_URL='https://amrit-laxmi-textiles-do-default-rtdb.firebaseio.com';
 let FIREBASE_URL=DEFAULT_FIREBASE_URL;
-const OWNER_SETUP_HASH='292d8497dbee6cf4c66e9eb10c1f804fbffb96c4736ef5bb734c0e5bf3bb0f19';
+const OWNER_SETUP_HASH='479a1808c325c26f483c1ae55a1a549bba9d6435bc02f6449029db086ba07a2b';
 const el = id => document.getElementById(id);
 const escHtml = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const ls = k => { try{ return localStorage.getItem(k) }catch(e){ return null } };
@@ -7447,9 +7447,28 @@ c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Compa
 '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
 '<button class="btn bga" onclick="downloadBackup()">&#8659; Download Backup</button>'+
 '<button class="btn bs" onclick="restoreBackup()">&#8657; Restore from Backup</button>'+
-'</div></div>'+'<div class="card"><div class="fw8" style="margin-bottom:14px">⏰ Task Settings</div>'+
+'</div></div>'+'<div class="card mt12"><div class="fw8" style="margin-bottom:6px">🗓 Holidays & Shop Closures</div>'+
+'<div class="xs ct3" style="margin-bottom:12px">Add planned festivals (Raksha Bandhan, Diwali…) or unexpected closures (weather, local situation). On these dates: no tasks generate, follow-up dates skip over them, and Day Wrap shows a closed notice.</div>'+
+'<div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">'+
+'<input type="date" class="inp mono" id="s-hol-date" style="flex:1;min-width:130px"/>'+
+'<input type="text" class="inp" id="s-hol-label" placeholder="Name (e.g. Diwali)" style="flex:2;min-width:120px"/>'+
+'<button class="btn bp bsm" onclick="addHoliday()">+ Add</button>'+
+'</div>'+
+'<button class="btn bsm" style="background:#DC2626;color:white;border:none;margin-bottom:10px;width:100%" onclick="addHolidayToday()">🔴 Mark Today as Closed (emergency)</button>'+
+'<div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">'+
+'<button class="btn bsm" style="background:#FF6B00;color:white;border:none;flex:1" onclick="loadIndianHolidays('+(new Date().getFullYear())+')">🇮🇳 Load '+(new Date().getFullYear())+'</button>'+
+'<button class="btn bsm" style="background:#FF6B00;color:white;border:none;flex:1" onclick="loadIndianHolidays('+(new Date().getFullYear()+1)+')">🇮🇳 Load '+(new Date().getFullYear()+1)+'</button>'+
+'<button class="btn bsm" style="background:#FF6B00;color:white;border:none;flex:1" onclick="loadIndianHolidays('+(new Date().getFullYear()+2)+')">🇮🇳 Load '+(new Date().getFullYear()+2)+'</button>'+
+'</div>'+
+'<div style="display:flex;gap:6px;margin-bottom:10px">'+
+'<input type="number" class="inp mono" id="s-hol-yr" placeholder="Other year e.g. 2031" min="2024" max="2099" style="flex:1"/>'+
+'<button class="btn bsm" style="background:#6B7280;color:white;border:none" onclick="(function(){var y=parseInt(el(\'s-hol-yr\').value);if(y>2020&&y<2100)loadIndianHolidays(y);else toast(\'Enter a valid year\',\'err\');})()">🇮🇳 Load</button>'+
+'</div>'+
+'<div id="s-hol-list">'+renderHolidayList()+'</div>'+
+'</div>'+
+'<div class="card"><div class="fw8" style="margin-bottom:14px">⏰ Task Settings</div>'+
 '<div class="fg"><label>Daily Task Refresh Time</label><input type="time" class="inp" id="s-trt" value="'+(s.taskRefreshTime||'09:30')+'" ></div>'+
-'<p class="ct3 sm" style="margin:6px 0 0">Tasks generate at this time every day — Sundays always off</p>'+
+'<p class="ct3 sm" style="margin:6px 0 0">Tasks generate at this time every day — Sundays & holidays always off</p>'+
 '<div class="fg" style="margin-top:12px"><label>Office Timezone</label><select class="inp" id="s-otz"><option value="Asia/Calcutta"'+(s.officeTimezone==="Asia/Calcutta"||!s.officeTimezone?' selected':'')+'>India — IST (Asia/Calcutta)</option><option value="America/New_York"'+(s.officeTimezone==="America/New_York"?' selected':'')+'>US East — EST/EDT</option><option value="America/Los_Angeles"'+(s.officeTimezone==="America/Los_Angeles"?' selected':'')+'>US West — PST/PDT</option><option value="Europe/London"'+(s.officeTimezone==="Europe/London"?' selected':'')+'>UK — GMT/BST</option><option value="Asia/Dubai"'+(s.officeTimezone==="Asia/Dubai"?' selected':'')+'>UAE — GST</option></select></div>'+
 '<p class="ct3 sm" style="margin:4px 0 8px">All task logic uses office time, even when you travel</p>'+
 '</div>'+
@@ -7503,12 +7522,247 @@ waTemplateSsSmn:sv('s-wa-tpl-ss-sm'),
 waTemplateSsBrk:sv('s-wa-tpl-ss-brk'),
 waTemplateSsCarrier:sv('s-wa-tpl-ss-carrier'),
 waTemplateOrder:sv('s-wa-tpl-order'),
-waTemplateBill:sv('s-wa-tpl-bill')
+waTemplateBill:sv('s-wa-tpl-bill'),
+holidays:STATE.settings.holidays||[],
+holidayLabels:STATE.settings.holidayLabels||{}
 };
 STATE.items.forEach(item=>item.colours.forEach(c=>{c.stock_mtrs=Math.round((c.stock_taka||0)*nA);}));
 autoCleanLeads();
 persist(); renderDash(); renderSettingsForm(); toast('Settings saved','ok');
 api('saveSettings',{settings:STATE.settings});
+}
+function getIndianHolidays(yr){
+  // Fixed-date holidays (same every year)
+  const fixed=[
+    {m:1,d:14,lbl:'Makar Sankranti / Uttarayan'},
+    {m:1,d:15,lbl:'Uttarayan (2nd day)'},
+    {m:1,d:26,lbl:'Republic Day'},
+    {m:8,d:15,lbl:'Independence Day'},
+    {m:10,d:2,lbl:'Gandhi Jayanti'},
+    {m:12,d:25,lbl:'Christmas'},
+  ];
+  const fmt=(m,d)=>yr+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  const result=fixed.map(h=>({date:fmt(h.m,h.d),label:h.lbl}));
+
+  // Year-specific Indian holidays (pre-calculated for 2025, 2026, 2027)
+  const byYear={
+    2025:[
+      {date:'2025-02-26',label:'Maha Shivratri'},
+      {date:'2025-03-13',label:'Holika Dahan'},
+      {date:'2025-03-14',label:'Holi / Dhuleti'},
+      {date:'2025-03-31',label:'Id-ul-Fitr (Eid)'},
+      {date:'2025-04-10',label:'Ram Navami'},
+      {date:'2025-04-14',label:'Dr. Ambedkar Jayanti'},
+      {date:'2025-04-18',label:'Good Friday'},
+      {date:'2025-04-30',label:'Akshaya Tritiya'},
+      {date:'2025-05-12',label:'Buddha Purnima'},
+      {date:'2025-06-07',label:'Eid ul-Adha (Bakrid)'},
+      {date:'2025-08-16',label:'Raksha Bandhan'},
+      {date:'2025-08-27',label:'Janmashtami'},
+      {date:'2025-09-22',label:'Navratri Begins'},
+      {date:'2025-10-01',label:'Navratri / Dussehra'},
+      {date:'2025-10-02',label:'Dussehra / Gandhi Jayanti'},
+      {date:'2025-10-20',label:'Dhanteras'},
+      {date:'2025-10-21',label:'Diwali'},
+      {date:'2025-10-22',label:'Diwali (Govardhan Puja)'},
+      {date:'2025-10-23',label:'Bhai Dooj'},
+      {date:'2025-11-05',label:'Dev Diwali'},
+      {date:'2025-12-25',label:'Christmas'},
+    ],
+    2026:[
+      {date:'2026-02-15',label:'Maha Shivratri'},
+      {date:'2026-03-02',label:'Holika Dahan'},
+      {date:'2026-03-03',label:'Holi / Dhuleti'},
+      {date:'2026-03-20',label:'Id-ul-Fitr (Eid)'},
+      {date:'2026-04-02',label:'Ram Navami'},
+      {date:'2026-04-03',label:'Good Friday'},
+      {date:'2026-04-14',label:'Dr. Ambedkar Jayanti'},
+      {date:'2026-04-20',label:'Akshaya Tritiya'},
+      {date:'2026-05-01',label:'Buddha Purnima'},
+      {date:'2026-05-27',label:'Eid ul-Adha (Bakrid)'},
+      {date:'2026-08-28',label:'Raksha Bandhan'},
+      {date:'2026-09-14',label:'Janmashtami'},
+      {date:'2026-10-11',label:'Navratri Begins'},
+      {date:'2026-10-19',label:'Dussehra'},
+      {date:'2026-10-28',label:'Dhanteras'},
+      {date:'2026-10-29',label:'Diwali'},
+      {date:'2026-10-30',label:'Diwali (Govardhan Puja)'},
+      {date:'2026-10-31',label:'Bhai Dooj'},
+      {date:'2026-11-23',label:'Dev Diwali'},
+    ],
+    2027:[
+      {date:'2027-02-05',label:'Maha Shivratri'},
+      {date:'2027-03-21',label:'Holika Dahan'},
+      {date:'2027-03-22',label:'Holi / Dhuleti'},
+      {date:'2027-03-09',label:'Id-ul-Fitr (Eid)'},
+      {date:'2027-03-22',label:'Ram Navami'},
+      {date:'2027-03-26',label:'Good Friday'},
+      {date:'2027-04-14',label:'Dr. Ambedkar Jayanti'},
+      {date:'2027-04-28',label:'Akshaya Tritiya'},
+      {date:'2027-05-20',label:'Buddha Purnima'},
+      {date:'2027-05-17',label:'Eid ul-Adha (Bakrid)'},
+      {date:'2027-08-18',label:'Raksha Bandhan'},
+      {date:'2027-09-04',label:'Janmashtami'},
+      {date:'2027-10-19',label:'Navratri Begins'},
+      {date:'2027-10-08',label:'Dussehra'},
+      {date:'2027-11-17',label:'Dhanteras'},
+      {date:'2027-11-18',label:'Diwali'},
+      {date:'2027-11-19',label:'Diwali (Govardhan Puja)'},
+      {date:'2027-11-20',label:'Bhai Dooj'},
+    ],
+    2028:[
+      {date:'2028-02-24',label:'Maha Shivratri'},
+      {date:'2028-02-27',label:'Id-ul-Fitr (Eid)'},
+      {date:'2028-03-10',label:'Holika Dahan'},
+      {date:'2028-03-11',label:'Holi / Dhuleti'},
+      {date:'2028-04-11',label:'Ram Navami'},
+      {date:'2028-04-14',label:'Dr. Ambedkar Jayanti / Good Friday'},
+      {date:'2028-05-05',label:'Eid ul-Adha (Bakrid)'},
+      {date:'2028-05-09',label:'Akshaya Tritiya / Buddha Purnima'},
+      {date:'2028-08-07',label:'Raksha Bandhan'},
+      {date:'2028-08-24',label:'Janmashtami'},
+      {date:'2028-10-07',label:'Navratri Begins'},
+      {date:'2028-10-16',label:'Dussehra'},
+      {date:'2028-11-06',label:'Dhanteras'},
+      {date:'2028-11-07',label:'Diwali'},
+      {date:'2028-11-08',label:'Diwali (Govardhan Puja)'},
+      {date:'2028-11-09',label:'Bhai Dooj'},
+    ],
+    2029:[
+      {date:'2029-02-13',label:'Maha Shivratri'},
+      {date:'2029-02-15',label:'Id-ul-Fitr (Eid)'},
+      {date:'2029-02-28',label:'Holika Dahan'},
+      {date:'2029-03-01',label:'Holi / Dhuleti'},
+      {date:'2029-04-01',label:'Ram Navami'},
+      {date:'2029-03-30',label:'Good Friday'},
+      {date:'2029-04-14',label:'Dr. Ambedkar Jayanti'},
+      {date:'2029-04-25',label:'Eid ul-Adha (Bakrid)'},
+      {date:'2029-04-28',label:'Akshaya Tritiya / Buddha Purnima'},
+      {date:'2029-08-27',label:'Raksha Bandhan'},
+      {date:'2029-09-12',label:'Janmashtami'},
+      {date:'2029-09-27',label:'Navratri Begins'},
+      {date:'2029-10-06',label:'Dussehra'},
+      {date:'2029-10-26',label:'Dhanteras'},
+      {date:'2029-10-27',label:'Diwali'},
+      {date:'2029-10-28',label:'Diwali (Govardhan Puja)'},
+      {date:'2029-10-29',label:'Bhai Dooj'},
+    ],
+    2030:[
+      {date:'2030-02-05',label:'Id-ul-Fitr (Eid)'},
+      {date:'2030-03-04',label:'Maha Shivratri'},
+      {date:'2030-03-18',label:'Holika Dahan'},
+      {date:'2030-03-19',label:'Holi / Dhuleti'},
+      {date:'2030-04-15',label:'Eid ul-Adha (Bakrid)'},
+      {date:'2030-04-19',label:'Good Friday'},
+      {date:'2030-04-14',label:'Dr. Ambedkar Jayanti'},
+      {date:'2030-04-20',label:'Ram Navami'},
+      {date:'2030-05-18',label:'Akshaya Tritiya / Buddha Purnima'},
+      {date:'2030-08-16',label:'Raksha Bandhan'},
+      {date:'2030-09-03',label:'Janmashtami'},
+      {date:'2030-10-16',label:'Navratri Begins'},
+      {date:'2030-10-25',label:'Dussehra'},
+      {date:'2030-11-14',label:'Dhanteras'},
+      {date:'2030-11-15',label:'Diwali'},
+      {date:'2030-11-16',label:'Diwali (Govardhan Puja)'},
+      {date:'2030-11-17',label:'Bhai Dooj'},
+    ]
+  };
+  const yearHols=byYear[yr]||[];
+  // Merge: skip duplicates with fixed-date ones
+  yearHols.forEach(h=>{if(!result.find(r=>r.date===h.date))result.push(h);});
+  return result;
+}
+function loadIndianHolidays(yr){
+  const hols=getIndianHolidays(yr);
+  if(!STATE.settings.holidays)STATE.settings.holidays=[];
+  if(!STATE.settings.holidayLabels)STATE.settings.holidayLabels={};
+  let added=0;
+  hols.forEach(h=>{
+    if(!STATE.settings.holidays.includes(h.date)){
+      STATE.settings.holidays.push(h.date);added++;
+    }
+    STATE.settings.holidayLabels[h.date]=STATE.settings.holidayLabels[h.date]||h.label;
+  });
+  persist();api('saveSettings',{settings:STATE.settings});
+  const listEl=el('s-hol-list');if(listEl)listEl.innerHTML=renderHolidayList();
+  const knownYears=[2025,2026,2027,2028,2029,2030];
+  const extraNote=knownYears.includes(yr)?'':' (only national holidays — festivals not yet available for this year, add manually)';
+  toast(added+' holidays loaded for '+yr+(added===0?' (all already added)':extraNote),'ok');
+}
+function renderHolidayList(){
+  const hols=STATE.settings.holidays||[];
+  const labels=STATE.settings.holidayLabels||{};
+  const td=today();
+  if(!hols.length)return '<div style="font-size:12px;color:var(--t3);text-align:center;padding:10px 0">No holidays added yet</div>';
+  const sorted=[...hols].sort();
+  return sorted.map(d=>{
+    const isPast=d<td;
+    const isToday=d===td;
+    const lbl=labels[d]||'';
+    const dt=new Date(d+'T00:00:00');
+    const dayName=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dt.getDay()];
+    const display=dt.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--br);opacity:'+(isPast?'0.45':'1')+'">'
+      +'<span style="font-size:18px">'+(isToday?'🔴':isPast?'✅':'📅')+'</span>'
+      +'<div style="flex:1">'
+      +'<div style="font-size:13px;font-weight:700;color:var(--tx)">'+(lbl||'Closure')+(isToday?' <span style="font-size:10px;background:#DC2626;color:white;padding:1px 6px;border-radius:4px;font-weight:800">TODAY</span>':'')+'</div>'
+      +'<div style="font-size:11px;color:var(--t3)">'+dayName+', '+display+'</div>'
+      +'</div>'
+      +'<button onclick="removeHoliday(\''+d+'\')" style="background:none;border:none;font-size:16px;cursor:pointer;color:#EF4444;padding:4px 6px">✕</button>'
+      +'</div>';
+  }).join('');
+}
+function addHoliday(){
+  const d=el('s-hol-date')?.value;
+  if(!d){toast('Pick a date first','er');return;}
+  if(!STATE.settings.holidays)STATE.settings.holidays=[];
+  if(STATE.settings.holidays.includes(d)){toast('Already added','er');return;}
+  const lbl=(el('s-hol-label')?.value||'').trim();
+  STATE.settings.holidays.push(d);
+  if(lbl){if(!STATE.settings.holidayLabels)STATE.settings.holidayLabels={};STATE.settings.holidayLabels[d]=lbl;}
+  persist();api('saveSettings',{settings:STATE.settings});
+  const listEl=el('s-hol-list');if(listEl)listEl.innerHTML=renderHolidayList();
+  if(el('s-hol-date'))el('s-hol-date').value='';
+  if(el('s-hol-label'))el('s-hol-label').value='';
+  toast('Holiday added — tasks will skip this date','ok');
+}
+function addHolidayToday(){
+  const d=today();
+  const pendingToday=(STATE.taskInstances||[]).filter(t=>!t._deleted&&(t.status==='Pending'||t.status==='In Progress')&&t.generatedDate===d);
+  const msg=pendingToday.length
+    ? 'Mark today as CLOSED?\n\n'+pendingToday.length+' active task(s) will be marked Done as "Shop Closed". This syncs to all staff devices immediately.'
+    : 'Mark today as CLOSED? No active tasks to clear today.';
+  if(!confirm(msg))return;
+  if(!STATE.settings.holidays)STATE.settings.holidays=[];
+  if(!STATE.settings.holidayLabels)STATE.settings.holidayLabels={};
+  if(!STATE.settings.holidays.includes(d))STATE.settings.holidays.push(d);
+  STATE.settings.holidayLabels[d]=STATE.settings.holidayLabels[d]||'Shop Closed';
+  persist();api('saveSettings',{settings:STATE.settings});
+  /* Clear all active tasks for today — Pending AND In Progress */
+  let cleared=0;
+  (STATE.taskInstances||[]).forEach(t=>{
+    if(!t._deleted&&(t.status==='Pending'||t.status==='In Progress')&&t.generatedDate===d){
+      t.status='Done';t.completedAt=new Date().toISOString();
+      t.completedByUserId='system';t.completedByName='Shop Closed (Holiday)';
+      t.isOnTime=false;t._ts=Date.now();
+      cleared++;
+    }
+  });
+  /* persist() saves locally AND pushes delta to Firebase → all devices see the change */
+  persist();
+  /* Re-render whatever is currently visible */
+  const listEl=el('s-hol-list');if(listEl)listEl.innerHTML=renderHolidayList();
+  try{renderDash();}catch(e){}
+  try{renderTasks();}catch(e){}
+  toast('Today marked closed — '+cleared+' task(s) cleared & synced to all devices','ok');
+}
+function removeHoliday(d){
+  if(!STATE.settings.holidays)return;
+  STATE.settings.holidays=STATE.settings.holidays.filter(x=>x!==d);
+  if(STATE.settings.holidayLabels)delete STATE.settings.holidayLabels[d];
+  persist();api('saveSettings',{settings:STATE.settings});
+  const listEl=el('s-hol-list');if(listEl)listEl.innerHTML=renderHolidayList();
+  toast('Holiday removed','ok');
 }
 function renderDBSetup(){
 const c=el('dbbod'); if(!c) return;
@@ -9009,7 +9263,7 @@ const c=el('rep-dayend-body'); if(!c) return;
 const isAdmin=STATE.user?.role==='admin';
 const td=today();
 const myId=STATE.user?.id;
-const tasksDoneToday=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.status==='Done'&&(t.completedAt||'').slice(0,10)===td);
+const tasksDoneToday=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.status==='Done'&&t.completedByUserId!=='system'&&(t.completedAt||'').slice(0,10)===td);
 const tasksPendingToday=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.status==='Pending'&&t.generatedDate<=td);
 const leadsTouchedToday=(STATE.leads||[]).filter(l=>!l._deleted&&(l.notes||[]).some(n=>n.date===td));
 const leadsAddedToday=(STATE.leads||[]).filter(l=>!l._deleted&&l.createdAt===td);
@@ -15851,7 +16105,7 @@ function renderDashDayWrapWidget(){
   const isAdmin=STATE.user?.role==='admin';
   if(!isAdmin&&!hasPerm('rep_dayend')){c.style.display='none';c.innerHTML='';return;}
   const td=today();
-  const tasksDoneToday=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.status==='Done'&&(t.completedAt||'').slice(0,10)===td).length;
+  const tasksDoneToday=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.status==='Done'&&t.completedByUserId!=='system'&&(t.completedAt||'').slice(0,10)===td).length;
   const leadsTouchedToday=(STATE.leads||[]).filter(l=>!l._deleted&&(l.notes||[]).some(n=>n.date===td)).length;
   const leadsDueToday=getLeadsNeedingFollowup();
   const leadsDuePending=leadsDueToday.filter(l=>!(l.notes||[]).some(n=>n.date===td)).length;
