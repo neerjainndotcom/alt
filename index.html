@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.54';
+const APP_VERSION='1.40.55';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -4147,8 +4147,13 @@ const wrap=el('ex-bill-wrap'); const billSel=el('ex-bill-sel');
 if(!wrap||!billSel) return;
 if(!custId||custId==='__legacy__'){ wrap.style.display='none'; return; }
 const bills=(STATE.bills||[]).filter(b=>b.custId===custId&&!b._deleted&&b.status!=='cancelled').sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-if(!bills.length){ wrap.style.display='none'; return; }
 wrap.style.display='';
+if(!bills.length){
+  billSel.innerHTML='<option value="">— No past bills found for this customer —</option>';
+  billSel.disabled=true;
+  return;
+}
+billSel.disabled=false;
 billSel.innerHTML='<option value="">— Select a bill to pre-fill items —</option>'+
 bills.map(b=>'<option value="'+b.id+'">'+escHtml(b.billNo||'')+(b.date?' ('+fmtDate(b.date)+')':'')+' — '+(b.items||[]).length+' items</option>').join('');
 }
@@ -6759,7 +6764,7 @@ if(editingBill){
     }
   });
 }
-if(!bno){toast('Enter invoice number','er');return;}
+if(!bno){_savingBill=false;toast('Enter invoice number','er');return;}
 /* Duplicate number check — another device may have created same number simultaneously */
 if(STATE.bills.find(b=>b.billNo===bno&&b.id!==_editBillId&&!b._deleted)){bno=nextBillNo();}
 if(!_billOrdId||_billLots.length>0){
@@ -6812,7 +6817,7 @@ for(const lot of _mixSareLots){
   items.push({isMixSaree:true,mixBatchId:batchId,mixBatchRef:batch.ref,itemName:'Mixed Sarees',colourName:src,pcs,rate,amount:pcs*rate,mtrs:0,taka:0,sku:batch.ref});
   mixSareItemsToRecord.push({batchId,pcs});
 }
-if(!items.length){toast('Add at least one item','er');return;}
+if(!items.length){_savingBill=false;toast('Add at least one item','er');return;}
 const sub=items.reduce((s,i)=>s+i.amount,0);
 const discPct=parseFloat(el('bl-disc')?.value)||0;
 const discAmt=Math.round(sub*discPct/100);
@@ -17622,7 +17627,7 @@ const pending=(STATE.sampleSets||[]).filter(s=>!s._deleted&&s.status!=='Returned
 if(!pending.length)return;
 const sum=pending.map(ss=>fmtDate(ss.date)+': '+ss.lots.map(l=>l.itemName+(l.range?' / '+l.range:'')).join(', ')).join('<br>');
 const b=document.createElement('div');b.id='bl-ss-warn';b.style.cssText='background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:10px;padding:10px 12px;margin-bottom:10px';
-b.innerHTML='<div style="font-size:11px;font-weight:800;color:#92400E;margin-bottom:4px">&#x26A0;&#xFE0F; Pending Sample Set(s) for this party</div><div style="font-size:11px;color:#78350F;line-height:1.5">'+sum+'</div><div style="font-size:10px;color:#92400E;margin-top:4px;font-weight:700">&#x1F4CB; Include these in the bill?</div>';
+b.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px"><div style="flex:1"><div style="font-size:11px;font-weight:800;color:#92400E;margin-bottom:4px">&#x26A0;&#xFE0F; Pending Sample Set(s) for this party</div><div style="font-size:11px;color:#78350F;line-height:1.5">'+sum+'</div><div style="font-size:10px;color:#92400E;margin-top:6px;font-weight:700">&#x1F4CB; Include any of these in this bill? Add them as line items above if needed.</div></div><button onclick="this.closest(\'#bl-ss-warn\').remove()" style="flex-shrink:0;background:none;border:none;font-size:16px;color:#92400E;cursor:pointer;padding:0 2px;line-height:1" title="Dismiss">&#x2715;</button></div>';
 const bd=el('billbod');if(bd)bd.insertBefore(b,bd.firstChild);
 }
 // DELTA SYNC — record-level. Each collection lives at /altstock/{col}/{id}
