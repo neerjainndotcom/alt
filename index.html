@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.46';
+const APP_VERSION='1.40.47';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -14741,6 +14741,18 @@ return (STATE.staffLeave||[]).find(lv=>!lv._deleted&&lv.userId===userId&&dateStr
 }
 function renderMyTasks(q){
 const c=el('task-lst-my'); if(!c) return;
+/* ── Wait for first Firebase sync before showing "No Tasks" ──────────────────
+   On a fresh device, taskInstances may be empty until the first pull completes.
+   Show a "Syncing…" spinner so staff don't see a false "No Tasks Today".     */
+if(FIREBASE_URL&&!window._fbFirstSyncDone){
+  c.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--t3)">'+
+    '<div style="font-size:32px;margin-bottom:12px">🔄</div>'+
+    '<div style="font-size:15px;font-weight:700;margin-bottom:6px">Syncing tasks…</div>'+
+    '<div style="font-size:12px">Please wait while your tasks are loaded from the server.</div>'+
+    '<div style="margin-top:16px"><button class="btn" onclick="silentPullGAS().then(()=>{renderMyTasks();updateTaskDot();})" style="font-size:12px;padding:6px 14px">↻ Refresh Now</button></div>'+
+    '</div>';
+  return;
+}
 const today_s=today();
 const myId=STATE.user?.id;
 const query=(q||el('task-search')?.value||'').trim().toLowerCase();
@@ -14773,7 +14785,20 @@ const _upcomingHtml=upcomingTasks.length?
 upcomingTasks.map(task=>'<div style="margin-bottom:4px"><div style="font-size:9px;font-weight:700;color:#7C3AED;margin-bottom:2px">📅 For '+fmtDate(task.generatedDate)+'</div>'+taskCard(task)+'</div>').join('')
 :'';
 if(!tasks.length&&!upcomingTasks.length){
-c.innerHTML='<div class="emp"><div class="emj">✅</div><h3>No Tasks Today</h3><p>You have no tasks assigned for today</p></div>';
+/* Show diagnostic info in the empty state so admin can verify user ID/name match */
+const _diagName=STATE.user?.name||'(unknown)';
+const _diagId=STATE.user?.id||'(no id)';
+const _diagRole=STATE.user?.role||'staff';
+const _totalInst=(STATE.taskInstances||[]).filter(t=>!t._deleted).length;
+c.innerHTML='<div class="emp"><div class="emj">✅</div><h3>No Tasks Today</h3>'+
+  '<p>No tasks assigned to you for today</p>'+
+  '<div style="margin-top:12px;font-size:11px;color:var(--t3);background:var(--bg2);border-radius:8px;padding:8px 12px;text-align:left">'+
+  '<b>Logged in as:</b> '+_diagName+' ('+_diagRole+')<br>'+
+  '<b>User ID:</b> '+_diagId+'<br>'+
+  '<b>Total task records loaded:</b> '+_totalInst+
+  '</div>'+
+  '<div style="margin-top:10px"><button class="btn" onclick="silentPullGAS().then(()=>{renderMyTasks();updateTaskDot();})" style="font-size:12px;padding:6px 14px">↻ Sync &amp; Refresh</button></div>'+
+  '</div>';
 return;
 }
 if(!tasks.length){
@@ -17328,6 +17353,8 @@ async function pullAllFromFirebase(force){
     // re-upload every record it has, defeating the point of delta sync.
     _dsSetLastPush(pullStartTs);
     window._fbFirstSyncDone=true;
+    /* Refresh whatever screen the user is on now that data has loaded */
+    try{refreshCurrentView();}catch(e){}
     return true;
   }catch(e){ return false; }
 }
