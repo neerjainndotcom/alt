@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.47';
+const APP_VERSION='1.40.50';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -2200,6 +2200,7 @@ if(window._ssNewRangeForLot!=null){
   setTimeout(()=>{const rSel=el('ssl-'+_lid+'-r');if(rSel){rSel.value=rName;rSel.dispatchEvent(new Event('change',{bubbles:true}));}},80);
   if(el('m-sample-set')?.classList.contains('on'))showMod('m-sample-set');
 }
+if(window._inwNewRangeForLot!=null){const _lid=window._inwNewRangeForLot;window._inwNewRangeForLot=null;_inwAfterNewRange(_lid,rName);}
 }
 function saveAddClrs(){
 const iid=window._qcIid, rng=window._qcRng;
@@ -2229,6 +2230,7 @@ if(window._ssAddClrForLot!=null){
     setTimeout(()=>{const rSel=el('ssl-'+_lid+'-r');if(rSel){rSel.value=rv;rSel.dispatchEvent(new Event('change',{bubbles:true}));}},80);}
   if(el('m-sample-set')?.classList.contains('on'))showMod('m-sample-set');
 }
+if(window._inwAddClrForLot!=null){const _lid=window._inwAddClrForLot;window._inwAddClrForLot=null;_inwAfterAddClr(_lid);}
 }
 function saveItem(){
 const name=(el('itm-name').value||'').trim().toUpperCase(); if(!name){toast('Enter item name','er');return;}
@@ -2261,6 +2263,7 @@ if(window._ssNewItemForLot!=null){
   }
   if(el('m-sample-set')?.classList.contains('on'))showMod('m-sample-set');
 }
+if(window._inwNewItemForLot!=null){const _lid=window._inwNewItemForLot;window._inwNewItemForLot=null;_inwAfterNewItem(_lid);}
 }
 function clearCustFlt(){
 if(el('cst-flt-market')) el('cst-flt-market').value='';
@@ -3017,6 +3020,227 @@ const c=el('in-lots'); if(!c) return;
 c.innerHTML='';
 _inLots.forEach((lot,li)=>appendInwLotCard(lot,li,c));
 }
+/* ── Inward lot quick-add helpers ──────────────────────────────────────────
+   Called when user clicks "➕ Add New Item/Range/Colour" inside the inward
+   GP form. We open the existing Masters modals, then the save callbacks
+   (_inwNewItemForLot / _inwNewRangeForLot / _inwAddClrForLot) redirect back
+   and refresh the relevant lot selects automatically.                       */
+function inwLotAddColour(lid,iid,rng){
+window._inwAddClrForLot=lid;
+window._qcIid=iid; window._qcRng=rng; window._qcPfx=null;
+el('aclrtit').textContent='Add Colours to Range '+rng;
+showMod('m-aclr');
+}
+/* Called from saveItem() — refresh the item dropdown and select the new item */
+function _inwAfterNewItem(lid){
+const iSel=el('inl-'+lid+'-i'); if(!iSel) return;
+if(iSel._itemRebuild) iSel.innerHTML=iSel._itemRebuild();
+makeSearchable(iSel);
+const newItem=STATE.items.filter(x=>!x._deleted).sort((a,b)=>b._ts-a._ts)[0];
+if(newItem){ iSel.value=newItem.id; inwLotItemChange(lid); }
+if(el('m-inw')?.classList.contains('on'))showMod('m-inw');
+}
+/* Called from saveAddRng() — refresh range dropdown and auto-select new range */
+function _inwAfterNewRange(lid,rName){
+const iSel=el('inl-'+lid+'-i'); if(!iSel) return;
+inwLotItemChange(lid); /* repopulates range dropdown */
+setTimeout(()=>{
+  const rSel=el('inl-'+lid+'-r'); if(!rSel) return;
+  const targetVal=rName===''?'__norange__':rName;
+  rSel.value=targetVal;
+  inwLotRangeChange(lid);
+},80);
+if(el('m-inw')?.classList.contains('on'))showMod('m-inw');
+}
+/* Called from saveAddClrs() — re-render colour list for current range */
+function _inwAfterAddClr(lid){
+inwLotRangeChange(lid);
+if(el('m-inw')?.classList.contains('on'))showMod('m-inw');
+}
+/* ── End inward lot quick-add helpers ─────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   INWARD PIECE CALCULATOR
+   Opens from the 🧮 button on any colour row. Lets the user add multiple
+   bundles/rolls and see the running total, then fills T/TP/M fields with
+   one tap. Supports two modes: Taka (T + TP) and Metres.
+   ══════════════════════════════════════════════════════════════════════════════ */
+let _inwCalcLid=null,_inwCalcIdx=null,_inwCalcMode='taka',_inwCalcEntries=[];
+
+function _ensureInwCalcModal(){
+if(el('m-inw-calc'))return;
+const wrap=document.createElement('div');
+wrap.className='ov';wrap.id='m-inw-calc';
+wrap.onclick=e=>{if(e.target===wrap)hideMod('m-inw-calc');};
+wrap.innerHTML=
+  '<div class="sh">'+
+  '<div class="hdl"></div>'+
+  '<div class="shh"><div class="hr">'+
+  '<div><h3 id="inwcalc-title">🧮 Piece Calculator</h3>'+
+  '<p class="sub" id="inwcalc-sub" style="font-size:11px"></p></div>'+
+  '<button class="btn bgh bsm" onclick="hideMod(\'m-inw-calc\')">✕</button>'+
+  '</div></div>'+
+  '<div class="shb" style="padding:0" id="inwcalc-body"></div>'+
+  '<div class="shf">'+
+  '<button class="btn bgh bfl" onclick="hideMod(\'m-inw-calc\')">Cancel</button>'+
+  '<button class="btn bp bfl" id="inwcalc-apply" onclick="applyInwCalc()">✓ Apply to Row</button>'+
+  '</div></div>';
+document.body.appendChild(wrap);
+}
+
+function openInwCalc(lid,idx,colName){
+_inwCalcLid=lid;_inwCalcIdx=idx;_inwCalcMode='taka';_inwCalcEntries=[];
+_ensureInwCalcModal();
+const sub=el('inwcalc-sub');if(sub)sub.textContent=colName;
+_inwCalcRender();
+showMod('m-inw-calc');
+}
+
+function _inwCalcAvg(){return{avgT:STATE.settings.avgMtrPerTaka||90,avgTP:STATE.settings.avgMtrPerTP||45};}
+
+function _inwCalcTotals(){
+const{avgT,avgTP}=_inwCalcAvg();let totT=0,totTP=0,totM=0;
+_inwCalcEntries.forEach(e=>{
+  if(_inwCalcMode==='taka'){totT+=e.t||0;totTP+=e.tp||0;totM+=Math.round((e.t||0)*avgT+(e.tp||0)*avgTP);}
+  else{totM+=e.m||0;}
+});
+if(_inwCalcMode==='metres')totT=Math.round(totM/avgT);
+return{totT,totTP,totM};
+}
+
+function _inwCalcRender(){
+const body=el('inwcalc-body');if(!body)return;
+const{avgT,avgTP}=_inwCalcAvg();
+const isTaka=_inwCalcMode==='taka';
+const{totT,totTP,totM}=_inwCalcTotals();
+const n=_inwCalcEntries.length;
+
+const applyBtn=el('inwcalc-apply');
+if(applyBtn)applyBtn.disabled=!n;
+
+let html=
+/* Mode toggle */
+'<div style="display:flex;margin:12px 16px 10px;border-radius:10px;overflow:hidden;border:1.5px solid #E5E7EB">'+
+'<button onclick="_inwCalcMode=\'taka\';_inwCalcRender()" style="flex:1;padding:9px;font-size:12px;font-weight:700;border:none;cursor:pointer;transition:.15s;background:'+(isTaka?'#4F46E5':'white')+';color:'+(isTaka?'white':'#6B7280')+'">📦 Taka</button>'+
+'<button onclick="_inwCalcMode=\'metres\';_inwCalcRender()" style="flex:1;padding:9px;font-size:12px;font-weight:700;border:none;cursor:pointer;transition:.15s;background:'+(!isTaka?'#4F46E5':'white')+';color:'+(!isTaka?'white':'#6B7280')+'">📏 Metres</button>'+
+'</div>'+
+/* Running total card */
+'<div style="margin:0 16px 12px;background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:12px;padding:14px 16px">'+
+'<div style="font-size:10px;font-weight:700;color:#A5B4FC;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Running Total — '+n+' piece'+(n!==1?'s':'')+' added</div>'+
+'<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">'+
+(n===0?'<div style="font-size:15px;color:#6E6FA0;font-style:italic">No pieces yet</div>':
+  (isTaka?
+    '<div><span style="font-size:32px;font-weight:900;color:#FBBF24;font-family:monospace">'+totT+'</span><span style="font-size:14px;color:#FEF08A;margin-left:4px">T</span>'+
+    (totTP>0?'<span style="font-size:18px;color:#FCD34D;margin:0 8px">+</span><span style="font-size:24px;font-weight:900;color:#FBBF24;font-family:monospace">'+totTP+'</span><span style="font-size:14px;color:#FEF08A;margin-left:4px">TP</span>':'')+'</div>'+
+    '<div style="font-size:14px;color:#6EE7B7;font-weight:700;flex-shrink:0">≈ '+totM+' m</div>'
+    :
+    '<div><span style="font-size:32px;font-weight:900;color:#FBBF24;font-family:monospace">'+totM+'</span><span style="font-size:14px;color:#FEF08A;margin-left:4px">m</span></div>'+
+    '<div style="font-size:14px;color:#6EE7B7;font-weight:700;flex-shrink:0">≈ '+totT+' T</div>'
+  )
+)+
+'</div>'+
+'</div>'+
+/* Add piece form */
+'<div style="margin:0 16px 14px;padding:12px;background:#F9FAFB;border-radius:10px;border:1.5px solid #E5E7EB">'+
+'<div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:10px">➕ Add a Piece / Bundle</div>'+
+'<div style="display:flex;gap:8px;align-items:flex-end">'+
+(isTaka?
+  '<div style="display:flex;gap:6px;flex:1">'+
+  '<div style="flex:1;text-align:center">'+
+  '<div style="font-size:9px;font-weight:700;color:#D97706;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Taka</div>'+
+  '<input type="number" id="inwcalc-t" min="0" step="1" placeholder="0" autocomplete="off" onkeydown="if(event.key===\'Enter\')_inwCalcAdd()" oninput="_inwCalcPreview()" style="width:100%;border:2px solid #FDE68A;border-radius:8px;padding:8px 4px;font-size:20px;font-weight:900;font-family:monospace;box-sizing:border-box;text-align:center;background:#FFFBEB"/>'+
+  '</div>'+
+  '<div style="font-size:22px;font-weight:700;color:#9CA3AF;padding-bottom:8px">+</div>'+
+  '<div style="flex:1;text-align:center">'+
+  '<div style="font-size:9px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">TP (half)</div>'+
+  '<input type="number" id="inwcalc-tp" min="0" step="1" placeholder="0" autocomplete="off" onkeydown="if(event.key===\'Enter\')_inwCalcAdd()" oninput="_inwCalcPreview()" style="width:100%;border:2px solid #E5E7EB;border-radius:8px;padding:8px 4px;font-size:20px;font-weight:900;font-family:monospace;box-sizing:border-box;text-align:center"/>'+
+  '</div>'+
+  '</div>'
+  :
+  '<div style="flex:1;text-align:center">'+
+  '<div style="font-size:9px;font-weight:700;color:#0891B2;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Metres</div>'+
+  '<input type="number" id="inwcalc-m" min="0" step="1" placeholder="0" autocomplete="off" onkeydown="if(event.key===\'Enter\')_inwCalcAdd()" oninput="_inwCalcPreview()" style="width:100%;border:2px solid #BAE6FD;border-radius:8px;padding:8px 4px;font-size:20px;font-weight:900;font-family:monospace;box-sizing:border-box;text-align:center;background:#F0F9FF"/>'+
+  '</div>'
+)+
+'<button onclick="_inwCalcAdd()" style="flex-shrink:0;width:46px;height:46px;border-radius:10px;border:none;background:#4F46E5;color:white;font-size:24px;font-weight:900;cursor:pointer">+</button>'+
+'</div>'+
+'<div id="inwcalc-preview" style="font-size:11px;color:#6B7280;margin-top:8px;min-height:16px;text-align:center"></div>'+
+'</div>';
+
+/* Entry list */
+if(n){
+html+='<div style="margin:0 16px"><div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Pieces</div>';
+_inwCalcEntries.forEach((e,i)=>{
+  const em=isTaka?Math.round((e.t||0)*avgT+(e.tp||0)*avgTP):(e.m||0);
+  html+='<div style="display:flex;align-items:center;padding:9px 10px;border:1px solid #E5E7EB;border-radius:9px;margin-bottom:6px;background:white">'+
+  '<div style="font-size:10px;font-weight:700;color:#6B7280;width:22px;flex-shrink:0">#'+(i+1)+'</div>'+
+  '<div style="flex:1;font-size:14px;font-weight:800;color:#111827">'+
+  (isTaka?
+    '<span style="color:#D97706">'+(e.t||0)+'T</span>'+((e.tp||0)>0?' <span style="color:#9CA3AF;font-size:11px">+</span> <span style="color:#D97706">'+(e.tp)+'TP</span>':'')
+    :'<span style="color:#0891B2">'+(e.m||0)+'m</span>')+
+  '</div>'+
+  '<div style="font-size:11px;color:#6B7280;margin-right:10px">≈ '+em+'m</div>'+
+  '<button onclick="_inwCalcRemove('+i+')" style="width:24px;height:24px;border-radius:6px;border:none;background:#FEE2E2;color:#DC2626;font-size:14px;cursor:pointer;font-weight:900;line-height:1">×</button>'+
+  '</div>';
+});
+html+='</div>';
+}else{
+html+='<div style="text-align:center;padding:14px 16px;color:#9CA3AF;font-size:12px">No pieces added yet — enter values above and tap <b>+</b></div>';
+}
+
+body.innerHTML=html;
+setTimeout(()=>{const inp=el('inwcalc-t')||el('inwcalc-m');if(inp)inp.select();},60);
+}
+
+function _inwCalcPreview(){
+const{avgT,avgTP}=_inwCalcAvg();
+const prev=el('inwcalc-preview');if(!prev)return;
+if(_inwCalcMode==='taka'){
+  const t=parseInt(el('inwcalc-t')?.value)||0,tp=parseInt(el('inwcalc-tp')?.value)||0;
+  prev.textContent=(t||tp)?'This piece: '+(t?t+'T':'')+((t&&tp)?' + ':'')+( tp?tp+'TP':'')+' ≈ '+Math.round(t*avgT+tp*avgTP)+'m':'';
+}else{
+  const m=parseInt(el('inwcalc-m')?.value)||0;
+  prev.textContent=m?'This piece: '+m+'m ≈ '+Math.round(m/avgT)+'T':'';
+}
+}
+
+function _inwCalcAdd(){
+if(_inwCalcMode==='taka'){
+  const t=parseInt(el('inwcalc-t')?.value)||0,tp=parseInt(el('inwcalc-tp')?.value)||0;
+  if(!t&&!tp){toast('Enter taka or TP amount','er');return;}
+  _inwCalcEntries.push({t,tp});
+}else{
+  const m=parseInt(el('inwcalc-m')?.value)||0;
+  if(!m){toast('Enter metres amount','er');return;}
+  _inwCalcEntries.push({m});
+}
+_inwCalcRender();
+}
+
+function _inwCalcRemove(i){_inwCalcEntries.splice(i,1);_inwCalcRender();}
+
+function applyInwCalc(){
+if(!_inwCalcEntries.length){toast('Add at least one piece first','er');return;}
+const lid=_inwCalcLid,idx=_inwCalcIdx;
+const{totT,totTP,totM}=_inwCalcTotals();
+/* Auto-check the row if not already selected */
+const chk=el('inl-'+lid+'-ck-'+idx);
+if(chk&&!chk.checked){chk.checked=true;inwLotClrToggle(lid,idx,true);}
+const tFld=el('inl-'+lid+'-t-'+idx);
+const tpFld=el('inl-'+lid+'-tp-'+idx);
+const mFld=el('inl-'+lid+'-m-'+idx);
+if(tFld)tFld.value=totT||'';
+if(tpFld)tpFld.value=totTP||'';
+if(mFld)mFld.value=totM||'';
+calcInwLot(lid);
+hideMod('m-inw-calc');
+toast('✓ Applied: '+(_inwCalcMode==='taka'?totT+'T'+(totTP?' + '+totTP+'TP':''):totM+'m')+' → '+totM+'m','ok');
+setTimeout(()=>showMod('m-inw'),50);
+}
+/* ══════════════════════════════════════════════════════════════════════════════
+   END PIECE CALCULATOR
+   ══════════════════════════════════════════════════════════════════════════════ */
+
 function addInwLot(){
 _inLotId++;
 const lot={id:_inLotId};
@@ -3037,7 +3261,8 @@ if(card) card.remove();
 function populateItemSelectRetry(selectEl){
 if(!selectEl) return;
 const build=()=>'<option value="">Select Item...</option>'+
-  [...(STATE.items||[])].filter(i=>!i._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('');
+  [...(STATE.items||[])].filter(i=>!i._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(it=>'<option value="'+it.id+'">'+it.name+'</option>').join('')+
+  '<option value="__new_item__" style="color:#7C3AED;font-weight:700">➕ Add New Item…</option>';
 selectEl._itemRebuild=build;
 if((STATE.items||[]).length){ selectEl.innerHTML=build(); return; }
 selectEl.innerHTML='<option value="">⏳ Loading items…</option>';
@@ -3099,13 +3324,21 @@ makeSearchable(el('inl-'+lot.id+'-r'));
 }
 function inwLotItemChange(lid){
 const iid=el('inl-'+lid+'-i')?.value;
+/* Quick-add new item inline — open Masters item modal then return here */
+if(iid==='__new_item__'){
+  window._inwNewItemForLot=lid;
+  openItem();
+  return;
+}
 const rSel=el('inl-'+lid+'-r');
 const body=el('inl-'+lid+'-body');
 if(!iid||!rSel){if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select item and range above</div>';return;}
 const item=STATE.items.find(x=>x.id===iid);
 if(!item) return;
 const rngs=[...new Set(item.colours.filter(c=>!c._deleted&&!c.discontinued).map(c=>c.range))];
-rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+(r===''?'__norange__':r)+'">'+(r||'(No Range / Default)')+'</option>').join('');
+rSel.innerHTML='<option value="">Range...</option>'+
+  rngs.map(r=>'<option value="'+(r===''?'__norange__':r)+'">'+(r||'(No Range / Default)')+'</option>').join('')+
+  '<option value="__new_range__" style="color:#7C3AED;font-weight:700">➕ Add New Range…</option>';
 rSel.disabled=false;
 if(body)body.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Now select a range</div>';
 const foot=el('inl-'+lid+'-foot'); if(foot) foot.style.display='none';
@@ -3113,6 +3346,15 @@ const foot=el('inl-'+lid+'-foot'); if(foot) foot.style.display='none';
 function inwLotRangeChange(lid){
 const iid=el('inl-'+lid+'-i')?.value;
 const rngRaw=el('inl-'+lid+'-r')?.value;
+/* Quick-add new range inline — open Masters range modal then return here */
+if(rngRaw==='__new_range__'){
+  if(!iid){toast('Select an item first','er');return;}
+  window._inwNewRangeForLot=lid;
+  window._qrIid=iid; window._qrPfx=null;
+  el('rng-n').value=''; el('rng-cnt').value=1; buildClrRows('rng-rows','rng-cnt');
+  showMod('m-rng');
+  return;
+}
 const item=STATE.items.find(x=>x.id===iid);
 const body=el('inl-'+lid+'-body');
 if(!item||rngRaw===undefined||rngRaw===''||!body) return;
@@ -3125,6 +3367,7 @@ thead.innerHTML=
 '<div style="display:flex;align-items:center;gap:4px">'+
 '<div style="width:34px"></div>'+
 '<div style="flex:1;font-size:8px;font-weight:800;color:#A5B4FC;text-transform:uppercase;letter-spacing:.6px">Colour</div>'+
+'<div style="font-size:7px;font-weight:800;color:#C4B5FD;text-align:center;width:24px" title="Piece Calculator">🧮</div>'+
 '<div style="font-size:7px;font-weight:800;color:#FBBF24;text-transform:uppercase;text-align:center;width:38px">Taka</div>'+
 '<div style="font-size:7px;font-weight:800;color:#FBBF24;text-transform:uppercase;text-align:center;width:38px">TP</div>'+
 '<div style="font-size:7px;font-weight:800;color:#38BDF8;text-transform:uppercase;text-align:center;width:44px">Mtrs</div>'+
@@ -3156,6 +3399,7 @@ row.innerHTML=
 '</div>'+
 '<div style="display:flex;align-items:center;gap:4px">'+
 '<div style="font-size:8px;color:#9897B0;font-family:monospace;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+col.sku+'</div>'+
+'<button title="Piece Calculator — add multiple bundles and auto-sum" onclick="openInwCalc('+lid+','+idx+',\''+col.name.replace(/'/g,"\\'")+'\')" style="flex-shrink:0;width:24px;height:24px;border-radius:6px;border:1.5px solid #C4B5FD;background:#F5F3FF;color:#7C3AED;font-size:13px;cursor:pointer;padding:0;line-height:1" title="Piece Calculator">🧮</button>'+
 '<input type="number" id="inl-'+lid+'-t-'+idx+'" step="1" min="0" placeholder="0" oninput="calcInwLot('+lid+')" disabled style="width:36px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;box-sizing:border-box"/>'+
 '<input type="number" id="inl-'+lid+'-tp-'+idx+'" step="1" min="0" placeholder="0" oninput="calcInwLot('+lid+')" disabled style="width:36px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;box-sizing:border-box"/>'+
 '<input type="number" id="inl-'+lid+'-m-'+idx+'" step="1" min="0" placeholder="0" oninput="calcInwLot('+lid+')" disabled style="width:42px;text-align:center;border:1.5px solid #D1D5DB;border-radius:8px;padding:4px 2px;font-size:12px;font-weight:800;font-family:monospace;background:#F3F4F6;color:#9CA3AF;box-sizing:border-box"/>'+
@@ -3168,6 +3412,15 @@ if(chk){chk.checked=!chk.checked; inwLotClrToggle(lid,idx);}
 });
 body.appendChild(row);
 });
+/* ── Quick-add colour button ─────────────────────────────────────────── */
+const addClrBtn=document.createElement('div');
+addClrBtn.style.cssText='padding:8px 12px;border-top:1px solid #E5E7EB';
+const btn=document.createElement('button');
+btn.style.cssText='width:100%;font-size:11px;font-weight:700;color:#7C3AED;background:#F5F3FF;border:1.5px dashed #C4B5FD;border-radius:8px;padding:7px;cursor:pointer';
+btn.textContent='➕ Add New Colour to this Range';
+btn.addEventListener('click',()=>inwLotAddColour(lid,iid,rng));
+addClrBtn.appendChild(btn);
+body.appendChild(addClrBtn);
 calcInwLot(lid);
 }
 function inwLotToggleAll(lid){
@@ -14826,7 +15079,8 @@ let html=
 (overdueUniq.length?'<div style="background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#DC2626;font-weight:700">⚠️ '+overdueUniq.length+' missed task'+(overdueUniq.length>1?'s':'')+' from previous days — complete or mark done below</div>':'');
 ['High','Medium','Low'].forEach(pri=>{
 /* Only show Pending tasks in priority groups — Done tasks are collected separately below */
-const priTasks=todayTasks.filter(t=>t.priority===pri&&t.status==='Pending');
+/* Case-insensitive priority match: templates may store 'medium'/'high'/'low' in lowercase */
+const priTasks=todayTasks.filter(t=>(t.priority||'').toLowerCase()===pri.toLowerCase()&&t.status==='Pending');
 if(!priTasks.length) return;
 const pc=TASK_PRIORITY_COLORS[pri]||'#6366F1';
 html+='<div style="font-size:11px;font-weight:800;color:'+pc+';text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px">● '+pri+' PRIORITY</div>';
@@ -14848,7 +15102,9 @@ c.innerHTML=html;
 updateTaskDot();
 }
 function taskCard(task){
-const pc=TASK_PRIORITY_COLORS[task.priority]||'#6366F1';
+/* Normalize priority casing: templates may store 'medium'/'high'/'low' */
+const _priKey=task.priority?(task.priority.charAt(0).toUpperCase()+task.priority.slice(1).toLowerCase()):null;
+const pc=TASK_PRIORITY_COLORS[_priKey]||'#6366F1';
 const icon=TASK_CAT_ICONS[task.category]||'📌';
 const deadline=new Date(task.deadline);
 const now=new Date();
