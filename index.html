@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.60';
+const APP_VERSION='1.40.61';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -2828,6 +2828,7 @@ let _inType='mill', _inRows=[{}];
 let _inLots=[{id:0}]; let _inLotId=0; let _inMode='m';
 let _inEditVno=null; // null=new entry, voucherNo string=edit mode
 let _inOrigType=null; // original entry type ('mill','jobwork','exchange') for edit mode
+let _inEditLots=null; // grouped lot data for mill edit pre-fill [{itemId,range,entries}]
 
 /*********************************************************************
  *                                                                   *
@@ -2839,7 +2840,7 @@ let _inOrigType=null; // original entry type ('mill','jobwork','exchange') for e
  ********************************************************************/
 
 function showInward(type){
-_inType=type; _inRows=[{}]; _inLots=[{id:0}]; _inLotId=0; _inMode='m'; _inEditVno=null; _inOrigType=null;
+_inType=type; _inRows=[{}]; _inLots=[{id:0}]; _inLotId=0; _inMode='m'; _inEditVno=null; _inOrigType=null; _inEditLots=null;
 const T={mill:'Mill G.P',jwin:'Job Work Inward',exch:'Exchange Inward'};
 el('inwtit').textContent=T[type]||'Inward'; el('inwsub').textContent='';
 const sBtn=document.querySelector('#m-inw .shf .btn.bp');
@@ -2854,40 +2855,80 @@ const first=ents[0];
 const typeMap={mill:'mill',jobwork:'jwin',exchange:'exch'};
 _inType=typeMap[first.type]||'jwin';
 _inEditVno=voucherNo;
-_inOrigType=first.type; // preserve original DB type string
+_inOrigType=first.type;
 _inMode='t';
-_inRows=ents.map(e=>{
-  const item=STATE.items.find(x=>x.id===e.itemId);
-  const col=item?.colours?.[e.colIdx];
-  return{_iid:e.itemId,_rng:col?.range||'',_cIdx:String(e.colIdx),_taka:String(e.taka),_tp:''};
-});
-_inLots=[{id:0}];_inLotId=0;
+_inEditLots=null;
+if(_inType==='mill'){
+  // Group entries by item+range → each group = one LOT card
+  const lotMap=new Map();
+  ents.forEach(e=>{
+    const item=STATE.items.find(x=>x.id===e.itemId);
+    const range=item?.colours?.[e.colIdx]?.range||'';
+    const key=e.itemId+'|'+range;
+    if(!lotMap.has(key)) lotMap.set(key,{itemId:e.itemId,range,entries:[]});
+    lotMap.get(key).entries.push(e);
+  });
+  _inEditLots=[...lotMap.values()];
+  _inLots=_inEditLots.map((_,i)=>({id:i}));
+  _inLotId=_inLots.length-1;
+  _inRows=[{}];
+}else{
+  // jwin / exch: use flat rows (existing logic)
+  _inRows=ents.map(e=>{
+    const item=STATE.items.find(x=>x.id===e.itemId);
+    const col=item?.colours?.[e.colIdx];
+    return{_iid:e.itemId,_rng:col?.range||'',_cIdx:String(e.colIdx),_taka:String(e.taka),_tp:''};
+  });
+  _inLots=[{id:0}];_inLotId=0;
+}
 const T={mill:'Mill G.P',jwin:'Job Work',exch:'Exchange'};
 el('inwtit').textContent='Edit '+(T[_inType]||'Inward');
 el('inwsub').textContent='Editing '+voucherNo;
 buildInward();
-// Pre-fill header fields after buildInward()
+// Pre-fill header fields
 const vnoEl=el('in-vno');if(vnoEl){vnoEl.value=voucherNo;vnoEl.readOnly=true;vnoEl.style.opacity='0.6';}
 if(el('in-date'))el('in-date').value=first.date;
 if(el('in-ref'))el('in-ref').value=first.ref||'';
 const sup=STATE.suppliers.find(s=>s.name===first.party);
 if(sup&&el('in-pty'))el('in-pty').value=sup.id;
 if(el('in-notes'))el('in-notes').value=(first.note||'').replace(/^GP:[^|]*\|?\s*/,'');
-// Change save button text
 const sBtn=document.querySelector('#m-inw .shf .btn.bp');
 if(sBtn)sBtn.textContent='✅ Update Entry';
 showMod('m-inw');
-// Re-apply cascade values AFTER populateItemSelectRetry (setTimeout 0) fires and resets item selects
+// Restore form values AFTER populateItemSelectRetry (setTimeout 0ms) rebuilds item selects
 setTimeout(()=>{
   if(!_inEditVno) return;
-  _inRows.forEach((row,ri)=>{
-    if(!row._iid) return;
-    const iSel=el('ir'+ri+'-i');
-    if(iSel){iSel.value=row._iid; cascRng('ir'+ri,false);}
-    if(row._rng){const rSel=el('ir'+ri+'-r');if(rSel){rSel.value=row._rng;cascClr('ir'+ri,false);}}
-    if(row._cIdx){const cSel=el('ir'+ri+'-c');if(cSel){cSel.value=row._cIdx;onClrSel('ir'+ri,false);}}
-    if(row._taka){const t=el('ir'+ri+'-t');if(t){t.value=row._taka;updIRC(ri);}}
-  });
+  if(_inType==='mill'&&_inEditLots){
+    // Pre-fill each lot card: item → range → colour checkboxes + taka
+    _inEditLots.forEach((lotData,li)=>{
+      const lid=li;
+      const iSel=el('inl-'+lid+'-i'); if(!iSel) return;
+      iSel.value=lotData.itemId;
+      inwLotItemChange(lid);
+      const rSel=el('inl-'+lid+'-r'); if(!rSel) return;
+      rSel.value=lotData.range===''?'__norange__':lotData.range;
+      inwLotRangeChange(lid);
+      lotData.entries.forEach(e=>{
+        const chk=el('inl-'+lid+'-ck-'+e.colIdx);
+        if(chk){chk.checked=true;inwLotClrToggle(lid,e.colIdx,true);}
+        const tInp=el('inl-'+lid+'-t-'+e.colIdx);
+        if(tInp) tInp.value=e.taka;
+        const tpInp=el('inl-'+lid+'-tp-'+e.colIdx);
+        if(tpInp) tpInp.value='';
+      });
+      calcInwLot(lid);
+    });
+  }else{
+    // jwin/exch: cascade restore via flat rows
+    _inRows.forEach((row,ri)=>{
+      if(!row._iid) return;
+      const iSel=el('ir'+ri+'-i');
+      if(iSel){iSel.value=row._iid;cascRng('ir'+ri,false);}
+      if(row._rng){const rSel=el('ir'+ri+'-r');if(rSel){rSel.value=row._rng;cascClr('ir'+ri,false);}}
+      if(row._cIdx){const cSel=el('ir'+ri+'-c');if(cSel){cSel.value=row._cIdx;onClrSel('ir'+ri,false);}}
+      if(row._taka){const t=el('ir'+ri+'-t');if(t){t.value=row._taka;updIRC(ri);}}
+    });
+  }
 },30);
 }
 function buildInward(){
@@ -2900,16 +2941,16 @@ el('inwbod').innerHTML=
 '<div class="ir2"><div class="fg"><label>Voucher No.</label><input class="inp mono fw8" id="in-vno" value="'+nextInwardVoucher()+'" placeholder="Auto-generated"/></div><div class="fg"><label>Date</label><input class="inp" type="date" id="in-date" value="'+today()+'"/></div></div>'+
 '<div class="fg"><label>Ref No.</label><input class="inp" id="in-ref" placeholder="Bill/DC no."/></div>'+
 '<div class="fg"><label>Party / Supplier</label><select class="sel" id="in-pty"><option value="">Select supplier...</option>'+supOpts+'</select></div>'+
-(_inType==='mill'&&!_inEditVno
+(_inType==='mill'
   ?'<div class="fg"><label>Entry Mode</label><div class="sg2"><button class="sw'+(_inMode==='t'?' on':'')+'" id="in-mode-t" onclick="setInMode(\'t\')">📦 Taka + TP</button><button class="sw'+(_inMode==='m'?' on':'')+'" id="in-mode-m" onclick="setInMode(\'m\')">📏 Total Meters</button></div><div class="sub" style="margin-top:4px">'+(_inMode==='t'?'Enter Taka &amp; TP per colour — total meters &amp; avg taka auto-calculate.':'Enter total finish meters per colour — it auto-converts to avg taka.')+'</div></div>'
   :'')+
 gpSec+exchSec+
-(_inType==='mill'&&!_inEditVno
+(_inType==='mill'
   ?'<div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs (Lots)</div><div id="in-lots"></div><button class="btn bs bfl mt8" onclick="addInwLot()">+ Add LOT / Item</button>'
   :'<div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs</div><div id="in-rows"></div><button class="btn bs bfl mt8" onclick="addInRow()">+ Add SKU</button>'
 )+
 '<div class="fg mt12"><label>Notes</label><input class="inp" id="in-notes" placeholder="Optional"/></div>';
-if(_inType==='mill'&&!_inEditVno) renderInLots(); else renderInRows();
+if(_inType==='mill') renderInLots(); else renderInRows();
 }
 let _inDest='stk';
 function setDest(d,btn){
@@ -2946,7 +2987,7 @@ _inRows.forEach((row,i)=>{
   if(row._tp){ const tp=el('ir'+i+'-tp'); if(tp) tp.value=row._tp; }
   if(row._taka||row._tp) updIRC(i);
 });
-if(_inType==='mill'&&!_inEditVno){applyMillMode();_inRows.forEach((row,i)=>{if(row._mtrs){const m=el('ir'+i+'-m');if(m){m.value=row._mtrs;updIRCM(i);}}});};
+if(_inType==='mill'){applyMillMode();_inRows.forEach((row,i)=>{if(row._mtrs){const m=el('ir'+i+'-m');if(m){m.value=row._mtrs;updIRCM(i);}}});};
 }
 function updIRC(i){
 const t=parseInt(el('ir'+i+'-t')?.value)||0;
@@ -2978,7 +3019,7 @@ oldEnts.forEach(e=>{
   e._deleted=true; e._ts=Date.now();
 });
 }
-if(_inType==='mill'&&!_inEditVno){
+if(_inType==='mill'){
 _inLots.forEach(lot=>{
   const iid=el('inl-'+lot.id+'-i')?.value;
   const rngRaw=el('inl-'+lot.id+'-r')?.value;
@@ -2999,8 +3040,11 @@ _inLots.forEach(lot=>{
     }
     if(!totalTaka) return;
     const tpNote=tpCount>0?(fullNote?fullNote+' | TP: '+tpCount:'TP: '+tpCount):fullNote;
-    addStock(item.id,idx,totalTaka,'mill',party,ref,tpNote);
-    STATE.entries[STATE.entries.length-1].voucherNo=vno;
+    const entryType=_inEditVno?(_inOrigType||'mill'):'mill';
+    addStock(item.id,idx,totalTaka,entryType,party,ref,tpNote);
+    const lastEnt=STATE.entries[STATE.entries.length-1];
+    lastEnt.voucherNo=vno;
+    if(date) lastEnt.date=date;
     saved++;
   });
 });
@@ -3025,7 +3069,7 @@ saved++;
 if(!saved){toast('Add at least one SKU with taka','er');return;}
 const isEdit=!!_inEditVno;
 if(!isEdit) STATE.settings.nextInwardNo=(STATE.settings.nextInwardNo||1)+1;
-_inEditVno=null; _inOrigType=null;
+_inEditVno=null; _inOrigType=null; _inEditLots=null;
 persist(); hideMod('m-inw'); renderDash(); renderInRec();
 toast(vno+(isEdit?' updated':' saved')+' - '+saved+' SKU(s)','ok');
 api('saveEntry',{entries:STATE.entries,items:STATE.items});
