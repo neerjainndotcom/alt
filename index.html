@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.59';
+const APP_VERSION='1.40.60';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -2877,6 +2877,18 @@ if(el('in-notes'))el('in-notes').value=(first.note||'').replace(/^GP:[^|]*\|?\s*
 const sBtn=document.querySelector('#m-inw .shf .btn.bp');
 if(sBtn)sBtn.textContent='✅ Update Entry';
 showMod('m-inw');
+// Re-apply cascade values AFTER populateItemSelectRetry (setTimeout 0) fires and resets item selects
+setTimeout(()=>{
+  if(!_inEditVno) return;
+  _inRows.forEach((row,ri)=>{
+    if(!row._iid) return;
+    const iSel=el('ir'+ri+'-i');
+    if(iSel){iSel.value=row._iid; cascRng('ir'+ri,false);}
+    if(row._rng){const rSel=el('ir'+ri+'-r');if(rSel){rSel.value=row._rng;cascClr('ir'+ri,false);}}
+    if(row._cIdx){const cSel=el('ir'+ri+'-c');if(cSel){cSel.value=row._cIdx;onClrSel('ir'+ri,false);}}
+    if(row._taka){const t=el('ir'+ri+'-t');if(t){t.value=row._taka;updIRC(ri);}}
+  });
+},30);
 }
 function buildInward(){
 const supOpts=STATE.suppliers.map(s=>'<option value="'+s.id+'" data-g="'+s.group+'">'+s.name+' ('+s.group+')</option>').join('');
@@ -2934,7 +2946,7 @@ _inRows.forEach((row,i)=>{
   if(row._tp){ const tp=el('ir'+i+'-tp'); if(tp) tp.value=row._tp; }
   if(row._taka||row._tp) updIRC(i);
 });
-if(_inType==='mill'){applyMillMode();_inRows.forEach((row,i)=>{if(row._mtrs){const m=el('ir'+i+'-m');if(m){m.value=row._mtrs;updIRCM(i);}}});};
+if(_inType==='mill'&&!_inEditVno){applyMillMode();_inRows.forEach((row,i)=>{if(row._mtrs){const m=el('ir'+i+'-m');if(m){m.value=row._mtrs;updIRCM(i);}}});};
 }
 function updIRC(i){
 const t=parseInt(el('ir'+i+'-t')?.value)||0;
