@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.61';
+const APP_VERSION='1.40.63';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -4907,14 +4907,9 @@ if(sm&&STATE.user){ sm.value=STATE.user.id; onSalesmanChange(); }
 showMod('m-ord');
 }
 function buildOrdBody(){
-const salesmen=STATE.users.filter(u=>
-u.active!==false&&!u._deleted&&(
-(u.staffTypeId||'').toLowerCase().includes('salesman')||
-(u.staffTypeName||'').toLowerCase().includes('salesman')||
-u.role==='admin'
-)
-);
-const smOpts=salesmen.sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(u=>'<option value="'+u.id+'">'+u.name+(u.orderPrefix?' ('+u.orderPrefix+')':'')+'</option>').join('');
+const {admins,staff}=getAssignableSalesmen();
+const salesmen=[...admins,...staff];
+const smOpts=salesmen.map(u=>'<option value="'+u.id+'">'+u.name+(u.orderPrefix?' ('+u.orderPrefix+')':'')+'</option>').join('');
 const co=[...STATE.customers].filter(c=>!c._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(c=>'<option value="'+c.id+'"'+(c.address?' data-sub="'+escHtml(c.address)+'"':'')+'>'+c.name+'</option>').join('');
 const bo=[...STATE.brokers].sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(b=>'<option value="'+b.id+'">'+b.name+'</option>').join('');
 const isOpenOrd=(_ordType==='open');
@@ -5034,8 +5029,11 @@ el('cst-gst').value=''; el('cst-addr').value=''; el('cst-wa').value=''; el('cst-
 if(el('cst-disc')) el('cst-disc').value='';
 if(el('cst-dd')) el('cst-dd').value='';
 if(el('cst-nd')) el('cst-nd').value='';
+if(el('cst-star')) el('cst-star').checked=false;
+if(el('cst-star-days')) el('cst-star-days').value='';
 el('csttit').textContent='New Customer'; el('cst-si').textContent='Enter GSTIN to detect state';
-populateCstBrkSel('');
+populateCstBrkSel(''); populateCstGrpSel(''); populateCstMarketSel(''); populateCstSalesmanSel('');
+populateCstStarSalesmanSel(''); toggleCstStarFields();
 showMod('m-cst');
 }
 let _ordLots=[{id:0}]; let _lotId=0;
@@ -10361,6 +10359,7 @@ openWA(STATE.settings.adminWhatsApp,lines);
 }
 function renderVsOrderReport(){
 const c=el('rep-vsorder-body'); if(!c) return;
+const _fltItemVs=el('rep-item-flt')?.value||'';
 const skuMap={};
 STATE.items.filter(item=>!item._deleted).forEach(item=>{
 [...new Set(item.colours.filter(c=>!c._deleted).map(c=>c.range))].forEach(rng=>{
@@ -10407,7 +10406,6 @@ const rangePalette=[
 {bg:'#059669',text:'white'},
 {bg:'#DC2626',text:'white'},
 ];
-const _fltItemVs=el('rep-item-flt')?.value||'';
 ((_fltItemVs?Object.entries(itemGroups).filter(([k])=>k===_fltItemVs):Object.entries(itemGroups))).forEach(([itemName,ranges])=>{
 const anyIssue=Object.values(ranges).flat().some(r=>r.orderedTaka>0&&r.orderedTaka>r.stock);
 let ri=0;
