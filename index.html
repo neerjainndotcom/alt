@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.58';
+const APP_VERSION='1.40.59';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -2826,6 +2826,8 @@ lsSave('vs_products',STATE.products); hideMod('m-prd'); renderPrds(); toast('Pro
 }
 let _inType='mill', _inRows=[{}];
 let _inLots=[{id:0}]; let _inLotId=0; let _inMode='m';
+let _inEditVno=null; // null=new entry, voucherNo string=edit mode
+let _inOrigType=null; // original entry type ('mill','jobwork','exchange') for edit mode
 
 /*********************************************************************
  *                                                                   *
@@ -2837,10 +2839,44 @@ let _inLots=[{id:0}]; let _inLotId=0; let _inMode='m';
  ********************************************************************/
 
 function showInward(type){
-_inType=type; _inRows=[{}]; _inLots=[{id:0}]; _inLotId=0; _inMode='m';
+_inType=type; _inRows=[{}]; _inLots=[{id:0}]; _inLotId=0; _inMode='m'; _inEditVno=null; _inOrigType=null;
 const T={mill:'Mill G.P',jwin:'Job Work Inward',exch:'Exchange Inward'};
 el('inwtit').textContent=T[type]||'Inward'; el('inwsub').textContent='';
+const sBtn=document.querySelector('#m-inw .shf .btn.bp');
+if(sBtn) sBtn.textContent='Save Entry';
 buildInward(); showMod('m-inw');
+}
+function editInwardVoucher(voucherNo){
+const ents=STATE.entries.filter(e=>!e._deleted&&e.voucherNo===voucherNo);
+if(!ents.length){toast('Voucher not found','er');return;}
+if(!hasPerm('inward')){toast('No permission to edit inward entries','er');return;}
+const first=ents[0];
+const typeMap={mill:'mill',jobwork:'jwin',exchange:'exch'};
+_inType=typeMap[first.type]||'jwin';
+_inEditVno=voucherNo;
+_inOrigType=first.type; // preserve original DB type string
+_inMode='t';
+_inRows=ents.map(e=>{
+  const item=STATE.items.find(x=>x.id===e.itemId);
+  const col=item?.colours?.[e.colIdx];
+  return{_iid:e.itemId,_rng:col?.range||'',_cIdx:String(e.colIdx),_taka:String(e.taka),_tp:''};
+});
+_inLots=[{id:0}];_inLotId=0;
+const T={mill:'Mill G.P',jwin:'Job Work',exch:'Exchange'};
+el('inwtit').textContent='Edit '+(T[_inType]||'Inward');
+el('inwsub').textContent='Editing '+voucherNo;
+buildInward();
+// Pre-fill header fields after buildInward()
+const vnoEl=el('in-vno');if(vnoEl){vnoEl.value=voucherNo;vnoEl.readOnly=true;vnoEl.style.opacity='0.6';}
+if(el('in-date'))el('in-date').value=first.date;
+if(el('in-ref'))el('in-ref').value=first.ref||'';
+const sup=STATE.suppliers.find(s=>s.name===first.party);
+if(sup&&el('in-pty'))el('in-pty').value=sup.id;
+if(el('in-notes'))el('in-notes').value=(first.note||'').replace(/^GP:[^|]*\|?\s*/,'');
+// Change save button text
+const sBtn=document.querySelector('#m-inw .shf .btn.bp');
+if(sBtn)sBtn.textContent='✅ Update Entry';
+showMod('m-inw');
 }
 function buildInward(){
 const supOpts=STATE.suppliers.map(s=>'<option value="'+s.id+'" data-g="'+s.group+'">'+s.name+' ('+s.group+')</option>').join('');
@@ -2852,16 +2888,16 @@ el('inwbod').innerHTML=
 '<div class="ir2"><div class="fg"><label>Voucher No.</label><input class="inp mono fw8" id="in-vno" value="'+nextInwardVoucher()+'" placeholder="Auto-generated"/></div><div class="fg"><label>Date</label><input class="inp" type="date" id="in-date" value="'+today()+'"/></div></div>'+
 '<div class="fg"><label>Ref No.</label><input class="inp" id="in-ref" placeholder="Bill/DC no."/></div>'+
 '<div class="fg"><label>Party / Supplier</label><select class="sel" id="in-pty"><option value="">Select supplier...</option>'+supOpts+'</select></div>'+
-(_inType==='mill'
+(_inType==='mill'&&!_inEditVno
   ?'<div class="fg"><label>Entry Mode</label><div class="sg2"><button class="sw'+(_inMode==='t'?' on':'')+'" id="in-mode-t" onclick="setInMode(\'t\')">📦 Taka + TP</button><button class="sw'+(_inMode==='m'?' on':'')+'" id="in-mode-m" onclick="setInMode(\'m\')">📏 Total Meters</button></div><div class="sub" style="margin-top:4px">'+(_inMode==='t'?'Enter Taka &amp; TP per colour — total meters &amp; avg taka auto-calculate.':'Enter total finish meters per colour — it auto-converts to avg taka.')+'</div></div>'
   :'')+
 gpSec+exchSec+
-(_inType==='mill'
+(_inType==='mill'&&!_inEditVno
   ?'<div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs (Lots)</div><div id="in-lots"></div><button class="btn bs bfl mt8" onclick="addInwLot()">+ Add LOT / Item</button>'
   :'<div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs</div><div id="in-rows"></div><button class="btn bs bfl mt8" onclick="addInRow()">+ Add SKU</button>'
 )+
 '<div class="fg mt12"><label>Notes</label><input class="inp" id="in-notes" placeholder="Optional"/></div>';
-if(_inType==='mill') renderInLots(); else renderInRows();
+if(_inType==='mill'&&!_inEditVno) renderInLots(); else renderInRows();
 }
 let _inDest='stk';
 function setDest(d,btn){
@@ -2917,7 +2953,20 @@ const fullNote=gpNo?('GP: '+gpNo+(notes?' | '+notes:'')):notes;
 let saved=0;
 const avgT=STATE.settings.avgMtrPerTaka||90;
 const avgTP=STATE.settings.avgMtrPerTP||45;
-if(_inType==='mill'){
+// Edit mode: reverse old stock and tombstone old entries before saving new values
+if(_inEditVno){
+const oldEnts=STATE.entries.filter(e=>!e._deleted&&e.voucherNo===_inEditVno);
+oldEnts.forEach(e=>{
+  const item=STATE.items.find(x=>x.id===e.itemId);
+  if(item&&item.colours[e.colIdx]!==undefined){
+    item.colours[e.colIdx].stock_taka=Math.round((item.colours[e.colIdx].stock_taka||0)-(e.taka||0));
+    item.colours[e.colIdx].stock_mtrs=Math.round(item.colours[e.colIdx].stock_taka*avgT);
+    item._ts=Date.now();
+  }
+  e._deleted=true; e._ts=Date.now();
+});
+}
+if(_inType==='mill'&&!_inEditVno){
 _inLots.forEach(lot=>{
   const iid=el('inl-'+lot.id+'-i')?.value;
   const rngRaw=el('inl-'+lot.id+'-r')?.value;
@@ -2951,17 +3000,22 @@ const tpCount=parseInt(el('ir'+i+'-tp')?.value)||0;
 const tpAsTaka=Math.round(tpCount*avgTP/avgT);
 const totalTaka=Math.round(taka+tpAsTaka);
 if(!totalTaka) continue;
-const entryType=_inType==='jwin'?'jobwork':_inType;
+// In edit mode use original DB type; for new entries map UI type to DB type
+const entryType=_inEditVno?(_inOrigType||_inType):(_inType==='jwin'?'jobwork':_inType);
 const tpNote=tpCount>0?(fullNote?fullNote+' | TP: '+tpCount:'TP: '+tpCount):fullNote;
 addStock(sel.itemId,sel.colIdx,totalTaka,entryType,party,ref,tpNote);
-STATE.entries[STATE.entries.length-1].voucherNo=vno;
+const lastEnt=STATE.entries[STATE.entries.length-1];
+lastEnt.voucherNo=vno;
+if(date) lastEnt.date=date; // preserve edited date
 saved++;
 }
 }
 if(!saved){toast('Add at least one SKU with taka','er');return;}
-STATE.settings.nextInwardNo=(STATE.settings.nextInwardNo||1)+1;
+const isEdit=!!_inEditVno;
+if(!isEdit) STATE.settings.nextInwardNo=(STATE.settings.nextInwardNo||1)+1;
+_inEditVno=null; _inOrigType=null;
 persist(); hideMod('m-inw'); renderDash(); renderInRec();
-toast(vno+' saved - '+saved+' SKU(s)','ok');
+toast(vno+(isEdit?' updated':' saved')+' - '+saved+' SKU(s)','ok');
 api('saveEntry',{entries:STATE.entries,items:STATE.items});
 }
 function applyMillMode(){
@@ -3553,6 +3607,7 @@ return '<div class="inw-vrow" id="ivr-'+gi+'">'+
 '<div class="ev in" style="margin-bottom:4px">+'+g.totalTaka+'T</div>'+
 '<div style="display:flex;gap:4px">'+
 '<button class="btn bp bxs" onclick="event.stopPropagation();toggleInwVoucher('+gi+')" title="View">👁</button>'+
+(g.voucherNo&&hasPerm('inward')?'<button class="btn bxs" style="background:#7C3AED;color:#fff;border:none" onclick="event.stopPropagation();editInwardVoucher(\''+escHtml(g.voucherNo)+'\')" title="Edit voucher">✏️</button>':'')+
 (g.voucherNo?'<button class="btn bxs" style="background:#059669;color:#fff;border:none" onclick="event.stopPropagation();printInwardVoucher(\''+g.voucherNo+'\')" title="Print PDF">📄</button>':'')+
 ((hasPerm('delete_entry')||hasPerm('inward'))?'<button class="btn bd bxs" onclick="event.stopPropagation();deleteVoucherGroup(\''+ids+'\','+gi+')" title="Delete voucher">🗑</button>':'')+
 '</div></div></div>'+
