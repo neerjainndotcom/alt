@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.64';
+const APP_VERSION='1.40.65';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -2198,6 +2198,7 @@ hideMod('m-rng'); toast('Range '+rName+' queued — save item to apply'); return
 if(!item){window._pRng=[{rName,cols}];hideMod('m-rng');return;}
 cols.forEach(c=>{c.sku=genSKU(item.name,rName,c.name,c.code);item.colours.push(c);});
 lsSave('vs_items',STATE.items); renderItemRanges(item); hideMod('m-rng');
+api('saveItem',{items:STATE.items});
 toast('Range '+rName+' added with '+cols.length+' colours','ok');
 if(window._qrPfx) cascRng(window._qrPfx,true);
 if(window._returnToLot) refreshOrdLotAfterAdd();
@@ -2228,6 +2229,7 @@ item.colours.push({name,code,hex,range:rng,sku,stock_taka:0,stock_mtrs:0}); adde
 });
 if(!added){toast('Enter at least one colour name','er');return;}
 lsSave('vs_items',STATE.items); renderItemRanges(item); hideMod('m-aclr');
+api('saveItem',{items:STATE.items});
 toast(added+' colours added','ok');
 if(window._qcPfx) cascClr(window._qcPfx,true);
 if(window._returnToLot) refreshOrdLotAfterAdd();
@@ -9073,8 +9075,33 @@ chain=chain.then(()=>new Promise(resolve=>{
 /* Step 1: Set item and trigger item change (populates range dropdown) */
 const iSel=el('od-lot-'+lid+'-i'); if(iSel){ iSel.value=grp.itemId; ordLotItemChange(lid); }
 setTimeout(()=>{
-/* Step 2: Set range and trigger range change (builds colour rows) */
-const rSel=el('od-lot-'+lid+'-r'); if(rSel){ rSel.value=grp.range; ordLotRangeChange(lid); }
+/* Step 2: Set range and trigger range change (builds colour rows).
+   If the range no longer exists in STATE.items (was added during order entry but
+   not synced to the server), inject missing colours back into STATE.items so the
+   edit form can render properly, then sync the restored data to the server. */
+const lotItem2=STATE.items.find(x=>x.id===grp.itemId);
+if(lotItem2&&grp.range&&!lotItem2.colours.some(c=>c.range===grp.range&&!c._deleted)){
+  /* Range is missing — recover from the saved order items */
+  grp.items.forEach(it=>{
+    if(it.sku&&!lotItem2.colours.some(c=>c.sku===it.sku)){
+      lotItem2.colours.push({name:it.colourName||it.sku,code:it.colourCode||'',hex:'#cccccc',
+        range:grp.range,sku:it.sku,stock_taka:0,stock_mtrs:0,_recovered:true});
+    }
+  });
+  lsSave('vs_items',STATE.items);
+  api('saveItem',{items:STATE.items});
+  toast('Recovered missing range "'+grp.range+'" from order data — saved to server','ok');
+}
+const rSel=el('od-lot-'+lid+'-r');
+if(rSel){
+  /* Rebuild range dropdown so the recovered range appears */
+  if(lotItem2){
+    const rngs=[...new Set(lotItem2.colours.filter(c=>!c._deleted&&!c.discontinued).map(c=>c.range))];
+    rSel.innerHTML='<option value="">Range...</option>'+rngs.map(r=>'<option value="'+r+'">'+r+'</option>').join('');
+    rSel.disabled=false;
+  }
+  rSel.value=grp.range; ordLotRangeChange(lid);
+}
 setTimeout(()=>{
 /* Step 3: Restore saved cut, pcs, rate AFTER range change has built the rows */
 const firstItem=grp.items[0];
