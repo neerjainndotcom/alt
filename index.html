@@ -61,7 +61,7 @@
 <div class="ov" id="m-market-mgr" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>🏙️ Manage Markets</h3><button class="btn bgh bsm" onclick="hideMod('m-market-mgr')">✕</button></div></div><div class="shb"><div class="fi" style="margin-bottom:12px"><input class="inp" id="mkt-new-name" placeholder="New market name"/><button class="ai" onclick="addMarketMgr()">+ Add</button></div><div id="mkt-mgr-list"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-market-mgr')">Close</button></div></div></div>
 <div class="ov" id="m-brk" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Broker</h3><button class="btn bgh bsm" onclick="hideMod('m-brk')">✕</button></div></div><div class="shb"><input type="hidden" id="brk-id"/><div class="fg"><label>Name *</label><input class="inp" id="brk-name"/></div><div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="brk-ph" type="tel"/></div><div class="fg"><label>Commission %</label><input class="inp" id="brk-cm" type="number" step="0.1" placeholder="2.5"/></div></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-brk')">Cancel</button><button class="btn bp bfl" onclick="saveBrk()">Save</button></div>
 </div></div>
-<div class="ov" id="m-party-detail" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="pd-title">Details</h3><p class="sub" id="pd-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-party-detail')">✕</button></div></div><div class="shb" id="pd-body"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-party-detail')">Close</button><button class="btn bp bfl" id="pd-edit-btn">Edit</button></div>
+<div class="ov" id="m-party-detail" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="pd-title">Details</h3><p class="sub" id="pd-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-party-detail')">✕</button></div></div><div class="shb" id="pd-body"></div><div class="shf" style="display:flex;gap:8px"><button class="btn bd bsm" id="pd-delete-btn" style="flex:0 0 auto">🗑️ Delete</button><button class="btn bgh" style="flex:1" onclick="hideMod('m-party-detail')">Close</button><button class="btn bp" style="flex:1" id="pd-edit-btn">✏️ Edit</button></div>
 </div></div>
 <div class="ov" id="m-sup" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Supplier / Mill</h3><button class="btn bgh bsm" onclick="hideMod('m-sup')">✕</button></div></div><div class="shb"><input type="hidden" id="sup-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="sup-name"/></div><div class="fg"><label>Group *</label><select class="sel" id="sup-grp"><option>Mill</option><option>Border Cutting</option><option>Value Addition</option><option>Foiling</option><option>Dyeing</option><option>Printing</option><option>Job Work</option><option>Other</option></select></div></div><div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="sup-ph" type="tel"/></div><div class="fg"><label>GSTIN</label><input class="inp mono" id="sup-gst" maxlength="15" placeholder="24AAXXX1234B1ZX" oninput="this.value=this.value.toUpperCase()"/></div><div class="fg"><label>Contact Person</label><input class="inp" id="sup-ct"/></div></div><div class="fg"><label>Address</label><textarea class="ta" id="sup-addr" rows="2"></textarea></div><div class="fg"><label>Notes</label><input class="inp" id="sup-nt" placeholder="Optional"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-sup')">Cancel</button><button class="btn bp bfl" onclick="saveSup()">Save</button></div>
 </div></div>
@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.68';
+const APP_VERSION='1.40.71';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -2395,6 +2395,8 @@ statCard('Bills',stats.billCount)+statCard('Total Sale','₹'+fmtN(stats.totalSa
 ((brk||_pdSmName)?'<div class="fg"><label>Details</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+(brk?'<div style="background:var(--sf);border:1px solid var(--br);border-radius:10px;padding:10px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">Broker</div><div style="font-size:13px;font-weight:700;color:var(--tx);margin-top:3px">🏷 '+escHtml(brk.name)+'</div></div>':'')+(_pdSmName?'<div style="background:var(--sf);border:1px solid var(--br);border-radius:10px;padding:10px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">Salesman</div><div style="font-size:13px;font-weight:700;color:var(--tx);margin-top:3px">👤 '+escHtml(_pdSmName)+'</div></div>':'')+'</div></div>':'')+
 '<div class="fg"><label>Contact</label><div class="sm">'+(x.phone||'—')+(x.address?'<br>'+x.address:'')+'</div></div>';
 el('pd-edit-btn').onclick=()=>{ hideMod('m-party-detail'); editCust(id); };
+const delBtn=el('pd-delete-btn');
+if(delBtn) delBtn.onclick=()=>deleteCust(id);
 showMod('m-party-detail');
 }
 function renderCustGroups(){
@@ -2501,6 +2503,52 @@ hideMod('m-cust-group');openCust();
 function populateCstGrpSel(selectedGrpId){
 const s=el('cst-grp-sel');if(!s)return;
 s.innerHTML='<option value="">— No group —</option>'+(STATE.custGroups||[]).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(g=>'<option value="'+g.id+'"'+(g.id===selectedGrpId?' selected':'')+'>'+g.name+'</option>').join('');
+}
+/* ── Master Name Propagation ─────────────────────────────────────────
+   Single source of truth for cascading a name change from any master
+   (customer / broker / user-salesman) to every denormalized copy.
+   Call this whenever a master record's name is edited.
+   ─────────────────────────────────────────────────────────────────── */
+function _propagateNameChange(type,id,newName){
+  let changed=0,saves=new Set();
+  function upd(arr,key,nameField,stateKey){
+    (STATE[arr]||[]).forEach(r=>{
+      if(r[key]===id&&!r._deleted){r[nameField]=newName;r._ts=Date.now();changed++;saves.add(stateKey);}
+    });
+  }
+  if(type==='customer'){
+    upd('orders','custId','custName','vs_orders');
+    upd('bills','custId','custName','vs_bills');
+    upd('sampleSlips','custId','custName','vs_sample_slips');
+  }
+  if(type==='broker'){
+    upd('orders','brkId','brkName','vs_orders');
+    upd('bills','brkId','brkName','vs_bills');
+    upd('sampleSlips','brokerId','brokerName','vs_sample_slips');
+    /* Also update the default broker name cached on customer records */
+    upd('customers','defaultBrokerId','defaultBrokerName','vs_customers');
+  }
+  if(type==='user'){
+    upd('orders','salesmanId','salesmanName','vs_orders');
+    upd('bills','salesmanId','salesmanName','vs_bills');
+    upd('sampleSlips','salesmanId','salesmanName','vs_sample_slips');
+    upd('leads','assignedId','assignedName','vs_leads');
+    /* task instances — only update direct assignments, not substitutes */
+    (STATE.taskInstances||[]).forEach(t=>{
+      if(t.assignedUserId===id&&!t._deleted&&!t.isSubstitute){
+        t.assignedUserName=newName;t._ts=Date.now();changed++;saves.add('vs_task_instances');
+      }
+    });
+    /* default salesman name on customer records */
+    upd('customers','defaultSalesmanId','defaultSalesmanName','vs_customers');
+  }
+  const stateKeyMap={
+    vs_orders:'orders',vs_bills:'bills',vs_sample_slips:'sampleSlips',
+    vs_leads:'leads',vs_task_instances:'taskInstances',vs_customers:'customers'
+  };
+  saves.forEach(k=>lsSave(k,STATE[stateKeyMap[k]]));
+  if(changed>0){autoSyncCloud();console.log('[propagate] '+type+' "'+newName+'" → '+changed+' records updated');}
+  return changed;
 }
 function openCust(){
 el('cst-id').value=''; el('cst-name').value=''; el('cst-ph').value='';
@@ -2677,8 +2725,11 @@ starSalesmanId:isStarNow?(starSmId||undefined):undefined,
 starFollowupDays:isStarNow&&starDaysRaw!==''?parseInt(starDaysRaw):undefined,
 starSince:starSince};
 const savedId=id||uid();
+const oldName=id?(STATE.customers.find(c=>c.id===id)?.name||''):'';
 if(id){const i=STATE.customers.findIndex(c=>c.id===id);if(i>=0){STATE.customers[i]={...STATE.customers[i],...obj};STATE.customers[i]._ts=Date.now();}}
 else STATE.customers.push(stamp({id:savedId,...obj}));
+/* If the name changed, propagate to all denormalized records */
+if(id&&oldName&&oldName!==name) _propagateNameChange('customer',id,name);
 /* Handle party group membership */
 const selGrpId=(el('cst-grp-sel')?.value||'').trim();
 (STATE.custGroups||[]).forEach(g=>{
@@ -2719,6 +2770,25 @@ if(grp){if(!grp.memberIds.includes(savedId))grp.memberIds.push(savedId);grp._ts=
 hideMod('m-cst'); renderCusts();
 openCustGroup(grpId);
 }else{ hideMod('m-cst'); renderCusts(); }
+}
+async function deleteCust(id){
+const x=STATE.customers.find(c=>c.id===id); if(!x) return;
+/* Count references so the user knows the impact */
+const billCount=(STATE.bills||[]).filter(b=>!b._deleted&&b.custId===id).length;
+const ordCount=(STATE.orders||[]).filter(o=>!o._deleted&&o.custId===id).length;
+const leadCount=(STATE.leads||[]).filter(l=>!l._deleted&&l.customerId===id).length;
+let impact='';
+if(billCount||ordCount||leadCount){
+  impact=' This customer has '+[billCount&&(billCount+' bill(s)'),ordCount&&(ordCount+' order(s)'),leadCount&&(leadCount+' lead(s)')].filter(Boolean).join(', ')+'. Their records will be kept but customer will be removed from Masters.';
+}
+const ok=await appConfirm('Delete Customer?','Delete "'+x.name+'" from Masters?'+impact,'🗑️','Delete','dr');
+if(!ok) return;
+x._deleted=true; x._ts=Date.now();
+lsSave('vs_customers',STATE.customers);
+autoSyncCloud();
+hideMod('m-party-detail');
+renderCusts();
+toast('"'+x.name+'" removed from Masters','ok');
 }
 function renderBrks(q){
 const c=el('brklst'); if(!c) return;
@@ -2780,9 +2850,12 @@ async function saveBrk(){
 const name=(el('brk-name').value||'').trim(); if(!name){toast('Enter broker name','er');return;}
 const id=el('brk-id').value;
 if(!id&&isDuplicate(STATE.brokers,'name',name)){toast('Broker "'+name+'" already exists','er');return;}
+const oldBrkName=id?(STATE.brokers.find(b=>b.id===id)?.name||''):'';
 const obj={name,phone:el('brk-ph').value.trim(),commission:parseFloat(el('brk-cm').value)||0};
 if(id){const i=STATE.brokers.findIndex(b=>b.id===id);if(i>=0){STATE.brokers[i]={...STATE.brokers[i],...obj};STATE.brokers[i]._ts=Date.now();}}
 else STATE.brokers.push(stamp({id:uid(),...obj}));
+/* Propagate broker name change everywhere */
+if(id&&oldBrkName&&oldBrkName!==name) _propagateNameChange('broker',id,name);
 lsSave('vs_brokers',STATE.brokers);autoSyncCloud();
 if(window._returnToBroker){
 window._returnToBroker=false; hideMod('m-brk');
@@ -5592,22 +5665,32 @@ if(flt.to&&(!o.date||o.date>flt.to)) return false;
 return true;
 }
 function refreshFltOptions(prefix,records){
-/* Populate the Item/Range/Party dropdowns with only values found among the
-   given (pending-only) records, preserving the current selection if it's
-   still valid. */
-const itemSet=new Set(), rangeSet=new Set(), partySet=new Set();
+/* Populate filter dropdowns:
+   - Items & Ranges: built from records actually present (only what's ordered)
+   - Party: built from the full Customers master list so every customer
+     is always filterable, even those with no orders yet */
+const itemSet=new Set(), rangeSet=new Set();
 (records||[]).forEach(r=>{
   (r.items||r.openItems||[]).forEach(i=>{ if(i.itemName) itemSet.add(i.itemName); if(i.range) rangeSet.add(i.range); });
-  if(r.custName) partySet.add(r.custName);
 });
-const mkOpts=(set,label,cur)=>{
-  const arr=[...set].sort((a,b)=>a.localeCompare(b));
-  return '<option value="">'+label+'</option>'+arr.map(v=>'<option value="'+v.replace(/"/g,'&quot;')+'"'+(v===cur?' selected':'')+'>'+v+'</option>').join('');
-};
+const mkOpts=(arr,label,cur)=>
+  '<option value="">'+label+'</option>'+arr.map(v=>'<option value="'+v.replace(/"/g,'&quot;')+'"'+(v===cur?' selected':'')+'>'+v+'</option>').join('');
 const itemSel=el(prefix+'-f-item'), rangeSel=el(prefix+'-f-range'), partySel=el(prefix+'-f-party');
-if(itemSel){ const cur=itemSel.value; itemSel.innerHTML=mkOpts(itemSet,'All Items',cur); if(cur&&!itemSet.has(cur)) itemSel.value=''; }
-if(rangeSel){ const cur=rangeSel.value; rangeSel.innerHTML=mkOpts(rangeSet,'All Ranges',cur); if(cur&&!rangeSet.has(cur)) rangeSel.value=''; }
-if(partySel){ const cur=partySel.value; partySel.innerHTML=mkOpts(partySet,'All Parties',cur); if(cur&&!partySet.has(cur)) partySel.value=''; }
+if(itemSel){
+  /* Show all active items from Masters, not just those present in orders */
+  const cur=itemSel.value;
+  const itemArr=(STATE.items||[]).filter(i=>!i._deleted).map(i=>i.name).sort((a,b)=>a.localeCompare(b));
+  itemSel.innerHTML=mkOpts(itemArr,'All Items',cur);
+  if(cur&&!itemArr.includes(cur)) itemSel.value='';
+}
+if(rangeSel){ const cur=rangeSel.value; const arr=[...rangeSet].sort((a,b)=>a.localeCompare(b)); rangeSel.innerHTML=mkOpts(arr,'All Ranges',cur); if(cur&&!rangeSet.has(cur)) rangeSel.value=''; }
+if(partySel){
+  /* Always show every active customer from Masters, not just those with orders */
+  const cur=partySel.value;
+  const custArr=(STATE.customers||[]).filter(c=>!c._deleted).map(c=>c.name).sort((a,b)=>a.localeCompare(b));
+  partySel.innerHTML=mkOpts(custArr,'All Parties',cur);
+  if(cur&&!custArr.includes(cur)) partySel.value='';
+}
 }
 function billPassesFlt(b,flt){
 if(flt.item&&!(b.items||[]).some(i=>(i.itemName||'').toLowerCase().includes(flt.item))) return false;
@@ -8040,6 +8123,7 @@ async function saveUsr(){
 const name=(el('usr-name').value||'').trim(), uname=(el('usr-un').value||'').trim();
 if(!name||!uname){toast('Enter name and username','er');return;}
 const id=el('usr-id').value;
+const oldUsrName=id?(STATE.users.find(u=>u.id===id)?.name||''):'';
 if(isDuplicate(STATE.users,'username',uname,id)){toast('Username "'+uname+'" already exists','er');return;}
 let pw=el('usr-pw').value;
 if(pw) pw=await sha256(pw);
@@ -8057,6 +8141,8 @@ permissions:{...window._usrPerms}
 if(pw) obj.password=pw;
 if(id){const i=STATE.users.findIndex(u=>u.id===id);if(i>=0){STATE.users[i]={...STATE.users[i],...obj};STATE.users[i]._ts=Date.now();}}
 else{if(!pw){toast('Enter password for new user','er');return;}STATE.users.push(stamp({id:uid(),...obj}));}
+/* Propagate name change to all records that store this user's name */
+if(id&&oldUsrName&&oldUsrName!==name) _propagateNameChange('user',id,name);
 persist(); hideMod('m-usr'); renderUsers(); toast('User saved','ok');
 }
 async function deleteUser(id){
