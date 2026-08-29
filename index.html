@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.67';
+const APP_VERSION='1.40.68';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -947,10 +947,24 @@ if(FIREBASE_URL)initFirebaseListener();
          and then to every other device via the normal delta sync. */
       try{cleanupLegacyTemplates();}catch(e){console.warn('template cleanup error:',e);}
     }catch(e){setLiveStatus('off');}
+    /* Generate task instances AFTER Firebase pull so we see what tasks
+       Firebase already has — prevents each browser creating duplicates.
+       deterministic IDs mean re-generation is safe if Firebase missed any. */
+    try{generateTaskInstances(today());}catch(e){console.warn('taskGen:',e);}
+    try{_applyLeaveReassignments(today());}catch(e){}
+    try{updateTaskDot();}catch(e){}
+    try{refreshCurrentView();}catch(e){}
     window._initialPullDone=true;
     return;
   }
-  if(!GAS_URL){window._initialPullDone=true;return;}
+  if(!GAS_URL){
+    /* Offline / no cloud — generate tasks immediately */
+    try{generateTaskInstances(today());}catch(e){console.warn('taskGen:',e);}
+    try{_applyLeaveReassignments(today());}catch(e){}
+    try{updateTaskDot();}catch(e){}
+    window._initialPullDone=true;
+    return;
+  }
   try{
     setLiveStatus('connecting');
     const d=await api('getAll');
@@ -960,6 +974,10 @@ if(FIREBASE_URL)initFirebaseListener();
       setLiveStatus('off');
     }
   }catch(e){console.warn('initApp pull:',e);setLiveStatus('off');}
+  /* Generate task instances after GAS pull completes */
+  try{generateTaskInstances(today());}catch(e){console.warn('taskGen:',e);}
+  try{_applyLeaveReassignments(today());}catch(e){}
+  try{updateTaskDot();}catch(e){}
   window._initialPullDone=true;
 })();
 
@@ -1367,7 +1385,11 @@ renderDashHolidayPrompt();
 /* Non-widget tasks that always run */
 autoCleanLeads();
 generateTodayRecurringTasks();
-generateTaskInstances(today());
+/* NOTE: generateTaskInstances(today()) intentionally NOT called here.
+   It runs inside the async initApp IIFE *after* the Firebase/GAS pull
+   completes, so every browser sees shared cloud state before generating
+   tasks. This prevents Chrome vs Edge vs mobile from accumulating
+   different task counts in their separate localStorage. */
 updateTaskDot();
 const fd=el('flag-dot');
 if(fd&&STATE.user?.role==='admin'){
