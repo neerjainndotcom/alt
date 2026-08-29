@@ -15376,6 +15376,50 @@ renderTaskReport();
 });
 }
 function _effFollowup(d){if(!d)return d;let dt=new Date(d+'T00:00:00');while(dt.getDay()===0||isShopClosed(dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'))){dt.setDate(dt.getDate()+1);}return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
+/* ── Leave-based task reassignment (runs after every sync & on leave save) ──
+   Scans ALL active approved leave records that overlap today's date, finds any
+   still-pending task instances that belong to the person on leave, and moves
+   them to the substitute. Safe to call multiple times — already-moved tasks
+   (isSubstitute=true with correct sub) are skipped. Also reverts substitute
+   tasks back to the original assignee if a leave has been deleted/expired. */
+function _applyLeaveReassignments(dateStr){
+  if(!dateStr) dateStr=today();
+  let changed=0;
+  const approvedLeaves=(STATE.staffLeave||[]).filter(lv=>
+    !lv._deleted&&(lv.status==='approved'||lv.finalSubstituteId)&&
+    lv.fromDate<=dateStr&&lv.toDate>=dateStr
+  );
+  (STATE.taskInstances||[]).forEach(t=>{
+    if(t._deleted||t.status==='Done') return;
+    if(t.generatedDate<dateStr||t.generatedDate>dateStr) return; // only affect tasks on the leave date
+    // Find leave for this task's original assignee
+    const origId=t._originalAssigneeId||t.assignedUserId;
+    const lv=approvedLeaves.find(l=>l.userId===origId);
+    if(lv){
+      const subId=lv.finalSubstituteId||lv.substituteId||'';
+      const sub=STATE.users?.find(u=>u.id===subId);
+      if(subId&&sub&&t.assignedUserId!==subId){
+        t._originalAssigneeId=origId;
+        t.assignedUserId=subId;
+        t.assignedUserName=sub.name||'';
+        t.isSubstitute=true;t._ts=Date.now();
+        changed++;
+      }
+    } else if(t.isSubstitute&&t._originalAssigneeId){
+      // No active leave for original assignee any more — revert
+      const orig=STATE.users?.find(u=>u.id===t._originalAssigneeId);
+      if(orig){
+        t.assignedUserId=t._originalAssigneeId;
+        t.assignedUserName=orig.name||'';
+        t.isSubstitute=false;t._originalAssigneeId=undefined;t._ts=Date.now();
+        changed++;
+      }
+    }
+  });
+  if(changed>0){lsSave('vs_task_instances',STATE.taskInstances);}
+  return changed;
+}
+
 function _clearTasksForClosedDay(dateStr){
 /* Active sweep: clear any Pending/In-Progress tasks that snuck in via sync
    after a day was marked closed. Called whenever we detect a closed day. */
@@ -16431,22 +16475,17 @@ if(isEdit){
   STATE.staffLeave.push({...fields,id:uid(),createdAt:Date.now()});
 }
 lsSave('vs_staff_leave',STATE.staffLeave);
-/* Immediately transfer tasks only when admin directly approves (status=approved).
-   Staff submissions stay pending until admin reviews. */
+/* Immediately transfer tasks when admin approves (applies for every date in leave range) */
 let _reassigned=0;
-if(isAdmin&&subId){
-  const affected=(STATE.taskInstances||[]).filter(t=>{
-    if(t._deleted||t.status!=='Pending')return false;
-    if(t.generatedDate<from||t.generatedDate>to)return false;
-    if(t.assignedUserId===userId)return true;
-    if(isEdit&&oldSubId&&oldSubId!==subId&&t.assignedUserId===oldSubId&&t.isSubstitute&&(t._originalAssigneeId===userId||!t._originalAssigneeId))return true;
-    return false;
-  });
-  affected.forEach(t=>{
-    t._originalAssigneeId=t._originalAssigneeId||t.assignedUserId;
-    t.assignedUserId=subId;t.assignedUserName=sub?.name||'';t.isSubstitute=true;t._ts=Date.now();
-  });
-  _reassigned=affected.length;
+if(isAdmin){
+  const _tod=today();
+  let _d=new Date(from+'T00:00:00');
+  const _end=new Date(to+'T00:00:00');
+  while(_d<=_end){
+    const _ds=_d.toISOString().split('T')[0];
+    _reassigned+=_applyLeaveReassignments(_ds);
+    _d.setDate(_d.getDate()+1);
+  }
   if(_reassigned)lsSave('vs_task_instances',STATE.taskInstances);
 }
 /* If staff submitted, push notification to all admins */
@@ -16459,7 +16498,7 @@ hideMod('m-leave');
 renderLeaveList();
 try{renderAllTasks();renderMyTasks();}catch(e){}
 if(isAdmin){
-  toast((user?.name)+(isEdit?' leave updated':' on leave '+from+' to '+to)+(_reassigned?' — '+_reassigned+' task(s) moved to '+(sub?.name||'substitute'):''),'ok');
+  const _subName=(el('lv-sub')?.selectedOptions?.[0]?.text)||sub?.name||'substitute';toast((user?.name)+(isEdit?' leave updated':' on leave '+from+' to '+to)+(_reassigned?' — '+_reassigned+' task(s) moved to '+_subName:''),'ok');
 }else{
   toast('Leave request submitted — waiting for admin approval','ok');
 }
@@ -18177,6 +18216,8 @@ function applyCloudData(d,force=false){
   /* After merging cloud task instances, sweep out any Pending tasks for closed days
      that sync may have re-introduced after they were locally cleared */
   try{const _td=today();if(typeof _clearTasksForClosedDay==='function'&&isShopClosed(_td))_clearTasksForClosedDay(_td);}catch(e){}
+  /* Re-apply leave reassignments so other devices also get substitute assignments */
+  try{if(typeof _applyLeaveReassignments==='function')_applyLeaveReassignments(today());}catch(e){}
   if(STATE.taskInstances)lsSave('vs_task_instances',STATE.taskInstances);
   if(STATE.staffLeave)lsSave('vs_staff_leave',STATE.staffLeave);
   if(STATE.flaggedEntries)lsSave('vs_flagged',STATE.flaggedEntries);
