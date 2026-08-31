@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.80';
+const APP_VERSION='1.40.81';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -8499,7 +8499,7 @@ function getIndianHolidays(yr){
       {date:'2026-05-01',label:'Buddha Purnima'},
       {date:'2026-05-27',label:'Eid ul-Adha (Bakrid)'},
       {date:'2026-08-28',label:'Raksha Bandhan'},
-      {date:'2026-09-14',label:'Janmashtami'},
+      {date:'2026-09-04',label:'Janmashtami'},
       {date:'2026-10-11',label:'Navratri Begins'},
       {date:'2026-10-19',label:'Dussehra'},
       {date:'2026-10-28',label:'Dhanteras'},
@@ -8597,12 +8597,14 @@ function loadIndianHolidays(yr){
   if(!STATE.settings.holidayTypes)STATE.settings.holidayTypes={};
   let added=0;
   hols.forEach(h=>{
-    if(!STATE.settings.holidays.includes(h.date)){
-      STATE.settings.holidays.push(h.date);added++;
-    }
+    const isNew=!STATE.settings.holidays.includes(h.date);
+    if(isNew){STATE.settings.holidays.push(h.date);added++;}
     STATE.settings.holidayLabels[h.date]=STATE.settings.holidayLabels[h.date]||h.label;
-    /* Indian holidays loaded via button default to 'public' (shop may be open) */
-    if(!STATE.settings.holidayTypes[h.date])STATE.settings.holidayTypes[h.date]='public';
+    /* Indian holidays loaded via button default to 'public' (shop may be open) —
+       BUT only for genuinely new entries. Existing entries that have no explicit
+       type are treated as 'closed' by isShopClosed() (undefined !== 'public'),
+       so we must NOT overwrite them by setting 'public' here. */
+    if(isNew)STATE.settings.holidayTypes[h.date]='public';
   });
   persist();api('saveSettings',{settings:STATE.settings});
   const listEl=el('s-hol-list');if(listEl)listEl.innerHTML=renderHolidayList();
@@ -8685,6 +8687,25 @@ function toggleHolidayType(d){
     toast('Marked Closed — no tasks on this date'+(pushedLeads>0?'; '+pushedLeads+' lead follow-up(s) moved to next working day':''),'ok');
   }
 }
+function editHoliday(d){
+  /* Pre-fill the Add form with this holiday's details and remove the old entry
+     so the user just changes the date and clicks Add to save the correction. */
+  const lbl=(STATE.settings.holidayLabels||{})[d]||'';
+  const type=(STATE.settings.holidayTypes||{})[d]||'closed';
+  if(el('s-hol-date'))el('s-hol-date').value=d;
+  if(el('s-hol-label'))el('s-hol-label').value=lbl;
+  if(el('s-hol-type'))el('s-hol-type').value=type;
+  /* Remove existing entry silently (no confirmation needed — user is editing) */
+  STATE.settings.holidays=(STATE.settings.holidays||[]).filter(x=>x!==d);
+  if(STATE.settings.holidayLabels)delete STATE.settings.holidayLabels[d];
+  if(STATE.settings.holidayTypes)delete STATE.settings.holidayTypes[d];
+  if(STATE.settings.holidayConfirmed)delete STATE.settings.holidayConfirmed[d];
+  persist();api('saveSettings',{settings:STATE.settings});
+  const listEl=el('s-hol-list');if(listEl)listEl.innerHTML=renderHolidayList();
+  /* Scroll the date input into view */
+  try{el('s-hol-date')?.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
+  toast('Edit ready — change the date/name then click + Add','ok');
+}
 function renderHolidayList(){
   const hols=STATE.settings.holidays||[];
   const labels=STATE.settings.holidayLabels||{};
@@ -8712,6 +8733,7 @@ function renderHolidayList(){
       +'<div style="font-size:11px;color:var(--t3)">'+dayName+', '+display+(isPublic?' · Tasks generate normally':'· No tasks')+'</div>'
       +'</div>'
       +'<button onclick="toggleHolidayType(\''+d+'\')" style="background:none;border:1px solid var(--br);border-radius:6px;font-size:10px;cursor:pointer;color:var(--t2);padding:3px 6px;white-space:nowrap">'+(isPublic?'Mark Closed':'Mark Open')+'</button>'
+      +'<button onclick="editHoliday(\''+d+'\')" title="Edit date/name" style="background:none;border:1px solid var(--br);border-radius:6px;font-size:11px;cursor:pointer;color:var(--t2);padding:3px 7px">✏️</button>'
       +'<button onclick="removeHoliday(\''+d+'\')" style="background:none;border:none;font-size:16px;cursor:pointer;color:#EF4444;padding:4px 6px">✕</button>'
       +'</div>';
   }).join('');
