@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.81';
+const APP_VERSION='1.40.83';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -1037,20 +1037,43 @@ function autoCleanStaleTaskInstances(){
     groups[key].push(t);
   });
   let cleaned=0;
+  /* Cutoff: tasks older than 30 days that are still Pending are sync artifacts
+     (staff couldn't see them when sync was broken) — mark them Done automatically.
+     We keep instances from the last 30 days as "legitimately overdue". */
+  const _thirtyDaysAgo=new Date(Date.now()-30*86400000).toISOString().split('T')[0];
   Object.values(groups).forEach(list=>{
-    if(list.length<=1)return; /* single overdue copy — keep it, it's legitimate */
-    /* Sort newest first; keep index 0, mark the older extras Done */
+    /* Sort newest first */
     list.sort((a,b)=>(b.generatedDate||'').localeCompare(a.generatedDate||''));
-    list.slice(1).forEach(t=>{
-      t.status='Done';t.completedAt=new Date().toISOString();
-      t.completedByUserId='system';t.completedByName='Auto-Cleaned (duplicate)';
-      t.isOnTime=false;t._ts=Date.now();cleaned++;
+    list.forEach((t,i)=>{
+      /* Always tombstone older duplicates so staff can't resurrect them */
+      if(i>0){t._deleted=true;t._ts=Date.now()+1000;cleaned++;return;}
+      /* Also tombstone the newest copy if it's older than 30 days — it's a sync artifact */
+      if(t.generatedDate<_thirtyDaysAgo){t._deleted=true;t._ts=Date.now()+1000;cleaned++;}
     });
   });
   if(!cleaned)return;
   lsSave('vs_task_instances',STATE.taskInstances);
   autoSyncCloud();
-  console.log('Auto-cleaned '+cleaned+' duplicate stale task instances');
+  console.log('Auto-cleaned '+cleaned+' stale task instances');
+}
+/* Admin: manually clear all pending task instances older than N days */
+function clearOldOverdueTasks(days){
+  if(STATE.user?.role!=='admin'){toast('Admin only','er');return;}
+  const cutoff=new Date(Date.now()-days*86400000).toISOString().split('T')[0];
+  let cleared=0;
+  (STATE.taskInstances||[]).forEach(t=>{
+    if(!t._deleted&&t.status==='Pending'&&t.generatedDate<cutoff){
+      /* Tombstone instead of Done — a _deleted record with a fresh _ts can never be
+         overwritten by a competing Pending push from a staff device, because mergeTaskInstances
+         skips _deleted records and _ts comparisons always favour the newer timestamp. */
+      t._deleted=true;t._ts=Date.now()+1000;cleared++;
+    }
+  });
+  if(!cleared){toast('No overdue tasks older than '+days+' days','ok');return;}
+  lsSave('vs_task_instances',STATE.taskInstances);
+  autoSyncCloud();
+  try{renderMyTasks();renderAllTasks();updateTaskDot();}catch(e){}
+  toast(cleared+' old overdue task(s) cleared — synced to all devices','ok');
 }
 async function syncAPI(){
 if(window._saveLock) return;
@@ -16316,6 +16339,16 @@ const isSel=sortBy===val;
 html+='<button onclick="window._taskSortBy=\''+val+'\';renderAllTasks()" style="padding:4px 12px;border-radius:20px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:'+(isSel?'#4F46E5':'#E5E7EB')+';color:'+(isSel?'white':'#374151')+'">'+lbl+'</button>';
 });
 html+='</div>';
+/* ── Clear old overdue button (admin) ── show if any pending tasks are >3 days old */
+const _veryOld=new Date(Date.now()-3*86400000).toISOString().split('T')[0];
+const _oldCount=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.status==='Pending'&&(t.generatedDate||'')<_veryOld).length;
+if(_oldCount>0){
+html+='<div style="background:#FEF2F2;border:1.5px solid #FECACA;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
+html+='<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:800;color:#991B1B">⚠️ '+_oldCount+' very old overdue task'+(+_oldCount!==1?'s':'')+' (>3 days)</div>';
+html+='<div style="font-size:11px;color:#B91C1C;margin-top:2px">These are likely sync artifacts from before the latest update.</div></div>';
+html+='<button onclick="clearOldOverdueTasks(3)" style="background:#DC2626;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap">🗑 Clear All</button>';
+html+='</div>';
+}
 // ── Task list ──
 const filtered=activeFilter==='all'?todayInst:todayInst.filter(t=>{
 return taskEffectiveUid(t)===activeFilter;
