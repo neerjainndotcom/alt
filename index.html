@@ -51,7 +51,7 @@
 
 <div class="ov" id="m-item"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="itmtit">New Item</h3><p class="sub">Fabric type</p></div><button class="btn bgh bsm" onclick="hideMod('m-item')">✕</button></div></div><div class="shb"><input type="hidden" id="itm-id"/><div class="fg"><label>Item Name *</label><input class="inp" id="itm-name" placeholder="e.g. FRENDY CHIFFON" oninput="updateItmSkuPreview()"/><div id="itm-sku-preview" style="display:none;font-size:11px;font-weight:700;font-family:monospace;color:var(--Pd);margin-top:5px;padding:4px 9px;background:var(--Pl);border-radius:6px;letter-spacing:.3px"></div></div><div class="fg"><label>HSN Code</label><input class="inp" id="itm-hsn" placeholder="e.g. 5407"/></div><div id="itm-copyfrom-wrap" style="display:none"><div class="fg" style="margin-top:0"><label style="display:flex;align-items:center;gap:6px"><span>📋</span> Copy Ranges &amp; Colours From</label><select class="inp" id="itm-copyfrom"><option value="">None — start blank</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">Copies all ranges and colour names from the selected item (SKUs will be regenerated for the new item name).</div></div></div><div class="dvd"></div><div class="hr" style="margin-bottom:10px"><label style="margin-bottom:0">Ranges &amp; Colours</label><button class="ai" onclick="openAddRange()">+ Add Range</button></div><div id="itmrng"></div></div><div class="shf" style="flex-wrap:wrap;gap:8px"><button class="btn bd bfl" id="itm-del-btn" style="display:none" onclick="deleteItem()">Delete Item</button><div style="display:flex;gap:8px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-item')">Cancel</button><button class="btn bp bfl" onclick="saveItem()">Save Item</button></div></div>
 </div></div>
-<div class="ov" id="m-rng" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Add Range &amp; Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-rng')">✕</button></div></div><div class="shb"><div class="fg"><label>Range Name *</label><input class="inp" id="rng-n" placeholder="e.g. A, B, PREMIUM" style="text-transform:uppercase" oninput="updateAllSkuPreviews('rng-rows')"/></div><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="rng-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('rng-rows','rng-cnt')"/></div><div id="rng-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-rng')">Cancel</button><button class="btn bp bfl" onclick="saveRange()">Add Range</button></div>
+<div class="ov" id="m-rng" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Add Range &amp; Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-rng')">✕</button></div></div><div class="shb"><div class="fg" style="background:var(--Pl);border-radius:10px;padding:10px;margin-bottom:4px"><label style="display:flex;align-items:center;gap:5px;margin-bottom:6px"><span>📋</span> Copy from another item's range <span style="font-size:10px;color:var(--t3);font-weight:400">(optional)</span></label><select class="inp" id="rng-copyfrom-item" onchange="onRngCopyItemChange()" style="margin-bottom:6px"><option value="">— Enter manually below —</option></select><select class="inp" id="rng-copyfrom-rng" onchange="onRngCopyRngChange()" style="display:none"><option value="">Select range to copy</option></select></div><div class="fg"><label>Range Name *</label><input class="inp" id="rng-n" placeholder="e.g. A, B, PREMIUM" style="text-transform:uppercase" oninput="updateAllSkuPreviews('rng-rows')"/></div><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="rng-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('rng-rows','rng-cnt')"/></div><div id="rng-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-rng')">Cancel</button><button class="btn bp bfl" onclick="saveRange()">Add Range</button></div>
 </div></div>
 <div class="ov" id="m-aclr" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="aclrtit">Add Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-aclr')">✕</button></div></div><div class="shb"><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="aclr-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('aclr-rows','aclr-cnt')"/></div><div id="aclr-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-aclr')">Cancel</button><button class="btn bp bfl" onclick="saveAddClrs()">Add Colours</button></div>
 </div></div>
@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.71';
+const APP_VERSION='1.40.75';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -2084,9 +2084,49 @@ const isOpen=expand.style.display!=='none';
 expand.style.display=isOpen?'none':'block';
 hdr.querySelector('.etit').style.color=isOpen?'':'var(--P)';
 }
+function _populateRngCopyFrom(excludeItemId){
+const cf=el('rng-copyfrom-item');
+if(!cf) return;
+cf.innerHTML='<option value="">— Enter manually below —</option>'+
+  STATE.items.filter(i=>!i._deleted&&i.id!==excludeItemId&&(i.colours||[]).some(c=>!c._deleted)).sort((a,b)=>a.name.localeCompare(b.name))
+  .map(i=>'<option value="'+i.id+'">'+escHtml(i.name)+'</option>').join('');
+const cr=el('rng-copyfrom-rng'); if(cr){cr.style.display='none';cr.innerHTML='<option value="">Select range to copy</option>';}
+}
+function onRngCopyItemChange(){
+const itemId=el('rng-copyfrom-item')?.value;
+const rngSel=el('rng-copyfrom-rng');
+if(!rngSel) return;
+if(!itemId){rngSel.style.display='none';rngSel.innerHTML='<option value="">Select range to copy</option>';return;}
+const src=STATE.items.find(x=>x.id===itemId&&!x._deleted); if(!src){rngSel.style.display='none';return;}
+const ranges=[...new Set(src.colours.filter(c=>!c._deleted).map(c=>c.range))].filter(r=>r!==undefined);
+if(!ranges.length){rngSel.style.display='none';toast('That item has no ranges','er');return;}
+rngSel.innerHTML='<option value="">Select range to copy</option>'+ranges.map(r=>'<option value="'+r+'">'+(r===''?'(default / no range)':'Range '+r)+'</option>').join('');
+rngSel.style.display='';
+}
+function onRngCopyRngChange(){
+const itemId=el('rng-copyfrom-item')?.value; if(!itemId) return;
+const rngVal=el('rng-copyfrom-rng')?.value; if(rngVal===''&&el('rng-copyfrom-rng')?.selectedIndex===0) return;
+const src=STATE.items.find(x=>x.id===itemId&&!x._deleted); if(!src) return;
+const cols=src.colours.filter(c=>!c._deleted&&c.range===rngVal);
+if(!cols.length){toast('No colours found in that range','er');return;}
+if(el('rng-n')&&rngVal!=='') el('rng-n').value=rngVal;
+if(el('rng-cnt')) el('rng-cnt').value=cols.length;
+buildClrRows('rng-rows','rng-cnt');
+cols.forEach((c,i)=>{
+const hexInput=el('rng-rows')?.querySelectorAll('input[type=color]')[i];
+if(hexInput) hexInput.value=c.hex||'#cccccc';
+const nameInput=el('crn-rng-rows-'+i);
+if(nameInput){nameInput.value=c.name||'';}
+const codeInput=el('crc-rng-rows-'+i);
+if(codeInput) codeInput.value=c.code||'';
+});
+updateAllSkuPreviews('rng-rows');
+toast('Colours copied from '+src.name+(rngVal?' Range '+rngVal:''),'ok');
+}
 function openAddRangeToItem(itemId){
 window._qrIid=itemId; window._qrPfx=null;
 el('rng-n').value=''; el('rng-cnt').value=1; buildClrRows('rng-rows','rng-cnt');
+_populateRngCopyFrom(itemId);
 showMod('m-rng');
 }
 function openItem(){
@@ -2144,7 +2184,9 @@ c.innerHTML='<div style="margin-bottom:10px"><button class="btn bs bfl" onclick=
 function openAddRange(){
 const id=el('itm-id').value;
 window._qrIid=id||'__new__'; window._qrPfx=null;
-el('rng-n').value=''; el('rng-cnt').value=1; buildClrRows('rng-rows','rng-cnt'); showMod('m-rng');
+el('rng-n').value=''; el('rng-cnt').value=1; buildClrRows('rng-rows','rng-cnt');
+_populateRngCopyFrom(id||'__new__');
+showMod('m-rng');
 }
 function openAddClr(iid,rng){
 window._qcIid=iid; window._qcRng=rng; window._qcPfx=null;
@@ -15437,10 +15479,14 @@ try{
 /* Pull latest from cloud so task status is always current */
 if((FIREBASE_URL||GAS_URL)&&!window._syncRunning)silentPullGAS().then(()=>{renderMyTasks();renderAllTasks();updateTaskDot();}).catch(()=>{});
 const isAdmin=STATE.user?.role==='admin';
-['task-tpl-btn','task-adhoc-btn','ttab-all','ttab-tpl','ttab-lv','ttab-rep'].forEach((id2)=>{
+/* Admin-only tabs */
+['task-tpl-btn','task-adhoc-btn','ttab-all','ttab-tpl','ttab-rep'].forEach((id2)=>{
 const el2=document.getElementById(id2);
 if(el2) el2.style.display=isAdmin?'':'none';
 });
+/* Leave tab is visible for ALL roles — staff use it to apply, admin to approve */
+const _lvTab=document.getElementById('ttab-lv');
+if(_lvTab) _lvTab.style.display='';
 const sub=document.getElementById('task-sub');
 if(sub) sub.textContent=isAdmin?'Manage all staff tasks':'Your tasks for today';
 const allTbb=document.querySelectorAll('#s-tasks .tbb');
@@ -15557,11 +15603,37 @@ const existing=(STATE.taskInstances||[]).filter(t=>t.generatedDate===dateStr);
 /* Build a map: templateId -> count of existing instances for this date */
 const existingTplCount={};
 existing.forEach(t=>{ existingTplCount[t.templateId]=(existingTplCount[t.templateId]||0)+1; });
+
+/* ── Stale-carry-over guard ─────────────────────────────────────────────────
+   If a template has a PENDING (unfinished) instance from any PREVIOUS day,
+   that overdue copy IS the task — don't create a parallel copy for today.
+   Saturday missed → Saturday's instance stays, shows as Overdue on Monday.
+   Staff complete it → next day generates a fresh instance.
+   Also tombstone any today-copies that were created before this guard existed,
+   so Firebase and other browsers see the same clean state. */
+const stalePendingTpls=new Set(
+  (STATE.taskInstances||[]).filter(t=>
+    !t._deleted&&t.status!=='Done'&&t.templateId&&t.templateId!=='manual'&&t.generatedDate<dateStr
+  ).map(t=>t.templateId)
+);
+if(stalePendingTpls.size>0){
+  let _tombstoned=0;
+  (STATE.taskInstances||[]).forEach(t=>{
+    /* Tombstone any already-generated today-copy for a template that has a stale pending instance */
+    if(!t._deleted&&t.status!=='Done'&&t.generatedDate===dateStr&&t.templateId&&stalePendingTpls.has(t.templateId)){
+      t._deleted=true;t._ts=Date.now();_tombstoned++;
+    }
+  });
+  if(_tombstoned>0){lsSave('vs_task_instances',STATE.taskInstances);autoSyncCloud();}
+}
+
 const newInst=[];
 STATE.taskTemplates.filter(t=>t.active&&!t._deleted).forEach(tmpl=>{
 const tpd=tmpl.timesPerDay||1;
 const alreadyCount=existingTplCount[tmpl.id]||0;
 if(alreadyCount>=tpd) return;
+/* Skip: this template already has a pending overdue instance from a previous day */
+if(stalePendingTpls.has(tmpl.id)) return;
 try{ if(!isTaskScheduledOn(tmpl,dateStr)) return; }catch(e){ return; }
 const leave=getActiveLeave(tmpl.assignedUserId,dateStr);
 const assignTo=leave&&leave.substituteId
@@ -16061,11 +16133,11 @@ const uid=taskEffectiveUid(t);
 const uname=t.assignedUserName||t.assignedUserId||'Unassigned';
 if(!staffMap[uid]){staffMap[uid]={id:uid,name:uname,total:0,done:0,onTime:0,late:0,pending:0};staffOrder.push(uid);}
 const s=staffMap[uid];s.total++;
-if(t.status==='Done'){s.done++;if(t.isOnTime)s.onTime++;}else if(new Date()>new Date(t.deadline)||(t.templateId&&t.templateId!=='manual'&&_staleCopyMap.has(t.templateId))){s.late++;}else{s.pending++;}
+if(t.status==='Done'){s.done++;if(t.isOnTime)s.onTime++;}else if(new Date()>new Date(t.deadline)){s.late++;}else{s.pending++;}
 });
 const total=todayInst.length;
 const done=todayInst.filter(t=>t.status==='Done').length;
-const overdueTasks=todayInst.filter(t=>t.status==='Pending'&&(new Date()>new Date(t.deadline)||(t.templateId&&t.templateId!=='manual'&&_staleCopyMap.has(t.templateId))));
+const overdueTasks=todayInst.filter(t=>t.status==='Pending'&&new Date()>new Date(t.deadline));
 const pct=total?Math.round(done/total*100):0;
 // ── Header summary card ──
 let html='<div style="background:linear-gradient(135deg,#1e1b4b,#4F46E5);border-radius:16px;padding:18px;margin-bottom:14px;color:white">'+
@@ -16151,6 +16223,10 @@ if(sb==='name') return (a.taskName||'').localeCompare(b.taskName||'');
 if(sb==='staff') return (a.assignedUserName||'').localeCompare(b.assignedUserName||'');
 return 0;
 };
+/* "Overdue" = deadline has passed. Stale instances from missed days show up here
+   naturally because their deadline was on the original (past) day.
+   No _staleCopyMap magic needed — the generation layer now prevents today-copies
+   from being created when a stale pending instance already exists. */
 const overdue2=filtered.filter(t=>t.status==='Pending'&&new Date()>new Date(t.deadline)).sort(sortFn);
 const pending2=filtered.filter(t=>t.status==='Pending'&&!(new Date()>new Date(t.deadline))&&t.generatedDate<=today_s).sort(sortFn);
 const upcoming2=filtered.filter(t=>t.status==='Pending'&&!(new Date()>new Date(t.deadline))&&t.generatedDate>today_s).sort((a,b)=>(a.generatedDate||'').localeCompare(b.generatedDate||''));
