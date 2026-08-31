@@ -51,7 +51,7 @@
 
 <div class="ov" id="m-item"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="itmtit">New Item</h3><p class="sub">Fabric type</p></div><button class="btn bgh bsm" onclick="hideMod('m-item')">✕</button></div></div><div class="shb"><input type="hidden" id="itm-id"/><div class="fg"><label>Item Name *</label><input class="inp" id="itm-name" placeholder="e.g. FRENDY CHIFFON" oninput="updateItmSkuPreview()"/><div id="itm-sku-preview" style="display:none;font-size:11px;font-weight:700;font-family:monospace;color:var(--Pd);margin-top:5px;padding:4px 9px;background:var(--Pl);border-radius:6px;letter-spacing:.3px"></div></div><div class="fg"><label>HSN Code</label><input class="inp" id="itm-hsn" placeholder="e.g. 5407"/></div><div id="itm-copyfrom-wrap" style="display:none"><div class="fg" style="margin-top:0"><label style="display:flex;align-items:center;gap:6px"><span>📋</span> Copy Ranges &amp; Colours From</label><select class="inp" id="itm-copyfrom"><option value="">None — start blank</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">Copies all ranges and colour names from the selected item (SKUs will be regenerated for the new item name).</div></div></div><div class="dvd"></div><div class="hr" style="margin-bottom:10px"><label style="margin-bottom:0">Ranges &amp; Colours</label><button class="ai" onclick="openAddRange()">+ Add Range</button></div><div id="itmrng"></div></div><div class="shf" style="flex-wrap:wrap;gap:8px"><button class="btn bd bfl" id="itm-del-btn" style="display:none" onclick="deleteItem()">Delete Item</button><div style="display:flex;gap:8px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-item')">Cancel</button><button class="btn bp bfl" onclick="saveItem()">Save Item</button></div></div>
 </div></div>
-<div class="ov" id="m-rng" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Add Range &amp; Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-rng')">✕</button></div></div><div class="shb"><div class="fg" style="background:var(--Pl);border-radius:10px;padding:10px;margin-bottom:4px"><label style="display:flex;align-items:center;gap:5px;margin-bottom:6px"><span>📋</span> Copy from another item's range <span style="font-size:10px;color:var(--t3);font-weight:400">(optional)</span></label><select class="inp" id="rng-copyfrom-item" onchange="onRngCopyItemChange()" style="margin-bottom:6px"><option value="">— Enter manually below —</option></select><select class="inp" id="rng-copyfrom-rng" onchange="onRngCopyRngChange()" style="display:none"><option value="">Select range to copy</option></select></div><div class="fg"><label>Range Name *</label><input class="inp" id="rng-n" placeholder="e.g. A, B, PREMIUM" style="text-transform:uppercase" oninput="updateAllSkuPreviews('rng-rows')"/></div><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="rng-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('rng-rows','rng-cnt')"/></div><div id="rng-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-rng')">Cancel</button><button class="btn bp bfl" onclick="saveRange()">Add Range</button></div>
+<div class="ov" id="m-rng" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Add Range &amp; Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-rng')">✕</button></div></div><div class="shb"><div class="fg" style="background:var(--Pl);border-radius:10px;padding:10px;margin-bottom:4px"><div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;font-size:13px;font-weight:700;color:var(--t1)"><span>📋</span> Copy from another item's range <span style="font-size:10px;color:var(--t3);font-weight:400">(optional)</span></div><select class="inp" id="rng-copyfrom-item" onchange="onRngCopyItemChange()" style="margin-bottom:6px"><option value="">— Enter manually below —</option></select><select class="inp" id="rng-copyfrom-rng" onchange="onRngCopyRngChange()" style="display:none"><option value="">Select range to copy</option></select></div><div class="fg"><label>Range Name *</label><input class="inp" id="rng-n" placeholder="e.g. A, B, PREMIUM" style="text-transform:uppercase" oninput="updateAllSkuPreviews('rng-rows')"/></div><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="rng-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('rng-rows','rng-cnt')"/></div><div id="rng-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-rng')">Cancel</button><button class="btn bp bfl" onclick="saveRange()">Add Range</button></div>
 </div></div>
 <div class="ov" id="m-aclr" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="aclrtit">Add Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-aclr')">✕</button></div></div><div class="shb"><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="aclr-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('aclr-rows','aclr-cnt')"/></div><div id="aclr-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-aclr')">Cancel</button><button class="btn bp bfl" onclick="saveAddClrs()">Add Colours</button></div>
 </div></div>
@@ -109,7 +109,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.75';
+const APP_VERSION='1.40.80';
 const APP_BUILD_DATE='2026-08-24';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -949,12 +949,34 @@ if(FIREBASE_URL)initFirebaseListener();
     }catch(e){setLiveStatus('off');}
     /* Generate task instances AFTER Firebase pull so we see what tasks
        Firebase already has — prevents each browser creating duplicates.
-       deterministic IDs mean re-generation is safe if Firebase missed any. */
+       deterministic IDs mean re-generation is safe if Firebase missed any.
+       IMPORTANT: _initialPullDone must be true BEFORE generateTaskInstances so
+       that the autoSyncCloud() call inside it can push instances to Firebase.
+       Without this, instances are saved to localStorage but the push is aborted
+       (autoSyncCloud guards against pushing before initial pull completes). */
+    window._initialPullDone=true;
     try{generateTaskInstances(today());}catch(e){console.warn('taskGen:',e);}
     try{_applyLeaveReassignments(today());}catch(e){}
     try{updateTaskDot();}catch(e){}
     try{refreshCurrentView();}catch(e){}
-    window._initialPullDone=true;
+    /* Force-push task instances to Firebase so staff devices always see them,
+       even if a previous session generated them but the push was aborted.
+       Uses a short delay so the regular autoSyncCloud (if triggered by
+       generateTaskInstances above) can complete first without contention. */
+    if(got&&FIREBASE_URL){
+      setTimeout(async()=>{
+        const _todayInst=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.generatedDate===today());
+        if(_todayInst.length){
+          /* Touch _ts on today's instances so they are above the push cutoff,
+             then push. This repairs instances from previous sessions that were
+             generated locally but never reached Firebase. */
+          const _nowTs=Date.now();
+          _todayInst.forEach(t=>{ if((t._ts||0)<_nowTs-5000) t._ts=_nowTs; });
+          lsSave('vs_task_instances',STATE.taskInstances);
+          await pushDeltaToFirebase();
+        }
+      },2000);
+    }
     return;
   }
   if(!GAS_URL){
@@ -1964,7 +1986,9 @@ showMod('m-sup');
 function quickRng(pfx){
 const iid=el(pfx+'-i')?.value; if(!iid){toast('Select item first','er');return;}
 window._qrPfx=pfx; window._qrIid=iid;
-el('rng-n').value=''; el('rng-cnt').value=1; buildClrRows('rng-rows','rng-cnt'); showMod('m-rng');
+el('rng-n').value=''; el('rng-cnt').value=1; buildClrRows('rng-rows','rng-cnt');
+_populateRngCopyFrom(iid);
+showMod('m-rng');
 }
 function quickClr(pfx){
 const iid=el(pfx+'-i')?.value, rng=el(pfx+'-r')?.value;
@@ -3139,7 +3163,16 @@ const tpc=el('ir'+i+'-tpcalc'); if(tpc) tpc.textContent=tp?tp+' TP \xd7 '+avgTP+
 }
 async function saveInward(){
 const date=el('in-date')?.value, ref=el('in-ref')?.value.trim(), notes=el('in-notes')?.value.trim();
-const vno=(el('in-vno')?.value||'').trim()||nextInwardVoucher();
+let vno=(el('in-vno')?.value||'').trim()||nextInwardVoucher();
+/* Duplicate guard — same check as saveBill(); another device may have used this number */
+if(!_inEditVno&&(STATE.entries||[]).some(e=>!e._deleted&&e.voucherNo===vno)){
+  toast('Voucher '+vno+' already used — assigning next available','er');
+  const _pfxD=(STATE.settings.inwardPrefix||'GRN/').trim();
+  let _nD=STATE.settings.nextInwardNo||1;
+  while((STATE.entries||[]).some(e=>!e._deleted&&e.voucherNo===_pfxD+String(_nD).padStart(4,'0'))){_nD++;}
+  vno=_pfxD+String(_nD).padStart(4,'0');
+  if(el('in-vno'))el('in-vno').value=vno;
+}
 const pId=el('in-pty')?.value, party=STATE.suppliers.find(s=>s.id===pId)?.name||'';
 const gpNo=el('in-gpno')?.value?.trim()||'';
 const fullNote=gpNo?('GP: '+gpNo+(notes?' | '+notes:'')):notes;
@@ -3208,7 +3241,14 @@ saved++;
 }
 if(!saved){toast('Add at least one SKU with taka','er');return;}
 const isEdit=!!_inEditVno;
-if(!isEdit) STATE.settings.nextInwardNo=(STATE.settings.nextInwardNo||1)+1;
+if(!isEdit){
+  /* Advance the counter past whichever number was actually used —
+     if the user manually typed a higher voucher number, keep up with it */
+  const _pfx=(STATE.settings.inwardPrefix||'GRN/').trim();
+  const _usedNum=vno.startsWith(_pfx)?parseInt(vno.slice(_pfx.length))||0:0;
+  const _oldNext=STATE.settings.nextInwardNo||1;
+  STATE.settings.nextInwardNo=Math.max(_oldNext+1,_usedNum+1);
+}
 _inEditVno=null; _inOrigType=null; _inEditLots=null;
 persist(); hideMod('m-inw'); renderDash(); renderInRec();
 toast(vno+(isEdit?' updated':' saved')+' - '+saved+' SKU(s)','ok');
@@ -5266,27 +5306,33 @@ calcOrdLot(lot.id);
 });
 }
 function applyLotDefaults(lid){
-const qcut=el('od-lot-'+lid+'-qcut')?.value;
-const qpcs=el('od-lot-'+lid+'-qpcs')?.value;
-const qrate=el('od-lot-'+lid+'-qrate')?.value;
-const item=STATE.items.find(x=>x.id===el('od-lot-'+lid+'-i')?.value);
-const rng=el('od-lot-'+lid+'-r')?.value;
-if(!item||!rng){toast('Select item & range first','er');return;}
+const rSel=el('od-lot-'+lid+'-r');
+const iSel=el('od-lot-'+lid+'-i');
+if(!iSel?.value||rSel?.selectedIndex===0){toast('Select item & range first','er');return;}
+const rng=rSel.value;
+const item=STATE.items.find(x=>x.id===iSel.value);
+if(!item){toast('Select item & range first','er');return;}
+/* Lot-specific quick-fill values fall back to global defaults */
+const qcut=el('od-lot-'+lid+'-qcut')?.value||el('od-def-cut')?.value||'';
+const qpcs=el('od-lot-'+lid+'-qpcs')?.value||el('od-def-pcs')?.value||'';
+const qrate=el('od-lot-'+lid+'-qrate')?.value||el('od-def-rate')?.value||'';
 /* Apply cut */
 if(qcut){ const cutFld=el('od-lot-'+lid+'-cut'); if(cutFld) cutFld.value=qcut; }
 /* Apply pcs and rate to all checked (or all if none checked) colours */
 const cols=item.colours.filter(c=>c.range===rng&&!c._deleted&&!c.discontinued);
+if(!cols.length){toast('No colours found for this range','er');return;}
 let anyChecked=cols.some(col=>{const idx=item.colours.indexOf(col);return el('od-lot-'+lid+'-ck-'+idx)?.checked;});
 cols.forEach(col=>{
   const idx=item.colours.indexOf(col);
   const chk=el('od-lot-'+lid+'-ck-'+idx);
   /* If none are checked, check all first */
-  if(!anyChecked&&chk){chk.checked=true;ordLotClrToggle(lid,idx,true);}
+  if(!anyChecked&&chk&&!chk.checked){chk.checked=true;ordLotClrToggle(lid,idx,true);}
   if(!chk?.checked) return;
   const pcsFld=el('od-lot-'+lid+'-p-'+idx);
   const rateFld=el('od-lot-'+lid+'-rt-'+idx);
-  if(qpcs&&pcsFld) pcsFld.value=qpcs;
-  if(qrate&&rateFld) rateFld.value=qrate;
+  /* Explicitly enable disabled inputs then set values */
+  if(pcsFld){pcsFld.disabled=false;if(qpcs) pcsFld.value=qpcs;}
+  if(rateFld){rateFld.disabled=false;if(qrate) rateFld.value=qrate;}
 });
 calcOrdLot(lid);
 toast('Lot filled','ok');
@@ -6475,6 +6521,12 @@ function openEditBill(billId){
     if(el('bl-b'))el('bl-b').value=bill.brkId||'';
     if(el('bl-disc'))el('bl-disc').value=bill.discountPct||0;
     if(el('bl-nt'))el('bl-nt').value=bill.notes||'';
+    if(el('bl-challan'))el('bl-challan').value=bill.challanNo||'';
+    if(el('bl-khata'))el('bl-khata').value=bill.khataName||'';
+    if(el('bl-recv-name'))el('bl-recv-name').value=bill.receiverName||'';
+    if(el('bl-recv-ph'))el('bl-recv-ph').value=bill.receiverPhone||'';
+    /* Expand delivery section if any delivery field is set */
+    if(bill.challanNo||bill.khataName||bill.receiverName||bill.receiverPhone){const _ds=document.querySelector('#m-bill .bl-del-arr');if(_ds){const _dp=_ds.closest('[onclick]');if(_dp)_dp.click();}}
     if(el('bl-brok-pct'))el('bl-brok-pct').value=bill.brokeragePct||0;
     if(el('bl-brok-flat'))el('bl-brok-flat').value=bill.brokerageFlat||0;
     if(el('bl-brok-lbl'))el('bl-brok-lbl').value=bill.brokerageLabel||'';
@@ -6566,7 +6618,17 @@ const lotsHtml='<div id="bl-lots-sec" style="margin:12px 0 4px"><div style="disp
 return adjPos==='before' ? adjHtml+lotsHtml : lotsHtml+adjHtml;
 })()
 +'<div id="bl-sum" class="bsum mt12"></div>'+
-'<div class="fg mt12"><label>Notes</label><textarea class="ta" id="bl-nt" rows="2" placeholder="Payment terms, delivery notes..."></textarea></div>';
+'<div class="fg mt12"><label>Notes</label><textarea class="ta" id="bl-nt" rows="2" placeholder="Payment terms, delivery notes..."></textarea></div>'+
+'<div style="margin-top:12px;border:1.5px solid var(--b2);border-radius:10px;overflow:hidden">'+
+'<div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.bl-del-arr\').textContent=this.nextElementSibling.style.display===\'none\'?\'▶\':\'▼\'" style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--Pl);cursor:pointer;user-select:none">'+
+'<span style="font-size:11px;font-weight:800;color:var(--Pd);text-transform:uppercase;letter-spacing:.4px;flex:1">🚚 Delivery / Dispatch Details</span>'+
+'<span style="font-size:10px;color:var(--t3)">Optional</span>'+
+'<span class="bl-del-arr" style="font-size:10px;color:var(--t3);margin-left:6px">▶</span>'+
+'</div>'+
+'<div style="display:none;padding:10px 12px">'+
+'<div class="ir2"><div class="fg"><label>Party Challan No</label><input class="inp mono" id="bl-challan" placeholder="e.g. CH-001"/></div><div class="fg"><label>Receiver Phone</label><input class="inp mono" id="bl-recv-ph" type="tel" placeholder="Mobile number"/></div></div>'+
+'<div class="ir2"><div class="fg"><label>Khata Name</label><input class="inp" id="bl-khata" placeholder="Account / ledger name (if different from customer)"/></div><div class="fg"><label>Receiver Name</label><input class="inp" id="bl-recv-name" placeholder="Person receiving the goods"/></div></div>'+
+'</div></div>';
 if(el('bl-brok-lbl'))el('bl-brok-lbl').value='';
   if(el('bl-brok-pct'))el('bl-brok-pct').value='0';
   if(el('bl-brok-flat'))el('bl-brok-flat').value='0';
@@ -7098,7 +7160,11 @@ const isCrossGroupBill=(ordCustId&&ordCustId!==cId);
 const billId=editingBill?editingBill.id:uid();
 const payStatus=editingBill?.payStatus||'unpaid';
 const amtPaid=editingBill?.amtPaid||0;
-const newBill={id:billId,billNo:bno,date:el('bl-d')?.value,dueDate:el('bl-due')?.value,custId:cId,custName:cust.name,custGstin:cust.gstin||'',brkId,brkName:brk?.name||'',ordId:_billOrdId||'',ordCustId:isCrossGroupBill?ordCustId:'',ordCustName:isCrossGroupBill?ordCustName:'',items,subtotal:sub,discountPct:discPct,discountAmt:discAmt,afterDiscount:afterDisc,brokeragePct,brokerageFlat,brokerageLabel,brokerageAmt,netTaxable,gstAmt:gA,gstType:gt,grandTotal,notes:el('bl-nt')?.value,payStatus,amtPaid,by:STATE.user?.name||'',fy:STATE.settings.currentFY||getCurrentFY()};
+const _challanNo=(el('bl-challan')?.value||'').trim();
+const _khataName=(el('bl-khata')?.value||'').trim();
+const _receiverName=(el('bl-recv-name')?.value||'').trim();
+const _receiverPhone=(el('bl-recv-ph')?.value||'').trim();
+const newBill={id:billId,billNo:bno,date:el('bl-d')?.value,dueDate:el('bl-due')?.value,custId:cId,custName:cust.name,custGstin:cust.gstin||'',brkId,brkName:brk?.name||'',ordId:_billOrdId||'',ordCustId:isCrossGroupBill?ordCustId:'',ordCustName:isCrossGroupBill?ordCustName:'',items,subtotal:sub,discountPct:discPct,discountAmt:discAmt,afterDiscount:afterDisc,brokeragePct,brokerageFlat,brokerageLabel,brokerageAmt,netTaxable,gstAmt:gA,gstType:gt,grandTotal,notes:el('bl-nt')?.value,...(_challanNo&&{challanNo:_challanNo}),...(_khataName&&{khataName:_khataName}),...(_receiverName&&{receiverName:_receiverName}),...(_receiverPhone&&{receiverPhone:_receiverPhone}),payStatus,amtPaid,by:STATE.user?.name||'',fy:STATE.settings.currentFY||getCurrentFY()};
 if(editingBill){
   /* Replace the existing bill in-place */
   const idx=STATE.bills.findIndex(b=>b.id===billId);
@@ -12598,6 +12664,15 @@ function printBillPdf(id){
   html+=_pdfCo();
   html+='<div class="hdr"><div><div class="doc-lbl">Tax Invoice</div><div class="doc-no">'+b.billNo+'</div><div class="doc-date">'+fmtDate(b.date)+'</div></div><div><span class="bdg '+payCls+'">'+payLbl+'</span></div></div>';
   html+='<div class="meta"><div><div class="ml">Bill To</div><div class="mv">'+b.custName+'</div></div>'+(b.custGstin?'<div><div class="ml">GSTIN</div><div class="mv">'+b.custGstin+'</div></div>':'<div></div>')+'</div>';
+  if(b.challanNo||b.khataName||b.receiverName||b.receiverPhone){
+    html+='<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:6px 20px">';
+    html+='<div style="grid-column:1/-1;font-size:10px;font-weight:800;color:#065F46;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Delivery / Dispatch Details</div>';
+    if(b.challanNo) html+='<div><span style="font-size:10px;color:#6B7280">Party Challan No</span><br><strong>'+escHtml(b.challanNo)+'</strong></div>';
+    if(b.khataName) html+='<div><span style="font-size:10px;color:#6B7280">Khata Name</span><br><strong>'+escHtml(b.khataName)+'</strong></div>';
+    if(b.receiverName) html+='<div><span style="font-size:10px;color:#6B7280">Receiver Name</span><br><strong>'+escHtml(b.receiverName)+'</strong></div>';
+    if(b.receiverPhone) html+='<div><span style="font-size:10px;color:#6B7280">Receiver Phone</span><br><strong>'+escHtml(b.receiverPhone)+'</strong></div>';
+    html+='</div>';
+  }
   html+='<table><tr><th>#</th><th>Item</th><th>Colour</th><th class="tr">Qty / Rate</th><th class="tr">Amount</th></tr>'+rows+'</table>';
   html+='<div class="sumbox">';
   html+='<div class="srow"><span>Subtotal</span><span class="mono">'+fmtRs(b.subtotal||b.grandTotal)+'</span></div>';
@@ -15539,38 +15614,46 @@ function _effFollowup(d){if(!d)return d;let dt=new Date(d+'T00:00:00');while(dt.
 function _applyLeaveReassignments(dateStr){
   if(!dateStr) dateStr=today();
   let changed=0;
-  const approvedLeaves=(STATE.staffLeave||[]).filter(lv=>
-    !lv._deleted&&(lv.status==='approved'||lv.finalSubstituteId)&&
-    lv.fromDate<=dateStr&&lv.toDate>=dateStr
+  const allApprovedLeaves=(STATE.staffLeave||[]).filter(lv=>
+    !lv._deleted&&(lv.status==='approved'||lv.finalSubstituteId)
   );
+  /* Leaves active specifically TODAY — used for new reassignments */
+  const todayLeaves=allApprovedLeaves.filter(lv=>lv.fromDate<=dateStr&&lv.toDate>=dateStr);
   (STATE.taskInstances||[]).forEach(t=>{
     if(t._deleted||t.status==='Done') return;
-    if(t.generatedDate<dateStr||t.generatedDate>dateStr) return; // only affect tasks on the leave date
-    // Find leave for this task's original assignee
-    const origId=t._originalAssigneeId||t.assignedUserId;
-    const lv=approvedLeaves.find(l=>l.userId===origId);
-    if(lv){
-      const subId=lv.finalSubstituteId||lv.substituteId||'';
-      const sub=STATE.users?.find(u=>u.id===subId);
-      if(subId&&sub&&t.assignedUserId!==subId){
-        t._originalAssigneeId=origId;
-        t.assignedUserId=subId;
-        t.assignedUserName=sub.name||'';
-        t.isSubstitute=true;t._ts=Date.now();
-        changed++;
+    if(t.isSubstitute&&t._originalAssigneeId){
+      /* Task was previously substituted — check if original assignee is on leave TODAY.
+         If their leave has ended (or been deleted), revert the task back to them.
+         This handles overdue tasks from past leave days carrying into the present. */
+      const origId=t._originalAssigneeId;
+      const onLeaveToday=todayLeaves.some(lv=>lv.userId===origId);
+      if(!onLeaveToday){
+        const orig=STATE.users?.find(u=>u.id===origId);
+        if(orig){
+          t.assignedUserId=origId;
+          t.assignedUserName=orig.name||'';
+          t.isSubstitute=false;t._originalAssigneeId=undefined;t._ts=Date.now();
+          changed++;
+        }
       }
-    } else if(t.isSubstitute&&t._originalAssigneeId){
-      // No active leave for original assignee any more — revert
-      const orig=STATE.users?.find(u=>u.id===t._originalAssigneeId);
-      if(orig){
-        t.assignedUserId=t._originalAssigneeId;
-        t.assignedUserName=orig.name||'';
-        t.isSubstitute=false;t._originalAssigneeId=undefined;t._ts=Date.now();
-        changed++;
+    } else if(t.generatedDate===dateStr){
+      /* Today's newly-generated task — check if its assignee is on leave today */
+      const origId=t.assignedUserId;
+      const lv=todayLeaves.find(lv=>lv.userId===origId);
+      if(lv){
+        const subId=lv.finalSubstituteId||lv.substituteId||'';
+        const sub=STATE.users?.find(u=>u.id===subId);
+        if(subId&&sub&&t.assignedUserId!==subId){
+          t._originalAssigneeId=origId;
+          t.assignedUserId=subId;
+          t.assignedUserName=sub.name||'';
+          t.isSubstitute=true;t._ts=Date.now();
+          changed++;
+        }
       }
     }
   });
-  if(changed>0){lsSave('vs_task_instances',STATE.taskInstances);}
+  if(changed>0){lsSave('vs_task_instances',STATE.taskInstances);autoSyncCloud();}
   return changed;
 }
 
