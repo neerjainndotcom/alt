@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.96';
+const APP_VERSION='1.41.0';
 const APP_BUILD_DATE='2026-09-01';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -1516,9 +1516,8 @@ function renderPriceListWidget(){
       +(isAdmin?'<div style="font-size:11px;color:var(--t3);margin-top:3px">Tap Edit above to add prices</div>':'')
       +'</div>';
   }else{
-    const preview=groups.slice(0,4);
     html+='<div style="background:var(--sf)">';
-    preview.forEach((g,gi)=>{
+    groups.forEach((g,gi)=>{
       const hasBorder=gi>0;
       html+='<div style="'+(hasBorder?'border-top:1px solid var(--br)':'')+'background:var(--sf)">';
       // Main item row
@@ -1546,11 +1545,6 @@ function renderPriceListWidget(){
       html+='</div>';
     });
     html+='</div>';
-    // Footer — view all
-    html+='<div onclick="setNav(\'sales\');salesTab(\'pricelist\')" style="display:flex;align-items:center;justify-content:center;gap:4px;padding:9px 14px;background:var(--Pl);cursor:pointer;border-top:1px solid var(--Ps)">'
-      +(groups.length>4?'<span style="font-size:11px;font-weight:700;color:var(--P)">+'+(groups.length-4)+' more · </span>':'')
-      +'<span style="font-size:11px;font-weight:800;color:var(--P)">View full price list →</span>'
-      +'</div>';
   }
   html+='</div>'; // close outer card
   el_w.innerHTML=html;
@@ -1804,7 +1798,7 @@ function sendWAPriceList(){
   });
   msg+='— ALT';
   hideMod('m-pricelist-wa');
-  openWA('',msg);
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 }
 /* ── Holiday prompt on dashboard ──────────────────────────────────── */
 function renderDashHolidayPrompt(){
@@ -6193,10 +6187,12 @@ function renderOrders(q){
 const c=el('ordlst'); if(!c) return;
 if(q===undefined){const se=el('ord-search'); q=se?se.value:'';}
 const ql=(q||'').toLowerCase();
-refreshFltOptions('ord',STATE.orders.filter(o=>!o._deleted&&(o.status==='pending'||o.status==='billed')));
+const isAdminOrCRE=_isAdminOrCRE();
+refreshFltOptions('ord',STATE.orders.filter(o=>!o._deleted&&(o.status==='pending'||o.status==='billed')&&(isAdminOrCRE||!o.salesmanId||o.salesmanId===STATE.user?.id)));
 const _flt=readFlt('ord');
 const f=STATE.orders.filter(o=>{
   if(o._deleted||o.status==='deleted') return false;
+  if(!isAdminOrCRE&&o.salesmanId&&o.salesmanId!==STATE.user?.id) return false;
   if(!orderPassesFlt(o,_flt)) return false;
   if(!q) return true;
   return (o.orderNo||'').toLowerCase().includes(ql)||
@@ -7675,7 +7671,9 @@ const c=el('billst')||el('billlst'); if(!c) return;
 if(q===undefined){const se=el('bil-search'); q=se?se.value:'';}
 refreshFltOptions('bil',liveBills().filter(b=>b.status!=='cancelled'&&b.payStatus!=='paid'));
 const _fltB=readFlt('bil');
+const isAdminOrCREb=_isAdminOrCRE();
 const f=liveBills().filter(b=>{
+  if(!isAdminOrCREb&&b.salesmanId&&b.salesmanId!==STATE.user?.id) return false;
   if(!billPassesFlt(b,_fltB)) return false;
   return !q||b.billNo.includes(q)||b.custName.toLowerCase().includes(q.toLowerCase());
 });
