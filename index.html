@@ -45,7 +45,7 @@
 <div id="pinov"><div class="ccard" id="pin-card"><div class="cicn">🔐</div><div class="ctit" id="pin-title">Confirm Identity</div><div class="cmsg" id="pin-msg">Enter your login password to confirm this action.</div><input type="password" id="pin-inp" maxlength="128" placeholder="Your login password" autocomplete="off" style="letter-spacing:0;font-size:16px" onkeydown="if(event.key==='Enter')_pinSubmit()"/><div id="pin-err" style="font-size:12px;font-weight:700;color:#DC2626;min-height:18px;margin-bottom:12px"></div><div class="cbtns"><button class="cno" id="pin-cancel">Cancel</button><button class="cyes dr" id="pin-ok" onclick="_pinSubmit()">Confirm</button></div></div></div>
 <div id="ls"><div class="lg"></div><div class="lglow"></div><div class="lcard"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p>Amrit Laxmi Textile · Surat</p></div><div id="lf"><div class="lf"><label>Username</label><input type="text" id="lu" placeholder="Enter username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"/></div><div class="lf"><label>Password</label><input type="password" id="lp" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div><button class="lbtn" onclick="doLogin()">Sign In →</button><div class="lerr" id="le"></div><div style="display:flex;justify-content:space-between;margin-top:14px"><button onclick="showForgotUsername()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Username?</button><button onclick="showForgotPassword()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">Forgot Password?</button></div><div style="text-align:center;margin-top:10px"><button onclick="showEmergencyRecovery()" style="background:none;border:none;color:rgba(255,80,80,0.7);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline">&#x1F6A8; Admin locked out?</button></div><div id="login-version" style="text-align:center;margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3)"></div></div><div id="setup-screen" style="display:none;width:100%"><div class="llogo"><div class="lico">🧵</div><h1>ALT Stock</h1><p style="color:rgba(255,255,255,0.6);font-size:13px">First Time Setup — Create Your Admin Account</p></div><div id="lf"><div class="lf"><label>Your Full Name</label><input type="text" id="setup-name" placeholder="e.g. Neer Jain" autocomplete="name"/></div><div class="lf"><label>Choose Username</label><input type="text" id="setup-user" placeholder="e.g. neer" autocomplete="username" style="text-transform:lowercase"/></div><div class="lf"><label>Choose Password</label><input type="password" id="setup-pass" placeholder="Min. 6 characters" autocomplete="new-password"/></div><div class="lf"><label>Confirm Password</label><input type="password" id="setup-pass2" placeholder="Re-enter password" autocomplete="new-password"/></div><div class="lf" style="margin-top:6px"><label style="color:rgba(255,255,255,0.9)">Google Sheets URL <span style="color:rgba(255,255,255,0.4);font-weight:400">(optional — set up later in Admin → Database)</span></label><input type="url" id="setup-gas" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" style="font-size:11px"/><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;line-height:1.5">Paste your Google Sheets Web App URL here so your account saves to the cloud immediately. Without this, data is only on this device until you add it later.</div></div><button class="lbtn" onclick="createFirstAdmin()">✔ Create Admin Account →</button><div class="lerr" id="setup-err"></div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:12px;text-align:center;line-height:1.6">This creates the only admin account for ALT Stock.<br>Set up a Recovery PIN after logging in.</div><button onclick="showLoginForm()" style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit">← Back to Login</button></div></div><div id="of" class="hid"><p style="color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:20px;line-height:1.6">📱 New device detected!<br>OTP sent to admin WhatsApp.<br>Ask admin to share the code.</p><div class="lf"><label>One-Time Password</label><input type="number" class="otp-inp" id="oi" placeholder="000000" maxlength="6"/></div><button class="lbtn" onclick="doOTP()">Verify OTP →</button><div class="lerr" id="oe"></div><button style="width:100%;margin-top:10px;background:transparent;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:inherit" onclick="showEl('lf');hideEl('of')">← Back</button></div></div>
 </div>
-<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:12px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div id="dash-holiday-prompt"></div><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-recurring-visits"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div id="dash-mixed-sarees"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button><button class="tbb" onclick="salesTab('pend',this)">Pending</button><button class="tbb" onclick="salesTab('pay',this)">Payments</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" id="ord-search" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div style="padding:0 16px 6px"><button class="btn bgh bxs" onclick="toggleFltPanel('ord')" style="font-size:11px">&#x1F50D; More Filters</button></div><div id="ord-flt-panel" style="display:none;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px;margin:0 16px 8px;background:var(--s2);border-radius:10px"><select class="inp" id="ord-f-item" onchange="renderOrders()" style="font-size:12px;padding:6px 8px"><option value="">All Items</option></select><select class="inp" id="ord-f-range" onchange="renderOrders()" style="font-size:12px;padding:6px 8px"><option value="">All Ranges</option></select><select class="inp" id="ord-f-party" onchange="renderOrders()" style="font-size:12px;padding:6px 8px;grid-column:1/3"><option value="">All Parties</option></select><div><label style="font-size:9px;font-weight:700;color:var(--t3)">From</label><input class="inp" type="date" id="ord-f-from" onchange="renderOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><div><label style="font-size:9px;font-weight:700;color:var(--t3)">To</label><input class="inp" type="date" id="ord-f-to" onchange="renderOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><button class="btn bgh bxs" onclick="clearFlt('ord',renderOrders)" style="grid-column:1/3;font-size:11px">Clear Filters</button></div><div id="ordlst"></div></div><div class="tp" id="tp-pend"><div style="display:flex;gap:0;padding:8px 16px 0;border-bottom:1.5px solid #E5E4F0"><button class="sw on" id="pend-sub-pend" onclick="pendSubTab('pend')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Pending</button><button class="sw" id="pend-sub-done" onclick="pendSubTab('done')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Completed</button></div><div class="srch" style="margin-top:8px"><span>🔍</span><input type="text" id="pend-search" placeholder="Search pending..." oninput="renderPendingOrders();renderCompletedOrders()"/></div><div style="padding:0 16px 6px"><button class="btn bgh bxs" onclick="toggleFltPanel('pend')" style="font-size:11px">&#x1F50D; More Filters</button></div><div id="pend-flt-panel" style="display:none;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px;margin:0 16px 8px;background:var(--s2);border-radius:10px"><select class="inp" id="pend-f-item" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px"><option value="">All Items</option></select><select class="inp" id="pend-f-range" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px"><option value="">All Ranges</option></select><select class="inp" id="pend-f-party" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px;grid-column:1/3"><option value="">All Parties</option></select><div><label style="font-size:9px;font-weight:700;color:var(--t3)">From</label><input class="inp" type="date" id="pend-f-from" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><div><label style="font-size:9px;font-weight:700;color:var(--t3)">To</label><input class="inp" type="date" id="pend-f-to" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><button class="btn bgh bxs" onclick="clearFlt('pend',()=>{renderPendingOrders();renderCompletedOrders();})" style="grid-column:1/3;font-size:11px">Clear Filters</button></div><div id="pendlst"></div><div id="donelst" style="display:none"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg" style="position:relative"><label>Customer</label><input type="text" class="inp" id="inv-cust-search" placeholder="Type customer name to search..." oninput="filterInvCusts()" onfocus="filterInvCusts()" autocomplete="off" style="font-size:14px;padding:10px 12px"/><input type="hidden" id="inv-cust-sel"/><div id="inv-cust-dd" style="display:none;position:absolute;left:0;right:0;top:100%;background:white;border:1.5px solid var(--br);border-radius:0 0 10px 10px;z-index:200;max-height:230px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.13)"></div></div><div id="inv-pending-orders" style="margin-top:12px"></div></div><div style="border-top:1.5px solid var(--br);margin-top:8px;padding-top:4px"><div class="srch"><span>🔍</span><input type="text" id="bil-search" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div style="padding:0 16px 6px"><button class="btn bgh bxs" onclick="toggleFltPanel('bil')" style="font-size:11px">&#x1F50D; More Filters</button></div><div id="bil-flt-panel" style="display:none;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px;margin:0 16px 8px;background:var(--s2);border-radius:10px"><select class="inp" id="bil-f-item" onchange="renderBills()" style="font-size:12px;padding:6px 8px"><option value="">All Items</option></select><select class="inp" id="bil-f-range" onchange="renderBills()" style="font-size:12px;padding:6px 8px"><option value="">All Ranges</option></select><select class="inp" id="bil-f-party" onchange="renderBills()" style="font-size:12px;padding:6px 8px;grid-column:1/3"><option value="">All Parties</option></select><div><label style="font-size:9px;font-weight:700;color:var(--t3)">From</label><input class="inp" type="date" id="bil-f-from" onchange="renderBills()" style="font-size:12px;padding:6px 8px;width:100%"/></div><div><label style="font-size:9px;font-weight:700;color:var(--t3)">To</label><input class="inp" type="date" id="bil-f-to" onchange="renderBills()" style="font-size:12px;padding:6px 8px;width:100%"/></div><button class="btn bgh bxs" onclick="clearFlt('bil',renderBills)" style="grid-column:1/3;font-size:11px">Clear Filters</button></div><div id="billst"></div></div></div><div class="tp" id="tp-pay"><div class="srch"><span>🔍</span><input type="text" placeholder="Search payments by customer or bill no..." oninput="renderPayments(this.value)"/></div><div id="paylst"></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="openExchange()"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" id="inward-manual-btn" onclick="openManualStock()" style="display:none;border:1.5px solid rgba(217,119,6,.3);background:var(--Al)"><span class="qaico">✏️</span><div><div class="qalbl" style="color:var(--Ad)">Manual Entry</div><div class="qasub">Add/deduct balance</div></div></div></div></div><div style="padding:16px 16px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px"><div class="stl" style="padding:0">🔄 Exchange Sarees</div><select class="inp" id="exch-status-filter" onchange="renderExchangeList()" style="max-width:160px;font-size:12px;padding:6px 10px;border-radius:20px"><option value="">All Status</option><option value="pending">Pending</option><option value="under_process">Under Process</option><option value="ready">Ready</option><option value="collected">Collected</option></select></div><div id="exch-list-body" style="margin-bottom:16px"></div></div>
+<div id="app" class="hid"><div id="sa"><div id="s-dash" class="scr"><div class="shdr"><div class="hr"><div><h2 id="dg">Dashboard</h2><p class="sub" id="ds">Welcome</p><p class="sub" style="font-size:12px;color:var(--t3);margin-top:2px" id="d-user-chip"></p><p class="sub" style="font-size:9px;color:var(--t3);margin-top:1px;opacity:.5" id="d-version"></p></div><div style="display:flex;gap:6px;align-items:center"><button id="refresh-btn" class="btn bgh bsm" onclick="manualRefresh()" title="Refresh data" style="font-size:18px;padding:4px 10px">🔄</button><div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.06);cursor:pointer" onclick="manualRefresh()" title="Sync status"><div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></div><span id="live-txt" style="font-size:11px;font-weight:700;color:#EF4444">○ Offline</span></div><button class="btn bd bsm" onclick="logout()" style="font-size:11px;padding:6px 10px">&#x1F6AA; Logout</button></div></div></div><div class="scr-body"><div id="dash-pricelist-alert"></div><div id="dash-holiday-prompt"></div><div class="sg" id="dstats"></div><div id="dash-alerts"></div><div id="dash-task-widget"></div><div id="dash-followup-alert"></div><div id="dash-recurring-visits"></div><div id="dash-shortcuts"></div><div class="stl" data-i18n="stock_ov">Stock Overview</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="sq" placeholder="Search items or SKUs..." oninput="renderStock()"/></div></div><div id="stkov"></div><div id="dash-mixed-sarees"></div><div class="stl" data-i18n="recent">Recent Activity</div><div id="ract" style="margin-bottom:16px"></div></div></div><div id="s-sales" class="scr"><div class="shdr"><div class="hr"><div><h2>🧾 Sales</h2><p class="sub">Orders · Bills · Payments</p></div><button class="btn bp bsm" onclick="openNewOrder()">+ Order</button></div><div class="tb mt8"><button class="tbb on" onclick="salesTab('ord',this)">Orders</button><button class="tbb" onclick="salesTab('newinv',this)">+ Invoice</button><button class="tbb" onclick="salesTab('pend',this)">Pending</button><button class="tbb" onclick="salesTab('pay',this)">Payments</button><button class="tbb" onclick="salesTab('pricelist',this)">💰 Price List</button></div></div><div class="tp on" id="tp-ord"><div class="srch"><span>🔍</span><input type="text" id="ord-search" placeholder="Search orders..." oninput="renderOrders(this.value)"/></div><div style="padding:0 16px 6px"><button class="btn bgh bxs" onclick="toggleFltPanel('ord')" style="font-size:11px">&#x1F50D; More Filters</button></div><div id="ord-flt-panel" style="display:none;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px;margin:0 16px 8px;background:var(--s2);border-radius:10px"><select class="inp" id="ord-f-item" onchange="renderOrders()" style="font-size:12px;padding:6px 8px"><option value="">All Items</option></select><select class="inp" id="ord-f-range" onchange="renderOrders()" style="font-size:12px;padding:6px 8px"><option value="">All Ranges</option></select><select class="inp" id="ord-f-party" onchange="renderOrders()" style="font-size:12px;padding:6px 8px;grid-column:1/3"><option value="">All Parties</option></select><div><label style="font-size:9px;font-weight:700;color:var(--t3)">From</label><input class="inp" type="date" id="ord-f-from" onchange="renderOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><div><label style="font-size:9px;font-weight:700;color:var(--t3)">To</label><input class="inp" type="date" id="ord-f-to" onchange="renderOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><button class="btn bgh bxs" onclick="clearFlt('ord',renderOrders)" style="grid-column:1/3;font-size:11px">Clear Filters</button></div><div id="ordlst"></div></div><div class="tp" id="tp-pend"><div style="display:flex;gap:0;padding:8px 16px 0;border-bottom:1.5px solid #E5E4F0"><button class="sw on" id="pend-sub-pend" onclick="pendSubTab('pend')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Pending</button><button class="sw" id="pend-sub-done" onclick="pendSubTab('done')" style="border-radius:8px 8px 0 0;padding:8px 16px;font-size:12px;font-weight:800">Completed</button></div><div class="srch" style="margin-top:8px"><span>🔍</span><input type="text" id="pend-search" placeholder="Search pending..." oninput="renderPendingOrders();renderCompletedOrders()"/></div><div style="padding:0 16px 6px"><button class="btn bgh bxs" onclick="toggleFltPanel('pend')" style="font-size:11px">&#x1F50D; More Filters</button></div><div id="pend-flt-panel" style="display:none;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px;margin:0 16px 8px;background:var(--s2);border-radius:10px"><select class="inp" id="pend-f-item" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px"><option value="">All Items</option></select><select class="inp" id="pend-f-range" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px"><option value="">All Ranges</option></select><select class="inp" id="pend-f-party" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px;grid-column:1/3"><option value="">All Parties</option></select><div><label style="font-size:9px;font-weight:700;color:var(--t3)">From</label><input class="inp" type="date" id="pend-f-from" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><div><label style="font-size:9px;font-weight:700;color:var(--t3)">To</label><input class="inp" type="date" id="pend-f-to" onchange="renderPendingOrders();renderCompletedOrders()" style="font-size:12px;padding:6px 8px;width:100%"/></div><button class="btn bgh bxs" onclick="clearFlt('pend',()=>{renderPendingOrders();renderCompletedOrders();})" style="grid-column:1/3;font-size:11px">Clear Filters</button></div><div id="pendlst"></div><div id="donelst" style="display:none"></div></div><div class="tp" id="tp-newinv"><div style="padding:16px"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Select Customer to Create Invoice</div><div class="fg" style="position:relative"><label>Customer</label><input type="text" class="inp" id="inv-cust-search" placeholder="Type customer name to search..." oninput="filterInvCusts()" onfocus="filterInvCusts()" autocomplete="off" style="font-size:14px;padding:10px 12px"/><input type="hidden" id="inv-cust-sel"/><div id="inv-cust-dd" style="display:none;position:absolute;left:0;right:0;top:100%;background:white;border:1.5px solid var(--br);border-radius:0 0 10px 10px;z-index:200;max-height:230px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.13)"></div></div><div id="inv-pending-orders" style="margin-top:12px"></div></div><div style="border-top:1.5px solid var(--br);margin-top:8px;padding-top:4px"><div class="srch"><span>🔍</span><input type="text" id="bil-search" placeholder="Search bills..." oninput="renderBills(this.value)"/></div><div style="padding:0 16px 6px"><button class="btn bgh bxs" onclick="toggleFltPanel('bil')" style="font-size:11px">&#x1F50D; More Filters</button></div><div id="bil-flt-panel" style="display:none;grid-template-columns:1fr 1fr;gap:6px;padding:8px 10px;margin:0 16px 8px;background:var(--s2);border-radius:10px"><select class="inp" id="bil-f-item" onchange="renderBills()" style="font-size:12px;padding:6px 8px"><option value="">All Items</option></select><select class="inp" id="bil-f-range" onchange="renderBills()" style="font-size:12px;padding:6px 8px"><option value="">All Ranges</option></select><select class="inp" id="bil-f-party" onchange="renderBills()" style="font-size:12px;padding:6px 8px;grid-column:1/3"><option value="">All Parties</option></select><div><label style="font-size:9px;font-weight:700;color:var(--t3)">From</label><input class="inp" type="date" id="bil-f-from" onchange="renderBills()" style="font-size:12px;padding:6px 8px;width:100%"/></div><div><label style="font-size:9px;font-weight:700;color:var(--t3)">To</label><input class="inp" type="date" id="bil-f-to" onchange="renderBills()" style="font-size:12px;padding:6px 8px;width:100%"/></div><button class="btn bgh bxs" onclick="clearFlt('bil',renderBills)" style="grid-column:1/3;font-size:11px">Clear Filters</button></div><div id="billst"></div></div></div><div class="tp" id="tp-pay"><div class="srch"><span>🔍</span><input type="text" placeholder="Search payments by customer or bill no..." oninput="renderPayments(this.value)"/></div><div id="paylst"></div></div><div class="tp" id="tp-pricelist"><div id="pricelist-tab-body"></div></div></div><div id="s-inward" class="scr"><div class="shdr"><h2>📥 Inward</h2><p class="sub">Mill · Job Work · Exchange</p></div><div class="scr-body"><div style="padding:12px 16px"><div class="qa" style="padding:0"><div class="qac" onclick="showInward('mill')"><span class="qaico">🏭</span><div><div class="qalbl">Mill G.P</div><div class="qasub">From supplier</div></div></div><div class="qac" onclick="openExchange()"><span class="qaico">🔄</span><div><div class="qalbl">Exchange</div><div class="qasub">Return/exchange</div></div></div><div class="qac" id="inward-manual-btn" onclick="openManualStock()" style="display:none;border:1.5px solid rgba(217,119,6,.3);background:var(--Al)"><span class="qaico">✏️</span><div><div class="qalbl" style="color:var(--Ad)">Manual Entry</div><div class="qasub">Add/deduct balance</div></div></div></div></div><div style="padding:16px 16px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px"><div class="stl" style="padding:0">🔄 Exchange Sarees</div><select class="inp" id="exch-status-filter" onchange="renderExchangeList()" style="max-width:160px;font-size:12px;padding:6px 10px;border-radius:20px"><option value="">All Status</option><option value="pending">Pending</option><option value="under_process">Under Process</option><option value="ready">Ready</option><option value="collected">Collected</option></select></div><div id="exch-list-body" style="margin-bottom:16px"></div></div>
 <div data-i18n="recent">Recent Inward</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="inward-search" placeholder="Search by voucher, item, party..." oninput="renderInRec(this.value)"/></div><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap"><input type="date" id="inward-dfrom" class="inp" style="flex:1;min-width:120px;font-size:12px;padding:6px 8px" title="From date" oninput="renderInRec()"/><input type="date" id="inward-dto" class="inp" style="flex:1;min-width:120px;font-size:12px;padding:6px 8px" title="To date" oninput="renderInRec()"/></div><div style="display:flex;gap:6px;margin-top:6px"><input type="text" id="inward-fparty" class="inp" style="flex:1;font-size:12px;padding:6px 8px" placeholder="Filter party..." oninput="renderInRec()"/><select id="inward-ftype" class="sel" style="flex:1;font-size:12px;padding:6px 8px" onchange="renderInRec()"><option value="">All Types</option><option value="mill">Mill G.P</option><option value="jobwork">Job Work</option><option value="exchange">Exchange</option></select></div></div><div id="inrec"></div></div></div><div id="s-jw" class="scr"><div class="shdr"><div class="hr"><div><h2>⚙️ Job Work</h2><p class="sub">Challans & Processing</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="showJWForm('s2j')">Shop → Job Work</button></div></div><div class="tb mt8"><button class="tbb on" onclick="jwTab('pnd',this)">Pending</button><button class="tbb" onclick="jwTab('rec',this)">Received</button><button class="tbb" onclick="jwTab('all',this)">All</button></div></div><div class="tp on" id="tp-pnd"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="jw-search" placeholder="Search by ref, party, item..." oninput="renderJWLists(this.value)"/></div></div><div id="jwpnd"></div></div><div class="tp" id="tp-rec"><div style="padding:8px 16px"><button class="btn bp bfl" onclick="openGenRecv()">+ Generate Receive Challan</button></div><div id="jwrec"></div></div><div class="tp" id="tp-all"><div id="jwall"></div></div></div><div id="s-masters" class="scr"><div class="shdr"><h2>🗂️ Masters</h2><div class="tb mt8"><button class="tbb on" onclick="mTab('itm',this)">Items</button><button class="tbb" onclick="mTab('cst',this)">Customers</button><button class="tbb" onclick="mTab('brk',this)">Brokers</button><button class="tbb" onclick="mTab('sup',this)">Suppliers</button><button class="tbb" onclick="mTab('prd',this)">Products</button><button class="tbb" onclick="mTab('grp',this)">Party Groups</button><button class="tbb" onclick="mTab('sku',this)">All SKUs</button></div></div><div class="tp on" id="tp-itm"><div class="srch"><span>🔍</span><input type="text" placeholder="Search items..." oninput="renderItems(this.value)"/></div><div id="itmlst"></div><button class="fab" onclick="openItem()">+</button></div><div class="tp" id="tp-cst"><div class="srch"><span>🔍</span><input type="text" id="cst-search" placeholder="Search customers..." oninput="renderCusts(this.value)"/></div><div style="display:flex;gap:8px;align-items:center;padding:0 16px 8px;flex-wrap:wrap"><select class="inp" id="cst-flt-market" onchange="renderCusts()" style="font-size:12px;padding:6px 8px;flex:1;min-width:120px"><option value="">All Markets</option></select><select class="inp" id="cst-flt-broker" onchange="renderCusts()" style="font-size:12px;padding:6px 8px;flex:1;min-width:120px"><option value="">All Brokers</option></select><select class="inp" id="cst-flt-star" onchange="renderCusts()" style="font-size:12px;padding:6px 8px;flex:1;min-width:120px"><option value="">All Customers</option><option value="star">&#11088; Star Only</option><option value="nonstar">Non-Star Only</option></select><select class="inp" id="cst-flt-salesman" onchange="renderCusts()" style="font-size:12px;padding:6px 8px;flex:1;min-width:120px"><option value="">All Salesmen</option></select><button class="btn bgh bxs" onclick="clearCustFlt()" style="font-size:11px">Clear</button><button class="btn bgh bxs" onclick="openMarketManager()" style="font-size:11px">⚙️ Manage Markets</button></div><div id="cstlst"></div><button class="fab" onclick="openCust()">+</button></div><div class="tp" id="tp-grp"><div style="padding:12px 16px 4px"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Party Groups — Link firms for cross-billing</div><div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Create a group when multiple firms belong to one party. Orders saved under Firm A can then be billed to Firm B or Firm C.</div></div><div id="grplst"></div><button class="fab" onclick="openCustGroup()">+</button></div><div class="tp" id="tp-brk"><div class="srch"><span>🔍</span><input type="text" id="brk-search" placeholder="Search brokers..." oninput="renderBrks(this.value)"/></div><div id="brklst"></div><button class="fab" onclick="showMod('m-brk')">+</button></div><div class="tp" id="tp-sup"><div id="suplst"></div><button class="fab" onclick="showMod('m-sup')">+</button></div><div class="tp" id="tp-prd"><div id="prdlst"></div><button class="fab" onclick="showMod('m-prd')">+</button></div><div class="tp" id="tp-sku"><div class="srch"><span>🔍</span><input type="text" placeholder="Search SKUs, items or colours..." oninput="renderAllSKUs(this.value)"/></div><div id="skulst"></div></div></div><div id="s-admin" class="scr"><div class="shdr"><h2>👑 Admin</h2><div class="tb mt8"><button class="tbb on" onclick="aTab('set',this)">Settings</button><button class="tbb" onclick="aTab('usr',this)">Users</button><button class="tbb" onclick="aTab('dev',this)">Devices</button><button class="tbb" onclick="aTab('led',this)">Ledger</button><button class="tbb" onclick="aTab('db',this)">Database</button><button class="tbb" onclick="aTab('fy',this)">Fin Year</button><button class="tbb" data-tab="flags" onclick="aTab('flags',this)" id="admin-flag-tab">Flags <span id="flag-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:3px">!</span></button></div></div><div class="tp on" id="tp-set" style="background:var(--bg)"><div id="setbod" class="p16" style="background:var(--bg)"></div></div><div class="tp" id="tp-usr" style="background:var(--bg)"><div style="padding:12px 16px 0;display:flex;justify-content:flex-end"><button class="btn bp bsm" onclick="openUserModal()">+ New User</button></div><div id="usrlst"></div></div><div class="tp" id="tp-dev" style="background:var(--bg)"><div id="devlst"></div></div><div class="tp" id="tp-led" style="background:var(--bg)"><div class="srch"><span>🔍</span><input type="text" placeholder="Filter ledger..." oninput="renderLedger(this.value)"/></div><div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap" id="ldflt"></div><div id="ledbod" class="p16"></div></div><div class="tp" id="tp-db" style="background:var(--bg)"><div id="dbbod" class="p16"></div></div><div class="tp" id="tp-fy" style="background:var(--bg)"><div id="fybody" class="p16"></div></div><div class="tp" id="tp-flags" style="background:var(--bg);overflow-y:auto;padding-bottom:80px"><div id="flagged-body" class="p16"></div></div></div><div id="s-reports" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CA; Reports</h2><p class="sub">Stock, Sales, SKU Analysis</p></div></div><div class="tb mt8"><button class="tbb on" onclick="repTab('stock',this)">Stock</button><button class="tbb" onclick="repTab('vsorder',this)">vs Orders</button><button class="tbb" onclick="repTab('daily',this)">Daily Sales</button><button class="tbb" onclick="repTab('topsku',this)">Top SKUs</button><button class="tbb" onclick="repTab('trends',this)">&#x1F4C8; Trends</button><button class="tbb" onclick="repTab('dayend',this)">&#x1F319; Day Wrap</button><button class="tbb" onclick="repTab('star',this)">&#11088; Star Follow-up</button><button class="tbb" onclick="repTab('topcust',this)">&#x1F3C6; Top Customers</button></div></div><div id="rep-item-flt-row" style="padding:6px 16px 4px;background:var(--bg);display:none"><select id="rep-item-flt" class="sel" style="width:100%;font-size:13px;padding:7px 10px" onchange="repItemFltChange()"><option value="">All Items</option></select></div><div class="tp on" id="tp-rstock" style="overflow-y:auto;padding-bottom:80px"><div class="srch" style="margin:12px 16px 0"><span>🔍</span><input type="text" id="rep-stock-search" placeholder="Search item or SKU..." oninput="renderStockReport(this.value)"/></div><div id="rep-stock-body" class="p16"></div></div><div class="tp" id="tp-rvsorder" style="overflow-y:auto;padding-bottom:80px"><div id="rep-vsorder-body" class="p16"></div></div><div class="tp" id="tp-rdaily" style="overflow-y:auto;padding-bottom:80px"><div style="padding:12px 16px;display:flex;gap:8px;align-items:center"><input type="date" id="rep-daily-date" class="inp" style="flex:1" value=""/><button class="btn bp bsm" onclick="renderDailyReport()">Go</button></div><div id="rep-daily-body" class="p16"></div></div><div class="tp" id="tp-rtopsku" style="overflow-y:auto;padding-bottom:80px"><div id="rep-topsku-body" class="p16"></div></div><div class="tp" id="tp-rtrends" style="overflow-y:auto;padding-bottom:80px"><div class="p16"><div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"><button class="sw on" id="trn-7" onclick="renderTrends(7,this)">7 Days</button><button class="sw" id="trn-14" onclick="renderTrends(14,this)">14 Days</button><button class="sw" id="trn-28" onclick="renderTrends(28,this)">28 Days</button><button class="sw" id="trn-90" onclick="renderTrends(90,this)">3 Months</button></div><div id="rep-trends-body"></div></div></div><div class="tp" id="tp-rdayend" style="overflow-y:auto;padding-bottom:80px"><div style="padding:12px 16px;display:flex;gap:8px;align-items:center"><input type="date" id="rep-dayend-date" class="inp" style="flex:1"/><button class="btn bp bsm" onclick="renderDayEndReport()">Go</button></div><div id="rep-dayend-body" class="p16"></div></div><div class="tp" id="tp-rstar" style="overflow-y:auto;padding-bottom:80px"><div id="rep-star-body" class="p16"></div></div><div class="tp" id="tp-rtopcust" style="overflow-y:auto;padding-bottom:80px"><div id="rep-topcust-body" class="p16"></div></div></div></div><div id="s-leads" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F3AF; Leads</h2><p class="sub">Lead Management</p></div><div style="display:flex;gap:6px"><button class="btn bsm" style="background:#059669;color:white;border:none" onclick="waLeadsNeedingAttention()">📲 WA Salesmen</button><button class="btn bd bsm" id="lead-cleanup-btn" style="display:none" onclick="openDeleteLeadsForStaff()" title="Bulk delete leads for a departed salesman">🗑 Cleanup</button><button class="btn bp bsm" onclick="openNewLead()">+ Lead</button></div></div><div class="tb mt8"><button class="tbb on" onclick="leadTab('all',this)" id="lead-tab-all">All</button><button class="tbb" onclick="leadTab('mine',this)" id="lead-tab-mine">Mine</button><button class="tbb" onclick="leadTab('today',this)" id="lead-tab-today">Follow Up</button><button class="tbb" onclick="leadTab('won',this)" id="lead-tab-won">Won/Lost</button><button class="tbb" onclick="leadTab('won2',this)" id="lead-tab-won2" style="display:none">&#x2705; Won</button><button class="tbb" onclick="leadTab('lost',this)" id="lead-tab-lost" style="display:none">&#x274C; Lost</button><button class="tbb" onclick="leadTab('recurring',this)" id="lead-tab-rec" style="display:none">Recurring <span id="lead-rec-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:2px">!</span></button><button class="tbb" onclick="leadTab('samples',this)" id="lead-tab-samples">&#x1F4E6; Sample Sets</button><button class="tbb" onclick="leadTab('report',this)" id="lead-tab-rep">&#x1F4CA; Report</button></div></div><div class="tp on" id="tp-lall"><div style="padding:8px 16px 4px"><div class="srch"><span>🔍</span><input type="text" id="lead-search" placeholder="Search by name, phone, status, salesman..." oninput="renderLeads('all',this.value)"/></div><div style="display:flex;gap:6px;margin-top:6px;align-items:center"><span style="font-size:10px;font-weight:700;color:var(--t3)">Filter:</span><select class="sel" id="lead-sort-all" style="flex:1;font-size:11px;padding:5px 8px" onchange="renderLeads('all')"><option value="recent">Recent First</option><option value="overdue">Overdue</option><option value="today">Due Today</option><option value="tomorrow">Due Tomorrow</option><option value="unattended">Unattended (Never Contacted)</option></select><select class="sel" id="lead-staff-all" style="flex:1;font-size:11px;padding:5px 8px" onchange="renderLeads('all')"><option value="">All Staff</option></select></div></div><div id="lead-lst-all"></div></div><div class="tp" id="tp-lmine"><div style="padding:8px 16px 4px"><div class="srch"><span>🔍</span><input type="text" id="lead-search-mine" placeholder="Search..." oninput="renderLeads('mine',this.value)"/></div><div style="display:flex;gap:6px;margin-top:6px;align-items:center"><span style="font-size:10px;font-weight:700;color:var(--t3)">Filter:</span><select class="sel" id="lead-sort-mine" style="flex:1;font-size:11px;padding:5px 8px" onchange="renderLeads('mine')"><option value="recent">Recent First</option><option value="overdue">Overdue</option><option value="today">Due Today</option><option value="tomorrow">Due Tomorrow</option><option value="unattended">Unattended</option></select></div></div><div id="lead-lst-mine"></div></div><div class="tp" id="tp-ltoday"><div id="lead-lst-today"></div></div><div class="tp" id="tp-lwon"><div style="padding:8px 16px 4px"><div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><span style="font-size:10px;font-weight:700;color:var(--t3)">Closed:</span><button class="sw on" id="won-flt-all" onclick="wonFlt(0,this)">All Time</button><button class="sw" id="won-flt-7" onclick="wonFlt(7,this)">Last 7d</button><button class="sw" id="won-flt-30" onclick="wonFlt(30,this)">Last 30d</button><button class="sw" id="won-flt-90" onclick="wonFlt(90,this)">Last 90d</button></div></div><div id="lead-lst-won"></div></div><div class="tp" id="tp-lwon2"><div id="lead-lst-won2"></div></div><div class="tp" id="tp-llost"><div id="lead-lst-lost"></div></div><div class="tp" id="tp-lrecurring"><div id="lead-rec-list" class="p16"></div></div><div class="tp" id="tp-lsamples"><div style="padding:8px 16px 4px"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="sw on" id="ss-flt-pending" onclick="ssFlt('pending',this)">&#x23F3; Pending</button><button class="sw" id="ss-flt-returned" onclick="ssFlt('returned',this)">&#x2705; Returned</button><button class="sw" id="ss-flt-all" onclick="ssFlt('all',this)">All</button><button class="btn bsm" style="background:#7C3AED;color:white;border:none;margin-left:auto" onclick="openSampleSetForm()">+ New Set</button></div><div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap"><button class="btn bsm" style="background:#25D366;color:white;border:none;font-size:11px" onclick="waSampleSetAll('salesman')">&#x1F4F2; WA All Salesmen</button><button class="btn bsm" style="background:#059669;color:white;border:none;font-size:11px" onclick="waSampleSetAll('broker')">&#x1F4F2; WA All Brokers</button></div></div><div id="lead-lst-samples"></div></div><div class="tp" id="tp-lreport"><div id="lead-rep-body" class="p16"></div></div></div></div><div id="m-sample-set" class="ov"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="ss-form-title" style="font-size:16px;font-weight:800;margin:0">&#x1F4E6; New Sample Set</h3></div><button onclick="hideMod('m-sample-set')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">&#x2715;</button></div></div><div class="shb" id="ss-form-body"></div><div class="shf"><button class="btn bgh" style="flex:1" onclick="hideMod('m-sample-set')">Cancel</button><button class="btn bp" style="flex:1" id="ss-save-btn" onclick="saveSampleSet()">&#x1F4BE; Save</button></div></div></div><div id="s-tasks" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CB; Tasks</h2><p class="sub" id="task-sub">Your task list</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="openNewTaskInstance()" id="task-add-btn">+ Task</button><button class="btn bgh bsm" onclick="openNewTaskTemplate()" id="task-tpl-btn" style="display:none">+ Template</button><button class="btn bsm" onclick="openAdHocTask()" id="task-adhoc-btn" style="display:none;background:#059669;color:white;border:none">&#x26A1; Quick Task</button></div></div><div class="tb mt8"><button class="tbb on" onclick="taskTab('my',this)" id="ttab-my">My Tasks</button><button class="tbb" onclick="taskTab('all',this)" id="ttab-all" style="display:none">All Tasks</button><button class="tbb" onclick="taskTab('templates',this)" id="ttab-tpl" style="display:none">Templates</button><button class="tbb" onclick="taskTab('leave',this)" id="ttab-lv" style="display:none">Leave</button><button class="tbb" onclick="taskTab('rep',this)" id="ttab-rep" style="display:none">&#x1F4CA; Report</button></div></div><div class="tp on" id="tp-tmy"><div style="padding:8px 16px 0"><div class="srch"><span>🔍</span><input type="text" id="task-search" placeholder="Search by task name, category..." oninput="renderMyTasks(this.value)"/></div></div><div id="task-lst-my" class="p16"></div></div><div class="tp" id="tp-tall"><div id="task-lst-all" class="p16"></div></div><div class="tp" id="tp-ttemplates"><div style="padding:8px 16px 4px;display:flex;flex-direction:column;gap:6px"><div class="srch"><span>🔍</span><input type="text" id="tpl-search" placeholder="Search by name, user, category..." oninput="renderTaskTemplates()"/></div><div style="display:flex;gap:6px;flex-wrap:wrap"><select class="sel" id="tpl-flt-status" style="flex:1;min-width:90px;font-size:11px;padding:5px 8px" onchange="renderTaskTemplates()"><option value="">All Status</option><option value="active">Active</option><option value="paused">Paused</option></select><select class="sel" id="tpl-flt-cat" style="flex:1;min-width:110px;font-size:11px;padding:5px 8px" onchange="renderTaskTemplates()"><option value="">All Categories</option><option>Accounting</option><option>Dispatch</option><option>Mill/Stock</option><option>Sales</option><option>Admin</option><option>Compliance</option><option>Other</option></select><select class="sel" id="tpl-flt-freq" style="flex:1;min-width:90px;font-size:11px;padding:5px 8px" onchange="renderTaskTemplates()"><option value="">All Freq</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option><option value="once">One-Time</option></select></div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><select class="sel" id="tpl-flt-user" style="flex:1;min-width:120px;font-size:11px;padding:5px 8px" onchange="renderTaskTemplates()"><option value="">All Users</option></select><select class="sel" id="tpl-sort" style="flex:1;min-width:120px;font-size:11px;padding:5px 8px" onchange="renderTaskTemplates()"><option value="name_az">Name A→Z</option><option value="name_za">Name Z→A</option><option value="cat">Category</option><option value="user">Assigned User</option><option value="freq">Frequency</option><option value="newest">Newest First</option><option value="oldest">Oldest First</option></select><button class="btn bgh bxs" onclick="clearTplFilters()" style="font-size:11px;padding:5px 10px">Clear</button></div></div><div id="task-lst-tpl" class="p16"></div></div><div class="tp" id="tp-tleave"><div id="task-lst-lv" class="p16"></div></div><div class="tp" id="tp-trep"><div class="p16"><div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><input type="date" class="inp" id="trep-from" style="flex:1"/><span>to</span><input type="date" class="inp" id="trep-to" style="flex:1"/><button class="btn bp bsm" onclick="renderTaskReport()">Go</button></div><button class="btn bd bsm" onclick="openDeleteCompletedTasks()" style="margin-bottom:12px">&#x1F5D1; Delete Completed Tasks</button><div id="task-report-body"></div></div></div></div><div id="s-research" class="scr"><div class="shdr"><div class="hr"><div><h2>Research</h2><p class="sub">Market Intelligence</p></div></div><div class="tb mt8"><button class="tbb on" onclick="switchResTab('pipeline',this)">📊 Pipeline</button><button class="tbb" onclick="switchResTab('trends',this)">📈 Trends</button><button class="tbb" onclick="switchResTab('market',this)">💰 Market</button><button class="tbb" onclick="switchResTab('customers',this)">👥 Customers</button></div></div><div id="res-body" style="overflow-y:auto;padding-bottom:80px"></div></div><nav id="bn"><button class="nb on" onclick="setNav('dash')" id="nb-dash"><span class="ni">📊</span>Dash</button><button class="nb" onclick="setNav('sales')" id="nb-sales"><span class="ni">🧾</span>Sales</button><button class="nb" onclick="setNav('inward')" id="nb-inward"><span class="ni">📥</span>Inward</button><button class="nb" onclick="setNav('jw')" id="nb-jw"><span class="ni">⚙️</span>Job Work</button><button class="nb" onclick="setNav('masters')" id="nb-masters"><span class="ni">🗂️</span>Masters</button><button class="nb" onclick="setNav('reports')" id="nb-reports"><span class="ni">&#x1F4CA;</span>Reports</button><button class="nb" onclick="setNav('leads')" id="nb-leads"><span class="ni">&#x1F3AF;</span>Leads</button><button class="nb" onclick="setNav('tasks')" id="nb-tasks"><span class="ni">&#x1F4CB;</span>Tasks<span class="ndot hid" id="tdot"></span></button><button class="nb" onclick="setNav('admin')" id="nb-admin"><span class="ni">👑</span>Admin<span class="ndot hid" id="adot"></span></button><button class="nb" onclick="setNav('research')" id="nb-research"><span class="ni">🔍</span>Research</button></nav>
 </div>
 
@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.90';
+const APP_VERSION='1.40.96';
 const APP_BUILD_DATE='2026-09-01';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -1245,6 +1245,7 @@ switchTab('sales',t,b);
 if(t==='pend'){renderPendingOrders();renderCompletedOrders();}
 if(t==='newinv'){renderNewInvTab();renderBills();}
 if(t==='pay') renderPayments();
+if(t==='pricelist') renderPriceListTab();
 }
 function pendSubTab(t){
 const pb=el('pend-sub-pend'),db=el('pend-sub-done'),pl=el('pendlst'),dl=el('donelst');
@@ -1304,9 +1305,10 @@ const DASH_WIDGETS=[
   {id:'stock',     label:'Stock Overview',     icon:'📦', desc:'Current stock levels'},
   {id:'mixedsarees',label:'Mixed Sarees',        icon:'🎨', desc:'Mixed saree batches in stock'},
   {id:'exchanges', label:'Exchange Slips',     icon:'🔄', desc:'Ready exchange slips awaiting collection, with WhatsApp action'},
-  {id:'recent',    label:'Recent Activity',    icon:'🕐', desc:'Latest ledger entries'}
+  {id:'recent',    label:'Recent Activity',    icon:'🕐', desc:'Latest ledger entries'},
+  {id:'pricelist', label:'Price List',         icon:'💰', desc:'Current item rates — shareable via WhatsApp'}
 ];
-const DEFAULT_DASH_ORDER=['stats','alerts','tasks','leadspipeline','daywrap','followups','recurring','shortcuts','stock','mixedsarees','exchanges','recent'];
+const DEFAULT_DASH_ORDER=['pricelist','stats','alerts','tasks','leadspipeline','daywrap','followups','recurring','shortcuts','stock','mixedsarees','exchanges','recent'];
 
 
 /*********************************************************************
@@ -1394,7 +1396,8 @@ const widgetMap={
   stock:{els:[stockHdr,stockSearch,stockEl], render:()=>renderStock()},
   mixedsarees:{els:[el('dash-mixed-sarees')], render:()=>renderMixedSareesWidget()},
   exchanges:{els:[(()=>{let e=el('dash-exchange-widget');if(!e){e=document.createElement('div');e.id='dash-exchange-widget';const scr=document.querySelector('#s-dash .scr-body');if(scr)scr.appendChild(e);}return e;})()], render:()=>renderDashExchangeWidget()},
-  recent:{els:[recentHdr,recentEl], render:()=>renderRecentAct()}
+  recent:{els:[recentHdr,recentEl], render:()=>renderRecentAct()},
+  pricelist:{els:[(()=>{let e=el('dash-pricelist-widget');if(!e){e=document.createElement('div');e.id='dash-pricelist-widget';const scr=document.querySelector('#s-dash .scr-body');if(scr)scr.appendChild(e);}return e;})()], render:()=>renderPriceListWidget()}
 };
 
 /* Hide all widget elements first */
@@ -1427,6 +1430,8 @@ if(!gearBtn){
 
 /* Render holiday prompt for admin */
 renderDashHolidayPrompt();
+/* Render price list staleness alert for admin */
+renderPriceListDayAlert();
 
 /* Non-widget tasks that always run */
 autoCleanLeads();
@@ -1442,6 +1447,364 @@ if(fd&&STATE.user?.role==='admin'){
 const pf=(STATE.flaggedEntries||[]).filter(f=>f.status==='pending').length;
 fd.textContent=pf; fd.style.display=pf>0?'':'none';
 }
+}
+/* ── Price List ──────────────────────────────────────────────────── */
+/* Stored in STATE.settings.priceList = { date, updatedBy, items:[{itemId,baseRate,overrides:[{range,rate}]}] }
+   ONE base rate per item (applies to all ranges). Optional per-range overrides only for exceptions.
+   Syncs via settings push/pull (GAS + Firebase). */
+function _plActiveGroups(){
+  /* Returns [{item, baseRate, overrides:[{range,rate}]}] — only items with a baseRate set */
+  const pl=STATE.settings.priceList||{};
+  const plItems=pl.items||[];
+  return (STATE.items||[]).filter(i=>!i._deleted).sort((a,b)=>a.name.localeCompare(b.name)).reduce((acc,item)=>{
+    const pi=plItems.find(p=>p.itemId===item.id);
+    if(!pi||!(pi.baseRate>0)) return acc;
+    // Only include item if it has at least one active colour
+    const hasActive=(item.colours||[]).some(c=>!c._deleted&&!c.discontinued);
+    if(!hasActive) return acc;
+    // Filter overrides to only those where the range still has active colours
+    const overrides=(pi.overrides||[]).filter(ov=>
+      ov.rate>0&&(item.colours||[]).some(c=>!c._deleted&&!c.discontinued&&c.range===ov.range)
+    );
+    acc.push({item,baseRate:pi.baseRate,overrides});
+    return acc;
+  },[]);
+}
+/* ── Dashboard Widget ── */
+function renderPriceListWidget(){
+  const el_w=el('dash-pricelist-widget'); if(!el_w) return;
+  const pl=STATE.settings.priceList||{};
+  const isAdmin=STATE.user?.role==='admin';
+  const groups=_plActiveGroups();
+  const plDate=pl.date?fmtDate(pl.date):'—';
+  const itemCount=groups.length;
+  // Outer card
+  let html='<div style="margin:0 16px 14px;border-radius:18px;overflow:hidden;box-shadow:0 4px 24px rgba(79,70,229,0.13),0 1px 4px rgba(0,0,0,0.06)">';
+  // ── Gradient header ──────────────────────────────────────────────
+  html+='<div style="background:linear-gradient(135deg,#3730A3,#4F46E5,#7C3AED);padding:13px 14px 11px;position:relative;overflow:hidden">';
+  // Decorative circle blur
+  html+='<div style="position:absolute;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,0.08);top:-20px;right:60px;pointer-events:none"></div>';
+  html+='<div style="position:absolute;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.06);bottom:-10px;right:20px;pointer-events:none"></div>';
+  html+='<div style="position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:8px">';
+  // Left — title + meta
+  html+='<div>'
+    +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">'
+    +'<span style="font-size:15px;line-height:1">💰</span>'
+    +'<span style="font-size:15px;font-weight:900;color:#fff;letter-spacing:-.2px">Price List</span>'
+    +'</div>'
+    +'<div style="font-size:10px;color:rgba(255,255,255,0.65);font-weight:600">as on '+plDate+'</div>'
+    +(itemCount?'<div style="margin-top:6px;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.15);border-radius:20px;padding:2px 9px 2px 6px">'
+      +'<span style="width:6px;height:6px;background:'+(pl.date===today()?'#4ADE80':'#FCD34D')+';border-radius:50%;display:inline-block"></span>'
+      +'<span style="font-size:10px;color:#fff;font-weight:700">'+itemCount+' item'+(itemCount!==1?'s':'')+' live'+(pl.date!==today()&&pl.date?' · needs update':'')+'</span>'
+    +'</div>':'')
+    +'</div>';
+  // Right — action buttons
+  html+='<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">';
+  if(groups.length){
+    html+='<button onclick="openWAPriceList()" style="display:flex;align-items:center;gap:4px;background:#25D366;color:white;border:none;border-radius:9px;padding:5px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(0,0,0,0.2)">📲 Share</button>';
+  }
+  if(isAdmin){
+    html+='<button onclick="openEditPriceList()" style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.18);color:white;border:1px solid rgba(255,255,255,0.25);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">✏️ Edit</button>';
+  }
+  html+='</div>';
+  html+='</div></div>'; // close flex + gradient header
+  // ── Body ─────────────────────────────────────────────────────────
+  if(!groups.length){
+    html+='<div style="padding:20px 16px;text-align:center;background:var(--sf)">'
+      +'<div style="font-size:28px;margin-bottom:8px">📋</div>'
+      +'<div style="font-size:12px;font-weight:700;color:var(--t2)">'+(isAdmin?'No rates set yet':'Price list not published yet')+'</div>'
+      +(isAdmin?'<div style="font-size:11px;color:var(--t3);margin-top:3px">Tap Edit above to add prices</div>':'')
+      +'</div>';
+  }else{
+    const preview=groups.slice(0,4);
+    html+='<div style="background:var(--sf)">';
+    preview.forEach((g,gi)=>{
+      const hasBorder=gi>0;
+      html+='<div style="'+(hasBorder?'border-top:1px solid var(--br)':'')+'background:var(--sf)">';
+      // Main item row
+      html+='<div style="display:flex;align-items:center;padding:9px 14px;gap:8px">'
+        +'<div style="flex:1;min-width:0">'
+        +'<span style="font-size:13px;font-weight:800;color:var(--tx);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(g.item.name)+'</span>'
+        +(g.overrides.length?'<span style="font-size:9px;color:var(--t3);font-weight:600">+'+g.overrides.length+' range exception'+(g.overrides.length>1?'s':'')+'</span>':'')
+        +'</div>'
+        +'<div style="display:flex;align-items:baseline;gap:1px;flex-shrink:0">'
+        +'<span style="font-size:11px;font-weight:700;color:var(--Pd);margin-right:1px">₹</span>'
+        +'<span style="font-size:19px;font-weight:900;color:var(--Pd);line-height:1;font-variant-numeric:tabular-nums">'+fmtN(g.baseRate)+'</span>'
+        +'<span style="font-size:10px;color:var(--t3);margin-left:2px;align-self:flex-end;padding-bottom:1px">/m</span>'
+        +'</div>'
+        +'</div>';
+      // Exception rows
+      if(g.overrides.length){
+        g.overrides.forEach(ov=>{
+          html+='<div style="display:flex;align-items:center;padding:4px 14px 4px 28px;background:var(--Pl);border-top:1px dashed var(--Ps)">'
+            +'<span style="width:5px;height:5px;border-radius:50%;background:var(--Ps);margin-right:7px;flex-shrink:0"></span>'
+            +'<span style="flex:1;font-size:10px;font-weight:700;color:var(--Pd)">'+escHtml(ov.range||'Default')+'</span>'
+            +'<span style="font-size:11px;font-weight:800;color:var(--Pd)">₹'+fmtN(ov.rate)+'<span style="font-size:9px;font-weight:600;color:var(--t3)">/m</span></span>'
+            +'</div>';
+        });
+      }
+      html+='</div>';
+    });
+    html+='</div>';
+    // Footer — view all
+    html+='<div onclick="setNav(\'sales\');salesTab(\'pricelist\')" style="display:flex;align-items:center;justify-content:center;gap:4px;padding:9px 14px;background:var(--Pl);cursor:pointer;border-top:1px solid var(--Ps)">'
+      +(groups.length>4?'<span style="font-size:11px;font-weight:700;color:var(--P)">+'+(groups.length-4)+' more · </span>':'')
+      +'<span style="font-size:11px;font-weight:800;color:var(--P)">View full price list →</span>'
+      +'</div>';
+  }
+  html+='</div>'; // close outer card
+  el_w.innerHTML=html;
+}
+/* ── Dashboard Day Alert ── */
+function renderPriceListDayAlert(){
+  const c=el('dash-pricelist-alert'); if(!c) return;
+  if(STATE.user?.role!=='admin'){c.innerHTML='';return;}
+  const pl=STATE.settings.priceList||{};
+  const isToday=pl.date===today();
+  if(isToday){c.innerHTML='';return;}
+  // Calculate how stale
+  const hasExisting=(pl.items||[]).length>0;
+  const daysSince=pl.date?Math.round((new Date()-new Date(pl.date))/(86400000)):null;
+  const sinceLabel=!pl.date?'Never published yet'
+    :daysSince===1?'Last updated yesterday'
+    :'Last updated '+daysSince+' days ago';
+  let html='<div style="margin:10px 16px 0;border-radius:14px;overflow:hidden;border:1.5px solid #F59E0B;box-shadow:0 3px 16px rgba(245,158,11,0.18)">';
+  // Amber gradient header
+  html+='<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:linear-gradient(135deg,#B45309,#D97706,#F59E0B)">';
+  html+='<div style="width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">⚠️</div>';
+  html+='<div style="flex:1">';
+  html+='<div style="font-size:13px;font-weight:900;color:#fff">Price List Not Updated Today</div>';
+  html+='<div style="font-size:10px;color:rgba(255,255,255,0.8);margin-top:1px;font-weight:600">'+sinceLabel+'</div>';
+  html+='</div>';
+  html+='</div>';
+  // Action row
+  html+='<div style="display:flex;background:#FFFBEB">';
+  if(hasExisting){
+    html+='<button onclick="quickSamePriceList()" style="flex:1;padding:11px 12px;border:none;border-right:1.5px solid #FDE68A;background:transparent;font-family:inherit;font-size:12px;font-weight:800;color:#92400E;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px">'
+      +'<span>📋</span><span>Same prices, update date</span>'
+      +'</button>';
+  }
+  html+='<button onclick="openEditPriceList()" style="flex:1;padding:11px 12px;border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:800;color:#92400E;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px">'
+    +'<span>✏️</span><span>Edit rates</span>'
+    +'</button>';
+  html+='</div>';
+  html+='</div>';
+  c.innerHTML=html;
+}
+/* ── Quick same-as-yesterday save ── */
+function quickSamePriceList(){
+  if(STATE.user?.role!=='admin'){toast('Admin only','er');return;}
+  const pl=STATE.settings.priceList||{};
+  const items=pl.items||[];
+  if(!items.length){toast('No existing rates found','er');openEditPriceList();return;}
+  if(!STATE.settings) STATE.settings={};
+  STATE.settings.priceList={...pl,date:today(),updatedBy:STATE.user?.name||'Admin'};
+  lsSave('vs_settings',STATE.settings);
+  try{autoSyncCloud();}catch(e){}
+  toast('✅ Date updated — same rates as '+(pl.date?fmtDate(pl.date):'yesterday'),'ok');
+  renderPriceListDayAlert();
+  renderPriceListWidget();
+  renderPriceListTab();
+}
+/* ── Sales Tab (full view) ── */
+function renderPriceListTab(){
+  const b=el('pricelist-tab-body'); if(!b) return;
+  const pl=STATE.settings.priceList||{};
+  const isAdmin=STATE.user?.role==='admin';
+  const groups=_plActiveGroups();
+  const plDate=pl.date?fmtDate(pl.date):'—';
+  const plBy=pl.updatedBy?' · Updated by '+escHtml(pl.updatedBy):'';
+  let html='<div style="padding:12px 16px 0">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px">'
+    +'<div><div style="font-size:13px;font-weight:800;color:var(--tx)">💰 Price List</div>'
+    +'<div style="font-size:10px;color:var(--t3);margin-top:1px">as on '+plDate+plBy+'</div></div>'
+    +'<div style="display:flex;gap:6px">'
+    +(groups.length?'<button onclick="openWAPriceList()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">📲 WhatsApp</button>':'')
+    +(isAdmin?'<button onclick="openEditPriceList()" style="background:var(--P);color:white;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">✏️ Edit Rates</button>':'')
+    +'</div></div>';
+  if(!groups.length){
+    html+='<div style="text-align:center;padding:40px 16px;color:var(--t3);font-size:13px">'
+      +(isAdmin?'No prices set yet. Tap <b>Edit Rates</b> to add a base rate per item.':'Price list not published yet.')
+      +'</div>';
+  }else{
+    html+='<div style="border:1.5px solid var(--br);border-radius:14px;overflow:hidden;margin-bottom:24px">';
+    groups.forEach((g,gi)=>{
+      html+='<div style="'+(gi>0?'border-top:1.5px solid var(--br)':'')+'"">';
+      // Main item row — name + base rate
+      html+='<div style="display:flex;align-items:center;padding:11px 14px;background:var(--sf)">'
+        +'<span style="flex:1;font-size:14px;font-weight:800;color:var(--tx)">'+escHtml(g.item.name)+'</span>'
+        +'<span style="font-size:20px;font-weight:800;color:var(--tx)">₹'+fmtN(g.baseRate)+'</span>'
+        +'<span style="font-size:11px;color:var(--t3);margin-left:4px">/m</span>'
+        +'</div>';
+      // Exception rows — indented below item
+      g.overrides.forEach(ov=>{
+        html+='<div style="display:flex;align-items:center;padding:5px 14px 5px 28px;border-top:1px dashed var(--br);background:var(--s2)">'
+          +'<span style="flex:1;font-size:12px;color:var(--t3)">'+escHtml(ov.range||'Default')+'</span>'
+          +'<span style="font-size:14px;font-weight:700;color:var(--t2)">₹'+fmtN(ov.rate)+'</span>'
+          +'<span style="font-size:10px;color:var(--t3);margin-left:4px">/m</span>'
+          +'</div>';
+      });
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+  html+='</div>';
+  b.innerHTML=html;
+}
+/* ── Admin: Edit Rates Modal ── */
+function openEditPriceList(){
+  if(STATE.user?.role!=='admin'){toast('Admin only','er');return;}
+  const pl=STATE.settings.priceList||{};
+  const plItems=pl.items||[];
+  const activeItems=(STATE.items||[]).filter(i=>!i._deleted).sort((a,b)=>a.name.localeCompare(b.name));
+  const isStale=pl.date&&pl.date!==today();
+  const hasExisting=plItems.length>0;
+  let html='<div>';
+  // Quick roll-over strip — shown when rates exist and date is stale
+  if(hasExisting){
+    html+='<div style="margin-bottom:0;background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-bottom:1.5px solid #FDE68A;padding:11px 16px;display:flex;align-items:center;gap:10px">'
+      +'<div style="flex:1">'
+      +'<div style="font-size:12px;font-weight:800;color:#92400E">📋 No rate changes today?</div>'
+      +'<div style="font-size:10px;color:#A16207;margin-top:1px">Keep all prices the same — just roll the date to today</div>'
+      +'</div>'
+      +'<button onclick="quickSamePriceList()" style="flex-shrink:0;background:#D97706;color:white;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap">✓ Same prices</button>'
+      +'</div>';
+  }
+  let anyItem=false;
+  activeItems.forEach(item=>{
+    const activeCols=(item.colours||[]).filter(c=>!c._deleted&&!c.discontinued);
+    if(!activeCols.length) return;
+    anyItem=true;
+    const pi=plItems.find(p=>p.itemId===item.id)||{};
+    const baseRate=pi.baseRate>0?pi.baseRate:'';
+    const overrides=pi.overrides||[];
+    const ranges=[...new Set(activeCols.map(c=>c.range))].filter(r=>r); // exclude empty/null ranges
+    html+='<div style="border-bottom:1.5px solid var(--br);padding:12px 16px">';
+    // Item name header
+    html+='<div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:8px">'+escHtml(item.name)+'</div>';
+    // Base rate row
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:'+(ranges.length?'10':'0')+'px">'
+      +'<span style="flex:1;font-size:13px;font-weight:700;color:var(--tx)">Base Rate <span style="font-size:10px;font-weight:400;color:var(--t3)">(all ranges)</span></span>'
+      +'<span style="font-size:12px;color:var(--t3)">₹</span>'
+      +'<input type="number" data-iid="'+item.id+'" data-role="base" value="'+baseRate+'" placeholder="—" min="0" step="0.5"'
+      +' style="width:90px;padding:6px 8px;border:2px solid var(--P);border-radius:8px;font-size:14px;font-weight:800;background:var(--bg);color:var(--tx);font-family:inherit;text-align:right">'
+      +'<span style="font-size:11px;color:var(--t3)">/m</span>'
+      +'</div>';
+    // Per-range override rows (only if item has distinct named ranges)
+    if(ranges.length){
+      html+='<div style="margin-left:14px;padding-left:10px;border-left:2px solid var(--br)">';
+      html+='<div style="font-size:10px;color:var(--t3);margin-bottom:5px">Exceptions — leave blank to use base rate</div>';
+      ranges.forEach(rng=>{
+        const ov=overrides.find(o=>o.range===rng);
+        const ovRate=ov&&ov.rate>0?ov.rate:'';
+        const placeholder=baseRate?'same — ₹'+baseRate+'/m':'set base rate first';
+        html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
+          +'<span style="flex:1;font-size:11px;color:var(--t2)">'+escHtml(rng)+'</span>'
+          +'<span style="font-size:11px;color:var(--t3)">₹</span>'
+          +'<input type="number" data-iid="'+item.id+'" data-role="override" data-rng="'+escHtml(rng)+'" value="'+ovRate+'" placeholder="'+placeholder+'" min="0" step="0.5"'
+          +' style="width:110px;padding:5px 8px;border:1.5px solid var(--br);border-radius:7px;font-size:12px;font-weight:600;background:var(--bg);color:var(--tx);font-family:inherit;text-align:right">'
+          +'<span style="font-size:10px;color:var(--t3)">/m</span>'
+          +'</div>';
+      });
+      html+='</div>';
+    }
+    html+='</div>';
+  });
+  if(!anyItem) html+='<div style="padding:16px;font-size:12px;color:var(--t3)">No active items found. Add items in Masters first.</div>';
+  html+='</div>';
+  let mod=el('m-pricelist-edit');
+  if(!mod){
+    mod=document.createElement('div');
+    mod.id='m-pricelist-edit';
+    mod.className='ov';
+    mod.innerHTML='<div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 style="font-size:16px;font-weight:800;margin:0">💰 Edit Price List</h3><p class="sub">One base rate per item — add exceptions per range only if different</p></div><button onclick="hideMod(\'m-pricelist-edit\')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">✕</button></div></div><div class="shb" id="pricelist-edit-body"></div><div class="shf"><button class="btn bgh" style="flex:1" onclick="hideMod(\'m-pricelist-edit\')">Cancel</button><button class="btn bp" style="flex:1" onclick="savePriceList()">💾 Save & Publish</button></div></div>';
+    document.body.appendChild(mod);
+  }
+  const body=el('pricelist-edit-body');
+  if(body) body.innerHTML=html;
+  showMod('m-pricelist-edit');
+}
+function savePriceList(){
+  const body=el('pricelist-edit-body'); if(!body) return;
+  // Gather all base-rate inputs
+  const baseInputs=[...body.querySelectorAll('input[data-role="base"]')];
+  const ovInputs=[...body.querySelectorAll('input[data-role="override"]')];
+  // Build items map
+  const itemMap={};
+  baseInputs.forEach(inp=>{
+    const rate=parseFloat(inp.value);
+    if(!isNaN(rate)&&rate>0) itemMap[inp.dataset.iid]={itemId:inp.dataset.iid,baseRate:rate,overrides:[]};
+  });
+  ovInputs.forEach(inp=>{
+    const rate=parseFloat(inp.value);
+    if(!isNaN(rate)&&rate>0&&itemMap[inp.dataset.iid]){
+      itemMap[inp.dataset.iid].overrides.push({range:inp.dataset.rng||'',rate});
+    }
+  });
+  const items=Object.values(itemMap);
+  if(!STATE.settings) STATE.settings={};
+  STATE.settings.priceList={date:today(),updatedBy:STATE.user?.name||'Admin',items};
+  lsSave('vs_settings',STATE.settings);
+  try{autoSyncCloud();}catch(e){}
+  hideMod('m-pricelist-edit');
+  toast('✅ Price list published — '+items.length+' item'+(items.length!==1?'s':'')+' priced','ok');
+  renderPriceListDayAlert();
+  renderPriceListWidget();
+  renderPriceListTab();
+}
+/* ── WhatsApp Share ── */
+function openWAPriceList(){
+  const groups=_plActiveGroups();
+  if(!groups.length){toast('No priced items to share','er');return;}
+  let mod=el('m-pricelist-wa');
+  if(!mod){
+    mod=document.createElement('div');
+    mod.id='m-pricelist-wa';
+    mod.className='ov';
+    mod.innerHTML='<div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 style="font-size:16px;font-weight:800;margin:0">📲 Share Price List</h3><p class="sub">Select items to include in WA message</p></div><button onclick="hideMod(\'m-pricelist-wa\')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">✕</button></div></div><div class="shb" id="pricelist-wa-body"></div><div class="shf"><button class="btn bgh" style="flex:1" onclick="hideMod(\'m-pricelist-wa\')">Cancel</button><button class="btn" style="flex:1;background:#25D366;color:white;border:none;font-weight:800;border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit" onclick="sendWAPriceList()">📲 Open WhatsApp</button></div></div>';
+    document.body.appendChild(mod);
+  }
+  let html='<div style="padding:10px 16px;background:var(--s2);border-bottom:1px solid var(--br)">'
+    +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer">'
+    +'<input type="checkbox" id="wa-pl-selall" checked onchange="(el(\'pricelist-wa-body\')||{}).querySelectorAll(\'.wa-pl-chk\').forEach(c=>c.checked=this.checked)" style="width:18px;height:18px;accent-color:#25D366;cursor:pointer">'
+    +'<span style="font-size:12px;font-weight:800;color:var(--t2)">Select All / Deselect All</span>'
+    +'</label></div>';
+  groups.forEach(g=>{
+    const ovCount=g.overrides.length;
+    const note=ovCount?'<span style="font-size:10px;color:var(--t3);margin-left:6px">+'+ovCount+' exception'+(ovCount>1?'s':'')+'</span>':'';
+    html+='<label style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--br);cursor:pointer;background:var(--bg)">'
+      +'<input type="checkbox" class="wa-pl-chk" data-iid="'+g.item.id+'" checked style="width:18px;height:18px;accent-color:#25D366;cursor:pointer;flex-shrink:0">'
+      +'<span style="font-size:13px;font-weight:700;color:var(--tx)">'+escHtml(g.item.name)+'</span>'
+      +note
+      +'<span style="margin-left:auto;font-size:13px;font-weight:800;color:var(--tx)">₹'+fmtN(g.baseRate)+'/m</span>'
+      +'</label>';
+  });
+  const body=el('pricelist-wa-body');
+  if(body) body.innerHTML=html;
+  showMod('m-pricelist-wa');
+}
+function sendWAPriceList(){
+  const pl=STATE.settings.priceList||{};
+  const plDate=pl.date?fmtDate(pl.date):today();
+  const chks=[...(el('pricelist-wa-body')||{}).querySelectorAll('.wa-pl-chk:checked')||[]];
+  const selIds=new Set(chks.map(c=>c.dataset.iid));
+  if(!selIds.size){toast('Select at least one item','er');return;}
+  const groups=_plActiveGroups().filter(g=>selIds.has(g.item.id));
+  let msg='*💰 ALT Price List*\n';
+  msg+='_as on '+plDate+'_\n';
+  msg+='_(Amrit Laxmi Textile)_\n\n';
+  groups.forEach(g=>{
+    // Main line: item name + base rate (applies to all ranges)
+    msg+='*'+g.item.name+'* — ₹'+g.baseRate+'/m\n';
+    // Exception lines — only ranges that differ
+    g.overrides.forEach(ov=>{
+      msg+='  '+(ov.range||'Default')+': ₹'+ov.rate+'/m\n';
+    });
+    msg+='\n';
+  });
+  msg+='— ALT';
+  hideMod('m-pricelist-wa');
+  openWA('',msg);
 }
 /* ── Holiday prompt on dashboard ──────────────────────────────────── */
 function renderDashHolidayPrompt(){
@@ -2214,15 +2577,26 @@ if(defaultCol){
     '<button onclick="event.stopPropagation();deleteColour(\''+item.id+'\','+cIdx+')" style="width:28px;height:28px;border-radius:7px;border:none;background:var(--Rl);color:var(--Rd);font-size:13px;cursor:pointer;flex-shrink:0">🗑</button>'+
     '</div></div>';
 }
+window._colSelMode=window._colSelMode||{};
 html+=namedRngs.map(rng=>{
 const cols=item.colours.filter(c=>c.range===rng&&!c._deleted);
-return '<div class="sr"><div class="srh"><span>Range '+rng+'</span><div style="display:flex;gap:6px"><button class="btn bs bxs" onclick="openAddClr(\''+item.id+'\',\''+rng+'\')">+ Colour</button><button class="btn bd bxs" title="Delete entire range" onclick="deleteRange(\''+item.id+'\',\''+rng+'\')">🗑 Range</button></div></div>'+
+const selKey=item.id+'::'+rng;
+const inSel=!!window._colSelMode[selKey];
+const rngHdrBtns=inSel
+  ?'<button class="btn bxs" style="background:#FEE2E2;color:#991B1B;font-size:10px;font-weight:800" id="bdc-btn-'+selKey+'" onclick="bulkDeleteCheckedColours(\''+item.id+'\',\''+escHtml(rng)+'\')">🗑 Delete (0)</button>'
+   +'<button class="btn bxs" style="background:var(--s2);color:var(--t2);font-size:10px" onclick="toggleColourSelectMode(\''+item.id+'\',\''+escHtml(rng)+'\')">✕ Cancel</button>'
+  :'<button class="btn bs bxs" onclick="openAddClr(\''+item.id+'\',\''+escHtml(rng)+'\')">+ Colour</button>'
+   +'<button class="btn bxs" style="background:#EEF2FF;color:#4338CA;font-size:10px;font-weight:800" onclick="toggleColourSelectMode(\''+item.id+'\',\''+escHtml(rng)+'\')">☑ Select</button>'
+   +'<button class="btn bd bxs" title="Delete entire range" onclick="deleteRange(\''+item.id+'\',\''+escHtml(rng)+'\')">🗑 Range</button>';
+return '<div class="sr"><div class="srh"><span>Range '+rng+(inSel?'<span style="font-size:10px;color:#4338CA;margin-left:6px;font-weight:700">— select to delete</span>':'')+'</span><div style="display:flex;gap:6px">'+rngHdrBtns+'</div></div>'+
 cols.map(col=>{
 const cIdx=item.colours.indexOf(col);
+const chk=inSel?'<input type="checkbox" class="col-bulk-chk" data-cidx="'+cIdx+'" data-selkey="'+selKey+'" onchange="updateBulkDelCount(\''+selKey+'\')" onclick="event.stopPropagation()" style="width:18px;height:18px;accent-color:#EF4444;cursor:pointer;flex-shrink:0">':'';
 return '<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--sf);border-radius:8px;border:1px solid var(--br);margin-top:4px;transition:.12s'+(col.discontinued?';opacity:.55':'')+'">'+
-'<div onclick="openEditClr(\''+item.id+'\','+cIdx+')" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;cursor:pointer" title="Tap to edit colour / SKU"><span class="cdot" style="background:'+(col.hex||'#ccc')+'"></span><div style="flex:1;min-width:0"><div class="sm fw7">'+col.name+'</div><span class="sku">'+col.sku+'</span></div><span class="stk '+(col.stock_taka===0?'no':'ok')+'">'+(col.stock_taka||0)+'T</span></div>'+
-'<button onclick="event.stopPropagation();discontinueSKU(\''+item.id+'\','+cIdx+')" style="height:28px;padding:0 8px;border-radius:7px;border:none;font-size:10px;font-weight:800;cursor:pointer;flex-shrink:0;background:'+(col.discontinued?'#D1FAE5':'#FEF3C7')+';color:'+(col.discontinued?'#065F46':'#92400E')+'">'+(col.discontinued?'✓ Active':'⏸ Disc')+'</button>'+
-'<button onclick="event.stopPropagation();deleteColour(\''+item.id+'\','+cIdx+')" style="width:28px;height:28px;border-radius:7px;border:none;background:var(--Rl);color:var(--Rd);font-size:13px;cursor:pointer;flex-shrink:0">🗑</button>'+
+chk+
+'<div onclick="'+(inSel?'event.stopPropagation()':'openEditClr(\''+item.id+'\','+cIdx+')')+'" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;cursor:'+(inSel?'default':'pointer')+'" '+(inSel?'':'title="Tap to edit colour / SKU"')+'><span class="cdot" style="background:'+(col.hex||'#ccc')+'"></span><div style="flex:1;min-width:0"><div class="sm fw7">'+col.name+'</div><span class="sku">'+col.sku+'</span></div><span class="stk '+(col.stock_taka===0?'no':'ok')+'">'+(col.stock_taka||0)+'T</span></div>'+
+(!inSel?'<button onclick="event.stopPropagation();discontinueSKU(\''+item.id+'\','+cIdx+')" style="height:28px;padding:0 8px;border-radius:7px;border:none;font-size:10px;font-weight:800;cursor:pointer;flex-shrink:0;background:'+(col.discontinued?'#D1FAE5':'#FEF3C7')+';color:'+(col.discontinued?'#065F46':'#92400E')+'">'+(col.discontinued?'✓ Active':'⏸ Disc')+'</button>':'')+
+(!inSel?'<button onclick="event.stopPropagation();deleteColour(\''+item.id+'\','+cIdx+')" style="width:28px;height:28px;border-radius:7px;border:none;background:var(--Rl);color:var(--Rd);font-size:13px;cursor:pointer;flex-shrink:0">🗑</button>':'')+
 '</div>';
 }).join('')+
 '</div>';
@@ -9087,9 +9461,13 @@ if(ledgerEntries.length>0){
   const ok=await appConfirm('Delete Colour?',msg,'🗑️','Delete','dr');
   if(!ok) return;
 }
-/* Mark colour as discontinued+deleted instead of splice (prevents index drift across devices) */
-col.discontinued=true;col._deleted=true;col.stock_taka=0;col.stock_mtrs=0;
-item._ts=Date.now();
+/* Mark colour as discontinued+deleted instead of splice (prevents index drift across devices).
+   IMPORTANT: col._ts must be set here so mergeColours() treats this delete as newer than
+   any remote copy — without it the cloud version (with an older but non-zero _ts) wins
+   and resurrects the colour on next sync. */
+const _delTs=Date.now();
+col.discontinued=true;col._deleted=true;col.stock_taka=0;col.stock_mtrs=0;col._ts=_delTs;
+item._ts=_delTs;
 persist();
 renderItems(document.querySelector('#tp-itm .srch input')?.value||'');
 if(el('m-item')?.classList.contains('on')&&el('itm-id')?.value===itemId) renderItemRanges(item);
@@ -9118,12 +9496,53 @@ if(ledgerEntries.length>0){
   const ok=await appConfirm('Delete Range?',msg,'🗑️','Delete Range','dr');
   if(!ok) return;
 }
-cols.forEach(col=>{col.discontinued=true;col._deleted=true;col.stock_taka=0;col.stock_mtrs=0;});
-item._ts=Date.now();
+const _rngDelTs=Date.now();
+cols.forEach(col=>{col.discontinued=true;col._deleted=true;col.stock_taka=0;col.stock_mtrs=0;col._ts=_rngDelTs;});
+item._ts=_rngDelTs;
 persist();
 renderItems(document.querySelector('#tp-itm .srch input')?.value||'');
 if(el('m-item')?.classList.contains('on')&&el('itm-id')?.value===itemId) renderItemRanges(item);
 toast('Range "'+rng+'" deleted ('+cols.length+' colour'+(cols.length===1?'':'s')+')','ok');
+}
+function toggleColourSelectMode(itemId,rng){
+  window._colSelMode=window._colSelMode||{};
+  const k=itemId+'::'+rng;
+  window._colSelMode[k]=!window._colSelMode[k];
+  const item=STATE.items.find(i=>i.id===itemId);
+  if(item) renderItemRanges(item);
+}
+function updateBulkDelCount(selKey){
+  const chks=document.querySelectorAll('.col-bulk-chk[data-selkey="'+selKey+'"]:checked');
+  const btn=el('bdc-btn-'+selKey);
+  if(btn) btn.textContent='🗑 Delete ('+chks.length+')';
+}
+async function bulkDeleteCheckedColours(itemId,rng){
+  const item=STATE.items.find(i=>i.id===itemId); if(!item) return;
+  const selKey=itemId+'::'+rng;
+  const chks=[...document.querySelectorAll('.col-bulk-chk[data-selkey="'+selKey+'"]:checked')];
+  if(!chks.length){toast('No colours selected — tick the checkboxes first','er');return;}
+  const cIdxs=chks.map(c=>parseInt(c.dataset.cidx)).filter(n=>!isNaN(n));
+  const cols=cIdxs.map(i=>item.colours[i]).filter(Boolean);
+  if(!cols.length) return;
+  const hasLedger=cols.some(col=>(STATE.entries||[]).some(e=>!e._deleted&&e.sku===col.sku&&e.itemId===itemId));
+  const totalStk=cols.reduce((s,c)=>s+(c.stock_taka||0),0);
+  const msg='Delete '+cols.length+' colour'+(cols.length!==1?'s':'')+': '+cols.map(c=>c.name).join(', ')
+    +(totalStk>0?'\n\nTotal stock: '+totalStk+'T will be removed.':'')
+    +(hasLedger?'\n\n⚠️ Some of these colours have ledger entries — those entries will also be deleted.':'')
+    +'\n\nThis cannot be undone.';
+  const ok=await appConfirm('Bulk Delete Colours?',msg,'🗑️','Delete All','dr');
+  if(!ok) return;
+  const delTs=Date.now();
+  cols.forEach(col=>{
+    (STATE.entries||[]).filter(e=>e.sku===col.sku&&e.itemId===itemId).forEach(e=>{e._deleted=true;e._ts=delTs;});
+    col.discontinued=true;col._deleted=true;col.stock_taka=0;col.stock_mtrs=0;col._ts=delTs;
+  });
+  item._ts=delTs;
+  delete (window._colSelMode||{})[selKey];
+  persist();
+  renderItemRanges(item);
+  renderItems(document.querySelector('#tp-itm .srch input')?.value||'');
+  toast(cols.length+' colour'+(cols.length!==1?'s':'')+' deleted','ok');
 }
 let _skuItemId=null, _skuCIdx=null;
 function showSKUDetail(itemId, cIdx){
