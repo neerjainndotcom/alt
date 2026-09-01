@@ -56,9 +56,10 @@
 <div class="ov" id="m-aclr" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="aclrtit">Add Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-aclr')">✕</button></div></div><div class="shb"><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="aclr-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('aclr-rows','aclr-cnt')"/></div><div id="aclr-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-aclr')">Cancel</button><button class="btn bp bfl" onclick="saveAddClrs()">Add Colours</button></div>
 </div></div>
 <div class="ov" id="m-edit-clr" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>✏️ Edit Colour / SKU</h3><p class="sub" id="edit-clr-range-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-edit-clr')">✕</button></div></div><div class="shb"><input type="hidden" id="ec-item-id"/><input type="hidden" id="ec-col-idx"/><div style="background:var(--Pl);border-radius:10px;padding:12px 14px;margin-bottom:16px"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Current SKU</div><div id="ec-old-sku" style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--Pd)"></div></div><div class="fg"><label>Colour Name *</label><input class="inp" id="ec-name" placeholder="e.g. DUSTY PINK" oninput="previewEditSKU()" style="text-transform:uppercase"/></div><div class="ir2"><div class="fg"><label>Colour Code *</label><input class="inp mono" id="ec-code" placeholder="e.g. DP01" oninput="previewEditSKU()" style="text-transform:uppercase"/></div><div class="fg"><label>Colour (Hex)</label><div style="display:flex;gap:8px;align-items:center"><input type="color" id="ec-hex" style="width:52px;height:44px;border-radius:8px;border:1.5px solid var(--br);cursor:pointer;padding:3px"/><span id="ec-hex-lbl" style="font-size:12px;font-weight:700;color:var(--t2)"></span></div></div></div><div style="background:var(--Gl);border-radius:10px;padding:12px 14px;margin-bottom:6px" id="ec-new-sku-wrap"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">New SKU Preview</div><div id="ec-new-sku" style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--Gd)"></div></div><div id="ec-entries-note" style="display:none;background:var(--Al);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--Ad);font-weight:600;margin-bottom:6px"></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-edit-clr')">Cancel</button><button class="btn bp bfl" onclick="saveEditClr()">Save Changes</button></div></div></div>
-<div class="ov" id="m-cst" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="csttit">New Customer</h3><button class="btn bgh bsm" onclick="hideMod('m-cst')">✕</button></div></div><div class="shb"><input type="hidden" id="cst-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="cst-name"/></div><div class="fg"><label>Phone</label><input class="inp" id="cst-ph" type="tel"/></div></div><div class="fg"><label>GSTIN</label><div class="fi"><input class="inp mono" id="cst-gst" placeholder="22AAAAA0000A1Z5" oninput="detCstState()"/><button class="ai" onclick="gstLkp()">🔍 Lookup</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px" id="cst-si">Enter GSTIN to detect state</div></div><div class="fg"><label>Address</label><textarea class="ta" id="cst-addr" rows="2"></textarea></div><div class="fg"><label>Market</label><div class="fi"><select class="sel" id="cst-market"><option value="">— No market —</option></select><button class="ai" onclick="createMarketFromCust()">+New</button></div></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="cst-wa" type="tel" placeholder="91XXXXXXXXXX"/></div><div class="fg"><label>Email</label><input class="inp" id="cst-em" type="email"/></div></div><div class="fg"><label>Party Group (for cross-billing)</label><div class="fi"><select class="sel" id="cst-grp-sel"><option value="">— No group —</option></select><button class="ai" onclick="createGroupFromCust()">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px">Customer will be added to this group for cross-billing.</div></div><div class="fg"><label>Default Broker (auto-fills in orders)</label><div class="fi"><select class="sel" id="cst-brk" style="border:1.5px solid var(--br)"><option value="">— No default broker —</option></select><button class="ai" onclick="openBrkFromCust()">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px">When selected here, broker auto-fills every time this customer is chosen in an order.</div></div><div class="fg"><label>Assigned Salesman</label><select class="sel" id="cst-sm" style="border:1.5px solid var(--br)"><option value="">— No assigned salesman —</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">When set, this salesman auto-fills whenever a lead is created for this customer — no need to reassign every time.</div></div><div class="dvd"></div><div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="cst-star" onchange="toggleCstStarFields()" style="width:18px;height:18px;accent-color:#F59E0B;cursor:pointer"/><span>&#11088; Star Customer</span></label><div style="font-size:11px;color:var(--t3);margin-top:4px">Track this customer's order gaps — they'll show up for follow-up if no order arrives within the set number of days.</div></div><div id="cst-star-fields" style="display:none;background:#FFFBEB;border:1.5px solid #FCD34D;border-radius:10px;padding:10px 12px;margin-bottom:14px"><div class="fg"><label>Assigned Salesman</label><select class="sel" id="cst-star-sm"><option value="">— No specific salesman —</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">This salesman will see this customer on their dashboard when follow-up is due.</div></div><div class="fg mt8"><label>Follow-up Days (override)</label><input class="inp mono" id="cst-star-days" type="number" min="1" step="1" placeholder="Use default"/></div></div><div class="dvd"></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Payment Terms (leave blank for global defaults)</div><div class="ir2"><div class="fg"><label>Discount %</label><input class="inp mono" id="cst-disc" type="number" step="0.1" placeholder="e.g. 5"/></div><div class="fg"><label>Discount Days</label><input class="inp mono" id="cst-dd" type="number" step="1" placeholder="e.g. 45"/></div></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="cst-nd" type="number" step="1" placeholder="e.g. 120"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-cst')">Cancel</button><button class="btn bp bfl" onclick="saveCust()">Save</button></div>
+<div class="ov" id="m-cst" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="csttit">New Customer</h3><button class="btn bgh bsm" onclick="hideMod('m-cst')">✕</button></div></div><div class="shb"><input type="hidden" id="cst-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="cst-name"/></div><div class="fg"><label>Phone</label><input class="inp" id="cst-ph" type="tel"/></div></div><div class="fg"><label>GSTIN</label><div class="fi"><input class="inp mono" id="cst-gst" placeholder="22AAAAA0000A1Z5" oninput="detCstState()"/><button class="ai" onclick="gstLkp()">🔍 Lookup</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px" id="cst-si">Enter GSTIN to detect state</div></div><div class="fg"><label>Address</label><textarea class="ta" id="cst-addr" rows="2"></textarea></div><div class="fg"><label>Market</label><div class="fi"><select class="sel" id="cst-market"><option value="">— No market —</option></select><button class="ai" onclick="createMarketFromCust()">+New</button></div></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="cst-wa" type="tel" placeholder="91XXXXXXXXXX"/></div><div class="fg"><label>Email</label><input class="inp" id="cst-em" type="email"/></div></div><div class="fg"><label>Party Group (for cross-billing)</label><div class="fi"><select class="sel" id="cst-grp-sel"><option value="">— No group —</option></select><button class="ai" onclick="createGroupFromCust()">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px">Customer will be added to this group for cross-billing.</div></div><div class="fg"><label>Default Broker (auto-fills in orders)</label><div class="fi"><select class="sel" id="cst-brk" style="border:1.5px solid var(--br)"><option value="">— No default broker —</option></select><button class="ai" onclick="openBrkFromCust()">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px">When selected here, broker auto-fills every time this customer is chosen in an order.</div></div><div class="fg"><label>Assigned Salesman</label><select class="sel" id="cst-sm" style="border:1.5px solid var(--br)"><option value="">— No assigned salesman —</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">When set, this salesman auto-fills whenever a lead is created for this customer — no need to reassign every time.</div></div><div class="dvd"></div><div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="cst-star" onchange="toggleCstStarFields()" style="width:18px;height:18px;accent-color:#F59E0B;cursor:pointer"/><span>&#11088; Star Customer</span></label><div style="font-size:11px;color:var(--t3);margin-top:4px">Track this customer's order gaps — they'll show up for follow-up if no order arrives within the set number of days.</div></div><div id="cst-star-fields" style="display:none;background:#FFFBEB;border:1.5px solid #FCD34D;border-radius:10px;padding:10px 12px;margin-bottom:14px"><div class="fg"><label>⭐ Grade</label><select class="sel" id="cst-star-grade"><option value="">— Ungraded (auto-calculated) —</option><option value="A">A — Top Value Customer</option><option value="B">B — Mid Range</option><option value="C">C — Regular Star</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">Set manually or leave blank — auto-suggested from 12-month billing total once data accumulates.</div></div><div class="fg mt8"><label>Assigned Salesman</label><select class="sel" id="cst-star-sm"><option value="">— No specific salesman —</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">This salesman will see this customer on their dashboard when follow-up is due.</div></div><div class="fg mt8"><label>Follow-up Days (override)</label><input class="inp mono" id="cst-star-days" type="number" min="1" step="1" placeholder="Use default"/></div></div><div class="dvd"></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Payment Terms (leave blank for global defaults)</div><div class="ir2"><div class="fg"><label>Discount %</label><input class="inp mono" id="cst-disc" type="number" step="0.1" placeholder="e.g. 5"/></div><div class="fg"><label>Discount Days</label><input class="inp mono" id="cst-dd" type="number" step="1" placeholder="e.g. 45"/></div></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="cst-nd" type="number" step="1" placeholder="e.g. 120"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-cst')">Cancel</button><button class="btn bp bfl" onclick="saveCust()">Save</button></div>
 </div></div>
 <div class="ov" id="m-market-mgr" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>🏙️ Manage Markets</h3><button class="btn bgh bsm" onclick="hideMod('m-market-mgr')">✕</button></div></div><div class="shb"><div class="fi" style="margin-bottom:12px"><input class="inp" id="mkt-new-name" placeholder="New market name"/><button class="ai" onclick="addMarketMgr()">+ Add</button></div><div id="mkt-mgr-list"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-market-mgr')">Close</button></div></div></div>
+<div class="ov" id="m-star-mgr" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>⭐ Star Customers</h3><p class="sub">Uncheck to remove from Stars</p></div><button class="btn bgh bsm" onclick="hideMod('m-star-mgr')">✕</button></div></div><div class="shb" id="star-mgr-body" style="padding:0"></div><div class="shf" style="flex-wrap:wrap;gap:8px"><button class="btn bgh bfl" onclick="hideMod('m-star-mgr')">Cancel</button><button class="btn bfl" style="background:#F59E0B;color:white;border:none;font-weight:800" onclick="saveStarMgrChanges()">✔ Apply Changes</button></div></div></div>
 <div class="ov" id="m-brk" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Broker</h3><button class="btn bgh bsm" onclick="hideMod('m-brk')">✕</button></div></div><div class="shb"><input type="hidden" id="brk-id"/><div class="fg"><label>Name *</label><input class="inp" id="brk-name"/></div><div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="brk-ph" type="tel"/></div><div class="fg"><label>Commission %</label><input class="inp" id="brk-cm" type="number" step="0.1" placeholder="2.5"/></div></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-brk')">Cancel</button><button class="btn bp bfl" onclick="saveBrk()">Save</button></div>
 </div></div>
 <div class="ov" id="m-party-detail" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="pd-title">Details</h3><p class="sub" id="pd-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-party-detail')">✕</button></div></div><div class="shb" id="pd-body"></div><div class="shf" style="display:flex;gap:8px"><button class="btn bd bsm" id="pd-delete-btn" style="flex:0 0 auto">🗑️ Delete</button><button class="btn bgh" style="flex:1" onclick="hideMod('m-party-detail')">Close</button><button class="btn bp" style="flex:1" id="pd-edit-btn">✏️ Edit</button></div>
@@ -109,8 +110,8 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.83';
-const APP_BUILD_DATE='2026-08-24';
+const APP_VERSION='1.40.89';
+const APP_BUILD_DATE='2026-09-01';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
 // Runs BEFORE anything else. If the browser cached an old version, this
@@ -2645,6 +2646,7 @@ el('cst-gst').value=''; el('cst-addr').value=''; el('cst-wa').value=''; el('cst-
 el('cst-disc').value=''; el('cst-dd').value=''; el('cst-nd').value='';
 if(el('cst-star')) el('cst-star').checked=false;
 if(el('cst-star-days')) el('cst-star-days').value='';
+if(el('cst-star-grade')) el('cst-star-grade').value='';
 populateCstStarSalesmanSel('');
 toggleCstStarFields();
 el('csttit').textContent='New Customer'; el('cst-si').textContent='Enter GSTIN to detect state';
@@ -2673,6 +2675,7 @@ el('cst-id').value=id; el('cst-name').value=x.name||''; el('cst-ph').value=x.pho
 el('cst-gst').value=x.gstin||''; el('cst-addr').value=x.address||'';
 if(el('cst-star')) el('cst-star').checked=!!x.isStar;
 if(el('cst-star-days')) el('cst-star-days').value=x.starFollowupDays!=null?x.starFollowupDays:'';
+if(el('cst-star-grade')) el('cst-star-grade').value=x.starGrade||'';
 populateCstStarSalesmanSel(x.starSalesmanId||'');
 toggleCstStarFields();
 el('cst-wa').value=x.whatsapp||''; el('cst-em').value=x.email||'';
@@ -2810,6 +2813,7 @@ discount:cDisc!==''?parseFloat(cDisc):undefined,
 discountDays:cDd!==''?parseInt(cDd):undefined,
 nettDays:cNd!==''?parseInt(cNd):undefined,
 isStar:isStarNow,
+starGrade:isStarNow?((el('cst-star-grade')?.value||'')||undefined):undefined,
 starSalesmanId:isStarNow?(starSmId||undefined):undefined,
 starFollowupDays:isStarNow&&starDaysRaw!==''?parseInt(starDaysRaw):undefined,
 starSince:starSince};
@@ -8320,6 +8324,8 @@ c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Compa
 '<div class="xs ct3" style="margin-bottom:12px">Mark your best customers as Star in Customer Master. If no order arrives from a Star customer for this many days, they show up on the salesman\'s dashboard and the Star Follow-up report as due for a call. Each customer can also have their own custom day-count (set on the customer\'s edit screen), which overrides this default.</div>'+
 '<div class="fg"><label>Default Follow-up Days</label><input class="inp mono" id="s-star-days" type="number" min="1" step="1" placeholder="e.g. 4" value="'+(s.starFollowupDaysDefault||4)+'"/></div>'+
 '<div class="fg mt8"><label>WhatsApp Message to Customer (optional)</label><textarea class="ta" id="s-star-wa-tpl" rows="4" placeholder="Leave blank to use the default. Variables: {name}, {days}, {lastOrderDate}, {company}">'+(s.starWaTemplate||'')+'</textarea></div>'+
+'<button class="btn bfl mt8" style="background:#FEF3C7;color:#92400E;border:1.5px solid #FCD34D;font-weight:800;font-size:13px" onclick="openStarCustomersManager()">⭐ Manage Star Customers</button>'+
+'<div style="font-size:11px;color:var(--t3);margin-top:4px">View all starred customers and bulk-remove them from the list.</div>'+
 '</div>'+
 '<div class="card mt12"><div class="fw8" style="margin-bottom:14px">Stock Settings</div>'+
 '<div class="ir2"><div class="fg"><label>Avg Meters / Taka</label><input class="inp mono" id="s-avg" type="number" step="0.5" value="'+(s.avgMtrPerTaka||90)+'"/></div><div class="fg"><label>Avg Meters / TP</label><input class="inp mono" id="s-avgtp" type="number" step="0.5" value="'+(s.avgMtrPerTP||45)+'"/></div></div>'+
@@ -8365,6 +8371,45 @@ c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Compa
 '<div class="card mt12"><div class="fw8" style="margin-bottom:14px">Dashboard Layout</div>'+
 '<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Control which widgets appear on the dashboard and their order. Click the gear icon on the Dashboard to customize.</div>'+
 '<button class="btn bs bfl" onclick="openDashConfig()">Customize Dashboard Layout</button></div>'+
+'<div class="card mt12" id="star-grading-card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div style="font-size:22px">⭐</div><div class="fw8" style="font-size:15px">Star Customer Grading System</div></div>'+
+'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:14px">Configure grade thresholds (A/B/C), follow-up intervals, snooze days, escalation cycles, and WhatsApp templates for the complete Star Customer follow-up engine.</div>'+
+'<div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📊 Grade Thresholds (12-month Billing Total)</div>'+
+'<div style="font-size:11px;color:var(--t3);margin-bottom:10px">Set the minimum 12-month billing amount for each grade. Leave blank to disable auto-grading. Grade A = highest value customers.</div>'+
+'<div class="ir2" style="grid-template-columns:1fr 1fr 1fr;gap:8px">'+
+'<div class="fg"><label style="color:#D97706;font-weight:800">A — Min Billing (₹)</label><input class="inp mono" id="s-sg-thresh-a" type="number" min="0" step="1000" placeholder="e.g. 500000" value="'+(s.starGrading?.thresholdA||'')+'"/></div>'+
+'<div class="fg"><label style="color:#7C3AED;font-weight:800">B — Min Billing (₹)</label><input class="inp mono" id="s-sg-thresh-b" type="number" min="0" step="1000" placeholder="e.g. 200000" value="'+(s.starGrading?.thresholdB||'')+'"/></div>'+
+'<div class="fg"><label style="color:#0284C7;font-weight:800">C — Min Billing (₹)</label><input class="inp mono" id="s-sg-thresh-c" type="number" min="0" step="1000" placeholder="e.g. 50000" value="'+(s.starGrading?.thresholdC||'')+'"/></div>'+
+'</div>'+
+'<div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px">📅 Follow-up Threshold (Days without Order)</div>'+
+'<div style="font-size:11px;color:var(--t3);margin-bottom:10px">When a star customer has no order for this many days, create a follow-up task for the salesman.</div>'+
+'<div class="ir2" style="grid-template-columns:1fr 1fr 1fr;gap:8px">'+
+'<div class="fg"><label style="color:#D97706;font-weight:800">Grade A (days)</label><input class="inp mono" id="s-sg-days-a" type="number" min="1" step="1" placeholder="e.g. 3" value="'+(s.starGrading?.followupDaysA||'')+'"/></div>'+
+'<div class="fg"><label style="color:#7C3AED;font-weight:800">Grade B (days)</label><input class="inp mono" id="s-sg-days-b" type="number" min="1" step="1" placeholder="e.g. 5" value="'+(s.starGrading?.followupDaysB||'')+'"/></div>'+
+'<div class="fg"><label style="color:#0284C7;font-weight:800">Grade C (days)</label><input class="inp mono" id="s-sg-days-c" type="number" min="1" step="1" placeholder="e.g. 7" value="'+(s.starGrading?.followupDaysC||'')+'"/></div>'+
+'</div>'+
+'<div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px">💤 "Ordering Soon" Snooze Days (per grade)</div>'+
+'<div style="font-size:11px;color:var(--t3);margin-bottom:10px">When salesman taps "Placing order soon", snooze follow-up for this many days before creating the next task.</div>'+
+'<div class="ir2" style="grid-template-columns:1fr 1fr 1fr;gap:8px">'+
+'<div class="fg"><label style="color:#D97706;font-weight:800">Grade A (days)</label><input class="inp mono" id="s-sg-snooze-a" type="number" min="1" step="1" placeholder="e.g. 3" value="'+(s.starGrading?.snoozeDaysA||'')+'"/></div>'+
+'<div class="fg"><label style="color:#7C3AED;font-weight:800">Grade B (days)</label><input class="inp mono" id="s-sg-snooze-b" type="number" min="1" step="1" placeholder="e.g. 5" value="'+(s.starGrading?.snoozeDaysB||'')+'"/></div>'+
+'<div class="fg"><label style="color:#0284C7;font-weight:800">Grade C (days)</label><input class="inp mono" id="s-sg-snooze-c" type="number" min="1" step="1" placeholder="e.g. 7" value="'+(s.starGrading?.snoozeDaysC||'')+'"/></div>'+
+'</div>'+
+'<div class="ir2 mt12">'+
+'<div class="fg"><label>📵 "Can\'t Reach" Retry (days) — Global</label><input class="inp mono" id="s-sg-cant-reach" type="number" min="1" step="1" placeholder="e.g. 3" value="'+(s.starGrading?.cantReachDays||'')+'"/></div>'+
+'<div class="fg"><label>⬆️ Escalate After N Cycles — Global</label><input class="inp mono" id="s-sg-escalate" type="number" min="1" step="1" placeholder="e.g. 3" value="'+(s.starGrading?.escalationCycles||'')+'"/></div>'+
+'</div>'+
+'<div class="dvd mt12"></div>'+
+'<div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 8px">⚙️ Automation Toggles</div>'+
+'<div style="display:flex;flex-direction:column;gap:10px">'+
+'<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="s-sg-notify-before" style="width:16px;height:16px;accent-color:var(--P);margin-top:2px"'+(s.starGrading?.notifyDayBefore!==false?' checked':'')+'/><div><div style="font-size:13px;font-weight:700">Notify admin 1 day before threshold</div><div style="font-size:11px;color:var(--t3);margin-top:2px">Show an alert on the dashboard 1 day before a star customer\'s follow-up becomes due</div></div></label>'+
+'<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="s-sg-auto-task" style="width:16px;height:16px;accent-color:var(--P);margin-top:2px"'+(s.starGrading?.autoCreateTask!==false?' checked':'')+'/><div><div style="font-size:13px;font-weight:700">Auto-generate task if admin ignores notification</div><div style="font-size:11px;color:var(--t3);margin-top:2px">If the notification is not acted on, automatically create a task for the salesman on the due date</div></div></label>'+
+'</div>'+
+'<div class="dvd mt12"></div>'+
+'<div style="font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 8px">📲 WhatsApp Message Templates</div>'+
+'<div style="font-size:11px;color:var(--t2);line-height:1.7;margin-bottom:10px">Variables: <b>{salesman}</b>, <b>{customerList}</b>, <b>{company}</b>, <b>{grade}</b>, <b>{custName}</b>, <b>{days}</b>, <b>{items}</b>, <b>{lastOrderDate}</b>, <b>{total}</b>, <b>{lastDispatch}</b></div>'+
+'<div class="fg"><label>WA Message — to Salesman (bulk list)</label><textarea class="ta" id="s-sg-wa-sm" rows="5" placeholder="Leave blank for the default SKU-detail format. Variables: {salesman}, {customerList}, {company}">'+(s.starGrading?.waSalesmanTemplate||'')+'</textarea></div>'+
+'<div class="fg mt8"><label>WA Message — to Broker (bulk list)</label><textarea class="ta" id="s-sg-wa-brk" rows="5" placeholder="Leave blank for the default SKU-detail format. Same variables as salesman template.">'+(s.starGrading?.waBrokerTemplate||'')+'</textarea></div>'+
+'</div>'+
 '<div class="card mt12" style="background:#F9FAFB;text-align:center"><div style="font-size:11px;color:var(--t3)">ALT Stock v'+APP_VERSION+' | Build: '+APP_BUILD_DATE+'</div></div>'+
 '<div class="card mt12"><div class="fw8" style="margin-bottom:6px">&#128190; Data Backup &amp; Restore</div>'+
 '<div class="xs ct3" style="margin-bottom:12px">Download a backup of all your data to your device. If data is lost, upload the backup file to restore everything.</div>'+
@@ -8457,6 +8502,23 @@ taskRefreshTime:sv('s-trt')||'09:30',
 officeTimezone:sv('s-otz')||'Asia/Calcutta',
 starFollowupDaysDefault:si('s-star-days',STATE.settings.starFollowupDaysDefault||4),
 starWaTemplate:sv('s-star-wa-tpl'),
+starGrading:{
+thresholdA:el('s-sg-thresh-a')?.value.trim()!==''?parseInt(el('s-sg-thresh-a').value)||0:undefined,
+thresholdB:el('s-sg-thresh-b')?.value.trim()!==''?parseInt(el('s-sg-thresh-b').value)||0:undefined,
+thresholdC:el('s-sg-thresh-c')?.value.trim()!==''?parseInt(el('s-sg-thresh-c').value)||0:undefined,
+followupDaysA:el('s-sg-days-a')?.value.trim()!==''?parseInt(el('s-sg-days-a').value)||3:undefined,
+followupDaysB:el('s-sg-days-b')?.value.trim()!==''?parseInt(el('s-sg-days-b').value)||5:undefined,
+followupDaysC:el('s-sg-days-c')?.value.trim()!==''?parseInt(el('s-sg-days-c').value)||7:undefined,
+snoozeDaysA:el('s-sg-snooze-a')?.value.trim()!==''?parseInt(el('s-sg-snooze-a').value)||3:undefined,
+snoozeDaysB:el('s-sg-snooze-b')?.value.trim()!==''?parseInt(el('s-sg-snooze-b').value)||5:undefined,
+snoozeDaysC:el('s-sg-snooze-c')?.value.trim()!==''?parseInt(el('s-sg-snooze-c').value)||7:undefined,
+cantReachDays:el('s-sg-cant-reach')?.value.trim()!==''?parseInt(el('s-sg-cant-reach').value)||3:undefined,
+escalationCycles:el('s-sg-escalate')?.value.trim()!==''?parseInt(el('s-sg-escalate').value)||3:undefined,
+notifyDayBefore:el('s-sg-notify-before')?.checked!==false,
+autoCreateTask:el('s-sg-auto-task')?.checked!==false,
+waSalesmanTemplate:el('s-sg-wa-sm')?.value.trim()||'',
+waBrokerTemplate:el('s-sg-wa-brk')?.value.trim()||''
+},
 waTemplateSsSmn:sv('s-wa-tpl-ss-sm'),
 waTemplateSsBrk:sv('s-wa-tpl-ss-brk'),
 waTemplateSsCarrier:sv('s-wa-tpl-ss-carrier'),
@@ -11163,7 +11225,8 @@ msg='Hi *'+c.name+'*,\n\nWe haven\'t received an order from you in '+days+' day'
 openWA(c.whatsapp||c.phone||'',msg);
 }
 function waStarSalesmenReminders(){
-const overdue=getStarFollowups().filter(r=>r.overdue&&r.salesmanId);
+/* Enhanced: includes SKU details for each customer */
+const overdue=getStarFollowups().filter(r=>r.overdue&&!r.isSnoozed&&r.salesmanId);
 if(!overdue.length){toast('No Star customers overdue for follow-up','ok');return;}
 const co=STATE.settings?.companyName||'ALT Stock';
 const smMap={};
@@ -11173,33 +11236,70 @@ const staffList=[];
 Object.entries(smMap).forEach(([smId,rs])=>{
 const u=STATE.users.find(x=>x.id===smId); if(!u) return;
 const phone=u.whatsapp||u.phone||'';
-const lst=rs.map((r,i)=>(i+1)+'. *'+r.custName+'* — '+r.daysSince+'d since last order'+(r.lastOrderDate?' ('+fmtDate(r.lastOrderDate)+')':' (no orders yet)')).join('\n');
-const msg='&#11088; *'+co+' — Star Customer Follow-up*\n\nDear *'+u.name+'*,\n\nYou have *'+rs.length+' Star customer(s)* overdue for a new order:\n\n'+lst+'\n\nPlease follow up today.\n— '+co;
-window._waStarMsgs[smId]={phone,msg:msg.replace(/&#11088;/g,'⭐')};
+/* Build message with SKU details per customer */
+const customerLines=rs.map(r=>{
+  const c=STATE.customers.find(x=>x.id===r.custId);
+  if(!c) return '⭐ '+r.custName+' — '+r.daysSince+'d overdue';
+  return buildStarWaMsgForCust(c,'salesman');
+}).join('\n\n');
+const msg=u.name+' — Star Follow-ups for today 📋\n\n'+customerLines+'\n\n— '+co;
+window._waStarMsgs[smId]={phone,msg};
 staffList.push({id:smId,name:u.name,phone,count:rs.length});
 });
 if(!staffList.length){toast('No salesmen with phone numbers','er');return;}
-const div=document.createElement('div');div.id='m-wastarlist';
+_openStarWaListModal(staffList,'⭐ WA Star Follow-up — Salesmen','salesmen');
+}
+function waStarBrokerReminders(){
+/* Send star follow-up list to brokers — each broker gets a consolidated list of their customers */
+const overdue=getStarFollowups().filter(r=>r.overdue&&!r.isSnoozed);
+if(!overdue.length){toast('No Star customers overdue for follow-up','ok');return;}
+const co=STATE.settings?.companyName||'ALT Stock';
+/* Group overdue customers by their broker */
+const brkMap={};
+overdue.forEach(r=>{
+  const c=STATE.customers.find(x=>x.id===r.custId); if(!c) return;
+  const brkId=c.defaultBrokerId||'';
+  if(!brkId) return;
+  if(!brkMap[brkId]) brkMap[brkId]=[];
+  brkMap[brkId].push({...r,cust:c});
+});
+window._waStarBrkMsgs={};
+const brkList=[];
+Object.entries(brkMap).forEach(([brkId,items])=>{
+  const brk=STATE.brokers.find(x=>x.id===brkId); if(!brk) return;
+  const phone=brk.whatsapp||brk.phone||'';
+  const customerLines=items.map(item=>buildStarWaMsgForCust(item.cust,'broker')).join('\n\n');
+  const msg=brk.name+' bhai — Star Follow-ups for today 📋\n\n'+customerLines+'\n\n— '+co;
+  window._waStarBrkMsgs[brkId]={phone,msg};
+  brkList.push({id:brkId,name:brk.name,phone,count:items.length});
+});
+if(!brkList.length){toast('No brokers linked to overdue star customers','er');return;}
+_openStarWaListModal(brkList,'⭐ WA Star Follow-up — Brokers','brokers');
+}
+function _openStarWaListModal(list,title,type){
+const msgMap=type==='brokers'?window._waStarBrkMsgs:window._waStarMsgs;
+const mapKey=type==='brokers'?'_waStarBrkMsgs':'_waStarMsgs';
+rmEl('m-wastarlist');
+const div=document.createElement('div'); div.id='m-wastarlist';
 div.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
-let h='<div style="background:white;border-radius:16px 16px 0 0;width:min(500px,100%);padding:16px;max-height:80vh;overflow-y:auto">'
-+'<div style="display:flex;justify-content:space-between;margin-bottom:14px">'
-+'<h3 style="margin:0;font-size:17px;font-weight:800">&#11088; Send Star Follow-up Reminders</h3>'
-+'<button onclick="rmEl(\'m-wastarlist\')" style="background:none;border:none;font-size:24px;cursor:pointer">&times;</button></div>'
-+'<div style="font-size:12px;color:var(--t3);margin-bottom:12px">Tap each button to open WhatsApp for that salesman. Send one by one.</div>';
-staffList.forEach(s=>{
-h+='<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1.5px solid #E5E7EB;border-radius:10px;margin-bottom:8px;background:white">'
-+'<div style="flex:1"><div style="font-size:13px;font-weight:800">'+s.name+'</div>'
+let h='<div style="background:var(--bg);border-radius:16px 16px 0 0;width:min(500px,100%);padding:16px;max-height:82vh;overflow-y:auto">'
++'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
++'<h3 style="margin:0;font-size:16px;font-weight:800">'+title+'</h3>'
++'<button onclick="rmEl(\'m-wastarlist\')" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--t3)">&times;</button></div>'
++'<div style="font-size:11px;color:var(--t3);margin-bottom:12px">Tap each button to open WhatsApp. Messages include SKU item details from last orders.</div>';
+list.forEach(s=>{
+h+='<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1.5px solid var(--br);border-radius:10px;margin-bottom:8px;background:var(--bg)">'
++'<div style="flex:1"><div style="font-size:13px;font-weight:800;color:var(--t1)">'+escHtml(s.name)+'</div>'
 +'<div style="font-size:11px;color:var(--t3)">'+s.count+' Star customer(s) overdue</div></div>';
 if(s.phone){
-h+='<button onclick="openWA(window._waStarMsgs[\''+s.id+'\'].phone,window._waStarMsgs[\''+s.id+'\'].msg);this.innerHTML=\'✅ Sent\';this.disabled=true;this.style.background=\'#D1FAE5\';this.style.color=\'#059669\'" class="wa" style="padding:8px 14px;font-size:12px;font-weight:800;border-radius:8px;white-space:nowrap">📲 Send WA</button>';
+h+='<button onclick="openWA(window[\''+mapKey+'\'][\''+s.id+'\'].phone,window[\''+mapKey+'\'][\''+s.id+'\'].msg);this.innerHTML=\'✅ Sent\';this.disabled=true;this.style.background=\'#D1FAE5\';this.style.color=\'#059669\'" style="background:#25D366;color:white;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap">📲 Send WA</button>';
 }else{
 h+='<span style="font-size:11px;color:#DC2626;font-weight:700">⚠️ No WhatsApp saved</span>';
 }
 h+='</div>';
 });
 h+='<button class="btn bgh bfl" style="margin-top:8px" onclick="rmEl(\'m-wastarlist\')">Close</button></div>';
-div.innerHTML=h;
-document.body.appendChild(div);
+div.innerHTML=h; document.body.appendChild(div);
 }
 /* ── Top Customer Report ──────────────────────────────────────────── */
 window._tcRpt={smId:'',mkt:'',days:90};
@@ -13154,32 +13254,569 @@ c.innerHTML=html;
    from starSince (the date they were first marked Star) if they have no
    orders yet. Threshold is per-customer starFollowupDays, else the
    global settings.starFollowupDaysDefault (default 4). ────────────── */
+/* ── Star Customer Manager (Settings) ─────────────────────────────────
+   Opens a sheet listing all starred customers with checkboxes.
+   Unchecking one and tapping Apply removes their Star status in bulk. */
+function openStarCustomersManager(){
+  const stars=(STATE.customers||[]).filter(c=>!c._deleted&&c.isStar).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  if(!stars.length){toast('No star customers yet','ok');return;}
+  const html=
+    '<div style="font-size:12px;color:var(--t2);padding:10px 14px;background:var(--s2);line-height:1.6">'
+    +'<b>Uncheck</b> customers below to remove them from ⭐ Star, then tap <b>Apply Changes</b>. Checked ones stay starred.'
+    +'</div>'
+    +stars.map(c=>{
+      const smName=c.starSalesmanId?(STATE.users.find(u=>u.id===c.starSalesmanId)?.name||''):'';
+      const sub=[c.market?'📍 '+c.market:'',smName?'👤 '+smName:''].filter(Boolean).join(' · ');
+      return '<label style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--br);cursor:pointer;background:var(--bg)">'
+        +'<input type="checkbox" data-star-id="'+c.id+'" checked style="width:20px;height:20px;accent-color:#F59E0B;cursor:pointer;flex-shrink:0"/>'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:14px;font-weight:700;color:var(--tx)">⭐ '+escHtml(c.name)+'</div>'
+        +(sub?'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+escHtml(sub)+'</div>':'')
+        +'</div></label>';
+    }).join('');
+  const b=el('star-mgr-body'); if(b) b.innerHTML=html;
+  showMod('m-star-mgr');
+}
+function saveStarMgrChanges(){
+  const boxes=(el('star-mgr-body')||{}).querySelectorAll('input[data-star-id]');
+  if(!boxes||!boxes.length){hideMod('m-star-mgr');return;}
+  let changed=0;
+  boxes.forEach(chk=>{
+    if(!chk.checked){
+      const c=STATE.customers.find(x=>x.id===chk.dataset.starId);
+      if(c&&c.isStar){
+        c.isStar=false;
+        c.starSalesmanId=undefined;c.starFollowupDays=undefined;c.starSince=undefined;
+        c._ts=Date.now();changed++;
+      }
+    }
+  });
+  hideMod('m-star-mgr');
+  if(!changed){toast('No changes — all checked customers remain starred','ok');return;}
+  lsSave('vs_customers',STATE.customers);
+  api('saveCustomer',{customers:STATE.customers});
+  autoSyncCloud();
+  toast(changed+' customer'+(changed!==1?'s':'')+' removed from ⭐ Stars','ok');
+  try{renderCusts();}catch(e){}
+}
+/* ── Star Grading Helpers ──────────────────────────────────────────── */
+function getStarGrade(custId){
+/* Calculate grade from rolling 12-month billing total vs admin-configured thresholds.
+   Returns 'A', 'B', 'C', or null if thresholds not configured. */
+const sg=STATE.settings.starGrading||{};
+if(!sg.thresholdA&&!sg.thresholdB&&!sg.thresholdC) return null;
+const cutoff=new Date(); cutoff.setFullYear(cutoff.getFullYear()-1);
+const cutStr=cutoff.toISOString().slice(0,10);
+const total=(STATE.bills||[]).filter(b=>!b._deleted&&b.custId===custId&&b.status!=='cancelled'&&b.date>=cutStr)
+  .reduce((s,b)=>s+(b.grandTotal||b.netTaxable||0),0);
+if(sg.thresholdA&&total>=sg.thresholdA) return 'A';
+if(sg.thresholdB&&total>=sg.thresholdB) return 'B';
+if(sg.thresholdC&&total>=sg.thresholdC) return 'C';
+return null;
+}
+function getStarGradeSuggestions(){
+/* Returns list of customers where auto-grade ≠ manual grade, suggesting admin review */
+const suggestions=[];
+STATE.customers.filter(c=>!c._deleted&&c.isStar).forEach(c=>{
+  const autoGrade=getStarGrade(c.id);
+  if(!autoGrade) return; // No thresholds configured
+  const manualGrade=c.starGrade||'';
+  if(autoGrade!==manualGrade) suggestions.push({custId:c.id,custName:c.name,autoGrade,manualGrade:manualGrade||'(ungraded)'});
+});
+return suggestions;
+}
+function getStarThresholdDays(grade,sg){
+sg=sg||STATE.settings.starGrading||{};
+const dflt=STATE.settings.starFollowupDaysDefault||4;
+if(grade==='A') return sg.followupDaysA||dflt;
+if(grade==='B') return sg.followupDaysB||(dflt+1);
+if(grade==='C') return sg.followupDaysC||(dflt+2);
+return dflt;
+}
+function getStarSnoozeDays(grade,sg){
+sg=sg||STATE.settings.starGrading||{};
+if(grade==='A') return sg.snoozeDaysA||3;
+if(grade==='B') return sg.snoozeDaysB||5;
+return sg.snoozeDaysC||7;
+}
+function getStarRefDate(custId){
+/* Most recent of: last order date, last bill/dispatch date */
+const today_s=today();
+const c=STATE.customers.find(x=>x.id===custId); if(!c) return today_s;
+const lastOrd=(STATE.orders||[]).filter(o=>!o._deleted&&o.custId===custId&&o.status!=='cancelled')
+  .sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];
+const lastBill=(STATE.bills||[]).filter(b=>!b._deleted&&b.custId===custId&&b.status!=='cancelled'&&b.status!=='deleted')
+  .sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];
+const d1=lastOrd?.date||'';
+const d2=lastBill?.date||'';
+const refDate=d1>d2?d1:d2;
+return refDate||(c.starSince?new Date(c.starSince).toISOString().slice(0,10):today_s);
+}
 function getStarFollowups(){
+/* Enhanced: returns rich data including grade, last order items, last bill date */
+const sg=STATE.settings.starGrading||{};
 const defaultDays=STATE.settings.starFollowupDaysDefault||4;
 const todayD=new Date(today()+'T00:00:00');
 const list=[];
 STATE.customers.filter(c=>!c._deleted&&c.isStar).forEach(c=>{
-const liveOrds=STATE.orders.filter(o=>!o._deleted&&o.custId===c.id&&o.status!=='cancelled').sort((a,b)=>new Date(b.date)-new Date(a.date));
+const liveOrds=(STATE.orders||[]).filter(o=>!o._deleted&&o.custId===c.id&&o.status!=='cancelled').sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 const lastOrd=liveOrds[0]||null;
 const lastOrderDate=lastOrd?lastOrd.date:null;
-const refDate=lastOrderDate?new Date(lastOrderDate+'T00:00:00'):(c.starSince?new Date(new Date(c.starSince).toDateString()):todayD);
+const liveBillsForCust=(STATE.bills||[]).filter(b=>!b._deleted&&b.custId===c.id&&b.status!=='cancelled'&&b.status!=='deleted').sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+const lastBill=liveBillsForCust[0]||null;
+const lastBillDate=lastBill?lastBill.date:null;
+/* Reference date = most recent of last order OR last dispatch */
+const d1=lastOrderDate||''; const d2=lastBillDate||'';
+const refDateStr=d1>d2?d1:d2;
+const refDate=refDateStr?new Date(refDateStr+'T00:00:00'):(c.starSince?new Date(new Date(c.starSince).toDateString()):todayD);
 const daysSince=Math.max(0,Math.floor((todayD-refDate)/86400000));
-const threshold=c.starFollowupDays!=null?c.starFollowupDays:defaultDays;
+const grade=c.starGrade||getStarGrade(c.id)||'';
+const threshold=c.starFollowupDays!=null?c.starFollowupDays:getStarThresholdDays(grade||'C',sg);
 const salesmanId=c.starSalesmanId||lastOrd?.salesmanId||'';
 const salesman=STATE.users.find(u=>u.id===salesmanId);
-list.push({custId:c.id,custName:c.name,phone:c.phone,whatsapp:c.whatsapp,lastOrderDate,daysSince,threshold,overdue:daysSince>=threshold,salesmanId,salesmanName:salesman?.name||lastOrd?.salesmanName||'',hasOrders:!!lastOrd});
+/* Check if snoozed */
+const snoozedUntil=c.starSnoozedUntil||'';
+const isSnoozed=snoozedUntil>=today();
+/* Check if escalated */
+const isEscalated=!!c.starEscalated;
+/* Cycle count */
+const cycleCount=c.starCycleCount||0;
+list.push({
+  custId:c.id,custName:c.name,phone:c.phone,whatsapp:c.whatsapp||c.phone,
+  lastOrderDate,lastOrder:lastOrd,lastBill,lastBillDate,
+  daysSince,threshold,overdue:daysSince>=threshold,
+  grade,salesmanId,salesmanName:salesman?.name||lastOrd?.salesmanName||'',
+  hasOrders:!!lastOrd,isSnoozed,snoozedUntil,isEscalated,cycleCount
+});
 });
 return list;
 }
 function getOverdueStarFollowups(forUserId){
 const isAdmin=STATE.user?.role==='admin';
-let list=getStarFollowups().filter(r=>r.overdue);
+let list=getStarFollowups().filter(r=>r.overdue&&!r.isSnoozed);
 if(!isAdmin){
 const uid=forUserId||STATE.user?.id;
 list=list.filter(r=>r.salesmanId===uid);
 }
 list.sort((a,b)=>b.daysSince-a.daysSince);
 return list;
+}
+/* ── Star Follow-up Task Auto-generation ───────────────────────────── */
+function checkAndCreateStarFollowupTasks(){
+const sg=STATE.settings.starGrading||{};
+if(sg.autoCreateTask===false) return;
+const today_s=today();
+let created=0;
+STATE.customers.filter(c=>!c._deleted&&c.isStar).forEach(c=>{
+  /* Skip if snoozed */
+  if(c.starSnoozedUntil&&c.starSnoozedUntil>=today_s) return;
+  /* Paused by admin — auto-resume if a new order OR dispatch has arrived since pause date.
+     The cycle resets naturally from the new order/dispatch date.
+     No manual Resume needed — the next order does it automatically. */
+  if(c.starPaused){
+    const pauseDate=c.starPausedDate||'';
+    const hasNewOrder=(STATE.orders||[]).some(o=>!o._deleted&&o.custId===c.id&&o.status!=='cancelled'&&(o.date||'')>pauseDate);
+    const hasNewDispatch=(STATE.bills||[]).some(b=>!b._deleted&&b.custId===c.id&&b.status!=='cancelled'&&(b.date||'')>pauseDate);
+    if(hasNewOrder||hasNewDispatch){
+      /* Auto-resume! New activity detected — clear pause, reset cycle */
+      c.starPaused=false; c.starPausedDate=undefined;
+      c.starCycleCount=0; c.starEscalated=false; c._ts=Date.now();
+      /* Fall through — let regular logic check if follow-up is now due */
+    }else{
+      return; /* Still paused, no new order/dispatch yet */
+    }
+  }
+  /* Skip if escalated — admin handles these */
+  if(c.starEscalated) return;
+  /* Skip if there's already a pending star task for this customer */
+  const existingTask=(STATE.taskInstances||[]).find(t=>!t._deleted&&t.type==='star-followup'&&t.starCustId===c.id&&t.status==='Pending');
+  if(existingTask) return;
+  /* Skip if customer has a pending/billed order (actively in dispatch) */
+  const hasPendingDispatch=(STATE.orders||[]).some(o=>!o._deleted&&o.custId===c.id&&(o.status==='pending'||o.status==='billed'));
+  if(hasPendingDispatch) return;
+  /* Calculate days since last activity */
+  const refDate=getStarRefDate(c.id);
+  const todayD=new Date(today_s+'T00:00:00');
+  const refD=new Date(refDate+'T00:00:00');
+  const daysSince=Math.max(0,Math.floor((todayD-refD)/86400000));
+  const grade=c.starGrade||getStarGrade(c.id)||'C';
+  const threshold=c.starFollowupDays!=null?c.starFollowupDays:getStarThresholdDays(grade,sg);
+  if(daysSince<threshold) return; /* Not yet due */
+  /* Create the task */
+  const salesmanId=c.starSalesmanId||'';
+  const salesman=STATE.users.find(u=>u.id===salesmanId);
+  const newCycle=(c.starCycleCount||0)+1;
+  const priorityMap={A:'High',B:'Medium',C:'Low'};
+  const task={
+    id:uid(),type:'star-followup',
+    taskName:'⭐ Follow Up: '+c.name,
+    category:'Sales',priority:priorityMap[grade]||'Medium',
+    assignedUserId:salesmanId,assignedUserName:salesman?.name||'',
+    generatedDate:today_s,deadline:today_s+'T23:59:00',
+    status:'Pending',note:'Star customer '+grade+' grade — '+daysSince+' days since last order/dispatch.',
+    starCustId:c.id,starCustName:c.name,starGrade:grade,
+    starCycleCount:newCycle,starDaysOverdue:daysSince-threshold,
+    _ts:Date.now()
+  };
+  if(!STATE.taskInstances) STATE.taskInstances=[];
+  STATE.taskInstances.push(task);
+  c.starCycleCount=newCycle;
+  c._ts=Date.now();
+  created++;
+  /* Check escalation — if cycle >= escalationCycles, flag for admin */
+  const escalateAt=sg.escalationCycles||3;
+  if(newCycle>=escalateAt&&!c.starEscalated){
+    c._starNeedsEscalationAlert=true; /* Admin sees alert; doesn't auto-escalate */
+  }
+});
+if(created>0){
+  lsSave('vs_taskInstances',STATE.taskInstances);
+  lsSave('vs_customers',STATE.customers);
+  try{autoSyncCloud();}catch(e){}
+  try{renderMyTasks();updateTaskDot();}catch(e){}
+}
+return created;
+}
+/* ── Star Outcome Picker ────────────────────────────────────────────── */
+function openStarOutcomePicker(custId,taskId){
+const c=STATE.customers.find(x=>x.id===custId); if(!c) return;
+const sg=STATE.settings.starGrading||{};
+const grade=c.starGrade||getStarGrade(custId)||'C';
+const snoozeDays=getStarSnoozeDays(grade,sg);
+const cantReachDays=sg.cantReachDays||3;
+rmEl('m-star-outcome');
+const div=document.createElement('div');
+div.id='m-star-outcome';
+div.style.cssText='position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center';
+div.innerHTML='<div style="background:var(--bg);border-radius:16px 16px 0 0;width:min(500px,100%);padding:16px 16px 28px;max-height:80vh;overflow-y:auto">'
++'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
++'<h3 style="margin:0;font-size:16px;font-weight:800">📞 What happened?</h3>'
++'<button onclick="rmEl(\'m-star-outcome\')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--t3)">×</button></div>'
++'<div style="font-size:13px;color:var(--t2);margin-bottom:12px;font-weight:700">⭐ '+escHtml(c.name)+' ['+grade+']</div>'
++'<div style="display:flex;flex-direction:column;gap:8px">'
++'<button onclick="markStarContacted(\''+custId+'\',\''+taskId+'\',\'order_soon\')" style="text-align:left;background:#D1FAE5;border:1.5px solid #059669;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#065F46;width:100%">'
++'✅ Placing order soon<div style="font-size:11px;font-weight:400;color:#059669;margin-top:2px">Next follow-up in '+snoozeDays+' days (Grade '+grade+' setting)</div></button>'
++'<button onclick="openStarCallbackPicker(\''+custId+'\',\''+taskId+'\')" style="text-align:left;background:#EFF6FF;border:1.5px solid #3B82F6;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#1E40AF;width:100%">'
++'📅 Call back on date<div style="font-size:11px;font-weight:400;color:#3B82F6;margin-top:2px">Pick a specific date for callback</div></button>'
++'<button onclick="markStarContacted(\''+custId+'\',\''+taskId+'\',\'cant_reach\')" style="text-align:left;background:#FEF3C7;border:1.5px solid #D97706;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#92400E;width:100%">'
++'📵 Can\'t reach<div style="font-size:11px;font-weight:400;color:#D97706;margin-top:2px">Will retry in '+cantReachDays+' days</div></button>'
++'<button onclick="markStarContacted(\''+custId+'\',\''+taskId+'\',\'escalate\')" style="text-align:left;background:#FEE2E2;border:1.5px solid #DC2626;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#991B1B;width:100%">'
++'⬆️ Escalate to admin<div style="font-size:11px;font-weight:400;color:#DC2626;margin-top:2px">Admin will be notified and take over this follow-up</div></button>'
++(c.defaultBrokerId?(()=>{
+  const brk=STATE.brokers.find(x=>x.id===c.defaultBrokerId);
+  const brkName=brk?brk.name:'Broker';
+  return '<div style="margin-top:6px;padding-top:10px;border-top:1px solid var(--br)">'
+  +'<div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Or, message the broker</div>'
+  +'<div style="display:flex;gap:8px">'
+  +'<button onclick="waStarBrokerSingle(\''+custId+'\');rmEl(\'m-star-outcome\')" style="flex:1;text-align:center;background:#7C3AED;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:800;cursor:pointer;color:white">'
+  +'📲 WA Broker<div style="font-size:10px;font-weight:400;opacity:.85;margin-top:2px">'+escHtml(brkName)+' — this customer</div></button>'
+  +'<button id="m-star-compiled-'+custId+'" onclick="waStarBrokerCompiled(\''+custId+'\',\'m-star-compiled-'+custId+'\')" style="flex:1;text-align:center;background:#4F46E5;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:800;cursor:pointer;color:white">'
+  +'📋 WA All (Broker)<div style="font-size:10px;font-weight:400;opacity:.85;margin-top:2px">All overdue for '+escHtml(brkName)+'</div></button>'
+  +'</div></div>';
+})():'')
++'</div></div>';
+document.body.appendChild(div);
+}
+function openStarCallbackPicker(custId,taskId){
+const t_s=today();
+const tmr=new Date(t_s+'T00:00:00'); tmr.setDate(tmr.getDate()+1);
+const tmrStr=tmr.toISOString().slice(0,10);
+rmEl('m-star-callback');
+const div=document.createElement('div');
+div.id='m-star-callback';
+div.style.cssText='position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px';
+div.innerHTML='<div style="background:var(--bg);border-radius:14px;width:min(360px,100%);padding:20px">'
++'<h3 style="margin:0 0 14px;font-size:16px;font-weight:800">📅 Callback Date</h3>'
++'<input type="date" id="star-cb-date" class="inp mono" value="'+tmrStr+'" min="'+tmrStr+'" style="width:100%;margin-bottom:14px"/>'
++'<div style="display:flex;gap:8px">'
++'<button onclick="rmEl(\'m-star-callback\')" class="btn bgh bfl">Cancel</button>'
++'<button onclick="const d=el(\'star-cb-date\')?.value;if(d)markStarContacted(\''+custId+'\',\''+taskId+'\',\'callback\',d);rmEl(\'m-star-callback\')" class="btn bp bfl">Set Callback</button>'
++'</div></div>';
+document.body.appendChild(div);
+}
+function markStarContacted(custId,taskId,outcome,callbackDate){
+const c=STATE.customers.find(x=>x.id===custId); if(!c) return;
+const sg=STATE.settings.starGrading||{};
+const grade=c.starGrade||getStarGrade(custId)||'C';
+const today_s=today();
+rmEl('m-star-outcome'); rmEl('m-star-callback');
+/* Mark task done */
+const task=(STATE.taskInstances||[]).find(t=>t.id===taskId);
+if(task){task.status='Done';task.completedDate=today_s;task.completedBy=STATE.user?.name||'';task.starOutcome=outcome;task._ts=Date.now();}
+c.starLastContactDate=today_s;
+c.starLastOutcome=outcome;
+c._ts=Date.now();
+if(outcome==='order_soon'){
+  const days=getStarSnoozeDays(grade,sg);
+  const until=new Date(today_s+'T00:00:00'); until.setDate(until.getDate()+days);
+  c.starSnoozedUntil=until.toISOString().slice(0,10);
+  toast('✅ Snoozed '+days+' days — next follow-up '+fmtDate(c.starSnoozedUntil),'ok');
+}else if(outcome==='callback'){
+  c.starSnoozedUntil=callbackDate||'';
+  c.starCallbackDate=callbackDate||'';
+  toast('📅 Callback set for '+fmtDate(callbackDate),'ok');
+}else if(outcome==='cant_reach'){
+  const days=sg.cantReachDays||3;
+  const until=new Date(today_s+'T00:00:00'); until.setDate(until.getDate()+days);
+  c.starSnoozedUntil=until.toISOString().slice(0,10);
+  toast('📵 Will retry in '+days+' days','ok');
+}else if(outcome==='escalate'){
+  c.starEscalated=true; c.starEscalatedDate=today_s; c.starEscalatedBy=STATE.user?.name||'';
+  toast('⬆️ Escalated to admin','ok');
+}
+lsSave('vs_customers',STATE.customers);
+lsSave('vs_taskInstances',STATE.taskInstances);
+try{autoSyncCloud();}catch(e){}
+renderMyTasks(); updateTaskDot();
+}
+function openStarSnoozePicker(custId,taskId,grade){
+const sg=STATE.settings.starGrading||{};
+const dfltDays=getStarSnoozeDays(grade,sg);
+rmEl('m-star-snooze');
+const div=document.createElement('div');
+div.id='m-star-snooze';
+div.style.cssText='position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px';
+div.innerHTML='<div style="background:var(--bg);border-radius:14px;width:min(360px,100%);padding:20px">'
++'<h3 style="margin:0 0 6px;font-size:16px;font-weight:800">💤 Snooze Follow-up</h3>'
++'<div style="font-size:12px;color:var(--t3);margin-bottom:12px">Grade '+grade+' default: '+dfltDays+' days</div>'
++'<input type="number" id="star-snooze-days" class="inp mono" value="'+dfltDays+'" min="1" max="60" style="width:100%;margin-bottom:12px"/>'
++'<div style="display:flex;gap:8px">'
++'<button onclick="rmEl(\'m-star-snooze\')" class="btn bgh bfl">Cancel</button>'
++'<button onclick="const d=parseInt(el(\'star-snooze-days\')?.value)||'+dfltDays+';snoozeStarFollowup(\''+custId+'\',d);rmEl(\'m-star-snooze\')" class="btn bp bfl">💤 Snooze</button>'
++'</div></div>';
+document.body.appendChild(div);
+}
+function snoozeStarFollowup(custId,days){
+const c=STATE.customers.find(x=>x.id===custId); if(!c) return;
+const today_s=today();
+const until=new Date(today_s+'T00:00:00'); until.setDate(until.getDate()+days);
+c.starSnoozedUntil=until.toISOString().slice(0,10);
+c._ts=Date.now();
+lsSave('vs_customers',STATE.customers);
+try{autoSyncCloud();}catch(e){}
+toast('💤 Snoozed '+days+' days — resumes '+fmtDate(c.starSnoozedUntil),'ok');
+renderMyTasks();
+}
+/* ── Admin: resolve escalated star customer ─────────────────────── */
+function adminStarAction(custId,action){
+const c=STATE.customers.find(x=>x.id===custId); if(!c) return;
+/* Helper: close any pending star task for this customer */
+function _closePendingStarTask(reason){
+  (STATE.taskInstances||[]).forEach(t=>{
+    if(!t._deleted&&t.type==='star-followup'&&t.starCustId===custId&&t.status==='Pending'){
+      t.status='Done'; t.completedDate=today(); t.completedBy=STATE.user?.name||'Admin';
+      t.starOutcome=reason; t._ts=Date.now();
+    }
+  });
+  lsSave('vs_task_instances',STATE.taskInstances);
+}
+if(action==='pause'){
+  /* PAUSE: stays a Star customer — follow-ups paused until a new order
+     or dispatch arrives. System auto-resumes on next order/bill.
+     Admin can also manually Resume. Existing pending task is auto-closed. */
+  c.starPaused=true; c.starPausedDate=today(); c.starEscalated=false;
+  _closePendingStarTask('paused_by_admin');
+  toast('⏸ Paused for '+c.name+' — will auto-resume when next order or dispatch arrives','ok');
+}else if(action==='resume'){
+  /* RESUME: manual lift of pause by admin */
+  c.starPaused=false; c.starPausedDate=undefined; c.starLastContactDate=today();
+  c.starSnoozedUntil=undefined; c.starCycleCount=0;
+  toast('▶️ '+c.name+' follow-ups manually resumed — cycle reset','ok');
+}else if(action==='downgrade'){
+  const curGrade=c.starGrade||'B';
+  const nextGrade={A:'B',B:'C',C:'C'}[curGrade]||'C';
+  c.starGrade=nextGrade; c.starEscalated=false;
+  toast('⬇️ Downgraded to Grade '+nextGrade,'ok');
+}else if(action==='remove'){
+  /* REMOVE: fully out of Star system. Task auto-closed. */
+  c.isStar=false; c.starEscalated=false; c.starPaused=false;
+  _closePendingStarTask('removed_from_stars');
+  toast('❌ '+c.name+' removed from Star customers — follow-up task closed','ok');
+}
+c._ts=Date.now();
+lsSave('vs_customers',STATE.customers);
+try{autoSyncCloud();}catch(e){}
+renderMyTasks(); try{renderDash();}catch(e){}
+rmEl('m-star-crm-detail');
+}
+function openReassignStarTask(taskId){
+/* Admin: reassign a star follow-up task to a different salesman */
+const task=(STATE.taskInstances||[]).find(t=>t.id===taskId); if(!task) return;
+const salesmen=(STATE.users||[]).filter(u=>!u._deleted&&(u.role==='salesman'||u.role==='staff'||u.role==='admin'));
+rmEl('m-reassign-star');
+const div=document.createElement('div'); div.id='m-reassign-star';
+div.style.cssText='position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px';
+let opts=salesmen.map(u=>'<option value="'+u.id+'"'+(u.id===task.assignedUserId?' selected':'')+'>'+escHtml(u.name)+(u.id===task.assignedUserId?' (current)':'')+'</option>').join('');
+div.innerHTML='<div style="background:var(--bg);border-radius:14px;width:min(360px,100%);padding:20px">'
++'<h3 style="margin:0 0 6px;font-size:16px;font-weight:800">↪️ Reassign Task</h3>'
++'<div style="font-size:12px;color:var(--t2);margin-bottom:14px">⭐ '+escHtml(task.taskName||task.starCustName||'Star Task')+'</div>'
++'<select id="reassign-star-sel" class="sel" style="width:100%;margin-bottom:14px">'+opts+'</select>'
++'<div style="display:flex;gap:8px">'
++'<button onclick="rmEl(\'m-reassign-star\')" class="btn bgh bfl">Cancel</button>'
++'<button onclick="doReassignStarTask(\''+taskId+'\')" class="btn bp bfl">↪️ Reassign</button>'
++'</div></div>';
+document.body.appendChild(div);
+}
+function doReassignStarTask(taskId){
+const task=(STATE.taskInstances||[]).find(t=>t.id===taskId); if(!task) return;
+const sel=el('reassign-star-sel'); if(!sel) return;
+const newUserId=sel.value;
+const newUser=(STATE.users||[]).find(u=>u.id===newUserId); if(!newUser) return;
+const oldName=task.assignedUserName||'previous salesman';
+task.assignedUserId=newUserId; task.assignedUserName=newUser.name||'';
+task.isSubstitute=false; task._originalAssigneeId=undefined;
+task._reassignedBy=STATE.user?.name||'Admin'; task._reassignedDate=today();
+task._ts=Date.now();
+lsSave('vs_task_instances',STATE.taskInstances);
+try{autoSyncCloud();}catch(e){}
+toast('↪️ Task reassigned from '+oldName+' to '+newUser.name,'ok');
+rmEl('m-reassign-star');
+renderMyTasks();
+}
+function confirmStarGrade(custId,newGrade){
+const c=STATE.customers.find(x=>x.id===custId); if(!c) return;
+c.starGrade=newGrade; c._ts=Date.now();
+lsSave('vs_customers',STATE.customers);
+try{autoSyncCloud();}catch(e){}
+toast('⭐ Grade updated to '+newGrade+' for '+c.name,'ok');
+try{renderDash();}catch(e){}
+}
+/* ── Star Follow-up Card (for My Tasks section) ─────────────────── */
+function starFollowupCard(followup){
+const gradeStyle={
+  A:{bg:'#FEF3C7',border:'#D97706',text:'#92400E',badge:'#D97706'},
+  B:{bg:'#EDE9FE',border:'#7C3AED',text:'#5B21B6',badge:'#7C3AED'},
+  C:{bg:'#E0F2FE',border:'#0284C7',text:'#075985',badge:'#0284C7'}
+};
+const gs=gradeStyle[followup.grade]||gradeStyle['C'];
+const lastOrd=followup.lastOrder;
+const lastBill=followup.lastBill;
+/* Build last order items summary */
+let ordLines='<div style="font-style:italic;font-size:11px;color:var(--t3)">No orders yet — manually starred</div>';
+let totalAmt=0;
+if(lastOrd){
+  const items=(lastOrd.items||[]);
+  const topItems=items.slice(0,3);
+  ordLines=topItems.map(i=>'<div style="font-size:11px;color:var(--t2)">• '
+    +escHtml(i.itemName||'Item')+(i.range?' / '+escHtml(i.range):'')
+    +' — <b>'+fmtN(i.pcs||0)+' sarees</b></div>').join('');
+  if(items.length>3) ordLines+='<div style="font-size:10px;color:var(--t3);font-style:italic">+'+( items.length-3)+' more items</div>';
+  totalAmt=lastOrd.grandTotal||lastOrd.netTaxable||(items.reduce((s,i)=>s+(i.amount||0),0));
+}
+const showDispatch=lastBill&&lastOrd&&lastBill.date!==lastOrd.date;
+const billPcs=showDispatch?(lastBill.items||[]).reduce((s,i)=>s+(i.pcs||0),0):0;
+const cycleCount=followup.cycleCount||1;
+const isHighCycle=cycleCount>=3;
+return '<div id="sf-card-'+followup.custId+'" style="background:'+gs.bg+';border:2px solid '+gs.border+';border-radius:12px;padding:12px 14px;margin-bottom:10px">'
++'<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">'
++'<div style="background:'+gs.badge+';color:white;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:900;white-space:nowrap;flex-shrink:0">'+(followup.grade||'?')+'</div>'
++'<div style="flex:1;min-width:0">'
++'<div style="font-size:14px;font-weight:800;color:var(--t1)">'+escHtml(followup.custName)+'</div>'
++'<div style="font-size:11px;color:'+gs.text+';font-weight:700;margin-top:1px">'+followup.daysSince+' days since last activity'+(followup.daysSince>followup.threshold?' · '+(followup.daysSince-followup.threshold)+' days overdue':'')+'</div>'
++'</div>'
++(isHighCycle?'<div style="background:#DC2626;color:white;border-radius:6px;padding:2px 7px;font-size:10px;font-weight:800;white-space:nowrap;flex-shrink:0">Cycle '+cycleCount+'</div>':'')
++'</div>'
++(lastOrd?'<div style="background:rgba(255,255,255,.6);border-radius:8px;padding:8px 10px;margin-bottom:8px">'
++'<div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Last Order ('+fmtDate(lastOrd.date)+'):</div>'
++ordLines
++(totalAmt?'<div style="font-size:11px;font-weight:800;color:var(--t1);margin-top:4px">Total: ₹'+fmtN(totalAmt)+'</div>':'')
++(showDispatch?'<div style="font-size:11px;color:#059669;font-weight:700;margin-top:3px">Last Dispatch: '+fmtDate(lastBill.date)+' · '+fmtN(billPcs)+' sarees</div>':'')
++'</div>':'')
++(()=>{
+const hasBrk=!!(STATE.customers.find(x=>x.id===followup.custId)||{}).defaultBrokerId;
+const brkBtns=hasBrk
+  ?'<button onclick="event.stopPropagation();waStarBrokerSingle(\''+followup.custId+'\')" style="background:#7C3AED;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer">📲 WA Broker</button>'
+  +'<button id="star-compiled-'+followup.custId+'" onclick="event.stopPropagation();waStarBrokerCompiled(\''+followup.custId+'\',\'star-compiled-'+followup.custId+'\')" style="background:#4F46E5;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer">📋 WA All (Broker)</button>'
+  :'';
+const isAdminView=STATE.user?.role==='admin';
+const reassignBtn=isAdminView&&followup.taskId
+  ?'<button onclick="event.stopPropagation();openReassignStarTask(\''+followup.taskId+'\')" style="background:#374151;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer">↪️ Reassign</button>'
+  :'';
+const assignedLabel=isAdminView&&followup.assignedUserName
+  ?'<div style="font-size:10px;color:var(--t3);margin-bottom:4px">Assigned to: <b>'+escHtml(followup.assignedUserName)+'</b></div>'
+  :'';
+return assignedLabel+'<div style="display:flex;gap:6px;flex-wrap:wrap">'
++'<button onclick="event.stopPropagation();waStarFollowupMsg(\''+followup.custId+'\')" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer">📲 Send WA</button>'
++brkBtns
++'<button onclick="event.stopPropagation();openStarOutcomePicker(\''+followup.custId+'\',\''+followup.taskId+'\')" style="background:#059669;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer">📞 Mark Contacted</button>'
++'<button onclick="event.stopPropagation();openStarSnoozePicker(\''+followup.custId+'\',\''+followup.taskId+'\',\''+( followup.grade||'C')+'\')" style="background:#6B7280;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer">💤 Snooze</button>'
++reassignBtn
++'</div>';
+})()
++'</div>';
+}
+/* ── WA: build star follow-up message with SKU details ──────────── */
+function buildStarWaMsgForCust(c,role){
+const grade=c.starGrade||getStarGrade(c.id)||'';
+const gradeLabel=grade?'['+grade+'] ':'';
+const refDate=getStarRefDate(c.id);
+const todayD=new Date(today()+'T00:00:00');
+const refD=new Date(refDate+'T00:00:00');
+const daysSince=Math.max(0,Math.floor((todayD-refD)/86400000));
+const lastOrd=(STATE.orders||[]).filter(o=>!o._deleted&&o.custId===c.id&&o.status!=='cancelled').sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];
+const lastBill=(STATE.bills||[]).filter(b=>!b._deleted&&b.custId===c.id&&b.status!=='cancelled').sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];
+let lines='⭐ '+gradeLabel+c.name+' — '+daysSince+' days';
+if(lastOrd){
+  const items=(lastOrd.items||[]);
+  const itemLines=items.slice(0,4).map(i=>'• '+(i.itemName||'')+(i.range?' / '+i.range:'')+' — '+fmtN(i.pcs||0)+' sarees').join('\n');
+  const totalPcs=items.reduce((s,i)=>s+(i.pcs||0),0);
+  const totalAmt=lastOrd.grandTotal||lastOrd.netTaxable||(items.reduce((s,i)=>s+(i.amount||0),0));
+  lines+='\nLast Order ('+fmtDate(lastOrd.date)+'):\n'+itemLines+'\nTotal: '+fmtN(totalPcs)+' sarees · ₹'+fmtN(totalAmt);
+  if(lastBill&&lastBill.date!==lastOrd.date){
+    const billPcs=(lastBill.items||[]).reduce((s,i)=>s+(i.pcs||0),0);
+    lines+='\nLast Dispatch: '+fmtDate(lastBill.date)+' · '+fmtN(billPcs)+' sarees dispatched';
+  }
+}else{lines+='\nLast: No orders yet (new star customer)';}
+return lines;
+}
+function waStarFollowupMsg(custId){
+/* Send WA message about a single star customer to their salesman or the admin */
+const c=STATE.customers.find(x=>x.id===custId); if(!c) return;
+const co=STATE.settings.companyName||'ALT Stock';
+const lines=buildStarWaMsgForCust(c,'salesman');
+const msg=lines+'\n\n— '+co;
+const phone=c.whatsapp||c.phone||STATE.settings.adminWhatsApp||'';
+if(!phone){toast('No WhatsApp number for salesman','er');return;}
+openWA(phone,msg);
+}
+function waStarBrokerSingle(custId){
+/* Send WA to the broker about a single star customer (salesman action) */
+const c=STATE.customers.find(x=>x.id===custId); if(!c) return;
+const brkId=c.defaultBrokerId; if(!brkId){toast('No broker linked to this customer','er');return;}
+const brk=STATE.brokers.find(x=>x.id===brkId); if(!brk){toast('Broker not found','er');return;}
+const phone=brk.whatsapp||brk.phone||'';
+if(!phone){toast('No WhatsApp number saved for broker '+brk.name,'er');return;}
+const co=STATE.settings.companyName||'ALT Stock';
+const custLines=buildStarWaMsgForCust(c,'broker');
+const msg=brk.name+' bhai,\n\n'+custLines+'\n\nKindly follow up and confirm the order.\n\n— '+co;
+openWA(phone,msg);
+}
+function waStarBrokerCompiled(custId,btnId){
+/* Send ONE compiled WA to the broker with ALL their overdue star customers */
+const c=STATE.customers.find(x=>x.id===custId); if(!c) return;
+const brkId=c.defaultBrokerId; if(!brkId){toast('No broker linked to this customer','er');return;}
+const brk=STATE.brokers.find(x=>x.id===brkId); if(!brk){toast('Broker not found','er');return;}
+const phone=brk.whatsapp||brk.phone||'';
+if(!phone){toast('No WhatsApp number saved for broker '+brk.name,'er');return;}
+const co=STATE.settings.companyName||'ALT Stock';
+/* Collect ALL overdue star customers for this broker (snoozed or not — it's a compiled reminder) */
+const all=getStarFollowups().filter(r=>r.overdue&&!r.isSnoozed);
+const brkCustomers=all.filter(r=>{
+  const cx=STATE.customers.find(x=>x.id===r.custId);
+  return cx&&cx.defaultBrokerId===brkId;
+});
+if(!brkCustomers.length){
+  /* Fallback: just this customer */
+  brkCustomers.push({custId,custName:c.name});
+}
+const customerLines=brkCustomers.map(r=>{
+  const cx=STATE.customers.find(x=>x.id===r.custId);
+  return cx?buildStarWaMsgForCust(cx,'broker'):'⭐ '+r.custName+' — overdue';
+}).join('\n\n───────────────\n\n');
+const msg=brk.name+' bhai,\n\nPending star follow-ups ('+brkCustomers.length+' part'+(brkCustomers.length>1?'ies':'y')+') 📋\n\n'+customerLines+'\n\nKindly follow up on all parties and confirm orders.\n\n— '+co;
+/* Mark button as sent */
+if(btnId){const b=document.getElementById(btnId);if(b){b.innerHTML='✅ Sent to '+brk.name;b.disabled=true;b.style.background='#D1FAE5';b.style.color='#059669';}}
+openWA(phone,msg);
 }
 function goToStarReport(){
 setNav('reports');
@@ -13370,8 +14007,47 @@ html+=
 '</div>';
 }
 }
+/* ── Star Follow-up Dashboard Widget ─── */
+let starDashHtml='';
+try{
+const starOverdue=getStarFollowups().filter(r=>r.overdue&&!r.isSnoozed);
+if(starOverdue.length){
+const isAdmin=STATE.user?.role==='admin';
+const escalatedCount=(STATE.customers||[]).filter(c=>!c._deleted&&c.isStar&&c.starEscalated).length;
+starDashHtml='<div onclick="setNav(\'tasks\');setTimeout(()=>{taskTab(\'my\',el(\'ttab-my\'));},100)" style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:2px solid #F59E0B;border-radius:12px;margin:0 16px 10px;padding:12px 14px;cursor:pointer">'
++'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
++'<div style="font-size:22px">⭐</div>'
++'<div style="flex:1">'
++'<div style="font-size:13px;font-weight:900;color:#92400E">Star Follow-ups Due — '+starOverdue.length+' customer'+(starOverdue.length!==1?'s':'')+' overdue</div>'
++(escalatedCount?'<div style="font-size:11px;color:#DC2626;font-weight:700;margin-top:1px">⬆️ '+escalatedCount+' escalated — needs admin action</div>':'')
++'<div style="font-size:10px;color:#B45309;margin-top:2px">Tap to view tasks → follow up from My Tasks</div>'
++'</div>'
++'<div style="font-size:18px;color:#D97706">›</div>'
++'</div>'
++'<div style="display:flex;gap:6px;flex-wrap:wrap">'
++'<button onclick="event.stopPropagation();waStarSalesmenReminders()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:800;cursor:pointer">📲 WA All Salesmen</button>'
++'<button onclick="event.stopPropagation();waStarBrokerReminders()" style="background:#059669;color:white;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:800;cursor:pointer">📲 WA All Brokers</button>'
++'</div>'
++'</div>';
+}
+/* Grade suggestions alert (admin only) */
+if(STATE.user?.role==='admin'){
+const suggestions=getStarGradeSuggestions();
+if(suggestions.length){
+starDashHtml+='<div style="background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:10px;margin:0 16px 10px;padding:10px 14px">'
++'<div style="font-size:11px;font-weight:800;color:#166534;margin-bottom:4px">⭐ '+suggestions.length+' Star Customer Grade Suggestion'+(suggestions.length!==1?'s':'')+' Pending</div>'
++'<div style="font-size:11px;color:#15803D;margin-bottom:6px">12-month billing suggests a grade change for these customers:</div>'
++suggestions.slice(0,2).map(s_=>'<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:12px">'
++'<b>'+escHtml(s_.custName)+'</b><span style="color:var(--t3)">'+s_.manualGrade+' → </span><b style="color:#059669">'+s_.autoGrade+'</b>'
++'<button onclick="event.stopPropagation();confirmStarGrade(\''+s_.custId+'\',\''+s_.autoGrade+'\')" style="margin-left:auto;background:#059669;color:white;border:none;border-radius:5px;padding:2px 8px;font-size:10px;font-weight:800;cursor:pointer">Apply</button>'
++'</div>').join('')
++(suggestions.length>2?'<div style="font-size:10px;color:var(--t3)">+'+( suggestions.length-2)+' more — go to Settings › Star Grading</div>':'')
++'</div>';
+}
+}
+}catch(e){}
 if(!html) html='';
-c.innerHTML=fyAlertHtml+html;
+c.innerHTML=fyAlertHtml+starDashHtml+html;
 }
 function showStockAlertDialog(type){
 const isOut=type==='out';
@@ -15916,7 +16592,87 @@ return;
 }
 const pending=tasks.filter(t=>t.status==='Pending');
 const done=tasks.filter(t=>t.status==='Done');
-let html=
+/* ── Star Follow-up Section ── inject at very top ──────────────── */
+let starHtml='';
+try{
+const today_s=today();
+const myId=STATE.user?.id;
+const isAdmin=STATE.user?.role==='admin';
+/* Auto-generate star tasks if due */
+try{checkAndCreateStarFollowupTasks();}catch(e){}
+/* Collect pending star tasks for this user */
+const starTasks=(STATE.taskInstances||[]).filter(t=>!t._deleted&&t.type==='star-followup'&&t.status==='Pending'&&(isAdmin||t.assignedUserId===myId));
+if(starTasks.length){
+/* Enrich with customer + followup data */
+const sfItems=starTasks.map(task=>{
+  const c=STATE.customers.find(x=>x.id===task.starCustId);
+  const lastOrd=c?(STATE.orders||[]).filter(o=>!o._deleted&&o.custId===c.id&&o.status!=='cancelled').sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0]:null;
+  const lastBill=c?(STATE.bills||[]).filter(b=>!b._deleted&&b.custId===c.id&&b.status!=='cancelled').sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0]:null;
+  return {taskId:task.id,custId:task.starCustId,custName:task.starCustName||c?.name||'',grade:task.starGrade||c?.starGrade||'',daysSince:task.starDaysOverdue!=null?task.starDaysOverdue+(getStarThresholdDays(task.starGrade||'C')):0,threshold:getStarThresholdDays(task.starGrade||'C'),cycleCount:task.starCycleCount||1,lastOrder:lastOrd,lastBill,phone:c?.whatsapp||c?.phone||'',assignedUserName:task.assignedUserName||''};
+}).sort((a,b)=>{const go={A:0,B:1,C:2};return (go[a.grade]??3)-(go[b.grade]??3)||(b.daysSince-a.daysSince);});
+/* Build "WA Broker" compiled message for this salesman's broker mix */
+starHtml='<div style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:2px solid #F59E0B;border-radius:12px;padding:12px 14px;margin-bottom:14px">'
++'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap">'
++'<div style="font-size:12px;font-weight:900;color:#92400E;text-transform:uppercase;letter-spacing:.5px;padding-top:2px">⭐ Star Follow-ups Due ('+sfItems.length+')</div>'
++'<div style="display:flex;gap:5px;flex-wrap:wrap">'
++(isAdmin?'<button onclick="waStarSalesmenReminders()" style="background:#25D366;color:white;border:none;border-radius:7px;padding:5px 10px;font-size:10px;font-weight:800;cursor:pointer">📲 WA All Salesmen</button>':'')
++'<button onclick="waStarBrokerReminders()" style="background:#7C3AED;color:white;border:none;border-radius:7px;padding:5px 10px;font-size:10px;font-weight:800;cursor:pointer">📲 WhatsApp Broker</button>'
++'</div></div>'
++sfItems.map(f=>starFollowupCard(f)).join('')
++'</div>';
+}
+/* Grade suggestion alerts (admin only) */
+if(isAdmin){
+try{
+const suggestions=getStarGradeSuggestions();
+if(suggestions.length){
+starHtml+='<div style="background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:10px;padding:10px 12px;margin-bottom:12px">'
++'<div style="font-size:11px;font-weight:800;color:#DC2626;margin-bottom:6px">⭐ Grade Change Suggestions ('+suggestions.length+')</div>'
++suggestions.slice(0,3).map(sg_=>'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:12px">'
++'<span style="font-weight:700">'+escHtml(sg_.custName)+'</span>'
++'<span style="color:var(--t3)">Current: '+sg_.manualGrade+'</span>'
++'<span style="color:#059669;font-weight:700">→ Suggested: '+sg_.autoGrade+'</span>'
++'<button onclick="confirmStarGrade(\''+sg_.custId+'\',\''+sg_.autoGrade+'\')" style="margin-left:auto;background:#059669;color:white;border:none;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:800;cursor:pointer">Apply</button>'
++'</div>').join('')
++(suggestions.length>3?'<div style="font-size:10px;color:var(--t3)">+'+( suggestions.length-3)+' more…</div>':'')
++'</div>';
+}
+/* Paused star customers — admin can resume */
+const paused=(STATE.customers||[]).filter(c=>!c._deleted&&c.isStar&&c.starPaused);
+if(paused.length){
+starHtml+='<div style="background:#F3F4F6;border:1.5px solid #9CA3AF;border-radius:10px;padding:10px 12px;margin-bottom:12px">'
++'<div style="font-size:11px;font-weight:800;color:#374151;margin-bottom:4px">⏸ Paused Follow-ups ('+paused.length+') — auto-resumes on next order or dispatch</div>'
++'<div style="font-size:10px;color:var(--t3);margin-bottom:8px">No action needed — system will restart their cycle automatically once an order or bill is saved.</div>'
++paused.slice(0,4).map(c_=>'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap">'
++'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700">'+escHtml(c_.name)+'</div>'
++(c_.starPausedDate?'<div style="font-size:10px;color:var(--t3)">Paused '+fmtDate(c_.starPausedDate)+'</div>':'')
++'</div>'
++'<button onclick="adminStarAction(\''+c_.id+'\',\'resume\')" style="background:#059669;color:white;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:800;cursor:pointer">▶️ Resume</button>'
++'</div>').join('')
++(paused.length>4?'<div style="font-size:10px;color:var(--t3)">+'+( paused.length-4)+' more paused</div>':'')
++'</div>';
+}
+/* Escalation alerts for admin (cycle ≥ 3 without order) */
+const escalated=(STATE.customers||[]).filter(c=>!c._deleted&&c.isStar&&c.starEscalated);
+if(escalated.length){
+starHtml+='<div style="background:#FFF7ED;border:2px solid #F97316;border-radius:10px;padding:10px 12px;margin-bottom:12px">'
++'<div style="font-size:11px;font-weight:800;color:#C2410C;margin-bottom:6px">⬆️ Escalated — Admin Action Needed ('+escalated.length+')</div>'
++escalated.slice(0,4).map(c_=>'<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;flex-wrap:wrap">'
++'<div style="flex:1;min-width:0">'
++'<div style="font-size:12px;font-weight:800">'+escHtml(c_.name)+'</div>'
++'<div style="font-size:10px;color:var(--t3)">Escalated by '+escHtml(c_.starEscalatedBy||'salesman')+' · '+fmtDate(c_.starEscalatedDate||'')+'</div>'
++'</div>'
++'<div style="display:flex;gap:4px;flex-wrap:wrap">'
++'<button onclick="adminStarAction(\''+c_.id+'\',\'pause\')" title="Pause follow-ups until the next order or dispatch arrives — system auto-resumes then. Task closed now." style="background:#6B7280;color:white;border:none;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">⏸ Pause (until next order)</button>'
++'<button onclick="adminStarAction(\''+c_.id+'\',\'downgrade\')" title="Keep in Star system but lower their grade (A→B or B→C)" style="background:#7C3AED;color:white;border:none;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">⬇️ Downgrade</button>'
++'<button onclick="adminStarAction(\''+c_.id+'\',\'remove\')" title="Remove from Star system entirely. Task will be auto-closed." style="background:#DC2626;color:white;border:none;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">❌ Remove from Stars</button>'
++'</div></div>').join('')
++'</div>';
+}
+}catch(e){}
+}
+}catch(e){}
+let html=starHtml+
 '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">'+
 '<div class="card" style="text-align:center;padding:10px">'+
 '<div style="font-size:20px;font-weight:900;color:var(--P)">'+todayTasks.length+'</div>'+
