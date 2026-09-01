@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.40.89';
+const APP_VERSION='1.40.90';
 const APP_BUILD_DATE='2026-09-01';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -13261,24 +13261,72 @@ function openStarCustomersManager(){
   const stars=(STATE.customers||[]).filter(c=>!c._deleted&&c.isStar).sort((a,b)=>(a.name||'').localeCompare(b.name||''));
   if(!stars.length){toast('No star customers yet','ok');return;}
   const html=
-    '<div style="font-size:12px;color:var(--t2);padding:10px 14px;background:var(--s2);line-height:1.6">'
+    '<div style="padding:10px 14px;background:var(--s2);border-bottom:1px solid var(--br)">'
+    +'<div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:8px">'
     +'<b>Uncheck</b> customers below to remove them from ⭐ Star, then tap <b>Apply Changes</b>. Checked ones stay starred.'
     +'</div>'
+    +'<input id="star-mgr-search" type="text" placeholder="🔍 Search customers…" oninput="filterStarMgr()" '
+    +'style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-size:13px;background:var(--bg);color:var(--tx);outline:none;margin-bottom:8px"/>'
+    +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none">'
+    +'<input type="checkbox" id="star-mgr-select-all" onchange="toggleAllStarMgr(this.checked)" '
+    +'style="width:18px;height:18px;accent-color:#F59E0B;cursor:pointer" checked/>'
+    +'<span style="font-size:12px;font-weight:700;color:var(--t2)">Select All / Deselect All</span>'
+    +'<span id="star-mgr-count" style="font-size:11px;color:var(--t3);margin-left:auto">'+stars.length+' customers</span>'
+    +'</label>'
+    +'</div>'
+    +'<div id="star-mgr-list">'
     +stars.map(c=>{
       const smName=c.starSalesmanId?(STATE.users.find(u=>u.id===c.starSalesmanId)?.name||''):'';
       const sub=[c.market?'📍 '+c.market:'',smName?'👤 '+smName:''].filter(Boolean).join(' · ');
-      return '<label style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--br);cursor:pointer;background:var(--bg)">'
-        +'<input type="checkbox" data-star-id="'+c.id+'" checked style="width:20px;height:20px;accent-color:#F59E0B;cursor:pointer;flex-shrink:0"/>'
+      const searchKey=(c.name||'').toLowerCase()+(c.market||'').toLowerCase()+smName.toLowerCase();
+      return '<label data-search="'+escHtml(searchKey)+'" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--br);cursor:pointer;background:var(--bg)">'
+        +'<input type="checkbox" data-star-id="'+c.id+'" checked onchange="updateStarMgrSelectAll()" style="width:20px;height:20px;accent-color:#F59E0B;cursor:pointer;flex-shrink:0"/>'
         +'<div style="flex:1;min-width:0">'
         +'<div style="font-size:14px;font-weight:700;color:var(--tx)">⭐ '+escHtml(c.name)+'</div>'
         +(sub?'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+escHtml(sub)+'</div>':'')
         +'</div></label>';
-    }).join('');
+    }).join('')
+    +'</div>';
   const b=el('star-mgr-body'); if(b) b.innerHTML=html;
   showMod('m-star-mgr');
 }
+function filterStarMgr(){
+  const q=(el('star-mgr-search')?.value||'').toLowerCase().trim();
+  const labels=(el('star-mgr-list')||{}).querySelectorAll('label[data-search]')||[];
+  let visible=0;
+  labels.forEach(lbl=>{
+    const match=!q||lbl.dataset.search.includes(q);
+    lbl.style.display=match?'':'none';
+    if(match) visible++;
+  });
+  const cnt=el('star-mgr-count'); if(cnt) cnt.textContent=visible+' customer'+(visible!==1?'s':'');
+  updateStarMgrSelectAll();
+}
+function toggleAllStarMgr(checked){
+  const labels=(el('star-mgr-list')||{}).querySelectorAll('label[data-search]')||[];
+  labels.forEach(lbl=>{
+    if(lbl.style.display!=='none'){
+      const chk=lbl.querySelector('input[data-star-id]');
+      if(chk) chk.checked=checked;
+    }
+  });
+}
+function updateStarMgrSelectAll(){
+  const labels=(el('star-mgr-list')||{}).querySelectorAll('label[data-search]')||[];
+  let total=0,checked=0;
+  labels.forEach(lbl=>{
+    if(lbl.style.display!=='none'){
+      total++;
+      const chk=lbl.querySelector('input[data-star-id]');
+      if(chk&&chk.checked) checked++;
+    }
+  });
+  const sa=el('star-mgr-select-all');
+  if(sa){sa.checked=total>0&&checked===total;sa.indeterminate=checked>0&&checked<total;}
+}
 function saveStarMgrChanges(){
-  const boxes=(el('star-mgr-body')||{}).querySelectorAll('input[data-star-id]');
+  const listEl=el('star-mgr-list')||el('star-mgr-body');
+  const boxes=(listEl||{}).querySelectorAll('input[data-star-id]');
   if(!boxes||!boxes.length){hideMod('m-star-mgr');return;}
   let changed=0;
   boxes.forEach(chk=>{
