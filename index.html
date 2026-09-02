@@ -68,7 +68,7 @@
 </div></div>
 <div class="ov" id="m-prd" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Product</h3><button class="btn bgh bsm" onclick="hideMod('m-prd')">✕</button></div></div><div class="shb"><input type="hidden" id="prd-id"/><div class="fg"><label>Name *</label><input class="inp" id="prd-name"/></div><div class="fg"><label>Description</label><textarea class="ta" id="prd-desc" rows="2"></textarea></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-prd')">Cancel</button><button class="btn bp bfl" onclick="savePrd()">Save</button></div>
 </div></div>
-<div class="ov" id="m-usr" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="usr-title">User Account</h3><p class="sub" id="usr-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-usr')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="usr-id"/><div class="ir2"><div class="fg"><label>Full Name *</label><input class="inp" id="usr-name"/></div><div class="fg"><label>Username *</label><input class="inp" id="usr-un" placeholder="e.g. ramesh"/></div></div><div class="ir2"><div class="fg"><label>Password</label><input class="inp" type="password" id="usr-pw" placeholder="Leave blank to keep"/></div><div class="fg"><label>Status</label><select class="sel" id="usr-act"><option value="1">Active</option><option value="0">Disabled</option></select></div></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="usr-wa" type="tel"/></div><div class="fg"><label>Order Prefix</label><input class="inp" id="usr-pfx" placeholder="B/"/></div></div><div class="fg"><label>Staff Type</label><div class="fi"><select class="sel" id="usr-stype" onchange="onStaffTypeChange()"><option value="">Select type...</option><option value="admin">Admin</option></select><button class="ai" onclick="openStaffTypeMgr()">+ Type</button></div></div><div class="fg"><label>System Role</label><select class="sel" id="usr-role"><option value="staff">Staff</option><option value="admin">Admin (full access)</option></select></div><div class="fg" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--Pl);border-radius:10px;margin-top:4px"><input type="checkbox" id="usr-show-in-lead-assign" style="width:18px;height:18px;cursor:pointer"/><label for="usr-show-in-lead-assign" style="font-size:13px;font-weight:600;color:var(--t1);cursor:pointer">Show in &#34;Assign to Salesman&#34; dropdown when creating leads</label></div><div class="mt8"><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Permissions</div><div id="usr-perms" style="background:var(--bg);border-radius:12px;padding:12px;border:1px solid var(--br)"></div></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-usr')">Cancel</button><button class="btn bp bfl" onclick="saveUsr()">Save User</button></div>
+<div class="ov" id="m-usr" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="usr-title">User Account</h3><p class="sub" id="usr-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-usr')">&#x2715;</button></div></div><div class="shb"><input type="hidden" id="usr-id"/><div class="ir2"><div class="fg"><label>Full Name *</label><input class="inp" id="usr-name"/></div><div class="fg"><label>Username *</label><input class="inp" id="usr-un" placeholder="e.g. ramesh"/></div></div><div class="ir2"><div class="fg"><label>Password</label><input class="inp" type="password" id="usr-pw" placeholder="Leave blank to keep"/></div><div class="fg"><label>Status</label><select class="sel" id="usr-act"><option value="1">Active</option><option value="0">Disabled</option></select></div></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="usr-wa" type="tel"/></div><div class="fg"><label>Order Prefix</label><input class="inp" id="usr-pfx" placeholder="B/"/></div></div><div class="fg"><label>Staff Type</label><div class="fi"><select class="sel" id="usr-stype" onchange="onStaffTypeChange()"><option value="">Select type...</option><option value="admin">Admin</option></select><button class="ai" onclick="openStaffTypeMgr()">+ Type</button></div></div><div class="fg"><label>System Role</label><select class="sel" id="usr-role"><option value="staff">Staff</option><option value="admin">Admin (full access)</option></select></div><div class="fg" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--Pl);border-radius:10px;margin-top:4px"><input type="checkbox" id="usr-show-in-lead-assign" style="width:18px;height:18px;cursor:pointer"/><label for="usr-show-in-lead-assign" style="font-size:13px;font-weight:600;color:var(--t1);cursor:pointer">Show in &#34;Assign to Salesman&#34; dropdown when creating leads</label></div><div class="fg" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--Pl);border-radius:10px;margin-top:4px"><input type="checkbox" id="usr-show-invoices" style="width:18px;height:18px;cursor:pointer"/><label for="usr-show-invoices" style="font-size:13px;font-weight:600;color:var(--t1);cursor:pointer">Can view Invoices / Bills tab</label></div><div class="mt8"><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Permissions</div><div id="usr-perms" style="background:var(--bg);border-radius:12px;padding:12px;border:1px solid var(--br)"></div></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-usr')">Cancel</button><button class="btn bp bfl" onclick="saveUsr()">Save User</button></div>
 </div></div>
 <div class="ov" id="m-stafftype" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Staff Types</h3><p class="sub">Define roles &amp; permissions</p></div><button class="btn bgh bsm" onclick="hideMod('m-stafftype')">&#x2715;</button></div></div><div class="shb"><div id="stafftype-list"></div><div class="dvd"></div><div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:10px">&#x2795; New Staff Type</div><div class="ir2"><div class="fg"><label>Type Name *</label><input class="inp" id="st-name" placeholder="e.g. Store Keeper"/></div><div class="fg"><label>Colour</label><input type="color" id="st-color" value="#4F46E5" style="width:100%;height:42px;border-radius:10px;border:1.5px solid var(--br);cursor:pointer;padding:3px"/></div></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;margin-top:4px">Default Permissions for this Type</div><div id="st-perms" style="background:var(--bg);border-radius:12px;padding:12px;border:1px solid var(--br)"></div><button class="btn bp bfl mt12" onclick="addStaffType()">Add Staff Type</button></div>
 </div></div>
@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.41.4';
+const APP_VERSION='1.41.9';
 const APP_BUILD_DATE='2026-09-01';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -928,6 +928,7 @@ if(!STATE.settings.currentFY){
   lsSave('vs_settings',STATE.settings);
 }
 setNav('dash');
+applySalesTabVisibility();
 renderSettingsForm();
 renderDBSetup();
 if(FIREBASE_URL)initFirebaseListener();
@@ -1140,7 +1141,7 @@ const nb=el('nb-'+tab); if(nb) nb.classList.add('on');
 const sc=el('s-'+tab); if(sc){sc.classList.add('on');sc.scrollTop=0;}
 if(tab==='dash') renderDash();
 if(tab==='masters'){requestAnimationFrame(()=>{renderItems();renderCusts();renderBrks();renderSups();renderPrds();renderCustGroups();});}
-if(tab==='sales'){requestAnimationFrame(()=>{renderOrders();renderBills();});}
+if(tab==='sales'){applySalesTabVisibility();requestAnimationFrame(()=>{renderOrders();renderBills();});}
 if(tab==='jw') renderJWLists();
 if(tab==='inward') renderInRec(); requestAnimationFrame(renderExchangeList);
 if(tab==='admin'){
@@ -6223,13 +6224,11 @@ const c=el('ordlst'); if(!c) return;
 if(q===undefined){const se=el('ord-search'); q=se?se.value:'';}
 const ql=(q||'').toLowerCase();
 const isAdminOrCRE=_isAdminOrCRE();
-const _myPfx=(STATE.user?.orderPrefix||'').trim();
-const _orderBelongsToMe=o=>o.salesmanId===STATE.user?.id||(!o.salesmanId&&_myPfx&&(o.orderNo||'').startsWith(_myPfx));
-refreshFltOptions('ord',STATE.orders.filter(o=>!o._deleted&&(o.status==='pending'||o.status==='billed')&&(isAdminOrCRE||_orderBelongsToMe(o))));
+refreshFltOptions('ord',STATE.orders.filter(o=>!o._deleted&&(o.status==='pending'||o.status==='billed')&&_orderBelongsToCurrentUser(o)));
 const _flt=readFlt('ord');
 const f=STATE.orders.filter(o=>{
   if(o._deleted||o.status==='deleted') return false;
-  if(!isAdminOrCRE&&!_orderBelongsToMe(o)) return false;
+  if(!_orderBelongsToCurrentUser(o)) return false;
   if(!orderPassesFlt(o,_flt)) return false;
   if(!q) return true;
   return (o.orderNo||'').toLowerCase().includes(ql)||
@@ -7708,11 +7707,11 @@ const c=el('billst')||el('billlst'); if(!c) return;
 if(q===undefined){const se=el('bil-search'); q=se?se.value:'';}
 refreshFltOptions('bil',liveBills().filter(b=>b.status!=='cancelled'&&b.payStatus!=='paid'));
 const _fltB=readFlt('bil');
-const isAdminOrCREb=_isAdminOrCRE();
 const _myPfxB=(STATE.user?.orderPrefix||'').trim();
-const _billBelongsToMe=b=>b.salesmanId===STATE.user?.id||(!b.salesmanId&&_myPfxB&&(b.ordNo||'').startsWith(_myPfxB));
+const _billBelongsToMe=b=>_isAdminOrCRE()||b.salesmanId===STATE.user?.id||(!b.salesmanId&&_myPfxB&&(b.ordNo||'').startsWith(_myPfxB));
 const f=liveBills().filter(b=>{
-  if(!isAdminOrCREb&&!_billBelongsToMe(b)) return false;
+  if(!_canViewInvoices()) return false;
+  if(!_billBelongsToMe(b)) return false;
   if(!billPassesFlt(b,_fltB)) return false;
   return !q||b.billNo.includes(q)||b.custName.toLowerCase().includes(q.toLowerCase());
 });
@@ -8657,6 +8656,7 @@ el('usr-pw').value=''; el('usr-role').value=u.role||'staff';
 el('usr-wa').value=u.whatsapp||''; el('usr-pfx').value=u.orderPrefix||'';
 el('usr-act').value=u.active!==false?'1':'0';
 if(el('usr-show-in-lead-assign')) el('usr-show-in-lead-assign').checked=u.showInLeadAssign!==false;
+if(el('usr-show-invoices')) el('usr-show-invoices').checked=u.showInvoices!==false;
 el('usr-title').textContent='Edit User';
 refreshStaffTypeDropdown();
 if(u.staffTypeId&&el('usr-stype')) el('usr-stype').value=u.staffTypeId;
@@ -8682,6 +8682,7 @@ whatsapp:el('usr-wa').value.trim(), orderPrefix:el('usr-pfx').value.trim(),
 active:el('usr-act').value==='1',
 staffTypeId, staffTypeName:staffType?.name||'',
 showInLeadAssign:el('usr-show-in-lead-assign')?.checked!==false,
+showInvoices:el('usr-show-invoices')?.checked!==false,
 permissions:{...window._usrPerms}
 };
 if(pw) obj.password=pw;
@@ -10032,6 +10033,7 @@ el('usr-pw').value=''; el('usr-role').value='staff';
 el('usr-wa').value=''; el('usr-pfx').value='';
 el('usr-act').value='1'; el('usr-title').textContent='New User'; el('usr-sub').textContent='';
 if(el('usr-show-in-lead-assign')) el('usr-show-in-lead-assign').checked=true;
+if(el('usr-show-invoices')) el('usr-show-invoices').checked=true;
 refreshStaffTypeDropdown();
 window._usrPerms={...DEFAULT_PERMS};
 buildPermUI('usr-perms', window._usrPerms, p=>{ window._usrPerms=p; });
@@ -10053,6 +10055,8 @@ return {bySku,totalOrdered,totalBilled,totalRemaining:Math.max(0,totalOrdered-to
 }
 function showOrderDetail(id){
 const o=STATE.orders.find(x=>x.id===id); if(!o) return;
+/* Security: salesman can only view their own orders */
+if(!_orderBelongsToCurrentUser(o)){toast('You can only view your own orders','er');return;}
 const _fixPend=(o.type!=='open')?calcFixedOrderPending(o):null;
 const _gridCols=_fixPend?'1fr 44px 50px 64px 54px':'1fr 44px 50px 64px';
 const stBadge=o.status==='fulfilled'?'bg-g':o.status==='cancelled'?'bg-r':o.status==='billed'?'bg-t':'bg-a';
@@ -10238,15 +10242,17 @@ const foot=el('ord-det-foot');
 foot.innerHTML='';
 const mk=(cls,txt,fn)=>{const b=document.createElement('button');b.className='btn '+cls;b.innerHTML=txt;b.onclick=fn;return b;};
 foot.appendChild(mk('wa','&#x1F4F2; WhatsApp',()=>waOrd(o.id)));
-if(o.type==='open'&&o.status!=='cancelled'){
-  foot.appendChild(mk('bp bfl','&#x1F4CB; Programme Lot',()=>{hideMod('m-ord-det');openProgModal(o.id);}));
-  const pendingProgs=(o.programmes||[]).filter(p=>p.status!=='billed');
-  const pendingLotGroups=new Set(pendingProgs.map(p=>p.lotGroupId||p.id));
-  if(pendingLotGroups.size) foot.appendChild(mk('bs bfl','&#x1F9FE; Bill Lot ('+pendingLotGroups.size+')',()=>{hideMod('m-ord-det');openBillLotSelector(o.id);}));
-}else if(o.status!=='fulfilled'&&o.status!=='cancelled'){
-foot.appendChild(mk('bp bfl','&#x1F9FE; Dispatch Bill',()=>{hideMod('m-ord-det');openDispatch(o.id);}));
+if(_canViewInvoices()){
+  if(o.type==='open'&&o.status!=='cancelled'){
+    foot.appendChild(mk('bp bfl','&#x1F4CB; Programme Lot',()=>{hideMod('m-ord-det');openProgModal(o.id);}));
+    const pendingProgs=(o.programmes||[]).filter(p=>p.status!=='billed');
+    const pendingLotGroups=new Set(pendingProgs.map(p=>p.lotGroupId||p.id));
+    if(pendingLotGroups.size) foot.appendChild(mk('bs bfl','&#x1F9FE; Bill Lot ('+pendingLotGroups.size+')',()=>{hideMod('m-ord-det');openBillLotSelector(o.id);}));
+  }else if(o.status!=='fulfilled'&&o.status!=='cancelled'){
+    foot.appendChild(mk('bp bfl','&#x1F9FE; Dispatch Bill',()=>{hideMod('m-ord-det');openDispatch(o.id);}));
+  }
 }
-const ordBills=liveBills().filter(b=>b.ordId===o.id);
+const ordBills=_canViewInvoices()?liveBills().filter(b=>b.ordId===o.id):[];
 if(ordBills.length){
 let billHtml='<div class="fw7 sm" style="margin-top:14px;margin-bottom:8px">Bills on this Order</div>';
 ordBills.forEach(b=>{
@@ -11782,7 +11788,7 @@ if(fsmId&&cust.salesmanId!==fsmId) return;
 if(fmkt&&cust.market!==fmkt) return;
 if(!custMap[cid]) custMap[cid]={id:cid,name:cust.name,phone:cust.whatsapp||cust.phone||'',market:cust.market||'',salesmanId:cust.salesmanId||'',bills:0,orders:0,amount:0,lastBill:''};
 custMap[cid].bills++;
-custMap[cid].amount+=(b.totalAmount||b.total||0);
+custMap[cid].amount+=(b.grandTotal||b.totalAmount||b.total||0);
 if(d>custMap[cid].lastBill) custMap[cid].lastBill=d;
 });
 /* Also include completed orders (by order amount if no bill yet) */
@@ -11841,10 +11847,22 @@ const rank=i+1;
 const medalEmo=rank===1?'&#x1F947;':rank===2?'&#x1F948;':rank===3?'&#x1F949;':'';
 const pct=totalAmt>0?Math.round(r.amount/totalAmt*100):0;
 const smUser=r.salesmanId?STATE.users.find(u=>u.id===r.salesmanId):null;
-html+='<div style="border:1.5px solid var(--br);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--bg)">'+
+const cust=STATE.customers.find(x=>x.id===r.id);
+const isStar=cust?.isStar||false;
+const prevSnoozedAmount=cust?.starCandidateSnoozedAmount||0;
+/* Suggest star grade for this customer based on their billed amount */
+const sg=STATE.settings.starGrading||{};
+let suggestGrade='';
+if(!isStar&&isAdmin){
+  if(sg.thresholdA&&r.amount>=sg.thresholdA) suggestGrade='A';
+  else if(sg.thresholdB&&r.amount>=sg.thresholdB) suggestGrade='B';
+  else if(sg.thresholdC&&r.amount>=sg.thresholdC) suggestGrade='C';
+}
+html+='<div style="border:1.5px solid '+(suggestGrade?'#FCD34D':'var(--br)')+';border-radius:10px;padding:10px 12px;margin-bottom:8px;background:'+(suggestGrade?'#FFFDF0':'var(--bg)')+'">'+
 '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'+
 '<div style="flex:1;min-width:0">'+
 '<div style="font-size:13px;font-weight:800;color:var(--tx)">'+
+(isStar?'<span style="margin-right:3px">&#11088;</span>':'')+
 (medalEmo?'<span style="margin-right:4px">'+medalEmo+'</span>':
 '<span style="font-size:11px;font-weight:900;color:var(--t3);margin-right:4px">#'+rank+'</span>')+
 escHtml(r.name)+'</div>'+
@@ -11853,6 +11871,8 @@ escHtml(r.name)+'</div>'+
 '<div class="xs ct3" style="margin-top:3px">'+r.bills+' bill'+(r.bills!==1?'s':'')+(r.orders?' · '+r.orders+' order'+(r.orders!==1?'s':''):'')+
 (r.lastBill?' · Last: '+fmtDate(r.lastBill):'')+
 '</div>'+
+(suggestGrade?'<div style="font-size:10px;font-weight:700;color:#92400E;margin-top:4px">🌟 Qualifies for Star Grade '+suggestGrade+'</div>':'')+
+(suggestGrade&&prevSnoozedAmount&&r.amount>prevSnoozedAmount?'<div style="font-size:10px;font-weight:700;color:#059669;margin-top:2px">↑ ₹'+fmtN(Math.round(r.amount-prevSnoozedAmount))+' more since last dismissed (was ₹'+fmtN(prevSnoozedAmount)+')</div>':'')+
 '</div>'+
 '<div style="text-align:right;flex-shrink:0">'+
 '<div style="font-size:15px;font-weight:900;color:var(--P)">&#x20B9;'+fmtN(Math.round(r.amount))+'</div>'+
@@ -11862,7 +11882,11 @@ escHtml(r.name)+'</div>'+
 '<div style="background:var(--s2);border-radius:4px;height:5px;margin-top:8px">'+
 '<div style="height:5px;border-radius:4px;background:var(--P);width:'+pct+'%;transition:width .3s"></div>'+
 '</div>'+
-(r.phone?'<button class="wa" onclick="openWA(\''+r.phone+'\',\'\')" style="margin-top:8px;padding:4px 10px;font-size:11px">&#x1F4F2; WhatsApp</button>':'')+
+'<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">'+
+(r.phone?'<button class="wa" onclick="openWA(\''+r.phone+'\',\'\')" style="padding:4px 10px;font-size:11px">&#x1F4F2; WhatsApp</button>':'')+
+(suggestGrade&&isAdmin?'<button onclick="makeCustomerStar(\''+r.id+'\',\''+suggestGrade+'\')" style="background:#F59E0B;color:white;border:none;border-radius:8px;padding:4px 12px;font-size:11px;font-weight:800;cursor:pointer">&#11088; Make Star (Grade '+suggestGrade+')</button>':'')+
+(suggestGrade&&isAdmin?'<button onclick="snoozeStarCandidate(\''+r.id+'\','+r.amount+')" style="background:var(--s2);color:var(--t2);border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">&#x1F515; Not Now</button>':'')+
+'</div>'+
 '</div>';
 });
 c.innerHTML=html;
@@ -11895,6 +11919,32 @@ function _isAdminOrCRE(){
   const userSt=stypes.find(t=>t.id===u.staffTypeId);
   const stName=(userSt?.name||u.staffType||'').toLowerCase();
   return stName.includes('cre');
+}
+/* Can this user view the Invoices/Bills tab and bill details? */
+function _canViewInvoices(){
+  const u=STATE.user; if(!u) return false;
+  if(u.role==='admin') return true;
+  return u.showInvoices!==false;
+}
+/* Show/hide sales sub-tabs based on invoice permission */
+function applySalesTabVisibility(){
+  const canInv=_canViewInvoices();
+  /* "+ Invoice" tab and bills panel */
+  const invTab=document.querySelector('#s-sales .tbb[onclick*="newinv"]');
+  if(invTab) invTab.style.display=canInv?'':'none';
+  /* If current active tab is newinv and no permission, switch to orders */
+  const invPanel=el('tp-newinv');
+  if(!canInv&&invPanel&&invPanel.classList.contains('on')){
+    const ordBtn=document.querySelector('#s-sales .tbb[onclick*="\'ord\'"]');
+    if(ordBtn) ordBtn.click(); else salesTab('ord');
+  }
+}
+/* Does this order belong to the logged-in user? */
+function _orderBelongsToCurrentUser(o){
+  if(_isAdminOrCRE()) return true;
+  const myId=STATE.user?.id;
+  const myPfx=(STATE.user?.orderPrefix||'').trim();
+  return o.salesmanId===myId||(!o.salesmanId&&myPfx&&(o.orderNo||'').startsWith(myPfx));
 }
 
 /*********************************************************************
@@ -13818,6 +13868,53 @@ if(sg.thresholdB&&total>=sg.thresholdB) return 'B';
 if(sg.thresholdC&&total>=sg.thresholdC) return 'C';
 return null;
 }
+function getStarCandidates(){
+/* Returns non-star customers whose 12-month billing meets at least thresholdC — candidates to become star.
+   Skips customers snoozed (admin clicked "Not Now") until their snooze date passes. */
+const sg=STATE.settings.starGrading||{};
+const minThresh=sg.thresholdC||sg.thresholdB||sg.thresholdA;
+if(!minThresh) return []; // No thresholds configured — can't suggest
+const cutoff=new Date(); cutoff.setFullYear(cutoff.getFullYear()-1);
+const cutStr=cutoff.toISOString().slice(0,10);
+const todayStr=today();
+const candidates=[];
+(STATE.customers||[]).filter(c=>!c._deleted&&!c.isStar).forEach(c=>{
+  // Skip if snoozed
+  if(c.starCandidateSnoozedUntil&&c.starCandidateSnoozedUntil>todayStr) return;
+  const total=(STATE.bills||[]).filter(b=>!b._deleted&&b.custId===c.id&&b.status!=='cancelled'&&b.status!=='deleted'&&(b.date||'')>=cutStr)
+    .reduce((s,b)=>s+(b.grandTotal||b.total||0),0);
+  if(!total||total<minThresh) return;
+  let grade='C';
+  if(sg.thresholdA&&total>=sg.thresholdA) grade='A';
+  else if(sg.thresholdB&&total>=sg.thresholdB) grade='B';
+  candidates.push({custId:c.id,custName:c.name,grade,total,market:c.market||'',phone:c.whatsapp||c.phone||'',snoozedUntil:c.starCandidateSnoozedUntil||'',prevAmount:c.starCandidateSnoozedAmount||0});
+});
+candidates.sort((a,b)=>b.total-a.total);
+return candidates;
+}
+function makeCustomerStar(custId,grade){
+const c=STATE.customers.find(x=>x.id===custId); if(!c) return;
+c.isStar=true; c.starGrade=grade||'C'; c.starSince=new Date().toISOString();
+delete c.starCandidateSnoozedUntil; // clear any snooze
+c._ts=Date.now();
+lsSave('vs_customers',STATE.customers);
+try{autoSyncCloud();}catch(e){}
+toast('⭐ '+c.name+' is now a Star Customer (Grade '+c.starGrade+')','ok');
+try{renderDash();}catch(e){}
+try{renderTopCustomerReport();}catch(e){}
+}
+function snoozeStarCandidate(custId,currentAmount){
+const c=STATE.customers.find(x=>x.id===custId); if(!c) return;
+const snoozeDate=new Date(); snoozeDate.setDate(snoozeDate.getDate()+15);
+c.starCandidateSnoozedUntil=snoozeDate.toISOString().slice(0,10);
+if(currentAmount) c.starCandidateSnoozedAmount=Math.round(currentAmount);
+c._ts=Date.now();
+lsSave('vs_customers',STATE.customers);
+try{autoSyncCloud();}catch(e){}
+toast('Snoozed — will remind again on '+fmtDate(c.starCandidateSnoozedUntil),'ok');
+try{renderDash();}catch(e){}
+try{renderTopCustomerReport();}catch(e){}
+}
 function getStarGradeSuggestions(){
 /* Returns list of customers where auto-grade ≠ manual grade, suggesting admin review */
 const suggestions=[];
@@ -14546,6 +14643,27 @@ starDashHtml+='<div style="background:#F0FDF4;border:1.5px solid #86EFAC;border-
 +'<button onclick="event.stopPropagation();confirmStarGrade(\''+s_.custId+'\',\''+s_.autoGrade+'\')" style="margin-left:auto;background:#059669;color:white;border:none;border-radius:5px;padding:2px 8px;font-size:10px;font-weight:800;cursor:pointer">Apply</button>'
 +'</div>').join('')
 +(suggestions.length>2?'<div style="font-size:10px;color:var(--t3)">+'+( suggestions.length-2)+' more — go to Settings › Star Grading</div>':'')
++'</div>';
+}
+/* Star candidates alert — non-star customers crossing the billing threshold */
+const candidates=getStarCandidates();
+if(candidates.length){
+starDashHtml+='<div style="background:#FFFBEB;border:1.5px solid #FCD34D;border-radius:10px;margin:0 16px 10px;padding:10px 14px">'
++'<div style="font-size:11px;font-weight:800;color:#92400E;margin-bottom:4px">🌟 '+candidates.length+' Customer'+(candidates.length!==1?'s':'')+' Ready to Become Star</div>'
++'<div style="font-size:11px;color:#B45309;margin-bottom:6px">Their 12-month billing crossed your threshold. Make them Star to track follow-ups:</div>'
++candidates.slice(0,3).map(sc=>'<div style="border:1px solid #FCD34D;border-radius:8px;padding:7px 9px;margin-bottom:6px">'
++'<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'
++'<span style="font-size:10px;font-weight:900;background:'+(sc.grade==='A'?'#FEF3C7':sc.grade==='B'?'#EDE9FE':'#E0F2FE')+';color:'+(sc.grade==='A'?'#92400E':sc.grade==='B'?'#5B21B6':'#075985')+';padding:1px 6px;border-radius:4px;flex-shrink:0">Grade '+sc.grade+'</span>'
++'<b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">'+escHtml(sc.custName)+'</b>'
++'<span style="font-size:11px;font-weight:800;color:var(--t2);white-space:nowrap">₹'+fmtN(Math.round(sc.total))+'</span>'
++'</div>'
++(sc.prevAmount&&sc.total>sc.prevAmount?'<div style="font-size:10px;color:#059669;font-weight:700;margin-bottom:4px">↑ ₹'+fmtN(Math.round(sc.total-sc.prevAmount))+' more since you last dismissed (was ₹'+fmtN(sc.prevAmount)+')</div>':'')+
+'<div style="display:flex;gap:5px">'
++'<button onclick="event.stopPropagation();makeCustomerStar(\''+sc.custId+'\',\''+sc.grade+'\')" style="flex:1;background:#F59E0B;color:white;border:none;border-radius:6px;padding:4px 8px;font-size:10px;font-weight:800;cursor:pointer">⭐ Make Star</button>'
++'<button onclick="event.stopPropagation();snoozeStarCandidate(\''+sc.custId+'\','+sc.total+')" style="flex:1;background:var(--s2);color:var(--t2);border:none;border-radius:6px;padding:4px 8px;font-size:10px;font-weight:700;cursor:pointer">🔕 Not Now (15d)</button>'
++'</div>'
++'</div>').join('')
++(candidates.length>3?'<div style="font-size:10px;color:var(--t3);margin-top:2px">+'+( candidates.length-3)+' more — check Top Customers report</div>':'')
 +'</div>';
 }
 }
