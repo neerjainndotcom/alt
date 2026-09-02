@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.44.0';
+const APP_VERSION='1.44.2';
 const APP_BUILD_DATE='2026-09-01';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -6564,7 +6564,7 @@ function onProgLotRangeChange(id){
   ];
   const lc=lotColors[(lotIdx<0?0:lotIdx)%lotColors.length];
   const actualRng=rng==='__norange__'?'':rng;
-  const cols=(item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued);
+  const cols=(item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted);
   body.innerHTML='';
 
   /* Column header */
@@ -6615,7 +6615,7 @@ function progLotToggleAll(id){
   const itemId=el('pl-'+id+'-itm')?.value, rng=el('pl-'+id+'-rng')?.value;
   const item=STATE.items.find(i=>i.id===itemId); if(!item||!rng) return;
   const actualRng=rng==='__norange__'?'':rng;
-  (item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
+  (item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted).forEach(col=>{
     const colIdx=(item.colours||[]).indexOf(col);
     const chk=el('pl-'+id+'-ck-'+colIdx); if(!chk) return;
     chk.checked=allChk.checked; progLotClrToggle(id,colIdx,true);
@@ -6640,7 +6640,7 @@ function applyProgLotDefaults(id){
   const itemId=el('pl-'+id+'-itm')?.value, rng=el('pl-'+id+'-rng')?.value;
   const item=STATE.items.find(i=>i.id===itemId); if(!item||!rng) return;
   const actualRng=rng==='__norange__'?'':rng;
-  (item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
+  (item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted).forEach(col=>{
     const colIdx=(item.colours||[]).indexOf(col);
     const chk=el('pl-'+id+'-ck-'+colIdx); if(!chk?.checked) return;
     if(qp){const p=el('pl-'+id+'-p-'+colIdx); if(p) p.value=qp;}
@@ -6654,7 +6654,7 @@ function calcProgLot(id){
   const item=STATE.items.find(i=>i.id===itemId); if(!item||!rng) return;
   const actualRng=rng==='__norange__'?'':rng;
   const cut=parseFloat(el('pl-'+id+'-cut')?.value)||6;
-  (item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued).forEach(col=>{
+  (item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted).forEach(col=>{
     const colIdx=(item.colours||[]).indexOf(col);
     const chk=el('pl-'+id+'-ck-'+colIdx); if(!chk?.checked) return;
     const p=parseInt(el('pl-'+id+'-p-'+colIdx)?.value)||0;
@@ -6685,7 +6685,7 @@ async function saveProgramme(){
     const date=el('pl-'+lid+'-date')?.value||today();
     const remark=(el('pl-'+lid+'-rem')?.value||'').trim();
     const actualRng=rng==='__norange__'?'':rng;
-    const cols=(item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued);
+    const cols=(item.colours||[]).filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted);
     let anyChecked=false;
     cols.forEach(col=>{
       const colIdx=(item.colours||[]).indexOf(col);
@@ -7552,8 +7552,13 @@ if(editingBill){
   });
 }
 if(!bno){_savingBill=false;toast('Enter invoice number','er');return;}
-/* Duplicate number check — another device may have created same number simultaneously */
-if(STATE.bills.find(b=>b.billNo===bno&&b.id!==_editBillId&&!b._deleted)){bno=nextBillNo();}
+/* Duplicate number check — show error, do NOT silently rename */
+if(STATE.bills.find(b=>b.billNo===bno&&b.id!==_editBillId&&!b._deleted)){
+_savingBill=false;
+toast('Invoice number "'+bno+'" already exists — please use a different number','er');
+const bnf=el('bl-bno');if(bnf){bnf.style.border='2px solid #EF4444';bnf.focus();setTimeout(()=>{bnf.style.border='';},2500);}
+return;
+}
 if(!_billOrdId||_billLots.length>0){
 /* Standalone or programme bill — read from lot cards */
 for(const lot of _billLots){
@@ -10783,6 +10788,12 @@ calcDispTotal();
 }
 async function saveDispatchBill(){
 const billNo=(el('disp-billno')?.value||'').trim(); if(!billNo){toast('Enter bill number','er');return;}
+/* Duplicate number check — error rather than silently renaming */
+if(STATE.bills.find(b=>b.billNo===billNo&&!b._deleted)){
+toast('Invoice number "'+billNo+'" already exists — please use a different number','er');
+const bnf=el('disp-billno');if(bnf){bnf.style.border='2px solid #EF4444';bnf.focus();setTimeout(()=>{bnf.style.border='';},2500);}
+return;
+}
 const o=STATE.orders.find(x=>x.id===_dispOrdId); if(!o) return;
 /* Support billing to a different party from same group */
 const billToCustId=el('disp-bill-to')?.value||o.custId;
