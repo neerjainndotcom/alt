@@ -56,7 +56,7 @@
 <div class="ov" id="m-aclr" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="aclrtit">Add Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-aclr')">✕</button></div></div><div class="shb"><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="aclr-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('aclr-rows','aclr-cnt')"/></div><div id="aclr-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-aclr')">Cancel</button><button class="btn bp bfl" onclick="saveAddClrs()">Add Colours</button></div>
 </div></div>
 <div class="ov" id="m-edit-clr" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>✏️ Edit Colour / SKU</h3><p class="sub" id="edit-clr-range-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-edit-clr')">✕</button></div></div><div class="shb"><input type="hidden" id="ec-item-id"/><input type="hidden" id="ec-col-idx"/><div style="background:var(--Pl);border-radius:10px;padding:12px 14px;margin-bottom:16px"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Current SKU</div><div id="ec-old-sku" style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--Pd)"></div></div><div class="fg"><label>Colour Name *</label><input class="inp" id="ec-name" placeholder="e.g. DUSTY PINK" oninput="previewEditSKU()" style="text-transform:uppercase"/></div><div class="ir2"><div class="fg"><label>Colour Code *</label><input class="inp mono" id="ec-code" placeholder="e.g. DP01" oninput="previewEditSKU()" style="text-transform:uppercase"/></div><div class="fg"><label>Colour (Hex)</label><div style="display:flex;gap:8px;align-items:center"><input type="color" id="ec-hex" style="width:52px;height:44px;border-radius:8px;border:1.5px solid var(--br);cursor:pointer;padding:3px"/><span id="ec-hex-lbl" style="font-size:12px;font-weight:700;color:var(--t2)"></span></div></div></div><div style="background:var(--Gl);border-radius:10px;padding:12px 14px;margin-bottom:6px" id="ec-new-sku-wrap"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">New SKU Preview</div><div id="ec-new-sku" style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--Gd)"></div></div><div id="ec-entries-note" style="display:none;background:var(--Al);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--Ad);font-weight:600;margin-bottom:6px"></div></div><div class="shf" style="gap:6px"><button class="btn bgh bfl" onclick="hideMod('m-edit-clr')">Cancel</button><button class="btn bp bfl" onclick="saveEditClr()">Save Changes</button></div></div></div>
-<div class="ov" id="m-cst" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="csttit">New Customer</h3><button class="btn bgh bsm" onclick="hideMod('m-cst')">✕</button></div></div><div class="shb"><input type="hidden" id="cst-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="cst-name"/></div><div class="fg"><label>Phone</label><input class="inp" id="cst-ph" type="tel"/></div></div><div class="fg"><label>GSTIN</label><div class="fi"><input class="inp mono" id="cst-gst" placeholder="22AAAAA0000A1Z5" oninput="detCstState()"/><button class="ai" onclick="gstLkp()">🔍 Lookup</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px" id="cst-si">Enter GSTIN to detect state</div></div><div class="fg"><label>Address</label><textarea class="ta" id="cst-addr" rows="2"></textarea></div><div class="fg"><label>Market</label><div class="fi"><select class="sel" id="cst-market"><option value="">— No market —</option></select><button class="ai" onclick="createMarketFromCust()">+New</button></div></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="cst-wa" type="tel" placeholder="91XXXXXXXXXX"/></div><div class="fg"><label>Email</label><input class="inp" id="cst-em" type="email"/></div></div><div class="fg"><label>Party Group (for cross-billing)</label><div class="fi"><select class="sel" id="cst-grp-sel"><option value="">— No group —</option></select><button class="ai" onclick="createGroupFromCust()">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px">Customer will be added to this group for cross-billing.</div></div><div class="fg"><label>Default Broker (auto-fills in orders)</label><div class="fi"><select class="sel" id="cst-brk" style="border:1.5px solid var(--br)"><option value="">— No default broker —</option></select><button class="ai" onclick="openBrkFromCust()">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px">When selected here, broker auto-fills every time this customer is chosen in an order.</div></div><div class="fg"><label>Assigned Salesman</label><select class="sel" id="cst-sm" style="border:1.5px solid var(--br)"><option value="">— No assigned salesman —</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">When set, this salesman auto-fills whenever a lead is created for this customer — no need to reassign every time.</div></div><div class="dvd"></div><div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="cst-star" onchange="toggleCstStarFields()" style="width:18px;height:18px;accent-color:#F59E0B;cursor:pointer"/><span>&#11088; Star Customer</span></label><div style="font-size:11px;color:var(--t3);margin-top:4px">Track this customer's order gaps — they'll show up for follow-up if no order arrives within the set number of days.</div></div><div id="cst-star-fields" style="display:none;background:#FFFBEB;border:1.5px solid #FCD34D;border-radius:10px;padding:10px 12px;margin-bottom:14px"><div class="fg"><label>⭐ Grade</label><select class="sel" id="cst-star-grade"><option value="">— Ungraded (auto-calculated) —</option><option value="A">A — Top Value Customer</option><option value="B">B — Mid Range</option><option value="C">C — Regular Star</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">Set manually or leave blank — auto-suggested from 12-month billing total once data accumulates.</div></div><div class="fg mt8"><label>Assigned Salesman</label><select class="sel" id="cst-star-sm"><option value="">— No specific salesman —</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">This salesman will see this customer on their dashboard when follow-up is due.</div></div><div class="fg mt8"><label>Follow-up Days (override)</label><input class="inp mono" id="cst-star-days" type="number" min="1" step="1" placeholder="Use default"/></div></div><div class="dvd"></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Payment Terms (leave blank for global defaults)</div><div class="ir2"><div class="fg"><label>Discount %</label><input class="inp mono" id="cst-disc" type="number" step="0.1" placeholder="e.g. 5"/></div><div class="fg"><label>Discount Days</label><input class="inp mono" id="cst-dd" type="number" step="1" placeholder="e.g. 45"/></div></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="cst-nd" type="number" step="1" placeholder="e.g. 120"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-cst')">Cancel</button><button class="btn bp bfl" onclick="saveCust()">Save</button></div>
+<div class="ov" id="m-cst" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="csttit">New Customer</h3><button class="btn bgh bsm" onclick="hideMod('m-cst')">✕</button></div></div><div class="shb"><input type="hidden" id="cst-id"/><div class="ir2"><div class="fg"><label>Name *</label><input class="inp" id="cst-name"/></div><div class="fg"><label>Phone</label><input class="inp" id="cst-ph" type="tel"/></div></div><div class="fg"><label>GSTIN</label><div class="fi"><input class="inp mono" id="cst-gst" placeholder="22AAAAA0000A1Z5" oninput="detCstState()"/><button class="ai" onclick="gstLkp()">🔍 Lookup</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px" id="cst-si">Enter GSTIN to detect state</div></div><div class="fg"><label>Address</label><textarea class="ta" id="cst-addr" rows="2"></textarea></div><div class="fg"><label>Market</label><div class="fi"><select class="sel" id="cst-market"><option value="">— No market —</option></select><button class="ai" onclick="createMarketFromCust()">+New</button></div></div><div class="ir2"><div class="fg"><label>WhatsApp</label><input class="inp" id="cst-wa" type="tel" placeholder="91XXXXXXXXXX"/></div><div class="fg"><label>Email</label><input class="inp" id="cst-em" type="email"/></div></div><div class="fg"><label>Party Group (for cross-billing)</label><div class="fi"><select class="sel" id="cst-grp-sel"><option value="">— No group —</option></select><button class="ai" onclick="createGroupFromCust()">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px">Customer will be added to this group for cross-billing.</div></div><div class="fg"><label>Default Broker (auto-fills in orders)</label><div class="fi"><select class="sel" id="cst-brk" style="border:1.5px solid var(--br)"><option value="">— No default broker —</option></select><button class="ai" onclick="openBrkFromCust()">+New</button></div><div style="font-size:11px;color:var(--t3);margin-top:4px">When selected here, broker auto-fills every time this customer is chosen in an order.</div></div><div class="fg"><label>Assigned Salesman</label><select class="sel" id="cst-sm" style="border:1.5px solid var(--br)"><option value="">— No assigned salesman —</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">When set, this salesman auto-fills whenever a lead is created for this customer — no need to reassign every time.</div></div><div class="dvd"></div><div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="cst-star" onchange="toggleCstStarFields()" style="width:18px;height:18px;accent-color:#F59E0B;cursor:pointer"/><span>&#11088; Star Customer</span></label><div style="font-size:11px;color:var(--t3);margin-top:4px">Track this customer's order gaps — they'll show up for follow-up if no order arrives within the set number of days.</div></div><div id="cst-star-fields" style="display:none;background:#FFFBEB;border:1.5px solid #FCD34D;border-radius:10px;padding:10px 12px;margin-bottom:14px"><div class="fg"><label>⭐ Grade</label><select class="sel" id="cst-star-grade"><option value="">— Ungraded (auto-calculated) —</option><option value="A">A — Top Value Customer</option><option value="B">B — Mid Range</option><option value="C">C — Regular Star</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">Set manually or leave blank — auto-suggested from 12-month billing total once data accumulates.</div></div><div class="fg mt8"><label>Assigned Salesman</label><select class="sel" id="cst-star-sm"><option value="">— No specific salesman —</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">This salesman will see this customer on their dashboard when follow-up is due.</div></div><div class="fg mt8"><label>Follow-up Days (override)</label><input class="inp mono" id="cst-star-days" type="number" min="1" step="1" placeholder="Use default"/></div></div><div class="dvd"></div><div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Payment Terms (leave blank for global defaults)</div><div class="ir2"><div class="fg"><label>Discount %</label><input class="inp mono" id="cst-disc" type="number" step="0.1" placeholder="e.g. 5"/></div><div class="fg"><label>Discount Days</label><input class="inp mono" id="cst-dd" type="number" step="1" placeholder="e.g. 45"/></div></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="cst-nd" type="number" step="1" placeholder="e.g. 120"/></div><div class="dvd"></div><div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="cst-stop" onchange="toggleCstStopFields()" style="width:18px;height:18px;accent-color:#DC2626;cursor:pointer"/><span style="color:#DC2626;font-weight:800">🚫 Stop Business</span></label><div style="font-size:11px;color:var(--t3);margin-top:4px">Blocks new orders and removes from Star suggestions. History is preserved.</div></div><div id="cst-stop-fields" style="display:none;background:#FEF2F2;border:1.5px solid #FECACA;border-radius:10px;padding:10px 12px;margin-bottom:14px"><div class="fg"><label style="color:#DC2626;font-weight:700">Reason</label><input class="inp" id="cst-stop-reason" placeholder="e.g. Bad payment, Cheques bounced..."/></div></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-cst')">Cancel</button><button class="btn bp bfl" onclick="saveCust()">Save</button></div>
 </div></div>
 <div class="ov" id="m-market-mgr" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>🏙️ Manage Markets</h3><button class="btn bgh bsm" onclick="hideMod('m-market-mgr')">✕</button></div></div><div class="shb"><div class="fi" style="margin-bottom:12px"><input class="inp" id="mkt-new-name" placeholder="New market name"/><button class="ai" onclick="addMarketMgr()">+ Add</button></div><div id="mkt-mgr-list"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-market-mgr')">Close</button></div></div></div>
 <div class="ov" id="m-star-mgr" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>⭐ Star Customers</h3><p class="sub">Uncheck to remove from Stars</p></div><button class="btn bgh bsm" onclick="hideMod('m-star-mgr')">✕</button></div></div><div class="shb" id="star-mgr-body" style="padding:0"></div><div class="shf" style="flex-wrap:wrap;gap:8px"><button class="btn bgh bfl" onclick="hideMod('m-star-mgr')">Cancel</button><button class="btn bfl" style="background:#F59E0B;color:white;border:none;font-weight:800" onclick="saveStarMgrChanges()">✔ Apply Changes</button></div></div></div>
@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.41.9';
+const APP_VERSION='1.42.0';
 const APP_BUILD_DATE='2026-09-01';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -1632,7 +1632,6 @@ function quickSamePriceList(){
   renderPriceListSalesmanAlert();
   renderPriceListWidget();
   renderPriceListTab();
-  setTimeout(openWAPriceList,400);
 }
 /* ── Sales Tab (full view) ── */
 function renderPriceListTab(){
@@ -1780,7 +1779,6 @@ function savePriceList(){
   renderPriceListSalesmanAlert();
   renderPriceListWidget();
   renderPriceListTab();
-  setTimeout(openWAPriceList,400);
 }
 /* ── WhatsApp Share ── */
 function openWAPriceList(){
@@ -2856,7 +2854,7 @@ const _cBrk=x.defaultBrokerId?STATE.brokers.find(b=>b.id===x.defaultBrokerId):nu
 const _cSm=x.defaultSalesmanId?STATE.users.find(u=>u.id===x.defaultSalesmanId):null;
 const _cSmName=_cSm?.name||x.defaultSalesmanName||'';
 const _cExtra=(_cBrk||_cSmName||x.address)?'<div class="esub" style="margin-top:2px">'+(_cBrk?'🏷 '+escHtml(_cBrk.name):'')+(_cBrk&&_cSmName?' · ':'')+(_cSmName?'👤 '+escHtml(_cSmName):'')+(x.address?((_cBrk||_cSmName)?' · ':'')+escHtml(x.address):'')+   '</div>':'';
-return '<div class="et" onclick="openCustomerDetail(\''+x.id+'\')"><div class="ei" style="background:var(--Tl);color:var(--Td);font-weight:800;font-size:13px">'+x.name.substring(0,2)+'</div><div class="eb"><div class="etit">'+(x.isStar?'&#11088; ':'')+x.name+'</div><div class="esub">'+(x.gstin||'No GSTIN')+' - '+(x.state||'')+(x.market?' &bull; 📍 '+escHtml(x.market):'')+'</div>'+_cExtra+'</div><div class="er"><div class="ed">'+(x.phone||'')+'</div>'+(x.gstin?'<span class="bdg '+(gstType(x.gstin)==='same'?'bg-g':'bg-a')+'">'+(gstType(x.gstin)==='same'?'SGST':'IGST')+'</span>':'')+'</div></div>';
+return '<div class="et" onclick="openCustomerDetail(\''+x.id+'\')" style="'+(x.stopBusiness?'opacity:.7;border-left:3px solid #DC2626;':'')+'">'+'<div class="ei" style="background:'+(x.stopBusiness?'#FEE2E2':'var(--Tl)')+';color:'+(x.stopBusiness?'#DC2626':'var(--Td)')+';font-weight:800;font-size:13px">'+(x.stopBusiness?'🚫':x.name.substring(0,2))+'</div><div class="eb"><div class="etit">'+(x.stopBusiness?'<span style="color:#DC2626;font-weight:900">🚫 </span>':'')+(x.isStar?'&#11088; ':'')+x.name+'</div><div class="esub">'+(x.stopBusiness?'<span style="color:#DC2626;font-size:10px;font-weight:700">STOP BUSINESS'+(x.stopReason?' — '+escHtml(x.stopReason):'')+'</span>':((x.gstin||'No GSTIN')+' - '+(x.state||'')+(x.market?' &bull; 📍 '+escHtml(x.market):'')))+' </div>'+_cExtra+'</div><div class="er"><div class="ed">'+(x.phone||'')+'</div>'+(x.gstin&&!x.stopBusiness?'<span class="bdg '+(gstType(x.gstin)==='same'?'bg-g':'bg-a')+'">'+(gstType(x.gstin)==='same'?'SGST':'IGST')+'</span>':'')+'</div></div>';
 }).join('');
 }
 function openCustomerDetail(id){
@@ -3053,6 +3051,9 @@ if(el('cst-star-days')) el('cst-star-days').value='';
 if(el('cst-star-grade')) el('cst-star-grade').value='';
 populateCstStarSalesmanSel('');
 toggleCstStarFields();
+if(el('cst-stop')) el('cst-stop').checked=false;
+if(el('cst-stop-reason')) el('cst-stop-reason').value='';
+toggleCstStopFields();
 el('csttit').textContent='New Customer'; el('cst-si').textContent='Enter GSTIN to detect state';
 populateCstBrkSel(''); populateCstGrpSel(''); populateCstMarketSel(''); populateCstSalesmanSel('');
 showMod('m-cst');
@@ -3073,6 +3074,10 @@ function toggleCstStarFields(){
 const on=el('cst-star')?.checked;
 const box=el('cst-star-fields'); if(box) box.style.display=on?'block':'none';
 }
+function toggleCstStopFields(){
+const on=el('cst-stop')?.checked;
+const box=el('cst-stop-fields'); if(box) box.style.display=on?'block':'none';
+}
 function editCust(id){
 const x=STATE.customers.find(c=>c.id===id); if(!x) return;
 el('cst-id').value=id; el('cst-name').value=x.name||''; el('cst-ph').value=x.phone||'';
@@ -3092,6 +3097,9 @@ el('csttit').textContent='Edit Customer'; detCstState();
 populateCstBrkSel(x.defaultBrokerId||'');
 populateCstSalesmanSel(x.defaultSalesmanId||'');
 populateCstMarketSel(x.market||'');
+if(el('cst-stop')) el('cst-stop').checked=!!x.stopBusiness;
+if(el('cst-stop-reason')) el('cst-stop-reason').value=x.stopReason||'';
+toggleCstStopFields();
 showMod('m-cst');
 }
 function populateCstMarketSel(selectedName){
@@ -3220,7 +3228,9 @@ isStar:isStarNow,
 starGrade:isStarNow?((el('cst-star-grade')?.value||'')||undefined):undefined,
 starSalesmanId:isStarNow?(starSmId||undefined):undefined,
 starFollowupDays:isStarNow&&starDaysRaw!==''?parseInt(starDaysRaw):undefined,
-starSince:starSince};
+starSince:starSince,
+stopBusiness:!!el('cst-stop')?.checked,
+stopReason:(el('cst-stop')?.checked?(el('cst-stop-reason')?.value||'').trim():undefined)||undefined};
 const savedId=id||uid();
 const oldName=id?(STATE.customers.find(c=>c.id===id)?.name||''):'';
 if(id){const i=STATE.customers.findIndex(c=>c.id===id);if(i>=0){STATE.customers[i]={...STATE.customers[i],...obj};STATE.customers[i]._ts=Date.now();}}
@@ -5542,6 +5552,7 @@ el('ordbod').innerHTML=
 '<button class="ai" onclick="openCustFromOrder()">+New</button>'+
 '<button class="ai" id="od-cust-edit-btn" onclick="editCustFromOrder()" style="display:none">Edit</button></div>'+
 '<div id="od-cust-info" style="display:none;background:var(--Pl);border-radius:10px;padding:8px 12px;margin-top:6px;font-size:12px"></div>'+
+'<div id="od-stop-warn" style="display:none"></div>'+
 '</div>'+
 '<div class="fg"><label>Broker</label>'+
 '<div class="fi"><select class="sel" id="od-b"><option value="">No broker</option>'+bo+'</select>'+
@@ -5595,6 +5606,13 @@ if(!cId||!info){if(info)info.style.display='none';if(editBtn)editBtn.style.displ
 const cust=STATE.customers.find(c=>c.id===cId);
 if(!cust){info.style.display='none';if(editBtn)editBtn.style.display='none';return;}
 if(editBtn) editBtn.style.display='';
+/* Stop Business warning */
+const sbWarn=el('od-stop-warn');
+if(cust.stopBusiness){
+if(sbWarn){sbWarn.style.display='';sbWarn.innerHTML='<div style="background:#FEF2F2;border:2px solid #DC2626;border-radius:10px;padding:10px 14px;margin-top:8px"><div style="font-size:13px;font-weight:900;color:#DC2626">🚫 STOP BUSINESS</div><div style="font-size:12px;color:#991B1B;margin-top:2px">'+(cust.stopReason?escHtml(cust.stopReason):'No reason specified')+'</div><div style="font-size:11px;color:#B91C1C;margin-top:4px;font-weight:700">Do not accept new orders from this customer. Contact admin if needed.</div></div>';}
+}else{
+if(sbWarn) sbWarn.style.display='none';
+}
 const gstT=gstType(cust.gstin||'');
 const gstBadge=cust.gstin
 ?'<span style="background:var(--Gl);color:var(--Gd);padding:1px 6px;border-radius:5px;font-size:10px;font-weight:700">'+(gstT==='same'?'SGST':'IGST')+'</span>'
@@ -11849,19 +11867,21 @@ const pct=totalAmt>0?Math.round(r.amount/totalAmt*100):0;
 const smUser=r.salesmanId?STATE.users.find(u=>u.id===r.salesmanId):null;
 const cust=STATE.customers.find(x=>x.id===r.id);
 const isStar=cust?.isStar||false;
+const isBlocked=cust?.stopBusiness||false;
 const prevSnoozedAmount=cust?.starCandidateSnoozedAmount||0;
 /* Suggest star grade for this customer based on their billed amount */
 const sg=STATE.settings.starGrading||{};
 let suggestGrade='';
-if(!isStar&&isAdmin){
+if(!isStar&&!isBlocked&&isAdmin){
   if(sg.thresholdA&&r.amount>=sg.thresholdA) suggestGrade='A';
   else if(sg.thresholdB&&r.amount>=sg.thresholdB) suggestGrade='B';
   else if(sg.thresholdC&&r.amount>=sg.thresholdC) suggestGrade='C';
 }
-html+='<div style="border:1.5px solid '+(suggestGrade?'#FCD34D':'var(--br)')+';border-radius:10px;padding:10px 12px;margin-bottom:8px;background:'+(suggestGrade?'#FFFDF0':'var(--bg)')+'">'+
+html+='<div style="border:1.5px solid '+(isBlocked?'#FECACA':suggestGrade?'#FCD34D':'var(--br)')+';border-radius:10px;padding:10px 12px;margin-bottom:8px;background:'+(isBlocked?'#FFF5F5':suggestGrade?'#FFFDF0':'var(--bg)')+'">'+
 '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'+
 '<div style="flex:1;min-width:0">'+
-'<div style="font-size:13px;font-weight:800;color:var(--tx)">'+
+'<div style="font-size:13px;font-weight:800;color:'+(isBlocked?'#DC2626':'var(--tx)')+'">'+
+(isBlocked?'<span style="margin-right:3px">🚫</span>':'')+
 (isStar?'<span style="margin-right:3px">&#11088;</span>':'')+
 (medalEmo?'<span style="margin-right:4px">'+medalEmo+'</span>':
 '<span style="font-size:11px;font-weight:900;color:var(--t3);margin-right:4px">#'+rank+'</span>')+
@@ -11871,6 +11891,7 @@ escHtml(r.name)+'</div>'+
 '<div class="xs ct3" style="margin-top:3px">'+r.bills+' bill'+(r.bills!==1?'s':'')+(r.orders?' · '+r.orders+' order'+(r.orders!==1?'s':''):'')+
 (r.lastBill?' · Last: '+fmtDate(r.lastBill):'')+
 '</div>'+
+(isBlocked?'<div style="font-size:10px;font-weight:700;color:#DC2626;margin-top:4px">🚫 Stop Business'+(cust?.stopReason?' — '+escHtml(cust.stopReason):'')+'</div>':'')+
 (suggestGrade?'<div style="font-size:10px;font-weight:700;color:#92400E;margin-top:4px">🌟 Qualifies for Star Grade '+suggestGrade+'</div>':'')+
 (suggestGrade&&prevSnoozedAmount&&r.amount>prevSnoozedAmount?'<div style="font-size:10px;font-weight:700;color:#059669;margin-top:2px">↑ ₹'+fmtN(Math.round(r.amount-prevSnoozedAmount))+' more since last dismissed (was ₹'+fmtN(prevSnoozedAmount)+')</div>':'')+
 '</div>'+
@@ -13878,7 +13899,7 @@ const cutoff=new Date(); cutoff.setFullYear(cutoff.getFullYear()-1);
 const cutStr=cutoff.toISOString().slice(0,10);
 const todayStr=today();
 const candidates=[];
-(STATE.customers||[]).filter(c=>!c._deleted&&!c.isStar).forEach(c=>{
+(STATE.customers||[]).filter(c=>!c._deleted&&!c.isStar&&!c.stopBusiness).forEach(c=>{
   // Skip if snoozed
   if(c.starCandidateSnoozedUntil&&c.starCandidateSnoozedUntil>todayStr) return;
   const total=(STATE.bills||[]).filter(b=>!b._deleted&&b.custId===c.id&&b.status!=='cancelled'&&b.status!=='deleted'&&(b.date||'')>=cutStr)
