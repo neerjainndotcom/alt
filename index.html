@@ -2614,9 +2614,11 @@ const rngHdrBtns=inSel
   ?'<button class="btn bxs" style="background:#FEE2E2;color:#991B1B;font-size:10px;font-weight:800" id="bdc-btn-'+selKey+'" onclick="bulkDeleteCheckedColours(\''+item.id+'\',\''+escHtml(rng)+'\')">🗑 Delete (0)</button>'
    +'<button class="btn bxs" style="background:var(--s2);color:var(--t2);font-size:10px" onclick="toggleColourSelectMode(\''+item.id+'\',\''+escHtml(rng)+'\')">✕ Cancel</button>'
   :'<button class="btn bs bxs" onclick="openAddClr(\''+item.id+'\',\''+escHtml(rng)+'\')">+ Colour</button>'
-   +'<button class="btn bxs" style="background:#EEF2FF;color:#4338CA;font-size:10px;font-weight:800" onclick="toggleColourSelectMode(\''+item.id+'\',\''+escHtml(rng)+'\')">☑ Select</button>'
    +'<button class="btn bd bxs" title="Delete entire range" onclick="deleteRange(\''+item.id+'\',\''+escHtml(rng)+'\')">🗑 Range</button>';
-return '<div class="sr"><div class="srh"><span>Range '+rng+(inSel?'<span style="font-size:10px;color:#4338CA;margin-left:6px;font-weight:700">— select to delete</span>':'')+'</span><div style="display:flex;gap:6px">'+rngHdrBtns+'</div></div>'+
+/* Select button on its own row so it's always visible on mobile */
+const selRow=inSel?'':
+  '<div style="padding:4px 8px 6px"><button class="btn bfl bxs" style="background:#EEF2FF;color:#4338CA;font-size:11px;font-weight:800;width:100%" onclick="toggleColourSelectMode(\''+item.id+'\',\''+escHtml(rng)+'\')">☑ Select Multiple to Delete</button></div>';
+return '<div class="sr"><div class="srh"><span>Range '+rng+(inSel?'<span style="font-size:10px;color:#4338CA;margin-left:6px;font-weight:700">— select to delete</span>':'')+'</span><div style="display:flex;gap:6px">'+rngHdrBtns+'</div></div>'+selRow+
 cols.map(col=>{
 const cIdx=item.colours.indexOf(col);
 const chk=inSel?'<input type="checkbox" class="col-bulk-chk" data-cidx="'+cIdx+'" data-selkey="'+selKey+'" onchange="updateBulkDelCount(\''+selKey+'\')" onclick="event.stopPropagation()" style="width:18px;height:18px;accent-color:#EF4444;cursor:pointer;flex-shrink:0">':'';
