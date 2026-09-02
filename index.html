@@ -7726,7 +7726,15 @@ if(q===undefined){const se=el('bil-search'); q=se?se.value:'';}
 refreshFltOptions('bil',liveBills().filter(b=>b.status!=='cancelled'&&b.payStatus!=='paid'));
 const _fltB=readFlt('bil');
 const _myPfxB=(STATE.user?.orderPrefix||'').trim();
-const _billBelongsToMe=b=>_isAdminOrCRE()||b.salesmanId===STATE.user?.id||(!b.salesmanId&&_myPfxB&&(b.ordNo||'').startsWith(_myPfxB));
+const _billBelongsToMe=b=>{
+  const u=STATE.user; if(!u) return false;
+  if(u.role==='admin') return true;
+  const stypes=STATE.settings?.staffTypes||[];
+  const userSt=stypes.find(t=>t.id===u.staffTypeId);
+  const stName=(userSt?.name||u.staffType||'').toLowerCase();
+  if(stName.includes('cre')) return true;
+  return b.salesmanId===u.id||(!b.salesmanId&&_myPfxB&&(b.ordNo||'').startsWith(_myPfxB));
+};
 const f=liveBills().filter(b=>{
   if(!_canViewInvoices()) return false;
   if(!_billBelongsToMe(b)) return false;
@@ -8639,7 +8647,20 @@ if(!active(STATE.users).length){
 c.innerHTML='<div class="emp"><div class="emj">&#x1F464;</div><h3>No Users</h3><p>Add team members</p></div>';
 return;
 }
+/* Detect duplicate orderPrefix among active users */
+const pfxCount={};
+active(STATE.users).forEach(u=>{const p=(u.orderPrefix||'').trim();if(p){pfxCount[p]=(pfxCount[p]||[]); pfxCount[p].push(u.name);}});
+const dupPfx=Object.entries(pfxCount).filter(([,names])=>names.length>1);
 c.innerHTML='';
+if(dupPfx.length){
+  const warn=document.createElement('div');
+  warn.style.cssText='background:#FEF2F2;border:2px solid #DC2626;border-radius:10px;padding:10px 14px;margin-bottom:12px';
+  warn.innerHTML='<div style="font-size:13px;font-weight:900;color:#DC2626">⚠️ Duplicate Order Prefix</div>'+
+    '<div style="font-size:12px;color:#991B1B;margin-top:4px">'+
+    dupPfx.map(([pfx,names])=>'"'+pfx+'" is shared by: '+names.join(', ')).join('<br/>')+
+    '</div><div style="font-size:11px;color:#B91C1C;margin-top:4px">Each salesman must have a unique prefix — fix this in their user settings.</div>';
+  c.appendChild(warn);
+}
 active(STATE.users).forEach(u=>{
 const perms=u.permissions||getPermPreset(u.staffTypeId||u.role||'');
 const permLabels=PERM_DEFS.filter(p=>perms[p.id]).map(p=>p.lbl);
@@ -8689,6 +8710,12 @@ if(!name||!uname){toast('Enter name and username','er');return;}
 const id=el('usr-id').value;
 const oldUsrName=id?(STATE.users.find(u=>u.id===id)?.name||''):'';
 if(isDuplicate(STATE.users,'username',uname,id)){toast('Username "'+uname+'" already exists','er');return;}
+/* Warn if another active user already has this orderPrefix */
+const newPfx=(el('usr-pfx').value||'').trim();
+if(newPfx){
+  const conflict=(STATE.users||[]).find(u=>!u._deleted&&u.active!==false&&u.id!==id&&(u.orderPrefix||'').trim()===newPfx);
+  if(conflict){toast('⚠️ Order prefix "'+newPfx+'" is already used by '+conflict.name+'. Each salesman must have a unique prefix.','er');return;}
+}
 let pw=el('usr-pw').value;
 if(pw) pw=await sha256(pw);
 const staffTypeId=el('usr-stype')?.value||'';
@@ -11962,9 +11989,15 @@ function applySalesTabVisibility(){
 }
 /* Does this order belong to the logged-in user? */
 function _orderBelongsToCurrentUser(o){
-  if(_isAdminOrCRE()) return true;
-  const myId=STATE.user?.id;
-  const myPfx=(STATE.user?.orderPrefix||'').trim();
+  const u=STATE.user; if(!u) return false;
+  if(u.role==='admin') return true;
+  /* CRE staff can see all orders, but leads_view_all permission is leads-only — don't use _isAdminOrCRE here */
+  const stypes=STATE.settings?.staffTypes||[];
+  const userSt=stypes.find(t=>t.id===u.staffTypeId);
+  const stName=(userSt?.name||u.staffType||'').toLowerCase();
+  if(stName.includes('cre')) return true;
+  const myId=u.id;
+  const myPfx=(u.orderPrefix||'').trim();
   return o.salesmanId===myId||(!o.salesmanId&&myPfx&&(o.orderNo||'').startsWith(myPfx));
 }
 
