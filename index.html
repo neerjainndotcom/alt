@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.43.0';
+const APP_VERSION='1.44.0';
 const APP_BUILD_DATE='2026-09-01';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -9570,6 +9570,7 @@ persist();
 renderItems(document.querySelector('#tp-itm .srch input')?.value||'');
 if(el('m-item')?.classList.contains('on')&&el('itm-id')?.value===itemId) renderItemRanges(item);
 toast('Colour "'+col.name+'" deleted','ok');
+api('saveItem',{items:STATE.items}); /* push deletion to Firebase so other devices sync */
 }
 async function deleteRange(itemId, rng){
 const item=STATE.items.find(i=>i.id===itemId); if(!item) return;
@@ -9601,6 +9602,7 @@ persist();
 renderItems(document.querySelector('#tp-itm .srch input')?.value||'');
 if(el('m-item')?.classList.contains('on')&&el('itm-id')?.value===itemId) renderItemRanges(item);
 toast('Range "'+rng+'" deleted ('+cols.length+' colour'+(cols.length===1?'':'s')+')','ok');
+api('saveItem',{items:STATE.items}); /* push deletion to Firebase so other devices sync */
 }
 function toggleColourSelectMode(itemId,rng){
   window._colSelMode=window._colSelMode||{};
@@ -9641,6 +9643,7 @@ async function bulkDeleteCheckedColours(itemId,rng){
   renderItemRanges(item);
   renderItems(document.querySelector('#tp-itm .srch input')?.value||'');
   toast(cols.length+' colour'+(cols.length!==1?'s':'')+' deleted','ok');
+  api('saveItem',{items:STATE.items}); /* push deletion to Firebase so other devices sync */
 }
 let _skuItemId=null, _skuCIdx=null;
 function showSKUDetail(itemId, cIdx){
@@ -10551,7 +10554,12 @@ html+=
 '<span style="background:'+label+';color:#fff;font-size:10px;font-weight:900;padding:2px 7px;border-radius:5px">LOT '+lot.lotNum+'</span>'+
 '<span style="font-size:13px;font-weight:800;color:#0F0E1A">'+lot.itemName+'</span>'+
 '<span style="font-size:11px;font-weight:700;color:'+label+';background:white;padding:1px 7px;border-radius:4px">Range '+lot.range+'</span>'+
-'<span style="font-size:11px;color:'+label+'">Cut: '+lot.cut+'m</span>'+
+'<div style="display:flex;align-items:center;gap:3px">'+
+'<span style="font-size:11px;color:'+label+'">Cut</span>'+
+'<input type="number" id="disp-lot-'+li+'-cut" value="'+lot.cut+'" step="0.25" min="1" max="25"'+
+' oninput="updateDispLotCut('+li+')"'+
+' style="width:48px;background:rgba(255,255,255,0.9);border:none;border-radius:5px;padding:2px 5px;font-size:12px;font-weight:800;font-family:monospace;color:'+label+'"/>'+
+'<span style="font-size:11px;color:'+label+'">m</span></div>'+
 '<button id="disp-lot-skip-'+li+'" data-skipped="0" onclick="skipDispLot('+li+',this)" '+
 'style="margin-left:auto;padding:3px 10px;border:none;background:rgba(255,255,255,0.25);color:white;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;letter-spacing:.3px"'+
 '>\u2715 Skip Lot</button>'+
@@ -10765,6 +10773,14 @@ t.innerHTML=
 '<div class="brow tot"><span>Grand Total</span><span class="mono fw7" style="font-size:16px">\u20B9'+fmtN(grand)+'</span></div>';
 } else t.style.display='none';
 }
+function updateDispLotCut(li){
+const cutInp=el('disp-lot-'+li+'-cut');
+const newCut=parseFloat(cutInp?.value)||6;
+document.querySelectorAll('.disp-lot-row-'+li+' input[data-cut]').forEach(inp=>{
+inp.dataset.cut=String(newCut);
+});
+calcDispTotal();
+}
 async function saveDispatchBill(){
 const billNo=(el('disp-billno')?.value||'').trim(); if(!billNo){toast('Enter bill number','er');return;}
 const o=STATE.orders.find(x=>x.id===_dispOrdId); if(!o) return;
@@ -10778,13 +10794,15 @@ let sub=0;
 for(const item of o.items){
 const inp=el('disp-qty-'+(item.lotIndex!==undefined?item.sku+'-li'+item.lotIndex:item.sku)); if(!inp) continue;
 const qty=parseInt(inp.value)||0; if(!qty) continue;
-const rate=item.rate||0, cut=item.cut||6;
+const rate=item.rate||0;
+/* Read cut from dispatch modal input (user may have overridden the per-lot cut value) */
+const cut=parseFloat(inp.dataset.cut)||item.cut||6;
 const amt=Math.round(qty*cut*rate);
 const taka=Math.floor(Math.round(qty*cut*10)/10/STATE.settings.avgMtrPerTaka);
 const ok=await checkAdj(item.itemId,item.colIdx,taka);
 if(!ok) continue;
 deductStock(item.itemId,item.colIdx,taka,'sale',o.custName,billNo);
-dispItems.push({...item,dispQty:qty,mtrs:Math.round(qty*cut*10)/10,taka,amount:amt,srcOrdId:o.id,srcOrdNo:o.orderNo});
+dispItems.push({...item,dispQty:qty,mtrs:Math.round(qty*cut*10)/10,taka,amount:amt,cut,srcOrdId:o.id,srcOrdNo:o.orderNo});
 sub+=amt;
 }
 /* ── Process extra orders ── */
@@ -10796,7 +10814,7 @@ extraOrdObjs.push(eo);
 for(const item of eo.items){
 const inp=el('disp-e'+idx+'-qty-'+item.sku); if(!inp) continue;
 const qty=parseInt(inp.value)||0; if(!qty) continue;
-const rate=item.rate||0, cut=item.cut||6;
+const rate=item.rate||0, cut=parseFloat(inp.dataset.cut)||item.cut||6;
 const amt=Math.round(qty*cut*rate);
 const taka=Math.floor(Math.round(qty*cut*10)/10/STATE.settings.avgMtrPerTaka);
 const ok=await checkAdj(item.itemId,item.colIdx,taka);
