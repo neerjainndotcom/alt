@@ -7046,7 +7046,7 @@ const grpBillHtml=custGrp?(()=>{
 })():'';
 el('billbod').innerHTML=
 '<div style="background:var(--Pl);border-radius:12px;padding:12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center"><div style="flex:1;margin-right:10px"><div class="xs ct3" style="margin-bottom:3px">Invoice No</div><input class="inp mono" id="bl-bno" value="'+bno+'" style="font-size:16px;font-weight:800;color:var(--P);padding:4px 8px"/></div>'+(pre?.orderNo?'<span class="bdg bg-p">Ord: '+pre.orderNo+'</span>':'')+'</div>'+
-'<div class="ir2"><div class="fg"><label>Date</label><input class="inp" type="date" id="bl-d" value="'+today()+'"/></div><div class="fg"><label>Due Date</label><input class="inp" type="date" id="bl-due"/></div></div>'+
+'<div class="ir2"><div class="fg"><label>Date</label><input class="inp" type="date" id="bl-d" value="'+today()+'" oninput="autoFillBillDueDate()"/></div><div class="fg"><label>Due Date <span style="font-size:9px;color:var(--t3);font-weight:400">(auto)</span></label><input class="inp" type="date" id="bl-due"/></div></div>'+
 grpBillHtml+
 (custGrp?'':'<div class="fg"><label>Customer *</label><select class="sel" id="bl-c" onchange="detBillGST()"><option value="">Select...</option>'+co+'</select></div>')+
 '<div id="bl-gi" class="xs ct3" style="margin:-8px 0 10px;padding-left:2px"></div>'+
@@ -7088,6 +7088,8 @@ if(el('bl-brok-lbl'))el('bl-brok-lbl').value='';
   detBillGST();
 },50);
 if(pre?.ordId&&!pre?.fromProgLot){renderBillRows();}else{if(!pre?.fromProgLot){_billLots=[];_billLotId=0;_mixSareLots=[];_mixSareLotId=0;}setTimeout(()=>{if(pre?.fromProgLot)prefillProgLots();else addBillLot();},80);}
+/* Auto-fill due date on fresh bill using customer's nett days */
+setTimeout(autoFillBillDueDate,50);
 }
 function toggleBillAdjPos(){
   const cur=localStorage.getItem('vs_bill_adj_pos')||'after';
@@ -7115,6 +7117,17 @@ const discFld=el('bl-disc');
 if(discFld){const d=cust?.discount!=null?cust.discount:STATE.settings.discount||0;discFld.value=d;}
 if(_billOrdId&&!_billFromProgLot) calcBillTot(); else calcBillLotTotal();
 const _bbl=el('bl-b');if(_bbl&&cust&&cust.defaultBrokerId){_bbl.value=cust.defaultBrokerId;}
+autoFillBillDueDate();
+}
+function autoFillBillDueDate(){
+const dateVal=el('bl-d')?.value; if(!dateVal) return;
+const custId=el('bl-c')?.value;
+const cust=custId?STATE.customers.find(c=>c.id===custId):null;
+/* Credit days = discountDays (the paired credit period for the trade discount %) */
+const creditDays=cust?.discountDays!=null?cust.discountDays:(STATE.settings?.discountDays||45);
+const d=new Date(dateVal); d.setDate(d.getDate()+Number(creditDays));
+const due=d.toISOString().slice(0,10);
+const dueFld=el('bl-due'); if(dueFld) dueFld.value=due;
 }
 function addBillRow(){_billRows.push({});renderBillRows();}
 function remBillRow(i){_billRows.splice(i,1);renderBillRows();}
@@ -10091,8 +10104,9 @@ const bySku={};
   if(!bySku[it.sku]) bySku[it.sku]={sku:it.sku,itemName:it.itemName||'',colourName:it.colourName||'',range:it.range||'',ordered:0,billed:0};
   bySku[it.sku].ordered+=(it.pcs||0);
 });
-liveBills().filter(b=>b.ordId===o.id&&b.status!=='cancelled').forEach(b=>(b.items||[]).forEach(it=>{
-  if(!it._progId&&bySku[it.sku]) bySku[it.sku].billed+=(it.pcs||0);
+liveBills().filter(b=>(b.ordId===o.id||(b.ordNo&&b.ordNo===o.orderNo))&&b.status!=='cancelled').forEach(b=>(b.items||[]).forEach(it=>{
+  if(it.srcOrdId&&it.srcOrdId!==o.id) return; /* skip items from other orders in combined bills */
+  if(!it._progId&&bySku[it.sku]) bySku[it.sku].billed+=(it.dispQty||it.pcs||0);
 }));
 let totalOrdered=0,totalBilled=0;
 Object.values(bySku).forEach(x=>{x.remaining=Math.max(0,x.ordered-x.billed);totalOrdered+=x.ordered;totalBilled+=x.billed;});
@@ -10104,7 +10118,14 @@ const o=STATE.orders.find(x=>x.id===id); if(!o) return;
 if(!_orderBelongsToCurrentUser(o)){toast('You can only view your own orders','er');return;}
 const _fixPend=(o.type!=='open')?calcFixedOrderPending(o):null;
 const _gridCols=_fixPend?'1fr 44px 50px 64px 54px':'1fr 44px 50px 64px';
-const stBadge=o.status==='fulfilled'?'bg-g':o.status==='cancelled'?'bg-r':o.status==='billed'?'bg-t':'bg-a';
+/* Derive effective status live from bills so stale o.status doesn't mislead */
+let _effStatus=o.status;
+if(o.status!=='cancelled'&&o.status!=='fulfilled'&&_fixPend){
+  if(_fixPend.totalBilled>=_fixPend.totalOrdered&&_fixPend.totalOrdered>0) _effStatus='fulfilled';
+  else if(_fixPend.totalBilled>0) _effStatus='billed';
+  else _effStatus='pending';
+}
+const stBadge=_effStatus==='fulfilled'?'bg-g':_effStatus==='cancelled'?'bg-r':_effStatus==='billed'?'bg-t':'bg-a';
 const cust=STATE.customers.find(c=>c.id===o.custId);
 const disc=cust?.discount!=null?cust.discount:STATE.settings.discount;
 const dd=cust?.discountDays!=null?cust.discountDays:STATE.settings.discountDays;
@@ -10134,7 +10155,7 @@ let html=
 '<div class="brow"><span>Customer</span><span class="fw7">'+o.custName+'</span></div>'+
 (o.salesmanName?'<div class="brow"><span>Salesman</span><span>'+o.salesmanName+'</span></div>':'')+
 (o.brkName?'<div class="brow"><span>Broker</span><span>'+o.brkName+'</span></div>':'')+
-'<div class="brow"><span>Status</span><span class="bdg '+stBadge+'">'+o.status+'</span></div>'+
+'<div class="brow"><span>Status</span><span class="bdg '+stBadge+'">'+_effStatus.toUpperCase()+'</span></div>'+
 '<div class="brow"><span>Total Items</span><span class="mono fw7">'+(o.items||[]).length+' colours / '+lots.length+' LOT(s)</span></div>'+
 '</div>';
 lots.forEach((lot,li)=>{
@@ -10443,7 +10464,7 @@ const cust=STATE.customers.find(c=>c.id===custId);
 const billNo=nextBillNo();
 const billNoFld=el('disp-billno'); if(billNoFld) billNoFld.value=billNo;
 const dateFld=el('disp-date'); if(dateFld) dateFld.value=today();
-const nd=cust?.nettDays!=null?cust.nettDays:STATE.settings.nettDays||120;
+const nd=cust?.discountDays!=null?cust.discountDays:STATE.settings.discountDays||45;
 const dueD=new Date(); dueD.setDate(dueD.getDate()+nd);
 const dueFld=el('disp-due'); if(dueFld) dueFld.value=dueD.toISOString().split('T')[0];
 ['disp-recv','disp-recv-ph','disp-challan','disp-lr','disp-notes'].forEach(id=>{ const e=el(id); if(e) e.value=''; });
@@ -10502,10 +10523,12 @@ lots.push(obj); lotMap[key]=obj;
 }
 lotMap[key].items.push(item);
 });
-/* Use liveBills() (canonical source) — o.bills can be stale after sync or delete */
+/* Use liveBills() (canonical source) — o.bills can be stale after sync or delete.
+   Also match by ordNo as fallback for bills where ordId may not be linked correctly. */
 const dispatched={};
-liveBills().filter(b=>b.ordId===ordId&&b.status!=='cancelled').forEach(bill=>{
+liveBills().filter(b=>(b.ordId===ordId||(b.ordNo&&b.ordNo===o.orderNo))&&b.status!=='cancelled').forEach(bill=>{
 (bill.items||[]).forEach(bi=>{
+if(bi.srcOrdId&&bi.srcOrdId!==ordId) return; /* skip items from other orders in combined bills */
 const lotI=bi._lotIdx!==undefined?bi._lotIdx:bi.lotIndex;const k=lotI!==undefined?bi.sku+'-li'+lotI:bi.sku;
 dispatched[k]=(dispatched[k]||0)+(bi.dispQty||bi.pcs||0);
 });
@@ -10521,14 +10544,17 @@ const lc=lotColors[li%lotColors.length];
 const border=lotBorders[li%lotBorders.length];
 const label=lotLabels[li%lotLabels.length];
 html+=
-'<div style="margin-bottom:12px;border:2px solid '+border+';border-radius:12px;overflow:hidden">'+
-'<div style="background:'+border+';padding:7px 12px;display:flex;align-items:center;gap:8px">'+
+'<div style="margin-bottom:12px;border:2px solid '+border+';border-radius:12px;overflow:hidden" id="disp-lot-'+li+'">'+
+'<div style="background:'+border+';padding:7px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
 '<span style="background:'+label+';color:#fff;font-size:10px;font-weight:900;padding:2px 7px;border-radius:5px">LOT '+lot.lotNum+'</span>'+
 '<span style="font-size:13px;font-weight:800;color:#0F0E1A">'+lot.itemName+'</span>'+
 '<span style="font-size:11px;font-weight:700;color:'+label+';background:white;padding:1px 7px;border-radius:4px">Range '+lot.range+'</span>'+
 '<span style="font-size:11px;color:'+label+'">Cut: '+lot.cut+'m</span>'+
+'<button id="disp-lot-skip-'+li+'" data-skipped="0" onclick="skipDispLot('+li+',this)" '+
+'style="margin-left:auto;padding:3px 10px;border:none;background:rgba(255,255,255,0.25);color:white;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;letter-spacing:.3px"'+
+'>\u2715 Skip Lot</button>'+
 '</div>'+
-'<div style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;background:#1e1b4b;padding:5px 10px">'+
+'<div id="disp-lot-body-'+li+'" style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;background:#1e1b4b;padding:5px 10px">'+
 '<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-transform:uppercase">Colour</div>'+
 '<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-align:center;text-transform:uppercase">Ord</div>'+
 '<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:center;text-transform:uppercase">Sent</div>'+
@@ -10540,7 +10566,7 @@ const alreadySent=dispatched[item.lotIndex!==undefined?item.sku+'-li'+item.lotIn
 const remaining=Math.max(0,(item.pcs||0)-alreadySent);
 const bg=ci%2===0?'#fff':lc;
 html+=
-'<div style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;align-items:center;padding:7px 10px;background:'+bg+';border-top:1px solid #E5E4F0">'+
+'<div class="disp-lot-row-'+li+'" style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;align-items:center;padding:7px 10px;background:'+bg+';border-top:1px solid #E5E4F0">'+
 '<div>'+
 '<div style="font-size:12px;font-weight:700">'+item.colourName+'</div>'+
 '<div style="font-size:9px;color:#9897B0;font-family:monospace">'+item.sku+'</div>'+
@@ -10548,7 +10574,7 @@ html+=
 '<div style="text-align:center;font-size:12px;font-weight:700;color:#454460">'+item.pcs+'</div>'+
 '<div style="text-align:center;font-size:11px;font-weight:600;color:'+(alreadySent>0?'#10B981':'#9897B0')+'">'+alreadySent+'</div>'+
 '<input type="number" id="disp-qty-'+(item.lotIndex!==undefined?item.sku+'-li'+item.lotIndex:item.sku)+'" step="1" min="0" max="'+remaining+'" value="'+remaining+'" '+
-'data-sku="'+item.sku+'" data-rate="'+item.rate+'" data-cut="'+item.cut+'" '+
+'data-sku="'+item.sku+'" data-rate="'+item.rate+'" data-cut="'+item.cut+'" data-orig="'+remaining+'" '+
 'oninput="calcDispTotal()" '+
 'style="width:100%;text-align:center;border:2px solid #F59E0B;border-radius:7px;padding:4px 2px;font-size:14px;font-weight:800;font-family:monospace;background:#FFFBEB;color:#92400E"/>'+
 '<div id="disp-amt-'+(item.lotIndex!==undefined?item.sku+'-li'+item.lotIndex:item.sku)+'" style="text-align:right;font-size:12px;font-weight:700;color:#9897B0">\u2014</div>'+
@@ -10562,6 +10588,36 @@ const addBtn=el('disp-add-ord-btn'); if(addBtn) addBtn.style.display='block';
 /* Pre-fill discount with customer's default (or global default) — user can edit/zero it out for a Net bill */
 const discInp0=el('disp-disc');
 if(discInp0){const _c0=STATE.customers.find(c=>c.id===o.custId);discInp0.value=_c0?.discount!=null?_c0.discount:(STATE.settings.discount||0);}
+calcDispTotal();
+}
+/* ── SKIP LOT HELPER ── */
+function skipDispLot(li,btn){
+const isSkipped=btn.dataset.skipped==='1';
+const lotDiv=el('disp-lot-'+li);if(!lotDiv)return;
+const rows=lotDiv.querySelectorAll('.disp-lot-row-'+li);
+if(!isSkipped){
+  /* Skip: zero all qty inputs in this lot and dim rows */
+  rows.forEach(row=>{
+    const inp=row.querySelector('input[type="number"]');
+    if(inp){inp.value=0;inp.disabled=true;inp.style.opacity='0.3';}
+    row.style.opacity='0.35';
+  });
+  btn.textContent='↩ Undo Skip';
+  btn.dataset.skipped='1';
+  btn.style.background='rgba(255,255,255,0.6)';
+  btn.style.color='#4338CA';
+}else{
+  /* Undo: restore original remaining qty */
+  rows.forEach(row=>{
+    const inp=row.querySelector('input[type="number"]');
+    if(inp){inp.value=inp.dataset.orig||0;inp.disabled=false;inp.style.opacity='';}
+    row.style.opacity='';
+  });
+  btn.textContent='✕ Skip Lot';
+  btn.dataset.skipped='0';
+  btn.style.background='rgba(255,255,255,0.25)';
+  btn.style.color='white';
+}
 calcDispTotal();
 }
 /* ── MULTI-ORDER DISPATCH HELPERS ── */
@@ -10783,8 +10839,10 @@ if(!o.bills) o.bills=[];
 o.bills.push(bill);
 STATE.bills.push(bill);
 const totalOrdered=(o.items||o.openItems||[]).reduce((s,i)=>s+(i.pcs||i.totalPcs||0),0);
-const totalDispatched=o.bills.filter(b=>b.status!=='cancelled').reduce((s,b)=>s+(b.items||[]).filter(bi=>bi.srcOrdId===o.id||!bi.srcOrdId).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
+/* Use canonical liveBills() (includes the just-pushed bill) for accuracy */
+const totalDispatched=liveBills().filter(b=>(b.ordId===o.id||(b.ordNo&&b.ordNo===o.orderNo))&&b.status!=='cancelled').reduce((s,b)=>s+(b.items||[]).filter(bi=>bi.srcOrdId===o.id||!bi.srcOrdId).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
 o.status=totalDispatched>=totalOrdered?'fulfilled':'billed';
+o._ts=Date.now(); /* ensure this update wins in cloud merge */
 /* ── Update each extra order ── */
 extraOrdObjs.forEach(eo=>{
 if(!eo.bills) eo.bills=[];
@@ -13692,15 +13750,26 @@ const disc=cust?.discount!=null?cust.discount:STATE.settings.discount;
 const dd=cust?.discountDays!=null?cust.discountDays:STATE.settings.discountDays;
 const nd=cust?.nettDays!=null?cust.nettDays:STATE.settings.nettDays;
 const gstT=gstType(cust?.gstin||'');
+const isAdminForCustEdit=STATE.user?.role==='admin';
 let html='<div style="background:var(--Pl);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px">';
-html+='<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">';
-html+='<span class="fw7 sm">'+cust.name+'</span>';
-if(cust?.phone) html+='<span class="xs ct3">&#x1F4DE; '+cust.phone+'</span>';
-if(cust?.gstin) html+='<span class="sku xs">'+cust.gstin+'</span>';
+html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">';
+html+='<div style="flex:1;min-width:0">';
+html+='<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:4px">';
+html+='<span class="fw7" style="font-size:13px">'+escHtml(cust.name)+'</span>';
+if(cust?.gstin) html+='<span class="sku xs">'+escHtml(cust.gstin)+'</span>';
 if(cust?.gstin) html+='<span style="background:var(--Gl);color:var(--Gd);padding:1px 6px;border-radius:5px;font-size:10px;font-weight:700">'+(gstT==='same'?'SGST+CGST':'IGST')+'</span>';
-html+='<span style="font-size:10px;color:var(--Pd);font-weight:700">'+disc+'% disc/'+dd+'d | Nett '+nd+'d</span>';
 html+='</div>';
-if(cust?.address) html+='<div class="xs ct3 mt4">'+cust.address+'</div>';
+if(cust?.address) html+='<div class="xs ct3" style="margin-bottom:3px">&#x1F4CD; '+escHtml(cust.address)+'</div>';
+html+='<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:3px">';
+if(cust?.phone) html+='<span class="xs ct3">&#x1F4DE; '+escHtml(cust.phone)+'</span>';
+if(cust?.defaultSalesmanName) html+='<span class="xs ct3">&#x1F9D1; '+escHtml(cust.defaultSalesmanName)+'</span>';
+if(cust?.defaultBrokerName) html+='<span class="xs ct3">&#x1F91D; '+escHtml(cust.defaultBrokerName)+'</span>';
+if(cust?.market) html+='<span class="xs ct3">&#x1F3EA; '+escHtml(cust.market)+'</span>';
+html+='<span class="xs" style="color:var(--Pd);font-weight:700">'+disc+'% disc/'+dd+'d | Nett '+nd+'d</span>';
+html+='</div>';
+html+='</div>';
+if(isAdminForCustEdit) html+='<button class="btn bgh bxs" style="font-size:11px;flex-shrink:0;white-space:nowrap" onclick="editCust(\''+custId+'\')">✏️ Edit</button>';
+html+='</div>';
 html+='</div>';
 /* Party group: find all members in the same group as this customer */
 const custGroup=(STATE.custGroups||[]).find(g=>g.memberIds&&g.memberIds.includes(custId));
@@ -13775,13 +13844,13 @@ html+=
 html+='</div>';
 }else{
 /* ── Regular order: show dispatch button ── */
-const dispatched={};
-liveBills().filter(b=>b.ordId===o.id&&b.status!=='cancelled').forEach(bill=>{
-(bill.items||[]).forEach(bi=>{ dispatched[bi.sku]=(dispatched[bi.sku]||0)+(bi.dispQty||bi.pcs||0); });
-});
 const totalPcs=o.items.reduce((s,i)=>s+(i.pcs||0),0);
-const sentPcs=o.items.reduce((s,i)=>s+(dispatched[i.sku]||0),0);
-const remPcs=totalPcs-sentPcs;
+/* Sum dispatched directly from bills — filter by srcOrdId for multi-order dispatch bills,
+   also match by ordNo as a fallback for bills where ordId may not be set correctly */
+const sentPcs=liveBills()
+  .filter(b=>(b.ordId===o.id||(b.ordNo&&b.ordNo===o.orderNo))&&b.status!=='cancelled')
+  .reduce((s,b)=>s+(b.items||[]).filter(bi=>!bi.srcOrdId||bi.srcOrdId===o.id).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);
+const remPcs=Math.max(0,totalPcs-sentPcs);
 const billCount=(o.bills||[]).filter(b=>b.status!=='cancelled').length;
 const stBadge=o.status==='billed'?'bg-t':'bg-a';
 html+=
