@@ -82,7 +82,7 @@
 </div></div>
 <div class="ov" id="m-genrecv" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Generate Receive Challan</h3><button class="btn bgh bsm" onclick="hideMod('m-genrecv')">✕</button></div></div><div class="shb" id="genrecvbod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-genrecv')">Cancel</button><button class="btn bsuc bfl" onclick="grContinue()">Continue</button></div>
 </div></div>
-<div class="ov" id="m-ord" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px" id="ordtit">New Sale Order</p><div style="font-size:28px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace;letter-spacing:-0.5px;line-height:1" id="ordno">—</div></div><div style="display:flex;gap:6px"><button class="btn bs bsm" onclick="showScan()">📷 Scan</button><button class="btn bgh bsm" onclick="hideMod('m-ord')">✕</button></div></div></div><div class="shb" id="ordbod"></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-ord')">Cancel</button><button class="btn bt bfl" onclick="openDirectBillFromOrder()" style="margin-right:4px;">⚡ Direct Bill</button><button class="btn bp bfl" onclick="saveOrd()">Save Order</button></div>
+<div class="ov" id="m-ord" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><p style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px" id="ordtit">New Sale Order</p><div style="font-size:28px;font-weight:900;color:var(--P);font-family:'JetBrains Mono',monospace;letter-spacing:-0.5px;line-height:1" id="ordno">—</div></div><div style="display:flex;gap:6px"><button class="btn bs bsm" onclick="showScan()">📷 Scan</button><button class="btn bgh bsm" onclick="hideMod('m-ord')">✕</button></div></div></div><div class="shb" id="ordbod"></div><div class="shf" style="flex-wrap:wrap;gap:8px"><div style="display:flex;gap:8px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-ord')">Cancel</button><button class="btn bt bfl" onclick="openDirectBillFromOrder()">⚡ Direct Bill</button></div><div style="display:flex;gap:8px;width:100%"><button class="btn bp bfl" onclick="saveOrd(false)">💾 Save</button><button class="btn bfl" style="background:#25D366;color:white;border:none;font-weight:800;border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit" onclick="saveOrd(true)">📲 Save &amp; WA</button></div></div>
 </div></div>
 <div class="ov" id="m-bill" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="billtit">New Tax Invoice</h3><button class="btn bgh bsm" onclick="closeBillMod()">✕</button></div></div><div class="shb" id="billbod"></div><div class="shf"><button class="btn bgh bfl" onclick="closeBillMod()">Cancel</button><button class="btn bp bfl" id="bill-save-btn" onclick="saveBill()">Create Bill</button></div>
 </div></div>
@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.4';
+const APP_VERSION='1.45.7';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -3782,6 +3782,7 @@ _inLots.forEach((lot,li)=>appendInwLotCard(lot,li,c));
 function inwLotAddColour(lid,iid,rng){
 window._inwAddClrForLot=lid;
 window._qcIid=iid; window._qcRng=rng; window._qcPfx=null;
+el('aclr-cnt').value=1; buildClrRows('aclr-rows','aclr-cnt');
 el('aclrtit').textContent='Add Colours to Range '+rng;
 showMod('m-aclr');
 }
@@ -6097,7 +6098,7 @@ t.innerHTML=
 '</div>';
 } else t.style.display='none';
 }
-function saveOrd(){
+function saveOrd(doWA){
 const cId=el('od-c')?.value; if(!cId){toast('Select customer','er');return;}
 const cust=STATE.customers.find(c=>c.id===cId);
 const bId=el('od-b')?.value, brk=STATE.brokers.find(b=>b.id===bId);
@@ -6148,6 +6149,7 @@ if(_ordType==='open'){
   }else{STATE.orders.push(stamp(ordObj));}
   persist(); hideMod('m-ord'); renderOrders();
   toast('Open Order '+ordNo+' saved — add programmes when party confirms colours','ok');
+  if(doWA) waOrd(ordObj.id);
   return;
 }
 
@@ -6177,6 +6179,7 @@ if(idx>=0) STATE.orders[idx]={...STATE.orders[idx],...stamp(ordObj)}; else STATE
 }else{ STATE.orders.push(stamp(ordObj)); }
 persist(); hideMod('m-ord'); renderOrders();
 toast('Order '+ordNo+' saved','ok');
+if(doWA) waOrd(ordObj.id);
 }
 function toggleFltPanel(prefix){
 const p=el(prefix+'-flt-panel'); if(!p) return;
@@ -6859,9 +6862,15 @@ function billProgramme(ordId,progId){
 function waOrd(id){
 const o=STATE.orders.find(x=>x.id===id); if(!o) return;
 const cust=STATE.customers.find(c=>c.id===o.custId);
-const lines=o.items.map(i=>'- '+i.itemName+' '+i.colourName+' — '+i.pcs+' pcs x '+(i.cut||6)+'m = '+i.mtrs+'m @ \u20B9'+(i.rate||0)+'/m = \u20B9'+fmtN(i.amount||0)).join('\n');
-const _ordVars={company:STATE.settings.companyName||'',address:STATE.settings.address||'',phone:STATE.settings.phone||'',orderNo:o.orderNo,date:fmtDate(o.date),party:o.custName,lines,total:fmtRs(o.total),discount:STATE.settings.discount,discDays:STATE.settings.discountDays,nettDays:STATE.settings.nettDays};const msg=_ssTpl('waTemplateOrder',_ordVars)||('*'+STATE.settings.companyName+'*\n'+STATE.settings.address+'\nPh: '+STATE.settings.phone+'\n\n*Order: '+o.orderNo+'*\nDate: '+fmtDate(o.date)+'\nCustomer: '+o.custName+'\n\n'+lines+'\n\n*Total: '+fmtRs(o.total)+'*\n\n'+STATE.settings.discount+'% disc within '+STATE.settings.discountDays+'d. Nett '+STATE.settings.nettDays+'d.');
-openWA(cust?.whatsapp||'',msg);
+const lines=(o.items&&o.items.length?o.items:o.openItems||[]).map(i=>
+  i.colourName
+    ? '- '+i.itemName+' '+i.colourName+' — '+i.pcs+' pcs x '+(i.cut||6)+'m = '+i.mtrs+'m @ ₹'+(i.rate||0)+'/m = ₹'+fmtN(i.amount||0)
+    : '- '+i.itemName+' — '+i.totalPcs+' pcs @ ₹'+(i.rate||0)
+).join('\n');
+const _ordVars={company:STATE.settings.companyName||'',address:STATE.settings.address||'',phone:STATE.settings.phone||'',orderNo:o.orderNo,date:fmtDate(o.date),party:o.custName,lines,total:fmtRs(o.total),discount:STATE.settings.discount,discDays:STATE.settings.discountDays,nettDays:STATE.settings.nettDays};
+const msg=_ssTpl('waTemplateOrder',_ordVars)||('*'+STATE.settings.companyName+'*\n'+STATE.settings.address+'\nPh: '+STATE.settings.phone+'\n\n*Order: '+o.orderNo+'*\nDate: '+fmtDate(o.date)+'\nCustomer: '+o.custName+'\n\n'+lines+'\n\n*Total: '+fmtRs(o.total)+'*\n\n'+STATE.settings.discount+'% disc within '+STATE.settings.discountDays+'d. Nett '+STATE.settings.nettDays+'d.');
+/* Use customer WA/phone if available; otherwise empty = WA opens share picker so user picks any contact */
+openWA(cust?.whatsapp||cust?.phone||'',msg);
 }
 function editProgEntry(ordId,progId){
   const o=STATE.orders.find(x=>x.id===ordId); if(!o) return;
@@ -19630,7 +19639,7 @@ function openSampleSetForm(leadId){
 _ssLeadId=leadId||null;_ssEditId=null;_ssLots=[];_ssLotId=0;
 const lead=leadId?(STATE.leads||[]).find(l=>l.id===leadId):null;
 const ttl=el('ss-form-title');if(ttl)ttl.textContent=leadId?'\uD83D\uDCE6 Set — '+(lead?.name||''):'\uD83D\uDCE6 New Sample Set';
-const co=[...STATE.customers].filter(c=>!c._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(c=>'<option value="'+c.id+'"'+(c.id===(lead?.custId||'')?' selected':'')+'>'+c.name+'</option>').join('');
+const co=[...STATE.customers].filter(c=>!c._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(c=>'<option value="'+c.id+'"'+(c.id===(lead?.custId||'')?' selected':'')+'>'+c.name+(c.market?' · '+c.market:'')+(c.gstin?' ('+c.gstin.substring(0,2)+')':'')+'</option>').join('');
 const bo=[...STATE.brokers].filter(b=>!b._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(b=>'<option value="'+b.id+'"'+(b.id===lead?.brokerId?' selected':'')+'>'+b.name+'</option>').join('');
 const so=[...STATE.users].filter(u=>!u._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(u=>'<option value="'+u.id+'"'+(u.id===lead?.assignedId?' selected':'')+'>'+u.name+'</option>').join('');
 el('ss-form-body').innerHTML=
@@ -19648,6 +19657,14 @@ el('ss-form-body').innerHTML=
 +'<div class="fg" id="ss-carrier-txt-wrap" style="display:none"><label>External Name</label><input class="inp" type="text" id="ss-carrier" placeholder="Enter carrier name..."/></div>'
 +'</div>'
 +'<div style="font-size:10px;font-weight:800;color:#4F46E5;text-transform:uppercase;letter-spacing:.6px;padding:4px 0 8px">📦 LOT Items / SKUs</div>'
++'<div style="background:#FFF7ED;border:1.5px solid #FDBA74;border-radius:12px;padding:10px 12px;margin-bottom:12px">'
++'<div style="font-size:10px;font-weight:800;color:#C2410C;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px">⚡ Quick Fill Selected</div>'
++'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
++'<input class="inp" type="text" id="ss-fill-cut" placeholder="Cut (e.g. 5.5m)" style="flex:1;min-width:90px;font-size:13px;font-weight:700"/>'
++'<input class="inp" type="number" id="ss-fill-pcs" placeholder="Pcs" style="width:80px;font-size:13px;font-weight:700"/>'
++'<button onclick="ssFillAll()" style="padding:8px 18px;background:#EA580C;color:white;border:none;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">⚡ Fill All</button>'
++'</div>'
++'</div>'
 +'<div id="ss-lots"></div>'
 +'<button class="btn bs bfl mt8" onclick="addSsLot()">+ Add LOT / Item</button>'
 +'<div class="fg mt8"><label>📝 Notes</label><textarea class="ta" id="ss-note" rows="2"></textarea></div>';
@@ -19744,24 +19761,66 @@ const ch=el('ssl-'+lid+'-ck-'+idx),row=el('ssl-'+lid+'-row-'+idx),on=ch?.checked
 const pe=el('ssl-'+lid+'-p-'+idx);if(pe){pe.disabled=!on;pe.style.background=on?'white':'#F3F4F6';pe.style.color=on?'#1a1a2e':'#9CA3AF';}
 const ce=el('ssl-'+lid+'-c-'+idx);if(ce){ce.disabled=!on;ce.style.background=on?'white':'#F3F4F6';ce.style.color=on?'#065F46':'#9CA3AF';}
 if(row&&!skip){row.style.background=on?'#FEFCE8':'';row.style.borderLeft=on?'3px solid #F59E0B':'3px solid transparent';}
+// Auto-fill from Quick Fill bar if values set and colour is being turned on
+if(on&&!skip){
+  const fillCut=(el('ss-fill-cut')?.value||'').trim();
+  const fillPcs=(el('ss-fill-pcs')?.value||'').trim();
+  if(fillCut&&ce&&!ce.value)ce.value=fillCut;
+  if(fillPcs&&pe&&!pe.value)pe.value=fillPcs;
+}
 }
 function _ssTpl(key,vars){const t=(STATE.settings||{})[key]||'';if(!t.trim())return null;return t.replace(/\{(\w+)\}/g,(_,k)=>{const found=Object.keys(vars).find(vk=>vk.toLowerCase()===k.toLowerCase());return found!==undefined?vars[found]:'';});}
 function ssCrChg(){const v=el('ss-carrier-uid')?.value;const w=el('ss-carrier-txt-wrap');if(w)w.style.display=(v==='__other__'?'':'none');}
+function ssFillAll(){
+  const cut=(el('ss-fill-cut')?.value||'').trim();
+  const pcs=(el('ss-fill-pcs')?.value||'').trim();
+  if(!cut&&!pcs){toast('Enter cut or pcs to fill','er');return;}
+  let filled=0;
+  _ssLots.forEach(lot=>{
+    const iid=el('ssl-'+lot.id+'-i')?.value,rv=el('ssl-'+lot.id+'-r')?.value;
+    if(!iid||!rv)return;
+    const item=STATE.items.find(x=>x.id===iid);if(!item)return;
+    const rng=rv==='__norange__'?'':rv;
+    item.colours.filter(c=>c.range===rng&&!c.discontinued&&!c._deleted).forEach(col=>{
+      const idx=item.colours.indexOf(col);
+      const ch=el('ssl-'+lot.id+'-ck-'+idx);if(!ch||!ch.checked)return;
+      if(cut){const ce=el('ssl-'+lot.id+'-c-'+idx);if(ce)ce.value=cut;}
+      if(pcs){const pe=el('ssl-'+lot.id+'-p-'+idx);if(pe)pe.value=pcs;}
+      filled++;
+    });
+  });
+  if(!filled)toast('Check some colours first, then fill','er');
+  else toast('Filled '+filled+' colour'+(filled!==1?'s':''),'ok');
+}
 function ssCustChg(){
   const custId=el('ss-cust')?.value;
   const cust=custId?STATE.customers.find(c=>c.id===custId):null;
   const addrDiv=el('ss-cust-addr');
   if(addrDiv){
-    if(cust&&cust.address){addrDiv.style.display='';addrDiv.innerHTML='📍 '+escHtml(cust.address);}
-    else{addrDiv.style.display='none';}
+    if(cust){
+      const brk=cust.defaultBrokerId?STATE.brokers.find(b=>b.id===cust.defaultBrokerId):null;
+      const sm=cust.defaultSalesmanId?STATE.users.find(u=>u.id===cust.defaultSalesmanId):null;
+      let info='';
+      if(cust.address)info+='<div style="margin-bottom:4px">📍 <b>'+escHtml(cust.address)+'</b></div>';
+      const meta=[];
+      if(cust.gstin)meta.push('GST: <span style="font-family:monospace;font-weight:800">'+escHtml(cust.gstin)+'</span>');
+      if(cust.market)meta.push('Market: <b>'+escHtml(cust.market)+'</b>');
+      if(brk)meta.push('Broker: <b>'+escHtml(brk.name)+'</b>');
+      if(sm)meta.push('Salesman: <b>'+escHtml(sm.name)+'</b>');
+      if(meta.length)info+='<div style="font-size:11px;color:#3730A3;margin-top:2px">'+meta.join(' &nbsp;·&nbsp; ')+'</div>';
+      if(info){addrDiv.style.display='';addrDiv.innerHTML=info;}
+      else{addrDiv.style.display='none';}
+    } else {addrDiv.style.display='none';}
   }
   if(!cust)return;
   // Auto-fill broker from customer's default (keep editable)
   const brkSel=el('ss-brk');
   if(brkSel&&cust.defaultBrokerId){brkSel.value=cust.defaultBrokerId;brkSel.dispatchEvent(new Event('change',{bubbles:true}));}
+  else if(brkSel&&brkSel.querySelector('[value=""]'))brkSel.value='';
   // Auto-fill salesman from customer's default
   const smSel=el('ss-sm');
   if(smSel&&cust.defaultSalesmanId){smSel.value=cust.defaultSalesmanId;smSel.dispatchEvent(new Event('change',{bubbles:true}));}
+  else if(smSel&&smSel.querySelector('[value=""]'))smSel.value='';
 }
 function genSsVoucherNo(){
   const existing=STATE.sampleSets||[];
@@ -19841,6 +19900,7 @@ return '<div style="border-left:4px solid '+(pending?'#F59E0B':'#10B981')+';back
 '<button onclick="waSampleSetSingle(\''+ss.id+'\',\'salesman\')" class="btn bsm" style="background:#25D366;color:white;border:none;font-size:11px">&#x1F4F2; WA SM</button>'+
 '<button onclick="waSampleSetSingle(\''+ss.id+'\',\'broker\')" class="btn bsm" style="background:#059669;color:white;border:none;font-size:11px">&#x1F4F2; WA Brk</button>'+
 (pending?'<button onclick="markSampleSetReturned(\''+ss.id+'\')" class="btn bsm" style="background:#10B981;color:white;border:none;font-size:11px">&#x2714; Returned</button>':'')+
+(!pending?'<button onclick="markSampleSetPending(\''+ss.id+'\')" class="btn bsm" style="background:#F59E0B;color:white;border:none;font-size:11px">&#x21A9; Pending</button>':'')+
 '<button onclick="openEditSampleSet(\''+ss.id+'\')" class="btn bsm bd" style="font-size:11px">&#x270E; Edit</button>'+
 '</div></div>';
 }).join('');
@@ -19850,14 +19910,19 @@ const ss=(STATE.sampleSets||[]).find(s=>s.id===ssId);if(!ss)return;
 ss.status='Returned';ss.returnedAt=today();ss._ts=Date.now();
 lsSave('vs_sample_sets',STATE.sampleSets);autoSyncCloud();toast('Marked as returned','ok');renderSampleSets();
 }
+function markSampleSetPending(ssId){
+const ss=(STATE.sampleSets||[]).find(s=>s.id===ssId);if(!ss)return;
+ss.status='Pending';delete ss.returnedAt;ss._ts=Date.now();
+lsSave('vs_sample_sets',STATE.sampleSets);autoSyncCloud();toast('Moved back to Pending','ok');renderSampleSets();
+}
 function openEditSampleSet(ssId){
 const ss=(STATE.sampleSets||[]).find(s=>s.id===ssId);if(!ss)return;
 _ssLeadId=ss.leadId||null;_ssEditId=ssId;_ssLots=[];_ssLotId=0;
-const co=[...STATE.customers].filter(c=>!c._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(c=>'<option value="'+c.id+'"'+(c.id===ss.custId?' selected':'')+'>'+c.name+'</option>').join('');
+const co=[...STATE.customers].filter(c=>!c._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(c=>'<option value="'+c.id+'"'+(c.id===ss.custId?' selected':'')+'>'+c.name+(c.market?' · '+c.market:'')+(c.gstin?' ('+c.gstin.substring(0,2)+')':'')+'</option>').join('');
 const bo=[...STATE.brokers].filter(b=>!b._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(b=>'<option value="'+b.id+'"'+(b.id===ss.brokerId?' selected':'')+'>'+b.name+'</option>').join('');
 const so=[...STATE.users].filter(u=>!u._deleted).sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(u=>'<option value="'+u.id+'"'+(u.id===ss.salesmanId?' selected':'')+'>'+u.name+'</option>').join('');
 const ttl=el('ss-form-title');if(ttl)ttl.textContent='\uD83D\uDCE6 Edit Sample Set';
-el('ss-form-body').innerHTML='<div class="fg"><label>Date *</label><input class="inp" type="date" id="ss-date" value="'+(ss.date||today())+'"/></div><div class="fg"><label>Party *</label><select class="sel" id="ss-cust" onchange="ssCustChg()"><option value="">Select...</option>'+co+'</select></div><div id="ss-cust-addr" style="display:none;font-size:12px;font-weight:600;color:#4F46E5;background:#EEF2FF;border-radius:8px;padding:7px 12px;margin-top:-6px;margin-bottom:10px">📍 </div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="fg"><label>Broker</label><select class="sel" id="ss-brk"><option value="">None</option>'+bo+'</select></div><div class="fg"><label>Salesman</label><select class="sel" id="ss-sm"><option value="">None</option>'+so+'</select></div></div><div class="fg"><label>Carrier (staff taking the set)</label><select class="sel" id="ss-carrier-uid" onchange="ssCrChg()"><option value="">Select user...</option>'+so+'<option value="__other__">Other / External</option></select></div><div class="fg" id="ss-carrier-txt-wrap" style="display:none"><label>Name</label><input class="inp" type="text" id="ss-carrier" value="'+escHtml(ss.carrier||'')+'"/></div><div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs</div><div id="ss-lots"></div><button class="btn bs bfl mt8" onclick="addSsLot()">+ Add LOT / Item</button><div class="fg mt8"><label>Notes</label><textarea class="ta" id="ss-note" rows="2">'+escHtml(ss.note||'')+'</textarea></div>';
+el('ss-form-body').innerHTML='<div class="fg"><label>Date *</label><input class="inp" type="date" id="ss-date" value="'+(ss.date||today())+'"/></div><div class="fg"><label>Party *</label><select class="sel" id="ss-cust" onchange="ssCustChg()"><option value="">Select...</option>'+co+'</select></div><div id="ss-cust-addr" style="display:none;font-size:12px;font-weight:600;color:#4F46E5;background:#EEF2FF;border-radius:8px;padding:7px 12px;margin-top:-6px;margin-bottom:10px">📍 </div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="fg"><label>Broker</label><select class="sel" id="ss-brk"><option value="">None</option>'+bo+'</select></div><div class="fg"><label>Salesman</label><select class="sel" id="ss-sm"><option value="">None</option>'+so+'</select></div></div><div class="fg"><label>Carrier (staff taking the set)</label><select class="sel" id="ss-carrier-uid" onchange="ssCrChg()"><option value="">Select user...</option>'+so+'<option value="__other__">Other / External</option></select></div><div class="fg" id="ss-carrier-txt-wrap" style="display:none"><label>Name</label><input class="inp" type="text" id="ss-carrier" value="'+escHtml(ss.carrier||'')+'"/></div><div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs</div><div style="background:#FFF7ED;border:1.5px solid #FDBA74;border-radius:12px;padding:10px 12px;margin-bottom:12px"><div style="font-size:10px;font-weight:800;color:#C2410C;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px">⚡ Quick Fill Selected</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input class="inp" type="text" id="ss-fill-cut" placeholder="Cut (e.g. 5.5m)" style="flex:1;min-width:90px;font-size:13px;font-weight:700"/><input class="inp" type="number" id="ss-fill-pcs" placeholder="Pcs" style="width:80px;font-size:13px;font-weight:700"/><button onclick="ssFillAll()" style="padding:8px 18px;background:#EA580C;color:white;border:none;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">⚡ Fill All</button></div></div><div id="ss-lots"></div><button class="btn bs bfl mt8" onclick="addSsLot()">+ Add LOT / Item</button><div class="fg mt8"><label>Notes</label><textarea class="ta" id="ss-note" rows="2">'+escHtml(ss.note||'')+'</textarea></div>';
 const ssBtnE=el('ss-save-btn');if(ssBtnE){ssBtnE.textContent='💾 Update';}
 showMod('m-sample-set');
 setTimeout(()=>ssCustChg(),80);
