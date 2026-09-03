@@ -13924,7 +13924,7 @@ const disc=cust?.discount!=null?cust.discount:STATE.settings.discount;
 const dd=cust?.discountDays!=null?cust.discountDays:STATE.settings.discountDays;
 const nd=cust?.nettDays!=null?cust.nettDays:STATE.settings.nettDays;
 const gstT=gstType(cust?.gstin||'');
-const html+='<button class="btn bgh bxs" style="font-size:11px;flex-shrink:0;white-space:nowrap" onclick="window._returnToInvoice=true;editCust(\''+custId+'\')">✏️ Edit<\/button>';
+const isAdminForCustEdit=STATE.user?.role==='admin';
 let html='<div style="background:var(--Pl);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px">';
 html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">';
 html+='<div style="flex:1;min-width:0">';
@@ -13942,7 +13942,7 @@ if(cust?.market) html+='<span class="xs ct3">&#x1F3EA; '+escHtml(cust.market)+'<
 html+='<span class="xs" style="color:var(--Pd);font-weight:700">'+disc+'% disc/'+dd+'d | Nett '+nd+'d</span>';
 html+='</div>';
 html+='</div>';
-if(isAdminForCustEdit) html+='<button class="btn bgh bxs" style="font-size:11px;flex-shrink:0;white-space:nowrap" onclick="editCust(\''+custId+'\')">✏️ Edit</button>';
+html+='<button class="btn bgh bxs" style="font-size:11px;flex-shrink:0;white-space:nowrap" onclick="window._returnToInvoice=true;editCust(\''+custId+'\')">✏️ Edit<\/button>';
 html+='</div>';
 html+='</div>';
 /* Party group: find all members in the same group as this customer */
