@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.1';
+const APP_VERSION='1.45.2';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -11754,26 +11754,25 @@ html+=
 });
 }else{
 html+=
-'<div style="display:grid;grid-template-columns:24px 1fr 56px 70px;background:#1e1b4b;padding:6px 10px;border-radius:8px 8px 0 0">'+
+'<div style="display:grid;grid-template-columns:24px 1fr 72px;background:#1e1b4b;padding:6px 10px;border-radius:8px 8px 0 0">'+
 '<div></div>'+
 '<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-transform:uppercase">Item / Range / Colour</div>'+
-'<div style="font-size:9px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Pcs</div>'+
 '<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:right;text-transform:uppercase">Meters</div>'+
 '</div>';
 rows.forEach((r,ci)=>{
 const bg=ci%2===0?'#fff':'#F8F7FF';
-const medal=ci===0?'🥇':ci===1?'🥈':ci===2?'🥉':'';
+const medal=ci===0?'🥇':ci===1?'🥈':ci===2?'🥉':(ci<9?'  '+(ci+1)+'.':'  '+(ci+1)+'.');
+const isMedal=ci<3;
 html+=
-'<div style="display:grid;grid-template-columns:24px 1fr 56px 70px;padding:7px 10px;background:'+bg+';border:1px solid var(--br);border-top:none'+(ci===rows.length-1?';border-radius:0 0 8px 8px':'')+'">'+
-'<div style="font-size:14px;text-align:center">'+medal+'</div>'+
+'<div style="display:grid;grid-template-columns:24px 1fr 72px;padding:7px 10px;background:'+bg+';border:1px solid var(--br);border-top:none'+(ci===rows.length-1?';border-radius:0 0 8px 8px':'')+'">'+
+'<div style="font-size:'+(isMedal?'14':'10')+'px;text-align:center;color:#9CA3AF;font-weight:700;padding-top:2px">'+medal+'</div>'+
 '<div>'+
 '<div style="font-size:11px;font-weight:800;color:#374151">'+escHtml(r.itemName||'—')+'</div>'+
 '<div style="font-size:10px;color:#6366F1;font-weight:600">'+escHtml(r.range||'—')+'</div>'+
 '<div style="font-size:10px;color:#374151">'+escHtml(r.name||'—')+'<span style="font-size:9px;color:#9CA3AF;margin-left:4px">['+escHtml(r.sku||'—')+']</span></div>'+
-'<div style="font-size:9px;color:#92400E">₹'+fmtN(Math.round(r.amount))+'</div>'+
+'<div style="font-size:9px;color:#6B7280;margin-top:1px">'+r.qty+' pcs &nbsp;·&nbsp; <span style="color:#92400E">₹'+fmtN(Math.round(r.amount))+'</span></div>'+
 '</div>'+
-'<div style="text-align:center;font-size:11px;font-weight:700;color:#92400E;padding-top:2px">'+r.qty+'</div>'+
-'<div style="text-align:right;font-size:12px;font-weight:800;color:var(--P)">'+fmtN(r.mtrs)+'m</div>'+
+'<div style="text-align:right;font-size:13px;font-weight:800;color:var(--P);padding-top:4px">'+fmtN(r.mtrs)+'m</div>'+
 '</div>';
 });
 }
