@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.15';
+const APP_VERSION='1.45.16';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -3318,6 +3318,10 @@ const grp=STATE.custGroups.find(g=>g.id===grpId);
 if(grp){if(!grp.memberIds.includes(savedId))grp.memberIds.push(savedId);grp._ts=Date.now();lsSave('vs_cust_groups',STATE.custGroups);}
 hideMod('m-cst'); renderCusts();
 openCustGroup(grpId);
+}else if(window._returnToInvoice){
+window._returnToInvoice=false;
+hideMod('m-cst');
+onInvCustSelect();
 }else{ hideMod('m-cst'); renderCusts(); }
 }
 async function deleteCust(id){
@@ -13920,7 +13924,7 @@ const disc=cust?.discount!=null?cust.discount:STATE.settings.discount;
 const dd=cust?.discountDays!=null?cust.discountDays:STATE.settings.discountDays;
 const nd=cust?.nettDays!=null?cust.nettDays:STATE.settings.nettDays;
 const gstT=gstType(cust?.gstin||'');
-const isAdminForCustEdit=STATE.user?.role==='admin';
+const html+='<button class="btn bgh bxs" style="font-size:11px;flex-shrink:0;white-space:nowrap" onclick="window._returnToInvoice=true;editCust(\''+custId+'\')">✏️ Edit<\/button>';
 let html='<div style="background:var(--Pl);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px">';
 html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">';
 html+='<div style="flex:1;min-width:0">';
