@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.24';
+const APP_VERSION='1.45.25';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -13842,62 +13842,202 @@ function printBillPdf(id){
   _printWin(html,'Invoice '+b.billNo);
 }
 function printOrderPdf(id){
-  const o=(STATE.orders||[]).find(x=>x.id===id); if(!o) return;
-  const cust=(STATE.customers||[]).find(c=>c.id===o.custId);
-  const ps=STATE.settings.orderPdfSettings||{};
-  const show=(k,def=true)=>ps[k]===false?false:def;
-  const items=(o.items&&o.items.length?o.items:o.openItems||[]);
-  let rows='';let grandTotal=0;
-  items.forEach((it,i)=>{
-    const pcs=it.pcs||it.totalPcs||0;const cut=it.cut||6;const mtrs=it.mtrs||(pcs*cut);const rate=it.rate||0;const amt=it.amount||0;
-    grandTotal+=amt;
-    let desc='';
-    if(show('showRate')) desc=(show('showMetres')?(pcs+' pcs x '+cut+'m = '+mtrs+'m'):(pcs+' pcs'))+' @ Rs.'+rate+(show('showMetres')?'/m':'');
-    else desc=(show('showMetres')?(pcs+' pcs x '+cut+'m = '+mtrs+'m'):(pcs+' pcs'));
-    rows+='<tr><td>'+(i+1)+'</td><td>'+(it.itemName||'')+'</td>';
-    if(show('showColour')) rows+='<td>'+(it.colourName||it.range||'')+'</td>';
-    rows+='<td>'+desc+'</td>';
-    if(show('showAmount')) rows+='<td class="tr">'+fmtRs(amt)+'</td>';
-    rows+='</tr>';
+  var o=(STATE.orders||[]).find(function(x){return x.id===id}); if(!o) return;
+  var cust=(STATE.customers||[]).find(function(c){return c.id===o.custId})||{};
+  var ps=STATE.settings.orderPdfSettings||{};
+  var S=STATE.settings;
+  var show=function(k,def){if(def===undefined)def=true;return ps[k]===false?false:def};
+  var items=(o.items&&o.items.length?o.items:o.openItems||[]);
+  var co=S.companyName||'ALT Stock';
+  var esc=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
+  var lotMap={};
+  items.forEach(function(it){
+    var lk=it.lotIndex!=null?String(it.lotIndex):'__none__';
+    if(!lotMap[lk])lotMap[lk]=[];
+    lotMap[lk].push(it);
   });
-  (o.programmes||[]).forEach((p,i)=>{
-    const pcs=p.pcs||0;const cut=p.cut||6;const mtrs=pcs*cut;const rate=p.rate||0;const amt=p.amount||0;
-    grandTotal+=amt;
-    let desc=(show('showMetres')?(pcs+' pcs x '+cut+'m = '+mtrs+'m'):(pcs+' pcs'));
-    if(show('showRate')) desc+=' @ Rs.'+rate+(show('showMetres')?'/m':'');
-    rows+='<tr><td>'+(items.length+i+1)+'</td><td>'+(p.itemName||'')+'</td>';
-    if(show('showColour')) rows+='<td>'+(p.colourName||'')+'</td>';
-    rows+='<td>'+desc+'</td>';
-    if(show('showAmount')) rows+='<td class="tr">'+fmtRs(amt)+'</td>';
-    rows+='</tr>';
-  });
-  let thCols='<th>#</th><th>Item</th>';
-  if(show('showColour')) thCols+='<th>Colour / Range</th>';
-  thCols+='<th>Qty / Details</th>';
-  if(show('showAmount')) thCols+='<th class="tr">Amount</th>';
-  let html=_pdfHead('Order '+o.orderNo);
-  html+=_pdfCo();
-  html+='<div class="hdr"><div><div class="doc-lbl">Order Form</div><div class="doc-no">'+o.orderNo+'</div>';
-  if(show('showDate')) html+='<div class="doc-date">Date: '+fmtDate(o.date)+'</div>';
-  html+='</div><div><span class="bdg bdg-b">'+((o.status||'pending').charAt(0).toUpperCase()+(o.status||'pending').slice(1))+'</span></div></div>';
-  html+='<div class="meta">';
-  html+='<div><div class="ml">Customer</div><div class="mv">'+(o.custName||'')+'</div></div>';
-  if(show('showCustGstin')&&cust&&cust.gstin) html+='<div><div class="ml">GSTIN</div><div class="mv">'+cust.gstin+'</div></div>';
-  else html+='<div></div>';
-  if(show('showCustAddress')&&cust&&cust.address) html+='<div style="grid-column:1/-1"><div class="ml">Address</div><div class="mv">'+cust.address+'</div></div>';
-  if(show('showBroker')&&o.brokerName) html+='<div><div class="ml">Broker</div><div class="mv">'+o.brokerName+'</div></div>';
-  if(show('showSalesman')&&o.salesmanName) html+='<div><div class="ml">Salesman</div><div class="mv">'+o.salesmanName+'</div></div>';
+  var isGrouped=Object.values(lotMap).some(function(g){return g.length>1});
+  var TH='padding:6px 8px;text-align:left;border-bottom:2px solid #3730A3;color:#3730A3;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap';
+  var TD='padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:12px;vertical-align:top';
+  var itemsHtml='';
+  var showAmt=show('showAmounts');
+  if(isGrouped){
+    itemsHtml='<table style="width:100%;border-collapse:collapse;margin-top:8px"><thead><tr>';
+    itemsHtml+='<th style="'+TH+';width:28px">#</th>';
+    itemsHtml+='<th style="'+TH+'">Details</th>';
+    itemsHtml+='<th style="'+TH+';width:55px;text-align:center">Cut</th>';
+    itemsHtml+='<th style="'+TH+';width:55px;text-align:right">Pcs</th>';
+    itemsHtml+='<th style="'+TH+';width:70px;text-align:right">Rate</th>';
+    if(showAmt)itemsHtml+='<th style="'+TH+';width:80px;text-align:right">Amount</th>';
+    itemsHtml+='</tr></thead><tbody>';
+    var sr=0;
+    Object.keys(lotMap).forEach(function(lk){
+      var grp=lotMap[lk];
+      var first=grp[0];
+      sr++;
+      var colList=grp.map(function(it){return esc((it.colourName||it.colour||''))+'-'+(it.colIdx||'')}).join(', ');
+      var pcsPerColour=Number(grp[0].pcs)||0;
+      var colCount=grp.length;
+      var totalPcs=grp.reduce(function(s,it){return s+(Number(it.pcs)||0)},0);
+      var cut=first.cut||'';
+      var rate=first.rate||'';
+      var amtVal=showAmt&&rate?totalPcs*Number(rate):0;
+      itemsHtml+='<tr>';
+      itemsHtml+='<td style="'+TD+';color:#6b7280">'+sr+'</td>';
+      itemsHtml+='<td style="'+TD+'">';
+      itemsHtml+='<div style="font-weight:600;color:#111">'+esc(first.itemName||first.name||'')+'</div>';
+      if(first.range)itemsHtml+='<div style="color:#6b7280;font-size:11px;margin-top:2px">'+esc(first.range)+'</div>';
+      itemsHtml+='<div style="color:#374151;font-size:11px;margin-top:3px">'+colList+'</div>';
+      itemsHtml+='<div style="color:#6b7280;font-size:11px;margin-top:1px">'+pcsPerColour+'Ã'+colCount+'</div>';
+      itemsHtml+='</td>';
+      itemsHtml+='<td style="'+TD+';text-align:center">'+esc(cut)+'</td>';
+      itemsHtml+='<td style="'+TD+';text-align:right;font-weight:600">'+totalPcs+'</td>';
+      itemsHtml+='<td style="'+TD+';text-align:right">'+(rate?'â¹'+Number(rate).toLocaleString('en-IN'):'')+'</td>';
+      if(showAmt)itemsHtml+='<td style="'+TD+';text-align:right;font-weight:600">'+(amtVal?'â¹'+amtVal.toLocaleString('en-IN'):'')+'</td>';
+      itemsHtml+='</tr>';
+    });
+    var totPcs=items.reduce(function(s,it){return s+(Number(it.pcs)||0)},0);
+    itemsHtml+='<tr style="background:#f5f5ff"><td colspan="3" style="'+TD+';font-weight:700;color:#3730A3">Total</td>';
+    itemsHtml+='<td style="'+TD+';text-align:right;font-weight:800;font-size:13px;color:#3730A3">'+totPcs+'</td>';
+    itemsHtml+='<td style="'+TD+'"></td>';
+    if(showAmt)itemsHtml+='<td style="'+TD+'"></td>';
+    itemsHtml+='</tr>';
+    itemsHtml+='</tbody></table>';
+  } else {
+    itemsHtml='<table style="width:100%;border-collapse:collapse;margin-top:8px"><thead><tr>';
+    itemsHtml+='<th style="'+TH+';width:28px">#</th>';
+    itemsHtml+='<th style="'+TH+'">Item</th>';
+    itemsHtml+='<th style="'+TH+'">Range</th>';
+    itemsHtml+='<th style="'+TH+'">Colour</th>';
+    itemsHtml+='<th style="'+TH+';width:45px;text-align:right">Pcs</th>';
+    itemsHtml+='<th style="'+TH+';width:45px;text-align:center">Cut</th>';
+    itemsHtml+='<th style="'+TH+';width:55px;text-align:right">Mtrs</th>';
+    itemsHtml+='<th style="'+TH+';width:70px;text-align:right">Rate</th>';
+    if(showAmt)itemsHtml+='<th style="'+TH+';width:80px;text-align:right">Amt</th>';
+    itemsHtml+='</tr></thead><tbody>';
+    items.forEach(function(it,i){
+      var pcs=Number(it.pcs)||0;
+      var cut=it.cut||'';
+      var rate=it.rate||'';
+      var mtrs=cut&&pcs?pcs*Number(cut):(it.totalMetres||it.metres||'');
+      var amtVal=showAmt&&rate&&pcs?pcs*Number(rate):0;
+      itemsHtml+='<tr>';
+      itemsHtml+='<td style="'+TD+';color:#6b7280">'+(i+1)+'</td>';
+      itemsHtml+='<td style="'+TD+';font-weight:600">'+esc(it.itemName||it.name||'')+'</td>';
+      itemsHtml+='<td style="'+TD+';color:#6b7280">'+esc(it.range||'')+'</td>';
+      itemsHtml+='<td style="'+TD+'">'+esc(it.colourName||it.colour||'')+(it.colIdx?' <span style="color:#9ca3af;font-size:10px">-'+it.colIdx+'</span>':'')+'</td>';
+      itemsHtml+='<td style="'+TD+';text-align:right;font-weight:600">'+(pcs||'')+'</td>';
+      itemsHtml+='<td style="'+TD+';text-align:center">'+esc(cut)+'</td>';
+      itemsHtml+='<td style="'+TD+';text-align:right">'+(mtrs||'')+'</td>';
+      itemsHtml+='<td style="'+TD+';text-align:right">'+(rate?'â¹'+Number(rate).toLocaleString('en-IN'):'')+'</td>';
+      if(showAmt)itemsHtml+='<td style="'+TD+';text-align:right;font-weight:600">'+(amtVal?'â¹'+amtVal.toLocaleString('en-IN'):'')+'</td>';
+      itemsHtml+='</tr>';
+    });
+    var totPcs2=items.reduce(function(s,it){return s+(Number(it.pcs)||0)},0);
+    itemsHtml+='<tr style="background:#f5f5ff"><td colspan="4" style="'+TD+';font-weight:700;color:#3730A3">Total</td>';
+    itemsHtml+='<td style="'+TD+';text-align:right;font-weight:800;font-size:13px;color:#3730A3">'+totPcs2+'</td>';
+    itemsHtml+='<td colspan="3" style="'+TD+'"></td>';
+    if(showAmt)itemsHtml+='<td style="'+TD+'"></td>';
+    itemsHtml+='</tr></tbody></table>';
+  }
+  var dateStr=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  var ordNo=o.orderNumber||o.id.slice(-6)||'â';
+  var html='<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">';
+  html+='<title>Order '+ordNo+' â '+esc(co)+'</title>';
+  html+='<style>';
+  html+='*{box-sizing:border-box;margin:0;padding:0}';
+  html+='body{font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;color:#111;background:#fff;font-size:13px;line-height:1.5}';
+  html+='.wrap{max-width:820px;margin:0 auto;padding:24px 16px}';
+  html+='.hdr{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}';
+  html+='.co-name{font-size:22px;font-weight:800;color:#3730A3;letter-spacing:-.5px}';
+  html+='.co-sub{font-size:11px;color:#6b7280;margin-top:2px}';
+  html+='.ord-lbl{font-size:10px;font-weight:700;color:#6b7280;letter-spacing:1px;text-transform:uppercase;text-align:right}';
+  html+='.ord-no{font-size:18px;font-weight:700;color:#111;margin-top:2px;text-align:right}';
+  html+='.divider{height:3px;background:linear-gradient(90deg,#3730A3,#6366f1);border-radius:2px;margin:10px 0}';
+  html+='.party-row{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}';
+  html+='.party-box{flex:2;min-width:180px;background:#f5f5ff;border-left:4px solid #3730A3;border-radius:4px;padding:10px 12px}';
+  html+='.pty-lbl{font-size:10px;font-weight:700;color:#3730A3;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}';
+  html+='.pty-name{font-size:14px;font-weight:700;color:#111}';
+  html+='.pty-det{font-size:11px;color:#374151;margin-top:2px}';
+  html+='.info-box{flex:1;min-width:140px;background:#f9fafb;border-radius:4px;padding:10px 12px}';
+  html+='.inf-row{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;font-size:11px}';
+  html+='.inf-k{color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.4px}';
+  html+='.inf-v{color:#111;font-weight:600;text-align:right}';
+  html+='.bill-bar{background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:8px 12px;margin:6px 0;display:flex;flex-wrap:wrap;gap:12px;font-size:11px}';
+  html+='.b-k{color:#1d4ed8;font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-size:10px}';
+  html+='.b-v{color:#1e40af;font-weight:600;margin-top:1px}';
+  html+='.deliv-bar{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:8px 12px;margin:6px 0;display:flex;flex-wrap:wrap;gap:12px;font-size:11px}';
+  html+='.d-k{color:#15803d;font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-size:10px}';
+  html+='.d-v{color:#166534;font-weight:600;margin-top:1px}';
+  html+='.sec-ttl{font-size:10px;font-weight:700;color:#3730A3;letter-spacing:1px;text-transform:uppercase;margin-top:12px;margin-bottom:4px}';
+  html+='.notes-box{background:#fffbeb;border-left:3px solid #f59e0b;padding:8px 12px;border-radius:0 4px 4px 0;font-size:12px;color:#92400e;margin:6px 0}';
+  html+='.tnc-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:4px;padding:10px 12px;font-size:10.5px;color:#374151;margin:6px 0;white-space:pre-wrap}';
+  html+='.sig-row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-top:24px;padding-top:16px}';
+  html+='.sig-box{flex:1;min-width:100px;text-align:center}';
+  html+='.sig-line{border-top:1.5px solid #374151;padding-top:4px;font-size:10px;color:#6b7280;margin-top:40px}';
+  html+='.footer{text-align:center;font-size:10px;color:#9ca3af;margin-top:16px;padding-top:8px;border-top:1px solid #e5e7eb}';
+  html+='@media print{body{font-size:11px}.wrap{padding:8px}.no-print{display:none}}';
+  html+='@media(max-width:500px){.party-row,.sig-row{flex-direction:column}table{font-size:10px}th,td{padding:4px 5px!important}}';
+  html+='</style></head><body><div class="wrap">';
+  html+='<div class="hdr"><div>';
+  html+='<div class="co-name">'+esc(co)+'</div>';
+  if(S.companyAddress||S.companyPhone)html+='<div class="co-sub">'+esc(S.companyAddress||'')+(S.companyPhone?' Â· '+esc(S.companyPhone):'')+'</div>';
+  if(S.companyGstin)html+='<div class="co-sub">GSTIN: '+esc(S.companyGstin)+'</div>';
+  html+='</div><div>';
+  html+='<div class="ord-lbl">Order Form</div>';
+  html+='<div class="ord-no">#'+esc(ordNo)+'</div>';
+  html+='<div style="font-size:11px;color:#6b7280;text-align:right;margin-top:2px">'+dateStr+'</div>';
+  html+='</div></div>';
+  html+='<div class="divider"></div>';
+  html+='<div class="party-row"><div class="party-box">';
+  html+='<div class="pty-lbl">Party / Customer</div>';
+  html+='<div class="pty-name">'+esc(cust.name||o.custName||'â')+'</div>';
+  if(cust.address||o.custAddress)html+='<div class="pty-det">'+esc(cust.address||o.custAddress||'')+'</div>';
+  if(cust.gstin||o.custGstin)html+='<div class="pty-det" style="color:#3730A3;font-size:10px;margin-top:3px">GSTIN: '+esc(cust.gstin||o.custGstin||'')+'</div>';
   html+='</div>';
-  html+='<table><tr>'+thCols+'</tr>'+rows+'</table>';
-  if(show('showTotal')){
-    html+='<div class="sumbox"><div class="srow big"><span>Total</span><span class="mono">'+fmtRs(o.total||grandTotal)+'</span></div>';
-    if(show('showTerms')&&(STATE.settings.discount||STATE.settings.discountDays||STATE.settings.nettDays)) html+='<div class="srow" style="color:#666;font-size:11px"><span>'+STATE.settings.discount+'% disc within '+STATE.settings.discountDays+' days | Nett '+STATE.settings.nettDays+' days</span><span></span></div>';
+  var hasSalesInfo=!!(o.salesmanName||(S.defaultSalesman&&show('showSalesmanBroker'))||o.brokerName);
+  if(hasSalesInfo){
+    html+='<div class="info-box">';
+    if(o.salesmanName||S.defaultSalesman)html+='<div class="inf-row"><span class="inf-k">Salesman</span><span class="inf-v">'+esc(o.salesmanName||S.defaultSalesman||'')+'</span></div>';
+    if(o.brokerName)html+='<div class="inf-row"><span class="inf-k">Broker</span><span class="inf-v">'+esc(o.brokerName)+'</span></div>';
     html+='</div>';
   }
-  if(show('showNotes')&&o.notes) html+='<div style="margin-top:12px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px"><div style="font-size:10px;font-weight:700;color:#92400E;margin-bottom:4px">NOTES</div><div style="font-size:12px">'+escHtml(o.notes)+'</div></div>';
-  if(show('showSignature')) html+='<div style="margin-top:36px;display:grid;grid-template-columns:1fr 1fr;gap:30px"><div style="border-top:1.5px solid #ccc;padding-top:6px;text-align:center;font-size:11px;color:#666">Authorised Signatory</div><div style="border-top:1.5px solid #ccc;padding-top:6px;text-align:center;font-size:11px;color:#666">Customer&#39;s Signature</div></div>';
-  html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;- Order '+o.orderNo+' &nbsp;- Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
-  _printWin(html,'Order '+o.orderNo);
+  html+='</div>';
+  if(o.billingFirm||o.billingTerms){
+    html+='<div class="bill-bar">';
+    if(o.billingFirm)html+='<div><div class="b-k">Bill To</div><div class="b-v">'+esc(o.billingFirm)+'</div></div>';
+    if(o.billingTerms)html+='<div><div class="b-k">Payment Terms</div><div class="b-v">'+esc(o.billingTerms)+'</div></div>';
+    html+='</div>';
+  }
+  html+='<div class="sec-ttl">Order Items</div>';
+  html+=itemsHtml;
+  if(show('showDelivery')&&(o.deliveryDate||o.deliveryDays||o.deliveryType||o.deliveryPerson)){
+    html+='<div class="deliv-bar">';
+    if(o.deliveryType)html+='<div><div class="d-k">Delivery</div><div class="d-v">'+esc(o.deliveryType)+'</div></div>';
+    if(o.deliveryDate)html+='<div><div class="d-k">Date</div><div class="d-v">'+esc(o.deliveryDate)+'</div></div>';
+    if(o.deliveryDays)html+='<div><div class="d-k">In Days</div><div class="d-v">'+esc(o.deliveryDays)+' day'+(o.deliveryDays>1?'s':'')+'</div></div>';
+    if(o.deliveryPerson)html+='<div><div class="d-k">Collect By</div><div class="d-v">'+esc(o.deliveryPerson)+'</div></div>';
+    html+='</div>';
+  }
+  if(show('showNotes')&&o.notes){
+    html+='<div class="sec-ttl">Notes</div>';
+    html+='<div class="notes-box">'+esc(o.notes)+'</div>';
+  }
+  if(show('showTnC')&&S.termsConditions){
+    html+='<div class="sec-ttl">Terms &amp; Conditions</div>';
+    html+='<div class="tnc-box">'+esc(S.termsConditions)+'</div>';
+  }
+  if(show('showSignature')){
+    html+='<div class="sig-row">';
+    html+='<div class="sig-box"><div class="sig-line">Authorised Signatory</div></div>';
+    html+='<div class="sig-box"><div class="sig-line">Customer Signature</div></div>';
+    html+='<div class="sig-box"><div class="sig-line">Received By</div></div>';
+    html+='</div>';
+  }
+  html+='<div class="footer">'+esc(co)+' Â· Generated '+dateStr+'</div>';
+  html+='</div><script>window.onload=function(){window.print()}<\/script></body></html>';
+  var w=window.open('','_blank','width=860,height=920');
+  if(w){w.document.write(html);w.document.close();}
 }
 function printLeadPdf(id){
   const lead=(STATE.leads||[]).find(l=>l.id===id); if(!lead) return;
