@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.44.2';
+const APP_VERSION='1.45.0';
 const APP_BUILD_DATE='2026-09-01';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -6327,10 +6327,7 @@ if(o.status!=='cancelled'&&o.status!=='fulfilled') btns.appendChild(mk('bs','Edi
 if(o.status!=='cancelled'&&o.status!=='billed'&&o.status!=='fulfilled') btns.appendChild(mk('bgh','Clear',()=>clearOrder(o.id)));
 if(o.status==='pending'||o.status==='open') btns.appendChild(mk('bgh','&#x274C; Cancel',()=>cancelOrder(o.id)));
 btns.appendChild(mk('bd','&#x1F5D1;',()=>deleteOrder(o.id)));
-const wa=document.createElement('button');
-wa.className='wa'; wa.style.cssText='padding:4px 8px;font-size:11px;border-radius:7px';
-wa.innerHTML='&#x1F4F2; WA'; wa.onclick=()=>waOrd(o.id);
-btns.appendChild(wa);
+if(canWAShare('orders')){const wa=document.createElement('button');wa.className='wa';wa.style.cssText='padding:4px 8px;font-size:11px;border-radius:7px';wa.innerHTML='&#x1F4F2; WA';wa.onclick=()=>waOrd(o.id);btns.appendChild(wa);}
 row.appendChild(btns);
 }
 c.appendChild(row);
@@ -7790,6 +7787,7 @@ waBtn.className='wa';
 waBtn.style.cssText='padding:4px 8px;font-size:11px;border-radius:7px;margin-top:4px';
 waBtn.innerHTML='&#x1F4F2; WA';
 waBtn.onclick=e=>{e.stopPropagation();waBillMsg(b);};
+if(!canWAShare('bills'))waBtn.style.display='none';
 const erDiv=row.querySelector('.er');
 if(b.status==='cancelled'){
 waBtn.style.display='none';
@@ -8064,12 +8062,7 @@ row.innerHTML=
 '<div class="mono fw7 '+(over?'cR':'cA')+'">'+fmtRs(Math.round(due))+'</div>'+
 '</div>';
 if(cust?.whatsapp||cust?.phone){
-const waBtn=document.createElement('button');
-waBtn.className='wa';
-waBtn.style.cssText='padding:4px 9px;font-size:10px;border-radius:6px;margin:4px 12px 8px 64px;display:block';
-waBtn.innerHTML='&#x1F4F2; Send WA Statement to '+b.custName;
-waBtn.onclick=e=>{e.stopPropagation();waOutstanding(b.custId);};
-row.appendChild(waBtn);
+if(canWAShare('bills')){const waBtn=document.createElement('button');waBtn.className='wa';waBtn.style.cssText='padding:4px 9px;font-size:10px;border-radius:6px;margin:4px 12px 8px 64px;display:block';waBtn.innerHTML='📲 Send WA Statement to '+b.custName;waBtn.onclick=e=>{e.stopPropagation();waOutstanding(b.custId);};row.appendChild(waBtn);}
 }
 c.appendChild(row);
 });
@@ -8788,12 +8781,206 @@ function rejectDev(id){const d=STATE.deviceReqs.find(x=>x.id===id);if(!d) return
 function renderSettingsForm(){
 const c=el('setbod'); if(!c) return;
 const s=STATE.settings||{};
-c.innerHTML='<div class="card"><div class="fw8" style="margin-bottom:14px">Company Details</div>'+
+const ws=s.waShareSections||{};
+const chk=(v,def)=>v===undefined?def:v;
+/* ── Section builders ───────────────────────────────────────────────── */
+// 1. COMPANY
+const _company=
 '<div class="fg"><label>Company Name</label><input class="inp" id="s-cn" value="'+(s.companyName||'')+'"/></div>'+
 '<div class="fg"><label>GSTIN</label><input class="inp mono" id="s-gs" value="'+(s.gstin||'')+'"/></div>'+
 '<div class="fg"><label>Address</label><textarea class="ta" id="s-ad" rows="2">'+(s.address||'')+'</textarea></div>'+
 '<div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="s-ph" value="'+(s.phone||'')+'"/></div><div class="fg"><label>Email</label><input class="inp" id="s-em" type="email" value="'+(s.email||'')+'"/></div></div>'+
-'<div class="fg"><label>Admin WhatsApp</label><input class="inp" id="s-wa" value="'+(s.adminWhatsApp||'')+'"/></div></div>'+
+'<div class="dvd mt12 mb12"></div>'+
+'<div class="fw7 sm" style="margin-bottom:8px">Invoice / Bill Numbering</div>'+
+'<div class="ir2"><div class="fg"><label>Invoice Prefix</label><input class="inp mono" id="s-bpfx" placeholder="INV-" value="'+(s.billPrefix||'INV-')+'" oninput="const p=this.value;const n=el(\'s-bsno\').value;const pad=parseInt(el(\'s-bpad\').value)||4;el(\'s-bprev\').textContent=p+String(parseInt(n)||1).padStart(pad,\'0\')"/></div>'+
+'<div class="fg"><label>Start Number</label><input class="inp mono" type="number" id="s-bsno" step="1" min="1" value="'+(s.billStartNo||1)+'" oninput="const p=el(\'s-bpfx\').value;const pad=parseInt(el(\'s-bpad\').value)||4;el(\'s-bprev\').textContent=p+String(parseInt(this.value)||1).padStart(pad,\'0\')"/></div></div>'+
+'<div class="ir2"><div class="fg"><label>Padding Digits</label><input class="inp mono" type="number" id="s-bpad" step="1" min="1" max="8" value="'+(s.billPadLen||4)+'" oninput="const p=el(\'s-bpfx\').value;const n=el(\'s-bsno\').value;el(\'s-bprev\').textContent=p+String(parseInt(n)||1).padStart(parseInt(this.value)||4,\'0\')"/></div>'+
+'<div class="fg"><label>Preview</label><div class="inp mono" style="background:var(--Pl);color:var(--Pd);font-weight:800;display:flex;align-items:center" id="s-bprev">'+(s.billPrefix||'INV-')+String(s.billStartNo||1).padStart(s.billPadLen||4,'0')+'</div></div></div>'+
+'<div class="dvd mt12 mb12"></div>'+
+'<div class="fw7 sm" style="margin-bottom:8px">Inward Voucher</div>'+
+'<div class="ir2"><div class="fg"><label>Voucher Prefix</label><input class="inp mono" id="s-inpfx" value="'+(s.inwardPrefix||'GRN/')+'"/></div><div class="fg"><label>Next Number</label><input class="inp mono" type="number" id="s-inno" step="1" min="1" value="'+(s.nextInwardNo||1)+'"/></div></div>'+
+'<div class="xs ct3">Prefix + padded number on every inward entry. Change "Next Number" only to fix gaps or reset the series.</div>';
+// 2. ORDERS & LEADS
+const _orders=
+'<div class="ir2"><div class="fg"><label>Default Order Prefix</label><input class="inp mono" id="s-pfx" value="'+(s.orderPrefix||'B/')+'"/></div><div class="fg"><label>Discount %</label><input class="inp mono" id="s-disc" type="number" step="0.1" value="'+(s.discount||5)+'"/></div></div>'+
+'<div class="ir2"><div class="fg"><label>Discount Days</label><input class="inp mono" id="s-dd" type="number" step="1" value="'+(s.discountDays||45)+'"/></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="s-nd" type="number" step="1" value="'+(s.nettDays||120)+'"/></div></div>'+
+'<div class="dvd mt12 mb12"></div>'+
+'<div class="fw7 sm" style="margin-bottom:8px">🎯 Lead Auto-Cleanup</div>'+
+'<div class="xs ct3" style="margin-bottom:10px">Auto-remove Won and Lost leads after N days to keep CRM clean. Set 0 to never auto-delete.</div>'+
+'<div class="ir2"><div class="fg"><label>Delete <b style="color:#059669">Won</b> leads after (days)</label><input class="inp mono" id="s-del-won" type="number" min="0" step="1" placeholder="0 = never" value="'+(s.autoDeleteWonLeadsDays||0)+'"/></div>'+
+'<div class="fg"><label>Delete <b style="color:#EF4444">Lost</b> leads after (days)</label><input class="inp mono" id="s-del-lost" type="number" min="0" step="1" placeholder="0 = never" value="'+(s.autoDeleteLostLeadsDays||0)+'"/></div></div>';
+// 3. STOCK
+const _stock=
+'<div class="ir2"><div class="fg"><label>Avg Meters / Taka</label><input class="inp mono" id="s-avg" type="number" step="0.5" value="'+(s.avgMtrPerTaka||90)+'"/></div><div class="fg"><label>Avg Meters / TP</label><input class="inp mono" id="s-avgtp" type="number" step="0.5" value="'+(s.avgMtrPerTP||45)+'"/></div></div>'+
+'<div class="xs ct3" style="margin-top:-8px">Changing Avg Mtr/Taka recalculates all meter displays across the app</div>'+
+'<div class="fg mt12"><label>Mixed Sarees Cut (meters per saree)</label><input class="inp mono" id="s-mixcut" type="number" step="0.5" min="0.5" placeholder="e.g. 6" value="'+(s.mixedSareesCut||6)+'"/></div>'+
+'<div class="xs ct3" style="margin-top:-8px">Used when converting leftover fabric into mixed sarees. Default: 6 mtrs/saree.</div>';
+// 4. WA SHARING (new!)
+const _waToggle=(key,lbl,desc)=>'<label style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--Pl);border-radius:8px;margin-bottom:6px;cursor:pointer">'+
+'<input type="checkbox" id="s-was-'+key+'" style="width:18px;height:18px;accent-color:#25D366;flex-shrink:0"'+(chk(ws[key],true)?' checked':'')+' onchange="(STATE.settings.waShareSections=STATE.settings.waShareSections||{})[\''+key+'\']=this.checked"/>'+
+'<div><div style="font-size:13px;font-weight:700">'+lbl+'</div><div class="xs ct3">'+desc+'</div></div>'+
+'</label>';
+const _waSharing=
+'<div class="fw7 sm" style="margin-bottom:4px">Admin WhatsApp Number</div>'+
+'<div class="fg"><input class="inp" id="s-wa" id="s-adwa" type="tel" placeholder="91XXXXXXXXXX" value="'+(s.adminWhatsApp||'')+'"/></div>'+
+'<div class="xs ct3 mb12">Reports and alerts will be shared to this number</div>'+
+'<div class="dvd mb12"></div>'+
+'<div class="fw7 sm" style="margin-bottom:4px">Section Permissions</div>'+
+'<div class="xs ct3" style="margin-bottom:10px">Turn off a section to block WA sharing from that part of the app — for everyone except Admin.</div>'+
+_waToggle('reports','Reports','Stock, Sales, Top SKUs, Daily reports')+
+_waToggle('orders','Orders','Share individual order details')+
+_waToggle('bills','Bills & Invoices','Share dispatch invoices')+
+_waToggle('tasks','Tasks','Send task reminders to staff')+
+'<div style="background:#FEF3C7;border-left:3px solid #F59E0B;border-radius:6px;padding:10px 12px;font-size:12px;margin-top:8px">'+
+'<div class="fw7">Admin always has full WA access.</div>'+
+'<div class="ct3 mt4">Per-user access: <span onclick="aTab(\'usr\')" style="color:var(--P);cursor:pointer;font-weight:700">Admin → Users</span> → enable WA permissions for each salesman.</div>'+
+'</div>'+
+'<div class="dvd mt12 mb12"></div>'+
+'<div class="fw7 sm" style="margin-bottom:6px">📲 Message Templates</div>'+
+'<div class="xs ct3" style="margin-bottom:10px">Leave any blank to use the built-in default. Variables depend on context.</div>'+
+'<div class="fg"><label>Order Message</label><textarea class="ta" id="s-wa-tpl-order" rows="4" placeholder="Variables: {company}, {address}, {phone}, {orderNo}, {date}, {party}, {lines}, {total}">'+(s.waTemplateOrder||'')+'</textarea></div>'+
+'<div class="fg mt8"><label>Bill / Invoice Message</label><textarea class="ta" id="s-wa-tpl-bill" rows="4" placeholder="Same as Order + {gstin}, {billNo}, {gstLine}, {subtotal}">'+(s.waTemplateBill||'')+'</textarea></div>'+
+'<div class="fg mt8"><label>Lead → Salesman</label><textarea class="ta" id="s-wa-tpl-sm" rows="4" placeholder="Variables: {name}, {status}, {market}, {interest}, {rate}, {followup}, {broker}, {notes}, {company}">'+(s.waTemplateSalesman||'')+'</textarea></div>'+
+'<div class="fg mt8"><label>Lead → Broker</label><textarea class="ta" id="s-wa-tpl-brk" rows="4" placeholder="Same variables as salesman template">'+(s.waTemplateBroker||'')+'</textarea></div>'+
+'<div class="fg mt8"><label>Sample Set → Salesman</label><textarea class="ta" id="s-wa-tpl-ss-sm" rows="4" placeholder="Variables: {name}, {party}, {address}, {partyPhone}, {date}, {items}, {carrier}, {notes}, {company}">'+(s.waTemplateSsSmn||'')+'</textarea></div>'+
+'<div class="fg mt8"><label>Sample Set → Broker</label><textarea class="ta" id="s-wa-tpl-ss-brk" rows="4" placeholder="Same variables">'+(s.waTemplateSsBrk||'')+'</textarea></div>'+
+'<div class="fg mt8"><label>Sample Set → Carrier</label><textarea class="ta" id="s-wa-tpl-ss-carrier" rows="4" placeholder="Same variables">'+(s.waTemplateSsCarrier||'')+'</textarea></div>'+
+'<div class="dvd mt12 mb12"></div>'+
+'<div class="fw7 sm" style="margin-bottom:6px">🔄 Exchange Slip Templates</div>'+
+'<div class="xs ct3" style="margin-bottom:10px">Variables: {vno}, {party}, {date}, {status}, {lines}, {totalDamage}, {totalExchange}, {totalSarees}, {rep}, {company}</div>'+
+'<div class="fg"><label>Pending</label><textarea class="ta" id="s-ex-tpl-pending" rows="4" placeholder="Default: damage details only">'+(s.exchWaTplPending||'')+'</textarea></div>'+
+'<div class="fg mt8"><label>Under Process</label><textarea class="ta" id="s-ex-tpl-uprocess" rows="4">'+(s.exchWaTplUnderProcess||'')+'</textarea></div>'+
+'<div class="fg mt8"><label>Ready for Collection</label><textarea class="ta" id="s-ex-tpl-ready" rows="4">'+(s.exchWaTplReady||'')+'</textarea></div>'+
+'<div class="fg mt8"><label>Collected</label><textarea class="ta" id="s-ex-tpl-collected" rows="4">'+(s.exchWaTplCollected||'')+'</textarea></div>';
+// 5. STAR CUSTOMERS
+const _star=
+'<div class="xs ct3" style="margin-bottom:12px">Mark your best customers as Star in Customer Master. When no order arrives for this many days, they appear on the salesman dashboard and the Star Follow-up report.</div>'+
+'<div class="fg"><label>Default Follow-up Days</label><input class="inp mono" id="s-star-days" type="number" min="1" step="1" placeholder="e.g. 4" value="'+(s.starFollowupDaysDefault||4)+'"/></div>'+
+'<div class="fg mt8"><label>WhatsApp Message to Customer (optional)</label><textarea class="ta" id="s-star-wa-tpl" rows="4" placeholder="Variables: {name}, {days}, {lastOrderDate}, {company}">'+(s.starWaTemplate||'')+'</textarea></div>'+
+'<button class="btn bfl mt8" style="background:#FEF3C7;color:#92400E;border:1.5px solid #FCD34D;font-weight:800;font-size:13px" onclick="openStarCustomersManager()">⭐ Manage Star Customers</button>'+
+'<div class="dvd mt12 mb12"></div>'+
+'<div class="fw8" style="margin-bottom:6px">Grading System</div>'+
+'<div class="xs ct3" style="margin-bottom:10px">Grade thresholds (12-month billing total), follow-up intervals, snooze days, and WA templates.</div>'+
+'<div class="fw7 xs" style="color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Grade Thresholds (₹ min 12-month billing)</div>'+
+'<div class="ir2" style="grid-template-columns:1fr 1fr 1fr;gap:8px">'+
+'<div class="fg"><label style="color:#D97706;font-weight:800">A — Min (₹)</label><input class="inp mono" id="s-sg-thresh-a" type="number" min="0" step="1000" placeholder="e.g. 500000" value="'+(s.starGrading?.thresholdA||'')+'"/></div>'+
+'<div class="fg"><label style="color:#7C3AED;font-weight:800">B — Min (₹)</label><input class="inp mono" id="s-sg-thresh-b" type="number" min="0" step="1000" placeholder="e.g. 200000" value="'+(s.starGrading?.thresholdB||'')+'"/></div>'+
+'<div class="fg"><label style="color:#0284C7;font-weight:800">C — Min (₹)</label><input class="inp mono" id="s-sg-thresh-c" type="number" min="0" step="1000" placeholder="e.g. 50000" value="'+(s.starGrading?.thresholdC||'')+'"/></div>'+
+'</div>'+
+'<div class="fw7 xs" style="color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px">Follow-up Days (no order threshold)</div>'+
+'<div class="ir2" style="grid-template-columns:1fr 1fr 1fr;gap:8px">'+
+'<div class="fg"><label style="color:#D97706;font-weight:800">Grade A</label><input class="inp mono" id="s-sg-days-a" type="number" min="1" step="1" placeholder="e.g. 3" value="'+(s.starGrading?.followupDaysA||'')+'"/></div>'+
+'<div class="fg"><label style="color:#7C3AED;font-weight:800">Grade B</label><input class="inp mono" id="s-sg-days-b" type="number" min="1" step="1" placeholder="e.g. 5" value="'+(s.starGrading?.followupDaysB||'')+'"/></div>'+
+'<div class="fg"><label style="color:#0284C7;font-weight:800">Grade C</label><input class="inp mono" id="s-sg-days-c" type="number" min="1" step="1" placeholder="e.g. 7" value="'+(s.starGrading?.followupDaysC||'')+'"/></div>'+
+'</div>'+
+'<div class="fw7 xs" style="color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px">"Ordering Soon" Snooze Days</div>'+
+'<div class="ir2" style="grid-template-columns:1fr 1fr 1fr;gap:8px">'+
+'<div class="fg"><label style="color:#D97706;font-weight:800">Grade A</label><input class="inp mono" id="s-sg-snooze-a" type="number" min="1" step="1" placeholder="e.g. 3" value="'+(s.starGrading?.snoozeDaysA||'')+'"/></div>'+
+'<div class="fg"><label style="color:#7C3AED;font-weight:800">Grade B</label><input class="inp mono" id="s-sg-snooze-b" type="number" min="1" step="1" placeholder="e.g. 5" value="'+(s.starGrading?.snoozeDaysB||'')+'"/></div>'+
+'<div class="fg"><label style="color:#0284C7;font-weight:800">Grade C</label><input class="inp mono" id="s-sg-snooze-c" type="number" min="1" step="1" placeholder="e.g. 7" value="'+(s.starGrading?.snoozeDaysC||'')+'"/></div>'+
+'</div>'+
+'<div class="ir2 mt10">'+
+'<div class="fg"><label>📵 "Can\'t Reach" Retry (days)</label><input class="inp mono" id="s-sg-cant-reach" type="number" min="1" step="1" placeholder="e.g. 3" value="'+(s.starGrading?.cantReachDays||'')+'"/></div>'+
+'<div class="fg"><label>⬆️ Escalate After N Cycles</label><input class="inp mono" id="s-sg-escalate" type="number" min="1" step="1" placeholder="e.g. 3" value="'+(s.starGrading?.escalationCycles||'')+'"/></div>'+
+'</div>'+
+'<div class="dvd mt10 mb10"></div>'+
+'<div style="display:flex;flex-direction:column;gap:10px">'+
+'<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="s-sg-notify-before" style="width:16px;height:16px;accent-color:var(--P);margin-top:2px"'+(s.starGrading?.notifyDayBefore!==false?' checked':'')+'/><div><div style="font-size:13px;font-weight:700">Notify admin 1 day before threshold</div><div class="xs ct3 mt2">Show an alert on the dashboard 1 day before a star customer\'s follow-up becomes due</div></div></label>'+
+'<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="s-sg-auto-task" style="width:16px;height:16px;accent-color:var(--P);margin-top:2px"'+(s.starGrading?.autoCreateTask!==false?' checked':'')+'/><div><div style="font-size:13px;font-weight:700">Auto-generate task if admin ignores notification</div><div class="xs ct3 mt2">If the notification is not acted on, automatically create a task for the salesman on the due date</div></div></label>'+
+'</div>'+
+'<div class="dvd mt10 mb10"></div>'+
+'<div class="fw7 xs" style="color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">WA Templates (to Salesman / Broker)</div>'+
+'<div class="xs ct3" style="margin-bottom:10px">Variables: {salesman}, {customerList}, {company}, {grade}, {custName}, {days}, {lastOrderDate}</div>'+
+'<div class="fg"><label>To Salesman</label><textarea class="ta" id="s-sg-wa-sm" rows="4" placeholder="Leave blank for default">'+(s.starGrading?.waSalesmanTemplate||'')+'</textarea></div>'+
+'<div class="fg mt8"><label>To Broker</label><textarea class="ta" id="s-sg-wa-brk" rows="4" placeholder="Same variables">'+(s.starGrading?.waBrokerTemplate||'')+'</textarea></div>';
+// 6. TASKS & HOLIDAYS
+const _tasks=
+'<div class="ir2">'+
+'<div class="fg"><label>Daily Task Refresh Time</label><input type="time" class="inp" id="s-trt" value="'+(s.taskRefreshTime||'09:30')+'"/></div>'+
+'<div class="fg"><label>Office Timezone</label><select class="inp" id="s-otz"><option value="Asia/Calcutta"'+(s.officeTimezone==="Asia/Calcutta"||!s.officeTimezone?' selected':'')+'>India — IST</option><option value="America/New_York"'+(s.officeTimezone==="America/New_York"?' selected':'')+'>US East — EST/EDT</option><option value="America/Los_Angeles"'+(s.officeTimezone==="America/Los_Angeles"?' selected':'')+'>US West — PST/PDT</option><option value="Europe/London"'+(s.officeTimezone==="Europe/London"?' selected':'')+'>UK — GMT/BST</option><option value="Asia/Dubai"'+(s.officeTimezone==="Asia/Dubai"?' selected':'')+'>UAE — GST</option></select></div>'+
+'</div>'+
+'<div class="xs ct3" style="margin-bottom:12px">Tasks generate at refresh time every day — Sundays and holidays always off</div>'+
+'<div class="fg"><label>Auto-delete completed tasks after (days)</label><input class="inp mono" id="s-autodel" type="number" min="0" step="1" placeholder="0 = never" value="'+(s.autoDeleteCompletedDays||0)+'"/></div>'+
+'<div class="xs ct3" style="margin-bottom:16px">Set to 0 to keep completed tasks forever. E.g. 30 = delete tasks completed more than 30 days ago.</div>'+
+'<div class="dvd mb12"></div>'+
+'<div class="fw7 sm" style="margin-bottom:8px">🗓 Holidays & Shop Closures</div>'+
+'<div class="xs ct3" style="margin-bottom:10px"><b>Shop Closed</b> — no tasks run, follow-ups skip over this date. <b>Public Holiday</b> — tasks run normally, just marked for awareness.</div>'+
+'<div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center">'+
+'<input type="date" class="inp mono" id="s-hol-date" style="flex:1;min-width:130px"/>'+
+'<input type="text" class="inp" id="s-hol-label" placeholder="Name (e.g. Republic Day)" style="flex:2;min-width:120px"/>'+
+'</div>'+
+'<div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">'+
+'<select class="inp" id="s-hol-type" style="flex:1;min-width:140px">'+
+'<option value="closed">🔴 Shop Closed (no tasks)</option>'+
+'<option value="public">🟡 Public Holiday (shop open)</option>'+
+'</select>'+
+'<button class="btn bp bsm" onclick="addHoliday()" style="flex:0 0 auto">+ Add</button>'+
+'</div>'+
+'<div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px">Add a date range (e.g. Diwali holidays)</div>'+
+'<div style="display:flex;gap:6px;margin-bottom:4px;flex-wrap:wrap;align-items:center">'+
+'<div style="flex:1;min-width:120px"><div class="xs ct3 mb3">From</div><input type="date" class="inp mono" id="s-hol-from" style="width:100%"/></div>'+
+'<div style="flex:1;min-width:120px"><div class="xs ct3 mb3">To</div><input type="date" class="inp mono" id="s-hol-to" style="width:100%"/></div>'+
+'</div>'+
+'<div style="display:flex;gap:6px;margin-bottom:10px">'+
+'<input type="text" class="inp" id="s-hol-range-label" placeholder="Range label (e.g. Diwali Holidays)" style="flex:2"/>'+
+'<button class="btn bsm" style="background:#7C3AED;color:white;border:none;flex:0 0 auto" onclick="addHolidayRange()">+ Add Range</button>'+
+'</div>'+
+'<button class="btn bsm" style="background:#DC2626;color:white;border:none;margin-bottom:10px;width:100%" onclick="addHolidayToday()">🔴 Mark Today as Closed (emergency)</button>'+
+'<div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">'+
+'<button class="btn bsm" style="background:#FF6B00;color:white;border:none;flex:1" onclick="loadIndianHolidays('+(new Date().getFullYear())+')">🇮🇳 Load '+(new Date().getFullYear())+'</button>'+
+'<button class="btn bsm" style="background:#FF6B00;color:white;border:none;flex:1" onclick="loadIndianHolidays('+(new Date().getFullYear()+1)+')">🇮🇳 Load '+(new Date().getFullYear()+1)+'</button>'+
+'<button class="btn bsm" style="background:#FF6B00;color:white;border:none;flex:1" onclick="loadIndianHolidays('+(new Date().getFullYear()+2)+')">🇮🇳 Load '+(new Date().getFullYear()+2)+'</button>'+
+'</div>'+
+'<div style="display:flex;gap:6px;margin-bottom:10px">'+
+'<input type="number" class="inp mono" id="s-hol-yr" placeholder="Other year e.g. 2031" min="2024" max="2099" style="flex:1"/>'+
+'<button class="btn bsm" style="background:#6B7280;color:white;border:none" onclick="(function(){var y=parseInt(el(\'s-hol-yr\').value);if(y>2020&&y<2100)loadIndianHolidays(y);else toast(\'Enter a valid year\',\'err\');})()">🇮🇳 Load</button>'+
+'</div>'+
+'<div id="s-hol-list">'+renderHolidayList()+'</div>';
+// 7. DASHBOARD
+const _dashboard=
+'<div class="xs ct3" style="margin-bottom:12px">Control which widgets appear on the dashboard and their order.</div>'+
+'<button class="btn bs bfl" onclick="openDashConfig()">Customize Dashboard Layout</button>';
+// 8. DATA & SECURITY
+const _data=
+'<div class="fw7 sm" style="margin-bottom:6px">💾 Data Backup & Restore</div>'+
+'<div class="xs ct3" style="margin-bottom:10px">Download a backup of all your data. If data is lost, upload the backup file to restore everything.</div>'+
+'<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+'<button class="btn bga" onclick="downloadBackup()">&#8659; Download Backup</button>'+
+'<button class="btn bs" onclick="restoreBackup()">&#8657; Restore from Backup</button>'+
+'</div>'+
+'<div class="dvd mt12 mb12"></div>'+
+'<div class="fw7 sm" style="margin-bottom:4px">🗑 Delete Guard</div>'+
+'<div class="xs ct3" style="margin-bottom:10px">All bulk-delete operations require the acting user to re-enter their login password. Only Admin and users with the Bulk Delete permission can proceed.</div>'+
+'<div style="font-size:12px;font-weight:700;color:#4F46E5">Grant in Admin → Users → Edit user → "Bulk Delete / Clear All"</div>'+
+'<div class="dvd mt12 mb12"></div>'+
+'<div class="fw7 sm" style="margin-bottom:4px">🔒 Recovery Security</div>'+
+'<div class="xs ct3" style="margin-bottom:10px">Two-layer protection. Set a Recovery PIN for quick access. Generate a Recovery File as a master backup key.</div>'+
+'<div style="font-size:12px;font-weight:700;margin-bottom:6px">Step 1 — Recovery PIN</div>'+
+'<div style="display:flex;gap:8px;align-items:flex-end"><div class="fg" style="flex:1"><label>Set Recovery PIN (4–8 digits)</label><input class="inp mono" id="s-rec-pin" type="password" placeholder="e.g. 2580" maxlength="8" inputmode="numeric"/></div><button class="btn bp" onclick="saveRecoveryPin()">Set PIN</button></div>'+
+'<div style="font-size:12px;font-weight:700;margin-top:14px;margin-bottom:6px">Step 2 — Recovery File</div>'+
+'<div class="xs ct3" style="margin-bottom:10px">This file is your master key — unique to your app, no other copy exists. Keep it on a pen drive, personal phone, or email to yourself.</div>'+
+'<button class="btn bga bfl" onclick="generateRecoveryFile()">⬇ Generate & Download Recovery File</button>'+
+'<div id="rec-pin-status" style="font-size:11px;margin-top:6px"></div>'+
+recPinStatusHtml();
+/* ── Compose all sections ─────────────────────────────────────────── */
+c.innerHTML=
+_sg('company','🏢','Company & Billing',true,_company)+
+_sg('orders','🧾','Orders, Payment & Leads',true,_orders)+
+_sg('stock','📦','Stock Settings',true,_stock)+
+_sg('wa','📲','WhatsApp Sharing',true,_waSharing)+
+_sg('star','⭐','Star Customers',false,_star)+
+_sg('tasks','📅','Tasks & Holidays',true,_tasks)+
+_sg('dashboard','📊','Dashboard',false,_dashboard)+
+_sg('data','🔒','Data & Security',false,_data)+
+'<div class="card mt12" style="background:#F9FAFB;text-align:center"><div class="xs ct3">ALT Stock v'+APP_VERSION+' | Build: '+APP_BUILD_DATE+'</div></div>'+
+'<div style="display:flex;gap:8px;margin-top:16px">'+
+'<button class="btn bp" style="flex:1;padding:14px;font-size:14px;font-weight:800" onclick="saveSettings()">💾 Save Settings</button>'+
+'<button class="btn bd" style="padding:14px 18px;font-size:14px" onclick="logout()">Logout</button>'+
+'</div>'+
+'<div style="height:20px"></div>';
+// Update recovery PIN status div after render
+setTimeout(()=>{const d=el('rec-pin-status');if(d)d.innerHTML=recPinStatusHtml().replace(/<div[^>]*>/,'').replace('</div>','');},0);
+}
 '<div class="card mt12"><div class="fw8" style="margin-bottom:14px">Order &amp; Payment</div>'+
 '<div class="ir2"><div class="fg"><label>Default Order Prefix</label><input class="inp mono" id="s-pfx" value="'+(s.orderPrefix||'B/')+'"/></div><div class="fg"><label>Discount %</label><input class="inp mono" id="s-disc" type="number" step="0.1" value="'+(s.discount||5)+'"/></div></div>'+
 '<div class="ir2"><div class="fg"><label>Discount Days</label><input class="inp mono" id="s-dd" type="number" step="1" value="'+(s.discountDays||45)+'"/></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="s-nd" type="number" step="1" value="'+(s.nettDays||120)+'"/></div></div></div>'+
@@ -8954,7 +9141,7 @@ gstin:(sn('s-gs',STATE.settings.gstin||'')||'').toUpperCase(),
 address:sn('s-ad',STATE.settings.address),
 phone:sn('s-ph',STATE.settings.phone),
 email:sn('s-em',STATE.settings.email),
-adminWhatsApp:sn('s-wa',STATE.settings.adminWhatsApp),
+adminWhatsApp:sn('s-wa',STATE.settings.adminWhatsApp)||sn('s-adwa',STATE.settings.adminWhatsApp),
 orderPrefix:sn('s-pfx',STATE.settings.orderPrefix||'B/'),
 inwardPrefix:sn('s-inpfx',STATE.settings.inwardPrefix||'GRN/'),
 nextInwardNo:si('s-inno',STATE.settings.nextInwardNo||1),
@@ -9004,7 +9191,8 @@ waTemplateBill:sv('s-wa-tpl-bill'),
 holidays:STATE.settings.holidays||[],
 holidayLabels:STATE.settings.holidayLabels||{},
 holidayTypes:STATE.settings.holidayTypes||{},
-holidayConfirmed:STATE.settings.holidayConfirmed||{}
+holidayConfirmed:STATE.settings.holidayConfirmed||{},
+waShareSections:STATE.settings.waShareSections||{reports:true,orders:true,bills:true,tasks:true}
 };
 STATE.items.forEach(item=>item.colours.forEach(c=>{c.stock_mtrs=Math.round((c.stock_taka||0)*nA);}));
 autoCleanLeads();
@@ -10010,6 +10198,9 @@ const PERM_DEFS=[
 {id:'rep_topsku',       grp:'Reports', lbl:'Top SKU Report',        desc:'See highest selling colours & SKUs'},
 {id:'rep_dayend',       grp:'Reports', lbl:'Day Wrap Report',       desc:"See today's completed tasks & leads by staff — admin-only by default, grant to a supervisor if needed"},
 {id:'reports_wa',       grp:'Reports', lbl:'Share Reports via WA',  desc:'WhatsApp share any report'},
+{id:'orders_wa',        grp:'Orders',  lbl:'Share Orders via WA',   desc:'WhatsApp share individual order details'},
+{id:'bills_wa',         grp:'Orders',  lbl:'Share Bills via WA',    desc:'WhatsApp share individual invoices/bills'},
+{id:'tasks_wa',         grp:'Tasks',   lbl:'Share Tasks via WA',    desc:'WhatsApp send task reminders'},
 {id:'leads_view',    grp:'Leads', lbl:'View Leads',             desc:'View lead list'},
 {id:'leads_edit',    grp:'Leads', lbl:'Edit Leads',             desc:'Add & update leads'},
 {id:'leads_view_all',grp:'Leads', lbl:'View ALL Leads',         desc:'See every salesman\'s leads (CRE-level access). Enables All Leads tab and full pipeline view.'},
@@ -10020,7 +10211,7 @@ const PERM_DEFS=[
 {id:'flag_entry',  grp:'Ledger',    lbl:'Flag Wrong Entries', desc:'Flag entries for admin review'},
 {id:'bulk_delete', grp:'Admin',     lbl:'Bulk Delete / Clear All', desc:'Delete task templates, clear stale tasks, bulk-wipe data, clear ledger (dangerous — admin only by default)'},
 ];
-const DEFAULT_PERMS={dash:0,sales_view:0,sales_order:0,sales_edit:0,sales_bill:0,sales_delete:0,sales_cancel:0,sales_wa:0,inward_view:0,inward:0,inward_delete:0,manual_stock:0,jw:0,jw_delete:0,masters_view:0,masters_edit:0,masters_delete:0,reports:0,rep_stock:0,rep_vsorder:0,rep_daily:0,rep_topsku:0,rep_dayend:0,reports_wa:0,leads_view:0,leads_edit:0,leads_view_all:0,leads_assign:0,ledger_view:0,delete_entry:0,cancel_bill:0,edit_bill:0,flag_entry:0,bulk_delete:0};
+const DEFAULT_PERMS={dash:0,sales_view:0,sales_order:0,sales_edit:0,sales_bill:0,sales_delete:0,sales_cancel:0,sales_wa:0,inward_view:0,inward:0,inward_delete:0,manual_stock:0,jw:0,jw_delete:0,masters_view:0,masters_edit:0,masters_delete:0,reports:0,rep_stock:0,rep_vsorder:0,rep_daily:0,rep_topsku:0,rep_dayend:0,reports_wa:0,orders_wa:0,bills_wa:0,tasks_wa:0,leads_view:0,leads_edit:0,leads_view_all:0,leads_assign:0,ledger_view:0,delete_entry:0,cancel_bill:0,edit_bill:0,flag_entry:0,bulk_delete:0};
 function getStaffTypes(){
 return [...((STATE.settings||{}).staffTypes||[]),{id:'admin',name:'Admin',color:'#E11D48'}];
 }
@@ -10317,7 +10508,7 @@ if(o.type==='open'){
 const foot=el('ord-det-foot');
 foot.innerHTML='';
 const mk=(cls,txt,fn)=>{const b=document.createElement('button');b.className='btn '+cls;b.innerHTML=txt;b.onclick=fn;return b;};
-foot.appendChild(mk('wa','&#x1F4F2; WhatsApp',()=>waOrd(o.id)));
+if(canWAShare('orders'))foot.appendChild(mk('wa','&#x1F4F2; WhatsApp',()=>waOrd(o.id)));
 if(_canViewInvoices()){
   if(o.type==='open'&&o.status!=='cancelled'){
     foot.appendChild(mk('bp bfl','&#x1F4CB; Programme Lot',()=>{hideMod('m-ord-det');openProgModal(o.id);}));
@@ -10339,7 +10530,7 @@ billHtml+=
 '<div style="flex:1"><div class="mono fw7 '+(cancelled?'ct3':'cP')+'">'+b.billNo+'</div><div class="xs ct3">'+fmtDate(b.date)+(b.custName!==o.custName?' · Bill: '+escHtml(b.custName):'')+'</div></div>'+
 payBadge+
 '<span class="mono fw7">'+(cancelled?'<span style="color:#EF4444">CANCELLED</span>':'\u20B9'+fmtN(Math.round(b.grandTotal||0)))+'</span>'+
-(!cancelled?'<button class="wa" style="padding:3px 7px;font-size:10px;border-radius:6px" onclick="event.stopPropagation();waBillMsg(STATE.bills.find(x=>x.id===\"'+b.id+'\"))">WA</button>':'')+
+(!cancelled&&canWAShare('bills')?'<button class="wa" style="padding:3px 7px;font-size:10px;border-radius:6px" onclick="event.stopPropagation();waBillMsg(STATE.bills.find(x=>x.id===\"'+b.id+'\'))">WA</button>':'')+
 (!cancelled?'<button class="btn bd bxs" style="padding:4px 8px;font-size:10px" onclick="event.stopPropagation();cancelBill(\''+b.id+'\')">❌</button>':'')+
 '</div>';
 });
@@ -11456,7 +11647,7 @@ html+=
 '<div><div class="mono fw7 cP">'+b.billNo+'</div><div class="xs ct3">'+b.custName+'</div></div>'+
 '<div style="display:flex;align-items:center;gap:8px">'+
 '<span class="mono fw7">\u20B9'+fmtN(Math.round(b.grandTotal||0))+'</span>'+
-'<button class="wa" style="padding:3px 7px;font-size:10px;border-radius:6px" onclick="waBillMsg(STATE.bills.find(x=>x.id===\''+b.id+'\'))">WA</button>'+
+(canWAShare('bills')?'<button class="wa" style="padding:3px 7px;font-size:10px;border-radius:6px" onclick="waBillMsg(STATE.bills.find(x=>x.id===\''+b.id+'\'))">WA</button>':'')+
 '</div>'+
 '</div>';
 });
@@ -11653,9 +11844,10 @@ const skuMap={};
 STATE.bills.filter(b=>!b._deleted&&b.status!=='cancelled'&&b.status!=='deleted').forEach(b=>{
 (b.items||[]).forEach(item=>{
 const k=item.sku||item.colourName;
-if(!skuMap[k]) skuMap[k]={sku:k,name:item.colourName,itemName:item.itemName||'',range:item.range||'',qty:0,amount:0,orderCount:0};
+if(!skuMap[k]) skuMap[k]={sku:k,name:item.colourName,itemName:item.itemName||'',range:item.range||'',qty:0,amount:0,mtrs:0,orderCount:0};
 skuMap[k].qty+=(item.dispQty||item.pcs||0);
 skuMap[k].amount+=(item.amount||0);
+skuMap[k].mtrs+=(item.mtrs||0);
 if(!skuMap[k].range&&item.range) skuMap[k].range=item.range;
 });
 });
@@ -11666,10 +11858,10 @@ if(skuMap[k]) skuMap[k].orderCount++;
 });
 });
 const _fltItemSku=el('rep-item-flt')?.value||'';
-const rows=Object.values(skuMap).filter(r=>!_fltItemSku||r.itemName===_fltItemSku).sort((a,b)=>b.amount-a.amount);
+const rows=Object.values(skuMap).filter(r=>!_fltItemSku||r.itemName===_fltItemSku).sort((a,b)=>b.mtrs-a.mtrs);
 let html=
 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'+
-'<div class="fw7" style="font-size:14px">Top SKUs by Sales'+(_fltItemSku?' — '+escHtml(_fltItemSku):'')+' </div>'+
+'<div class="fw7" style="font-size:14px">Top SKUs by Meters'+(_fltItemSku?' — '+escHtml(_fltItemSku):'')+' </div>'+
 '<button class="wa" style="padding:5px 10px;font-size:11px" onclick="waShareCheck(&quot;waTopSKU&quot;)">&#x1F4F2; WA</button>'+
 '</div>'+
 '<div style="display:flex;gap:8px;margin-bottom:10px">'+
@@ -11681,11 +11873,11 @@ if(viewMode==='range'){
 const rMap={};
 rows.forEach(r=>{
 const rk=(r.itemName||'—')+'||'+(r.range||'—');
-if(!rMap[rk]) rMap[rk]={itemName:r.itemName||'—',range:r.range||'—',qty:0,amount:0,colours:[]};
-rMap[rk].qty+=r.qty; rMap[rk].amount+=r.amount;
+if(!rMap[rk]) rMap[rk]={itemName:r.itemName||'—',range:r.range||'—',qty:0,amount:0,mtrs:0,colours:[]};
+rMap[rk].qty+=r.qty; rMap[rk].amount+=r.amount; rMap[rk].mtrs+=r.mtrs;
 rMap[rk].colours.push(r);
 });
-const rRows=Object.values(rMap).sort((a,b)=>b.amount-a.amount);
+const rRows=Object.values(rMap).sort((a,b)=>b.mtrs-a.mtrs);
 rRows.forEach((rg,ri)=>{
 const medal=ri===0?'🥇':ri===1?'🥈':ri===2?'🥉':'#'+(ri+1);
 const isNum=typeof medal==='string'&&medal.startsWith('#');
@@ -11695,40 +11887,41 @@ html+=
 '<span style="font-size:'+(isNum?'11':'15')+'px;font-weight:800;color:#FCD34D">'+(isNum?medal.slice(1)+'.':medal)+'</span>'+
 '<div><div style="font-size:12px;font-weight:800;color:#fff">'+escHtml(rg.itemName)+'</div><div style="font-size:10px;color:#A5B4FC">Range: '+escHtml(rg.range)+'</div></div>'+
 '</div>'+
-'<div style="text-align:right"><div style="font-size:12px;font-weight:800;color:#6EE7B7">₹'+fmtN(Math.round(rg.amount))+'</div><div style="font-size:9px;color:#FCA5A5">'+rg.qty+' pcs</div></div>'+
+'<div style="text-align:right"><div style="font-size:12px;font-weight:800;color:#6EE7B7">'+fmtN(rg.mtrs)+'m</div><div style="font-size:9px;color:#FCA5A5">'+rg.qty+' pcs · ₹'+fmtN(Math.round(rg.amount))+'</div></div>'+
 '</div>';
-rg.colours.sort((a,b)=>b.amount-a.amount).forEach((clr,ci)=>{
+rg.colours.sort((a,b)=>b.mtrs-a.mtrs).forEach((clr,ci)=>{
 const cbg=ci%2===0?'#F8F7FF':'#fff';
 html+=
-'<div style="display:grid;grid-template-columns:18px 1fr 52px 76px;padding:5px 10px;background:'+cbg+';border:1px solid #E5E7EB;border-top:none'+(ci===rg.colours.length-1?';border-radius:0 0 8px 8px':'')+'">'+
+'<div style="display:grid;grid-template-columns:18px 1fr 56px 60px;padding:5px 10px;background:'+cbg+';border:1px solid #E5E7EB;border-top:none'+(ci===rg.colours.length-1?';border-radius:0 0 8px 8px':'')+'">'+
 '<div style="font-size:10px;color:#9CA3AF;font-weight:700;padding-top:2px">'+(ci+1)+'.</div>'+
-'<div><div style="font-size:11px;font-weight:700;color:#374151">'+escHtml(clr.name||'—')+'</div><div style="font-size:9px;color:#9CA3AF">SKU: '+escHtml(clr.sku||'—')+'</div></div>'+
-'<div style="text-align:right;font-size:11px;font-weight:700;color:#92400E;padding-top:2px">'+clr.qty+' pcs</div>'+
-'<div style="text-align:right;font-size:11px;font-weight:800;color:var(--P);padding-top:2px">₹'+fmtN(Math.round(clr.amount))+'</div>'+
+'<div><div style="font-size:11px;font-weight:700;color:#374151">'+escHtml(clr.name||'—')+'</div><div style="font-size:9px;color:#9CA3AF">'+escHtml(clr.sku||'—')+' · '+clr.qty+' pcs</div></div>'+
+'<div style="text-align:right;font-size:11px;font-weight:800;color:var(--P);padding-top:2px">'+fmtN(clr.mtrs)+'m</div>'+
+'<div style="text-align:right;font-size:10px;font-weight:600;color:#92400E;padding-top:3px">₹'+fmtN(Math.round(clr.amount))+'</div>'+
 '</div>';
 });
 });
 }else{
 html+=
-'<div style="display:grid;grid-template-columns:24px 1fr 56px 80px;background:#1e1b4b;padding:6px 10px;border-radius:8px 8px 0 0">'+
+'<div style="display:grid;grid-template-columns:24px 1fr 56px 70px;background:#1e1b4b;padding:6px 10px;border-radius:8px 8px 0 0">'+
 '<div></div>'+
 '<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-transform:uppercase">Item / Range / Colour</div>'+
 '<div style="font-size:9px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Pcs</div>'+
-'<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:right;text-transform:uppercase">Amount</div>'+
+'<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:right;text-transform:uppercase">Meters</div>'+
 '</div>';
 rows.forEach((r,ci)=>{
 const bg=ci%2===0?'#fff':'#F8F7FF';
 const medal=ci===0?'🥇':ci===1?'🥈':ci===2?'🥉':'';
 html+=
-'<div style="display:grid;grid-template-columns:24px 1fr 56px 80px;padding:7px 10px;background:'+bg+';border:1px solid var(--br);border-top:none'+(ci===rows.length-1?';border-radius:0 0 8px 8px':'')+'">'+
+'<div style="display:grid;grid-template-columns:24px 1fr 56px 70px;padding:7px 10px;background:'+bg+';border:1px solid var(--br);border-top:none'+(ci===rows.length-1?';border-radius:0 0 8px 8px':'')+'">'+
 '<div style="font-size:14px;text-align:center">'+medal+'</div>'+
 '<div>'+
 '<div style="font-size:11px;font-weight:800;color:#374151">'+escHtml(r.itemName||'—')+'</div>'+
 '<div style="font-size:10px;color:#6366F1;font-weight:600">'+escHtml(r.range||'—')+'</div>'+
 '<div style="font-size:10px;color:#374151">'+escHtml(r.name||'—')+'<span style="font-size:9px;color:#9CA3AF;margin-left:4px">['+escHtml(r.sku||'—')+']</span></div>'+
+'<div style="font-size:9px;color:#92400E">₹'+fmtN(Math.round(r.amount))+'</div>'+
 '</div>'+
-'<div style="text-align:center;font-size:12px;font-weight:700;color:#92400E">'+r.qty+'</div>'+
-'<div style="text-align:right;font-size:12px;font-weight:800;color:var(--P)">₹'+fmtN(Math.round(r.amount))+'</div>'+
+'<div style="text-align:center;font-size:11px;font-weight:700;color:#92400E;padding-top:2px">'+r.qty+'</div>'+
+'<div style="text-align:right;font-size:12px;font-weight:800;color:var(--P)">'+fmtN(r.mtrs)+'m</div>'+
 '</div>';
 });
 }
@@ -11739,14 +11932,15 @@ function waTopSKU(){
 const skuMap={};
 STATE.bills.filter(b=>!b._deleted&&b.status!=='cancelled'&&b.status!=='deleted').forEach(b=>{
 (b.items||[]).forEach(item=>{
-const k=item.sku; if(!skuMap[k]) skuMap[k]={sku:k,name:item.colourName,qty:0,amount:0};
+const k=item.sku; if(!skuMap[k]) skuMap[k]={sku:k,name:item.colourName,qty:0,amount:0,mtrs:0};
 skuMap[k].qty+=(item.dispQty||item.pcs||0);
 skuMap[k].amount+=(item.amount||0);
+skuMap[k].mtrs+=(item.mtrs||0);
 });
 });
-const rows=Object.values(skuMap).sort((a,b)=>b.amount-a.amount).slice(0,10);
-let lines='*'+STATE.settings.companyName+'*\n*Top SKUs*\n\n';
-rows.forEach((r,i)=>{ lines+=(i+1)+'. '+r.name+' - '+r.qty+'pcs - \u20B9'+fmtN(Math.round(r.amount))+'\n'; });
+const rows=Object.values(skuMap).sort((a,b)=>b.mtrs-a.mtrs).slice(0,10);
+let lines='*'+STATE.settings.companyName+'*\n*Top SKUs by Meters*\n\n';
+rows.forEach((r,i)=>{ lines+=(i+1)+'. '+r.name+' - '+fmtN(r.mtrs)+'m - '+r.qty+'pcs\n'; });
 openWA(STATE.settings.adminWhatsApp,lines);
 }
 /* ── Star Customer Follow-up Report (live) ──────────────────────── */
@@ -13692,6 +13886,41 @@ if(!STATE.user) return false;
 if(STATE.user.role==='admin') return true;
 const perms=STATE.user.permissions||{};
 return !!perms[permId];
+}
+/* canWAShare(section) — section: 'reports'|'orders'|'bills'|'tasks'
+   Admin always passes. Non-admin needs:
+   1. Section not globally disabled in STATE.settings.waShareSections
+   2. Relevant per-user permission enabled */
+function canWAShare(section){
+if(!STATE.user) return false;
+if(STATE.user.role==='admin') return true;
+const secs=STATE.settings?.waShareSections||{};
+if(secs[section]===false) return false;
+const permMap={reports:'reports_wa',orders:'orders_wa',bills:'bills_wa',tasks:'tasks_wa'};
+return hasPerm(permMap[section]||'reports_wa');
+}
+/* Settings accordion helpers */
+function toggleSetGroup(id){
+const d=el('setg-'+id);if(!d)return;
+const arr=el('setg-arr-'+id);
+const open=d.style.display!=='none';
+d.style.display=open?'none':'block';
+if(arr)arr.style.transform=open?'rotate(-90deg)':'rotate(0deg)';
+try{const s=JSON.parse(localStorage.getItem('_setOpen')||'{}');s[id]=!open;localStorage.setItem('_setOpen',JSON.stringify(s));}catch(e){}
+}
+function _setGroupOpen(id,def){
+try{const s=JSON.parse(localStorage.getItem('_setOpen')||'{}');if(id in s)return s[id];}catch(e){}
+return def;
+}
+function _sg(id,emoji,title,def,inner){
+const open=_setGroupOpen(id,def);
+return '<div class="card mt12">'+
+'<div onclick="toggleSetGroup(\''+id+'\')" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center">'+
+'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:18px">'+emoji+'</span><span class="fw8" style="font-size:14px">'+title+'</span></div>'+
+'<span id="setg-arr-'+id+'" style="font-size:18px;color:var(--t3);transition:.2s;transform:'+(!open?'rotate(-90deg)':'rotate(0deg)')+'">&#9662;</span>'+
+'</div>'+
+'<div id="setg-'+id+'" style="display:'+(open?'block':'none')+';margin-top:14px">'+inner+'</div>'+
+'</div>';
 }
 function showBillDetailView(id){
 const b=STATE.bills.find(x=>x.id===id); if(!b) return;
@@ -15918,12 +16147,12 @@ sel.innerHTML='<option value="">Select type...</option>'+
 types.map(t=>'<option value="'+t.id+'"'+(t.id===selectedId?' selected':'')+'>'+t.name+'</option>').join('');
 }
 function waShareCheck(fnName){
-if(hasPerm('reports_wa')||STATE.user?.role==='admin'){
+if(canWAShare('reports')){
 if(fnName==='waStockReport') waStockReport();
 else if(fnName==='waVsOrderReport') waVsOrderReport();
 else if(fnName==='waTopSKU') waTopSKU();
 else if(fnName==='waDailyReport') waDailyReport(el('rep-daily-date')?.value||today());
-}else{ toast('No permission to share reports','er'); }
+}else{ toast('No permission to share via WhatsApp — ask admin to enable it','er'); }
 }
 function applyReportTabVisibility(){
 const isAdmin=STATE.user?.role==='admin';
@@ -17818,7 +18047,7 @@ html+='<div class="emp"><div class="emj">📋</div><h3>No Tasks Today or Overdue
 c.innerHTML=html; return;
 }
 // ── WA button ──
-html+='<button class="wa" style="width:100%;padding:10px;border-radius:10px;font-size:12px;font-weight:800;margin-bottom:16px" onclick="waPendingTaskReminders()">\uD83D\uDCF2 Send WA Reminders to All Staff</button>';
+if(canWAShare('tasks'))html+='<button class="wa" style="width:100%;padding:10px;border-radius:10px;font-size:12px;font-weight:800;margin-bottom:16px" onclick="waPendingTaskReminders()">\uD83D\uDCF2 Send WA Reminders to All Staff</button>';
 // ── Staff breakdown cards ──
 html+='<div style="font-size:11px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Staff Breakdown</div>'+
 '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">';
@@ -17842,7 +18071,7 @@ html+='<div style="border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(
 '<span style="color:#DC2626;background:#FEE2E2;padding:2px 8px;border-radius:20px">\u23F3 '+s.pending+' pending</span>'+
 '</div>'+
 '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
-(_phone?'<button onclick="event.stopPropagation();waPendingForStaff(\''+uid+'\')" style="padding:5px 10px;border:none;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;background:#25D366;color:white">\uD83D\uDCF2 WA</button>':'')+
+(_phone&&canWAShare('tasks')?'<button onclick="event.stopPropagation();waPendingForStaff(\''+uid+'\')" style="padding:5px 10px;border:none;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;background:#25D366;color:white">\uD83D\uDCF2 WA</button>':'')+
 '<button onclick="event.stopPropagation();openAdHocTask(\''+uid+'\')" style="padding:5px 10px;border:none;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;background:#4F46E5;color:white">\u26A1 Assign Task</button>'+
 '<button onclick="event.stopPropagation();pauseTasksForUser(\''+uid+'\',\''+s.name+'\')" style="padding:5px 10px;border:none;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;background:#F59E0B;color:white">\u23F8 Pause Today</button>'+
 '</div>'+
