@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.3';
+const APP_VERSION='1.45.4';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -19308,12 +19308,14 @@ function sendDailyTaskReminders(){
   if(!pend.length){toast('No pending tasks today','ok');return;}
   const smMap={};
   pend.forEach(t=>{if(!smMap[t.assignedUserId])smMap[t.assignedUserId]=[];smMap[t.assignedUserId].push(t);});
-  const sent=[],noPhone=[];
+  const co=STATE.settings.companyName||'ALT Stock';
+  window._waTaskMsgs={};
+  const rows=[];
+  const noPhone=[];
   Object.entries(smMap).forEach(([uid2,tasks])=>{
     const u=STATE.users.find(x=>x.id===uid2);
     const phone=u?.whatsapp||u?.phone||'';
     if(!u||!phone){if(u)noPhone.push(u.name);return;}
-    const co=STATE.settings.companyName||'ALT Stock';
     const ovCount=tasks.filter(t=>new Date()>new Date(t.deadline)).length;
     const taskLines=tasks.map((t,i)=>{
       const ov=new Date()>new Date(t.deadline);
@@ -19329,12 +19331,30 @@ function sendDailyTaskReminders(){
       +'\uD83D\uDCCB Priority: \uD83D\uDD34 High  \uD83D\uDFE1 Medium  \uD83D\uDFE2 Low\n'
       +'Please complete before deadline.\n'
       +'\u2014 '+co;
-    openWA(phone,msg);
-    sent.push(u.name);
+    window._waTaskMsgs[uid2]={phone,msg,name:u.name,count:tasks.length,ovCount};
+    rows.push(uid2);
   });
-  if(sent.length)toast('\uD83D\uDCF2 WA sent to: '+sent.join(', '),'ok');
-  if(noPhone.length)toast('\u26A0\uFE0F No phone: '+noPhone.join(', '),'er');
-  if(!sent.length&&!noPhone.length)toast('No staff assigned to pending tasks','er');
+  /* Show a modal with individual Send buttons \u2014 never auto-fire openWA() */
+  const div=document.createElement('div');div.id='m-wa-task-remind';
+  div.style.cssText='position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
+  let h='<div style="background:white;border-radius:16px 16px 0 0;width:min(480px,100%);padding:16px;max-height:80vh;overflow-y:auto">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+    +'<div><div style="font-size:16px;font-weight:800">\uD83D\uDCF2 Task Reminders</div>'
+    +'<div style="font-size:11px;color:#6B7280;margin-top:2px">Tap Send WA to notify each staff member</div></div>'
+    +'<button onclick="rmEl(\'m-wa-task-remind\')" style="background:none;border:none;font-size:22px;cursor:pointer;color:#9CA3AF">&times;</button></div>';
+  if(noPhone.length)h+='<div style="background:#FEF3C7;border-radius:8px;padding:8px 10px;font-size:11px;color:#92400E;margin-bottom:10px">\u26A0\uFE0F No phone: '+noPhone.map(n=>escHtml(n)).join(', ')+'</div>';
+  rows.forEach(uid2=>{
+    const d=window._waTaskMsgs[uid2];
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F3F4F6">'
+      +'<div><div style="font-size:13px;font-weight:700;color:#111827">'+escHtml(d.name)+'</div>'
+      +'<div style="font-size:11px;color:#6B7280">'+d.count+' task'+(d.count>1?'s':'')+(d.ovCount?' \u00B7 <span style="color:#DC2626">'+d.ovCount+' overdue</span>':'')+'</div></div>'
+      +'<button id="wa-task-btn-'+uid2+'" onclick="openWA(window._waTaskMsgs[\''+uid2+'\'].phone,window._waTaskMsgs[\''+uid2+'\'].msg);this.innerHTML=\'\u2705 Sent\';this.disabled=true;this.style.background=\'#D1FAE5\';this.style.color=\'#059669\'" style="background:#25D366;color:white;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap">\uD83D\uDCF2 Send WA</button>'
+      +'</div>';
+  });
+  h+='<button onclick="rmEl(\'m-wa-task-remind\')" style="margin-top:12px;width:100%;padding:11px;border:none;border-radius:10px;background:#F3F4F6;font-size:13px;font-weight:700;cursor:pointer;color:#374151">Close</button>';
+  h+='</div>';
+  div.innerHTML=h;
+  document.body.appendChild(div);
 }
 function scheduleWAReminder(){
   const t=(STATE.settings.waReminderTime||'09:00').split(':').map(Number);
