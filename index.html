@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.20';
+const APP_VERSION='1.45.21';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -13676,7 +13676,7 @@ function printOrderPdf(id){
     html+='</div>';
   }
   if(show('showNotes')&&o.notes) html+='<div style="margin-top:12px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px"><div style="font-size:10px;font-weight:700;color:#92400E;margin-bottom:4px">NOTES</div><div style="font-size:12px">'+escHtml(o.notes)+'</div></div>';
-  if(show('showSignature')) html+='<div style="margin-top:36px;display:grid;grid-template-columns:1fr 1fr;gap:30px"><div style="border-top:1.5px solid #ccc;padding-top:6px;text-align:center;font-size:11px;color:#666">Authorised Signatory</div><div style="border-top:1.5px solid #ccc;padding-top:6px;text-align:center;font-size:11px;color:#666">Customer's Signature</div></div>';
+  if(show('showSignature')) html+='<div style="margin-top:36px;display:grid;grid-template-columns:1fr 1fr;gap:30px"><div style="border-top:1.5px solid #ccc;padding-top:6px;text-align:center;font-size:11px;color:#666">Authorised Signatory</div><div style="border-top:1.5px solid #ccc;padding-top:6px;text-align:center;font-size:11px;color:#666">Customer&#39;s Signature</div></div>';
   html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;- Order '+o.orderNo+' &nbsp;- Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
   _printWin(html,'Order '+o.orderNo);
 }
