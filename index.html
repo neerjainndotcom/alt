@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.21';
+const APP_VERSION='1.45.22';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -6904,18 +6904,159 @@ function billProgramme(ordId,progId){
   window._billSingleProg=prog.id;showMod('m-bill');
 }
 function waOrd(id){
-const o=STATE.orders.find(x=>x.id===id); if(!o) return;
-const cust=STATE.customers.find(c=>c.id===o.custId);
-const lines=(o.items&&o.items.length?o.items:o.openItems||[]).map(i=>
-  i.colourName
-    ? '- '+i.itemName+' '+i.colourName+' — '+i.pcs+' pcs x '+(i.cut||6)+'m = '+i.mtrs+'m @ ₹'+(i.rate||0)+'/m = ₹'+fmtN(i.amount||0)
-    : '- '+i.itemName+' — '+i.totalPcs+' pcs @ ₹'+(i.rate||0)
-).join('\n');
-const _ordVars={company:STATE.settings.companyName||'',address:STATE.settings.address||'',phone:STATE.settings.phone||'',orderNo:o.orderNo,date:fmtDate(o.date),party:o.custName,lines,total:fmtRs(o.total),discount:STATE.settings.discount,discDays:STATE.settings.discountDays,nettDays:STATE.settings.nettDays};
-const msg=_ssTpl('waTemplateOrder',_ordVars)||('*'+STATE.settings.companyName+'*\n'+STATE.settings.address+'\nPh: '+STATE.settings.phone+'\n\n*Order: '+o.orderNo+'*\nDate: '+fmtDate(o.date)+'\nCustomer: '+o.custName+'\n\n'+lines+'\n\n*Total: '+fmtRs(o.total)+'*\n\n'+STATE.settings.discount+'% disc within '+STATE.settings.discountDays+'d. Nett '+STATE.settings.nettDays+'d.');
-/* Use customer WA/phone if available; otherwise empty = WA opens share picker so user picks any contact */
-openWA(cust?.whatsapp||cust?.phone||'',msg);
+  const o=(STATE.orders||[]).find(x=>x.id===id); if(!o) return;
+  const existing=document.getElementById('_wa-ord-mo');if(existing)existing.remove();
+  const mo=document.createElement('div');
+  mo.id='_wa-ord-mo';
+  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+  mo.innerHTML='<div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px;box-shadow:0 -4px 32px rgba(0,0,0,.2)">'
+    +'<div style="font-weight:800;font-size:16px;margin-bottom:6px">📤 Share Order '+o.orderNo+'</div>'
+    +'<div style="font-size:12px;color:#6B7280;margin-bottom:20px">'+o.custName+'</div>'
+    +'<button onclick="document.getElementById(\'_wa-ord-mo\').remove();_waOrdSharePdf(\''+id+'\')" style="width:100%;padding:14px;background:#4F46E5;color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px;font-family:inherit">📄 Share as PDF</button>'
+    +'<button onclick="document.getElementById(\'_wa-ord-mo\').remove();_waOrdText(\''+id+'\')" style="width:100%;padding:13px;background:#E8F5E9;color:#1B5E20;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;font-family:inherit">💬 Send Text Message</button>'
+    +'<button onclick="document.getElementById(\'_wa-ord-mo\').remove()" style="width:100%;padding:11px;background:#F3F4F6;color:#374151;border:none;border-radius:11px;font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>'
+    +'</div>';
+  mo.onclick=e=>{if(e.target===mo)mo.remove();};
+  document.body.appendChild(mo);
 }
+function _waOrdText(id){
+  const o=(STATE.orders||[]).find(x=>x.id===id); if(!o) return;
+  const cust=(STATE.customers||[]).find(c=>c.id===o.custId);
+  const lines=(o.items&&o.items.length?o.items:o.openItems||[]).map(i=>
+    i.colourName
+      ? '- '+i.itemName+' '+i.colourName+' — '+i.pcs+' pcs x '+(i.cut||6)+'m = '+i.mtrs+'m @ ₹'+(i.rate||0)+'/m = ₹'+fmtN(i.amount||0)
+      : '- '+i.itemName+' — '+i.totalPcs+' pcs @ ₹'+(i.rate||0)
+  ).join('\n');
+  const _ordVars={company:STATE.settings.companyName||'',address:STATE.settings.address||'',phone:STATE.settings.phone||'',orderNo:o.orderNo,date:fmtDate(o.date),party:o.custName,lines,total:fmtRs(o.total),discount:STATE.settings.discount,discDays:STATE.settings.discountDays,nettDays:STATE.settings.nettDays};
+  const msg=_ssTpl('waTemplateOrder',_ordVars)||('*'+STATE.settings.companyName+'*\n'+STATE.settings.address+'\nPh: '+STATE.settings.phone+'\n\n*Order: '+o.orderNo+'*\nDate: '+fmtDate(o.date)+'\nCustomer: '+o.custName+'\n\n'+lines+'\n\n*Total: '+fmtRs(o.total)+'*\n\n'+STATE.settings.discount+'% disc within '+STATE.settings.discountDays+'d. Nett '+STATE.settings.nettDays+'d.');
+  openWA(cust?.whatsapp||cust?.phone||'',msg);
+}
+async function _waOrdSharePdf(id){
+  const o=(STATE.orders||[]).find(x=>x.id===id); if(!o) return;
+  toast('Generating PDF…','ok');
+  try{
+    if(!window.jspdf){
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        s.onload=res;s.onerror=rej;document.head.appendChild(s);
+      });
+    }
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+    const cust=(STATE.customers||[]).find(c=>c.id===o.custId);
+    const ps=STATE.settings.orderPdfSettings||{};
+    const show=(k,def=true)=>ps[k]===false?false:def;
+    const items=(o.items&&o.items.length?o.items:o.openItems||[]);
+    const co=STATE.settings.companyName||'ALT Stock';
+    const W=210,mg=18;
+    let y=18;
+    doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(79,70,229);
+    doc.text(co,mg,y);y+=6;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(100,100,100);
+    if(STATE.settings.address){doc.text(STATE.settings.address,mg,y);y+=4.5;}
+    if(STATE.settings.phone){doc.text('Ph: '+STATE.settings.phone,mg,y);y+=4.5;}
+    y+=2;doc.setDrawColor(79,70,229);doc.setLineWidth(0.5);doc.line(mg,y,W-mg,y);y+=7;
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(130,130,130);
+    doc.text('ORDER FORM',mg,y);y+=5;
+    doc.setFont('helvetica','bold');doc.setFontSize(19);doc.setTextColor(79,70,229);
+    doc.text(o.orderNo,mg,y);y+=7;
+    if(show('showDate')){doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(60,60,60);doc.text('Date: '+fmtDate(o.date),mg,y);y+=5;}
+    y+=3;
+    const hasAddr=show('showCustAddress')&&cust&&cust.address;
+    const bH=hasAddr?28:16;
+    doc.setFillColor(243,244,246);doc.roundedRect(mg,y,W-2*mg,bH,2,2,'F');
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,100,100);
+    doc.text('Customer',mg+4,y+6);
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(30,30,30);
+    doc.text(o.custName||'',mg+4,y+12);
+    if(show('showCustGstin')&&cust&&cust.gstin){
+      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,100,100);
+      doc.text('GSTIN',mg+90,y+6);
+      doc.setFontSize(9);doc.setTextColor(30,30,30);doc.text(cust.gstin,mg+90,y+12);
+    }
+    if(hasAddr){
+      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(80,80,80);
+      const aLines=doc.splitTextToSize(cust.address,W-2*mg-8);
+      doc.text(aLines,mg+4,y+20);
+    }
+    y+=bH+6;
+    if(show('showBroker')&&o.brokerName){doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(70,70,70);doc.text('Broker: '+o.brokerName,mg,y);y+=5;}
+    if(show('showSalesman')&&o.salesmanName){doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(70,70,70);doc.text('Salesman: '+o.salesmanName,mg,y);y+=5;}
+    y+=2;
+    const showAmt=show('showAmount'),showCol=show('showColour');
+    const rowW=W-2*mg;
+    const numW=8,itemW=showCol?48:62,colW2=showCol?30:0,amtX=W-mg-2;
+    doc.setFillColor(79,70,229);doc.rect(mg,y,rowW,7,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(255,255,255);
+    let cx=mg+2;
+    doc.text('#',cx,y+5);cx+=numW;
+    doc.text('Item',cx,y+5);cx+=itemW;
+    if(showCol){doc.text('Colour',cx,y+5);cx+=colW2;}
+    doc.text('Qty / Details',cx,y+5);
+    if(showAmt)doc.text('Amount',amtX,y+5,{align:'right'});
+    y+=7;
+    let grand=0;
+    [...items,...(o.programmes||[])].forEach((it,i)=>{
+      const pcs=it.pcs||it.totalPcs||0,cut=it.cut||6,mtrs=it.mtrs||(pcs*cut),rate=it.rate||0,amt=it.amount||0;
+      grand+=amt;
+      let desc=show('showRate')
+        ?((show('showMetres')?(pcs+' pcs x '+cut+'m = '+mtrs+'m'):(pcs+' pcs'))+' @ Rs.'+rate+(show('showMetres')?'/m':''))
+        :(show('showMetres')?(pcs+' pcs x '+cut+'m = '+mtrs+'m'):(pcs+' pcs'));
+      if(i%2===0){doc.setFillColor(248,248,252);doc.rect(mg,y,rowW,7,'F');}
+      doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(30,30,30);
+      cx=mg+2;doc.text(String(i+1),cx,y+5);cx+=numW;
+      const nm=it.itemName||'';doc.text(nm.length>20?nm.slice(0,19)+'…':nm,cx,y+5);cx+=itemW;
+      if(showCol){const cl=it.colourName||it.range||'';doc.text(cl.length>13?cl.slice(0,12)+'…':cl,cx,y+5);cx+=colW2;}
+      doc.text(desc.length>26?desc.slice(0,25)+'…':desc,cx,y+5);
+      if(showAmt)doc.text(fmtRs(amt),amtX,y+5,{align:'right'});
+      y+=7;if(y>268){doc.addPage();y=20;}
+    });
+    if(show('showTotal')){
+      y+=3;doc.setFillColor(237,233,254);doc.roundedRect(mg,y,rowW,10,1,1,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(30,30,30);
+      doc.text('Total',mg+4,y+7);doc.text(fmtRs(o.total||grand),amtX,y+7,{align:'right'});
+      y+=13;
+      if(show('showTerms')&&(STATE.settings.discount||STATE.settings.discountDays||STATE.settings.nettDays)){
+        doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,100,100);
+        doc.text((STATE.settings.discount||'')+'% disc within '+(STATE.settings.discountDays||'')+' days | Nett '+(STATE.settings.nettDays||'')+' days',mg,y);
+        y+=5;
+      }
+    }
+    if(show('showNotes')&&o.notes){
+      y+=4;doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(146,64,14);
+      const nl=doc.splitTextToSize('Notes: '+o.notes,rowW);doc.text(nl,mg,y);y+=nl.length*4.5+2;
+    }
+    if(show('showSignature')){
+      y+=18;const sw=(rowW-16)/2;
+      doc.setDrawColor(180,180,180);doc.setLineWidth(0.3);
+      doc.line(mg,y,mg+sw,y);doc.line(W-mg-sw,y,W-mg,y);
+      y+=4;doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,100,100);
+      doc.text('Authorised Signatory',mg+sw/2,y,{align:'center'});
+      doc.text('Customer\'s Signature',W-mg-sw/2,y,{align:'center'});
+    }
+    y+=10;doc.setDrawColor(200,200,200);doc.setLineWidth(0.2);doc.line(mg,y,W-mg,y);y+=4;
+    doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(150,150,150);
+    doc.text(co+' — Order '+o.orderNo+' — '+new Date().toLocaleDateString('en-IN'),W/2,y,{align:'center'});
+    const blob=doc.output('blob');
+    const fname='Order_'+o.orderNo.replace(/\//g,'-')+'.pdf';
+    const file=new File([blob],fname,{type:'application/pdf'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:'Order '+o.orderNo,text:co+' — Order '+o.orderNo});
+    } else {
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=fname;
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),2000);
+      toast('PDF downloaded — share it via WhatsApp from your Files app','ok');
+    }
+  }catch(err){
+    if(err&&err.name==='AbortError')return;
+    console.error('_waOrdSharePdf error',err);
+    printOrderPdf(id);
+  }
+}
+
 function editProgEntry(ordId,progId){
   const o=STATE.orders.find(x=>x.id===ordId); if(!o) return;
   const prog=(o.programmes||[]).find(p=>p.id===progId); if(!prog) return;
