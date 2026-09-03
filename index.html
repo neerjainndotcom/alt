@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.16';
+const APP_VERSION='1.45.17';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -2360,10 +2360,10 @@ STATE.entries.push({id:uid(),date:today(),type,direction:'out',party,itemId,item
 lsSave('vs_items',STATE.items); lsSave('vs_entries',STATE.entries);
 }
 function getStk(itemId,cIdx){ return STATE.items.find(i=>i.id===itemId)?.colours?.[cIdx]?.stock_taka||0; }
-async function checkAdj(itemId,cIdx,need){
+async function checkAdj(itemId,cIdx,need,skuOverride){
 const avail=getStk(itemId,cIdx); if(avail>=need) return true;
 const shortfall=need-avail;
-const sku=STATE.items.find(i=>i.id===itemId)?.colours?.[cIdx]?.sku||'';
+const sku=skuOverride||STATE.items.find(i=>i.id===itemId)?.colours?.[cIdx]?.sku||'';
 const ok=await appConfirm(
 'Insufficient Stock',
 'SKU: '+sku+'\nAvailable: '+avail+'T | Needed: '+need+'T\nShortfall: '+shortfall+'T\n\n💡 Taka size varies (60-200m vs '+STATE.settings.avgMtrPerTaka+'m avg). Adjustment keeps books balanced.',
@@ -10918,7 +10918,7 @@ const rate=item.rate||0;
 const cut=parseFloat(inp.dataset.cut)||item.cut||6;
 const amt=Math.round(qty*cut*rate);
 const taka=Math.floor(Math.round(qty*cut*10)/10/STATE.settings.avgMtrPerTaka);
-const ok=await checkAdj(item.itemId,item.colIdx,taka);
+const ok=await checkAdj(item.itemId,item.colIdx,taka,item.sku);
 if(!ok) continue;
 deductStock(item.itemId,item.colIdx,taka,'sale',o.custName,billNo);
 dispItems.push({...item,dispQty:qty,mtrs:Math.round(qty*cut*10)/10,taka,amount:amt,cut,srcOrdId:o.id,srcOrdNo:o.orderNo});
@@ -10936,7 +10936,7 @@ const qty=parseInt(inp.value)||0; if(!qty) continue;
 const rate=item.rate||0, cut=parseFloat(inp.dataset.cut)||item.cut||6;
 const amt=Math.round(qty*cut*rate);
 const taka=Math.floor(Math.round(qty*cut*10)/10/STATE.settings.avgMtrPerTaka);
-const ok=await checkAdj(item.itemId,item.colIdx,taka);
+const ok=await checkAdj(item.itemId,item.colIdx,taka,item.sku);
 if(!ok) continue;
 deductStock(item.itemId,item.colIdx,taka,'sale',eo.custName,billNo);
 dispItems.push({...item,dispQty:qty,mtrs:Math.round(qty*cut*10)/10,taka,amount:amt,srcOrdId:eo.id,srcOrdNo:eo.orderNo});
@@ -11000,21 +11000,28 @@ api('saveBill',{bills:STATE.bills,entries:STATE.entries,items:STATE.items,orders
 async function deleteBill(billId){
 if(!hasPerm('delete_entry')){toast('No permission to delete bills','er');return;}
 const bill=STATE.bills.find(b=>b.id===billId); if(!bill) return;
+const isCancelled=bill.status==='cancelled';
 return new Promise(res=>{
 const cov=el('cov');
 el('ci').textContent='?';
 el('ct').textContent='Delete Bill '+bill.billNo+'?';
+if(isCancelled){
+el('cm').textContent='This bill is already cancelled.\n\nStock was already handled at cancellation — no second return will happen.\n\nPermanently delete this record?';
+}else{
 el('cm').textContent='This will PERMANENTLY delete the bill.\n\nReturn goods to stock?';
-const ob=el('cy'); ob.textContent='Delete + Return Stock';
+}
+const ob=el('cy'); ob.textContent=isCancelled?'Delete':'Delete + Return Stock';
 ob.className='cyes ok';
 cov.classList.add('on');
 const done=v=>{
 cov.classList.remove('on');
 if(v===null){res();return;}
 if(v){
+if(!isCancelled){
 bill.items.forEach(item=>{
 addStock(item.itemId,item.colIdx,item.taka,'adjustment','Bill Deleted - Return',bill.billNo,'Deleted bill '+bill.billNo);
 });
+}
 }
 /* Soft-delete: mark _deleted so smartMerge won't resurrect from cloud */
 bill._deleted=true; bill._ts=Date.now(); bill.status='deleted';
@@ -11038,8 +11045,8 @@ res();
 };
 el('cy').onclick=()=>done(true);
 el('cn').onclick=()=>done(false);
-el('cn').textContent='Delete - No Stock Return';
-el('cn').className='cno dr';
+el('cn').textContent=isCancelled?'Keep Bill':'Delete - No Stock Return';
+el('cn').className=isCancelled?'cno':'cno dr';
 });
 }
 async function cancelBill(billId){
