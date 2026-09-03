@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.17';
+const APP_VERSION='1.45.18';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -9033,6 +9033,26 @@ _sg('company','🏢','Company & Billing',true,_company)+
 _sg('orders','🧾','Orders, Payment & Leads',true,_orders)+
 _sg('stock','📦','Stock Settings',true,_stock)+
 _sg('wa','📲','WhatsApp Sharing',true,_waSharing)+
+_sg('ordpdf','📄','Order Form PDF',false,(()=>{
+const ps=STATE.settings.orderPdfSettings||{};
+const cb=(k,lbl,desc,def=true)=>'<label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--s2)">'
++'<input type="checkbox" id="s-opdf-'+k+'" style="width:18px;height:18px;accent-color:#4F46E5;flex-shrink:0"'+((ps[k]===false?false:def)?' checked':'')+' onchange="(STATE.settings.orderPdfSettings=STATE.settings.orderPdfSettings||{})[''+k+'']=this.checked"/>'
++'<div><div class="fw7 sm">'+lbl+'</div><div class="xs ct3">'+desc+'</div></div></label>';
+return '<div class="xs ct3 mb12">Control what appears on the printed order form PDF. Changes take effect immediately.</div>'
++cb('showDate','Order Date','Show the order date')
++cb('showColour','Colour / Range column','Show which colour or range each item is')
++cb('showRate','Rate per metre','Show the Rs./m rate for each line')
++cb('showMetres','Metres calculation','Show pcs x cut = total metres')
++cb('showAmount','Amount column','Show the Rs. amount per line item')
++cb('showTotal','Total amount','Show the order total at the bottom')
++cb('showTerms','Payment terms','Show discount % and net payment days')
++cb('showCustGstin','Customer GSTIN','Show the customer GSTIN number')
++cb('showCustAddress','Customer Address','Show the customer address')
++cb('showBroker','Broker Name','Show the broker name')
++cb('showSalesman','Salesman Name','Show the salesman name')
++cb('showNotes','Notes / Remarks','Show any notes entered on the order')
++cb('showSignature','Signature lines','Show signature lines at the bottom');
+})()+
 _sg('star','⭐','Star Customers',false,_star)+
 _sg('tasks','📅','Tasks & Holidays',true,_tasks)+
 _sg('dashboard','📊','Dashboard',false,_dashboard)+
@@ -9109,7 +9129,14 @@ holidays:STATE.settings.holidays||[],
 holidayLabels:STATE.settings.holidayLabels||{},
 holidayTypes:STATE.settings.holidayTypes||{},
 holidayConfirmed:STATE.settings.holidayConfirmed||{},
-waShareSections:STATE.settings.waShareSections||{reports:true,orders:true,bills:true,tasks:true}
+waShareSections:STATE.settings.waShareSections||{reports:true,orders:true,bills:true,tasks:true},
+orderPdfSettings:(()=>{
+const keys=['showDate','showColour','showRate','showMetres','showAmount','showTotal','showTerms','showCustGstin','showCustAddress','showBroker','showSalesman','showNotes','showSignature'];
+const cur=STATE.settings.orderPdfSettings||{};
+const out={};
+keys.forEach(k=>{const el2=document.getElementById('s-opdf-'+k);out[k]=el2?el2.checked:(cur[k]!==false);});
+return out;
+})()
 };
 STATE.items.forEach(item=>item.colours.forEach(c=>{c.stock_mtrs=Math.round((c.stock_taka||0)*nA);}));
 autoCleanLeads();
@@ -10426,6 +10453,7 @@ const foot=el('ord-det-foot');
 foot.innerHTML='';
 const mk=(cls,txt,fn)=>{const b=document.createElement('button');b.className='btn '+cls;b.innerHTML=txt;b.onclick=fn;return b;};
 if(canWAShare('orders'))foot.appendChild(mk('wa','&#x1F4F2; WhatsApp',()=>waOrd(o.id)));
+foot.appendChild(mk('btn bga','&#x1F4C4; PDF',()=>printOrderPdf(o.id)));
 if(_canViewInvoices()){
   if(o.type==='open'&&o.status!=='cancelled'){
     foot.appendChild(mk('bp bfl','&#x1F4CB; Programme Lot',()=>{hideMod('m-ord-det');openProgModal(o.id);}));
@@ -13596,6 +13624,64 @@ function printBillPdf(id){
   html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;•&nbsp; Invoice '+b.billNo+' &nbsp;•&nbsp; Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
   _printWin(html,'Invoice '+b.billNo);
 }
+function printOrderPdf(id){
+  const o=(STATE.orders||[]).find(x=>x.id===id); if(!o) return;
+  const cust=(STATE.customers||[]).find(c=>c.id===o.custId);
+  const ps=STATE.settings.orderPdfSettings||{};
+  const show=(k,def=true)=>ps[k]===false?false:def;
+  const items=(o.items&&o.items.length?o.items:o.openItems||[]);
+  let rows='';let grandTotal=0;
+  items.forEach((it,i)=>{
+    const pcs=it.pcs||it.totalPcs||0;const cut=it.cut||6;const mtrs=it.mtrs||(pcs*cut);const rate=it.rate||0;const amt=it.amount||0;
+    grandTotal+=amt;
+    let desc='';
+    if(show('showRate')) desc=(show('showMetres')?(pcs+' pcs x '+cut+'m = '+mtrs+'m'):(pcs+' pcs'))+' @ Rs.'+rate+(show('showMetres')?'/m':'');
+    else desc=(show('showMetres')?(pcs+' pcs x '+cut+'m = '+mtrs+'m'):(pcs+' pcs'));
+    rows+='<tr><td>'+(i+1)+'</td><td>'+(it.itemName||'')+'</td>';
+    if(show('showColour')) rows+='<td>'+(it.colourName||it.range||'')+'</td>';
+    rows+='<td>'+desc+'</td>';
+    if(show('showAmount')) rows+='<td class="tr">'+fmtRs(amt)+'</td>';
+    rows+='</tr>';
+  });
+  (o.programmes||[]).forEach((p,i)=>{
+    const pcs=p.pcs||0;const cut=p.cut||6;const mtrs=pcs*cut;const rate=p.rate||0;const amt=p.amount||0;
+    grandTotal+=amt;
+    let desc=(show('showMetres')?(pcs+' pcs x '+cut+'m = '+mtrs+'m'):(pcs+' pcs'));
+    if(show('showRate')) desc+=' @ Rs.'+rate+(show('showMetres')?'/m':'');
+    rows+='<tr><td>'+(items.length+i+1)+'</td><td>'+(p.itemName||'')+'</td>';
+    if(show('showColour')) rows+='<td>'+(p.colourName||'')+'</td>';
+    rows+='<td>'+desc+'</td>';
+    if(show('showAmount')) rows+='<td class="tr">'+fmtRs(amt)+'</td>';
+    rows+='</tr>';
+  });
+  let thCols='<th>#</th><th>Item</th>';
+  if(show('showColour')) thCols+='<th>Colour / Range</th>';
+  thCols+='<th>Qty / Details</th>';
+  if(show('showAmount')) thCols+='<th class="tr">Amount</th>';
+  let html=_pdfHead('Order '+o.orderNo);
+  html+=_pdfCo();
+  html+='<div class="hdr"><div><div class="doc-lbl">Order Form</div><div class="doc-no">'+o.orderNo+'</div>';
+  if(show('showDate')) html+='<div class="doc-date">Date: '+fmtDate(o.date)+'</div>';
+  html+='</div><div><span class="bdg bdg-b">'+((o.status||'pending').charAt(0).toUpperCase()+(o.status||'pending').slice(1))+'</span></div></div>';
+  html+='<div class="meta">';
+  html+='<div><div class="ml">Customer</div><div class="mv">'+(o.custName||'')+'</div></div>';
+  if(show('showCustGstin')&&cust&&cust.gstin) html+='<div><div class="ml">GSTIN</div><div class="mv">'+cust.gstin+'</div></div>';
+  else html+='<div></div>';
+  if(show('showCustAddress')&&cust&&cust.address) html+='<div style="grid-column:1/-1"><div class="ml">Address</div><div class="mv">'+cust.address+'</div></div>';
+  if(show('showBroker')&&o.brokerName) html+='<div><div class="ml">Broker</div><div class="mv">'+o.brokerName+'</div></div>';
+  if(show('showSalesman')&&o.salesmanName) html+='<div><div class="ml">Salesman</div><div class="mv">'+o.salesmanName+'</div></div>';
+  html+='</div>';
+  html+='<table><tr>'+thCols+'</tr>'+rows+'</table>';
+  if(show('showTotal')){
+    html+='<div class="sumbox"><div class="srow big"><span>Total</span><span class="mono">'+fmtRs(o.total||grandTotal)+'</span></div>';
+    if(show('showTerms')&&(STATE.settings.discount||STATE.settings.discountDays||STATE.settings.nettDays)) html+='<div class="srow" style="color:#666;font-size:11px"><span>'+STATE.settings.discount+'% disc within '+STATE.settings.discountDays+' days | Nett '+STATE.settings.nettDays+' days</span><span></span></div>';
+    html+='</div>';
+  }
+  if(show('showNotes')&&o.notes) html+='<div style="margin-top:12px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px"><div style="font-size:10px;font-weight:700;color:#92400E;margin-bottom:4px">NOTES</div><div style="font-size:12px">'+escHtml(o.notes)+'</div></div>';
+  if(show('showSignature')) html+='<div style="margin-top:36px;display:grid;grid-template-columns:1fr 1fr;gap:30px"><div style="border-top:1.5px solid #ccc;padding-top:6px;text-align:center;font-size:11px;color:#666">Authorised Signatory</div><div style="border-top:1.5px solid #ccc;padding-top:6px;text-align:center;font-size:11px;color:#666">Customer's Signature</div></div>';
+  html+='<div class="footer">'+(STATE.settings.companyName||'ALT Stock')+' &nbsp;- Order '+o.orderNo+' &nbsp;- Printed: '+new Date().toLocaleDateString('en-IN')+'</div></body></html>';
+  _printWin(html,'Order '+o.orderNo);
+}
 function printLeadPdf(id){
   const lead=(STATE.leads||[]).find(l=>l.id===id); if(!lead) return;
   const sc='#4F46E5';
@@ -16152,7 +16238,30 @@ toast('Staff type deleted','ok');
 function openWA(phone, msg){
 let ph=(String(phone||'')).replace(/\D/g,'');
 if(!ph){
-toast('No phone number available','er');
+const existing=document.getElementById('_wa-mo');if(existing)existing.remove();
+const mo=document.createElement('div');
+mo.id='_wa-mo';
+mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+mo.innerHTML='<div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px;box-shadow:0 -4px 32px rgba(0,0,0,.2)">'
++'<div style="font-weight:800;font-size:16px;margin-bottom:4px">📲 Send via WhatsApp</div>'
++'<div style="font-size:12px;color:#6B7280;margin-bottom:16px">No number saved for this contact. Enter one below, or let WhatsApp open its own contact picker.</div>'
++'<input id="_wa-num" type="tel" inputmode="numeric" placeholder="Mobile number (e.g. 9876543210)" style="width:100%;border:1.5px solid #D1D5DB;border-radius:10px;padding:12px 14px;font-size:15px;font-family:inherit;margin-bottom:12px;outline:none;box-sizing:border-box"/>'
++'<button onclick="_waPickerSend();" style="width:100%;padding:13px;background:#25D366;color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:8px">▶ Send</button>'
++'<button onclick="_waPickerOpen();" style="width:100%;padding:11px;background:#E8F5E9;color:#1B5E20;border:none;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">📋 Open WhatsApp — Pick Contact</button>'
++'<button onclick="document.getElementById(\'_wa-mo\').remove();" style="width:100%;padding:11px;background:#F3F4F6;color:#374151;border:none;border-radius:11px;font-size:13px;cursor:pointer">Cancel</button>'
++'</div>';
+window._waPendingMsg=msg;
+window._waPickerSend=function(){
+  const v=(document.getElementById('_wa-num').value||'').trim();
+  document.getElementById('_wa-mo').remove();
+  if(v){openWA(v,window._waPendingMsg);}else{_waPickerOpen();}
+};
+window._waPickerOpen=function(){
+  const m=document.getElementById('_wa-mo');if(m)m.remove();
+  window.open('https://wa.me/?text='+encodeURIComponent(window._waPendingMsg),'_wa_window');
+};
+document.body.appendChild(mo);
+setTimeout(()=>{const inp=document.getElementById('_wa-num');if(inp)inp.focus();},50);
 return;
 }
 ph=ph.replace(/^0+/,'');
