@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.23';
+const APP_VERSION='1.45.24';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -5636,7 +5636,7 @@ el('ordbod').innerHTML=
 '<button class="btn bs bfl mt8" onclick="addOrdLot()">+ Add LOT / Item</button>'+
 '</div>'+
 '<div id="od-tot" class="bsum mt12" style="display:none"></div>'+
-'<div class="fg mt12"><label>Notes</label><textarea class="ta" id="od-nt" rows="2"></textarea></div>';
+'<div class="fg mt12"><label>Notes</label><textarea class="ta" id="od-nt" rows="2"></textarea></div><div class="fg mt12"><label style="font-weight:700;color:#4F46E5;font-size:13px">📋 Billing &amp; Delivery</label></div><div class="fg" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 12px"><div><label>Billing Firm</label><input class="inp" id="od-bfirm" placeholder="Bill to (default: party name)"></div><div><label>Billing Terms</label><input class="inp" id="od-bterms" placeholder="5% disc / Nett 120d"></div></div><div class="fg mt8" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 12px"><div><label>Delivery Date</label><input type="date" class="inp" id="od-ddate"></div><div><label>Delivery Days</label><input type="number" class="inp" id="od-ddays" placeholder="e.g. 5" min="1" max="365" style="width:100%;box-sizing:border-box"></div><div><label>Delivery Type</label><select class="inp" id="od-dtype"><option value="">— select —</option><option value="Shop">Shop (we deliver)</option><option value="Khatawala">Khatawala (they collect)</option></select></div><div><label>Collect by / Person</label><input class="inp" id="od-dperson" placeholder="Name of person"></div></div>';
 if(!isOpenOrd) renderOrdLots();
 else renderOpenItems();
 /* Sort and make dropdowns searchable */
@@ -6171,7 +6171,7 @@ toast('Order number "'+ordNo+'" is already used — suggested "'+suggestion+'" i
 return;
 }
 }
-const commonFields={orderNo:ordNo,salesmanId:smId,salesmanName:smUser?.name||'',date:el('od-d')?.value,custId:cId,custName:cust?.name||'',brkId:bId,brkName:brk?.name||'',notes:el('od-nt')?.value,by:STATE.user?.name||'',fy:existingOrd?.fy||STATE.settings.currentFY||getCurrentFY()};
+const commonFields={orderNo:ordNo,salesmanId:smId,salesmanName:smUser?.name||'',date:el('od-d')?.value,custId:cId,custName:cust?.name||'',brkId:bId,brkName:brk?.name||'',notes:el('od-nt')?.value,billingFirm:el('od-bfirm')?.value||'',billingTerms:el('od-bterms')?.value||'',deliveryDate:el('od-ddate')?.value||'',deliveryDays:el('od-ddays')?.value||'',deliveryType:el('od-dtype')?.value||'',deliveryPerson:el('od-dperson')?.value||'',by:STATE.user?.name||'',fy:existingOrd?.fy||STATE.settings.currentFY||getCurrentFY()};
 
 /* ── OPEN / PROGRAMME ORDER ── */
 if(_ordType==='open'){
@@ -10249,7 +10249,7 @@ if(o.salesmanId&&el('od-sm')) el('od-sm').value=o.salesmanId;
 if(o.custId&&el('od-c')){ el('od-c').value=o.custId; onOrderCustChange(); }
 if(o.brkId&&el('od-b')) el('od-b').value=o.brkId;
 if(o.date&&el('od-d')) el('od-d').value=o.date;
-if(o.notes&&el('od-nt')) el('od-nt').value=o.notes||'';
+if(o.notes&&el('od-nt')) el('od-nt').value=o.notes||'';el('od-bfirm').value=o.billingFirm||'';el('od-bterms').value=o.billingTerms||'';el('od-ddate').value=o.deliveryDate||'';el('od-ddays').value=o.deliveryDays||'';el('od-dtype').value=o.deliveryType||'';el('od-dperson').value=o.deliveryPerson||'';
 if(el('od-ordno-edit')) el('od-ordno-edit').value=o.orderNo||'';
 /* Repopulate open items if this is an open order */
 if(_ordType==='open'){
