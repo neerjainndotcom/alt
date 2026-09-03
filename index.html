@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.25';
+const APP_VERSION='1.45.26';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -7108,7 +7108,7 @@ async function _waOrdSharePdf(id){
       doc.line(mg,y,mg+sw,y);doc.line(W-mg-sw,y,W-mg,y);
       y+=4;doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(110,110,110);
       doc.text('Authorised Signatory',mg+sw/2,y,{align:'center'});
-      doc.text('Customer's Signature',W-mg-sw/2,y,{align:'center'});
+      doc.text("Customer's Signature",W-mg-sw/2,y,{align:'center'});
     }
     y+=10;doc.setDrawColor(200,200,200);doc.setLineWidth(0.2);doc.line(mg,y,W-mg,y);y+=4;
     doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(150,150,150);
