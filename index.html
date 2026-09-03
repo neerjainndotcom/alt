@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.14';
+const APP_VERSION='1.45.15';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -13944,7 +13944,7 @@ html+='</div>';
 /* Party group: find all members in the same group as this customer */
 const custGroup=(STATE.custGroups||[]).find(g=>g.memberIds&&g.memberIds.includes(custId));
 const groupMemberIds=custGroup?custGroup.memberIds:[custId];
-const pendOrds=STATE.orders.filter(o=>!o._deleted&&groupMemberIds.includes(o.custId)&&((o.status==='pending'||o.status==='billed')||(o.type==='open'&&(o.programmes||[]).some(p=>p.status!=='billed'&&!p.billId))));
+const pendOrds=STATE.orders.filter(o=>!o._deleted&&groupMemberIds.includes(o.custId)&&((o.status==='pending'||o.status==='billed')||(o.type==='open'&&(o.programmes||[]).some(p=>p.status!=='billed'&&!p.billId)))).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b._ts||0)-(a._ts||0));
 /* Party group banner */
 if(custGroup&&custGroup.memberIds.length>1){
 const memberNames=custGroup.memberIds.map(mid=>{const m=STATE.customers.find(c=>c.id===mid);return m?m.name:'?';}).join(', ');
@@ -13964,8 +13964,8 @@ html+=
 c.innerHTML=html; return;
 }
 html+='<div style="margin-bottom:12px"><button class="btn bp bfl" onclick="createStandaloneBill(\''+custId+'\')">+ Create Invoice without Order</button></div>';
-html+='<div style="font-size:11px;font-weight:700;color:var(--Pd);margin-bottom:10px">'+pendOrds.length+' pending order(s)</div>';
-pendOrds.forEach(o=>{
+html+='<div style="font-size:11px;font-weight:700;color:var(--Pd);margin-bottom:10px">'+pendOrds.length+' pending order(s) <span style="font-weight:400;color:var(--t3)">↓ latest first</span></div>';
+pendOrds.forEach((o,oi)=>{
 const ordCust=o.custId!==custId?STATE.customers.find(c=>c.id===o.custId):null;
 if(o.type==='open'){
 /* ── Open order: show pending programme lots ── */
@@ -13976,6 +13976,7 @@ html+=
 (ordCust?'<div style="background:var(--Al);padding:4px 14px;font-size:10px;font-weight:700;color:var(--Ad)">Order of: '+ordCust.name+'</div>':'')+
 '<div style="padding:10px 14px">'+
 '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+
+'<span style="font-size:10px;font-weight:800;color:var(--t3);background:var(--b2);padding:2px 6px;border-radius:5px;flex-shrink:0">#'+(oi+1)+'</span>'+
 '<span class="mono fw7 cP" style="font-size:14px">'+o.orderNo+'</span>'+
 '<span class="bdg bg-p">open</span>'+
 '<span style="font-size:10px;color:var(--t3)">'+pending.length+' lot(s) pending</span>'+
@@ -14028,6 +14029,7 @@ html+=
 (ordCust?'<div style="background:var(--Al);padding:4px 14px;font-size:10px;font-weight:700;color:var(--Ad)">Order of: '+ordCust.name+'</div>':'')+
 '<div style="padding:10px 14px">'+
 '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
+'<span style="font-size:10px;font-weight:800;color:var(--t3);background:var(--b2);padding:2px 6px;border-radius:5px;flex-shrink:0">#'+(oi+1)+'</span>'+
 '<span class="mono fw7 cP" style="font-size:14px">'+o.orderNo+'</span>'+
 '<span class="bdg '+stBadge+'">'+o.status+'</span>'+
 (billCount?'<span style="font-size:10px;color:var(--t3)">'+billCount+' bill(s) sent</span>':'')+
