@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.9';
+const APP_VERSION='1.45.10';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -6972,9 +6972,9 @@ async function deleteProg(ordId,progId){
   showOrderDetail(ordId);
   toast('Lot deleted','ok');
 }
-let _billRows=[{}], _billOrdId=null, _editBillId=null;
+let _billRows=[{}], _billOrdId=null, _editBillId=null, _editBillGstin=null;
 let _billFromProgLot=false, _progLotMap={}, _savingBill=false; // {lotId: {colIdx: progId}}
-function closeBillMod(){window._billSingleProg=null;_editBillId=null;_billFromProgLot=false;_progLotMap={};hideMod('m-bill');}
+function closeBillMod(){window._billSingleProg=null;_editBillId=null;_editBillGstin=null;_billFromProgLot=false;_progLotMap={};hideMod('m-bill');}
 function openDirectBillFromOrder(){
   if(!_ordId){toast('Save the order first before creating a bill','er');return;}
   const o=STATE.orders.find(x=>x.id===_ordId); if(!o) return;
@@ -6988,6 +6988,7 @@ function openEditBill(billId){
   if(!bill)return;
   if(STATE.user?.role!=='admin'&&!hasPerm('cancel_bill')&&!hasPerm('edit_bill')){toast('No permission to edit bills','er');return;}
   _editBillId=bill.id;
+  _editBillGstin=bill.custGstin||''; // preserve original bill's GST state
   _billOrdId=bill.ordId||null;
   _billRows=bill.items.map(i=>({...i,_orderedPcs:i.pcs,_billedPcs:0}));
   /* Detect lot-based bill: items have a 'range' field (created via lot cards) */
@@ -7157,14 +7158,18 @@ function toggleBillAdjPos(){
 function detBillGST(){
 const cust=STATE.customers.find(c=>c.id===el('bl-c')?.value);
 const info=el('bl-gi'); if(!info) return;
-if(!cust?.gstin) info.textContent='No GSTIN — no GST';
-else {const t=gstType(cust.gstin);info.textContent=t==='same'?'Gujarat \u2192 SGST 2.5% + CGST 2.5%':'Inter-state \u2192 IGST 5%';}
-if(cust?.defaultBrokerId){const bs=el('bl-b');if(bs)bs.value=cust.defaultBrokerId;}
+/* When editing an existing bill, use the SAVED bill's GSTIN so that adding a GSTIN to the
+   customer after creating the bill doesn't silently recalculate GST on the edit form. */
+const activeGstin=(_editBillId&&_editBillGstin!==null)?_editBillGstin:(cust?.gstin||'');
+if(!activeGstin) info.textContent='No GSTIN — no GST';
+else {const t=gstType(activeGstin);info.textContent=t==='same'?'Gujarat \u2192 SGST 2.5% + CGST 2.5%':'Inter-state \u2192 IGST 5%';}
+/* Don't overwrite broker/discount when editing — saved values already restored */
+if(cust?.defaultBrokerId&&!_editBillId){const bs=el('bl-b');if(bs)bs.value=cust.defaultBrokerId;}
 checkPendingSampleSetsForBill(cust?.name||'');
 const discFld=el('bl-disc');
-if(discFld){const d=cust?.discount!=null?cust.discount:STATE.settings.discount||0;discFld.value=d;}
+if(discFld&&!_editBillId){const d=cust?.discount!=null?cust.discount:STATE.settings.discount||0;discFld.value=d;}
 if(_billOrdId&&!_billFromProgLot) calcBillTot(); else calcBillLotTotal();
-const _bbl=el('bl-b');if(_bbl&&cust&&cust.defaultBrokerId){_bbl.value=cust.defaultBrokerId;}
+const _bbl=el('bl-b');if(_bbl&&cust&&cust.defaultBrokerId&&!_editBillId){_bbl.value=cust.defaultBrokerId;}
 autoFillBillDueDate();
 }
 function autoFillBillDueDate(){
@@ -7219,7 +7224,8 @@ const brokAdj=brokPct!==0?Math.round(afterDisc*brokPct/100):0;
 const brokAmt=brokAdj+Math.round(brokFlat);/* positive=add, negative=deduct */
 const netTaxable=afterDisc+brokAmt;
 let gH='',grand=netTaxable;
-if(cust?.gstin){const t=gstType(cust.gstin),gA=Math.round(netTaxable*0.05);
+const _activeGstinB=(_editBillId&&_editBillGstin!==null)?_editBillGstin:(cust?.gstin||'');
+if(_activeGstinB){const t=gstType(cust.gstin),gA=Math.round(netTaxable*0.05);
 grand=netTaxable+gA;
 gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
 const s=el('bl-sum');
@@ -7558,7 +7564,8 @@ const brokAdj=brokPct!==0?Math.round(afterDisc*brokPct/100):0;
 const brokAmt=brokAdj+Math.round(brokFlat);/* positive=add, negative=deduct */
 const netTaxable=afterDisc+brokAmt;
 let gH='',grand=netTaxable;
-if(cust?.gstin){const t=gstType(cust.gstin),gA=Math.round(netTaxable*0.05);
+const _activeGstin=(_editBillId&&_editBillGstin!==null)?_editBillGstin:(cust?.gstin||'');
+if(_activeGstin){const t=gstType(_activeGstin),gA=Math.round(netTaxable*0.05);
 grand=netTaxable+gA;
 gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
 const s=el('bl-sum');
