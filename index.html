@@ -51,7 +51,7 @@
 
 <div class="ov" id="m-item"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="itmtit">New Item</h3><p class="sub">Fabric type</p></div><button class="btn bgh bsm" onclick="hideMod('m-item')">✕</button></div></div><div class="shb"><input type="hidden" id="itm-id"/><div class="fg"><label>Item Name *</label><input class="inp" id="itm-name" placeholder="e.g. FRENDY CHIFFON" oninput="updateItmSkuPreview()"/><div id="itm-sku-preview" style="display:none;font-size:11px;font-weight:700;font-family:monospace;color:var(--Pd);margin-top:5px;padding:4px 9px;background:var(--Pl);border-radius:6px;letter-spacing:.3px"></div></div><div class="fg"><label>HSN Code</label><input class="inp" id="itm-hsn" placeholder="e.g. 5407"/></div><div id="itm-copyfrom-wrap" style="display:none"><div class="fg" style="margin-top:0"><label style="display:flex;align-items:center;gap:6px"><span>📋</span> Copy Ranges &amp; Colours From</label><select class="inp" id="itm-copyfrom"><option value="">None — start blank</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">Copies all ranges and colour names from the selected item (SKUs will be regenerated for the new item name).</div></div></div><div class="dvd"></div><div class="hr" style="margin-bottom:10px"><label style="margin-bottom:0">Ranges &amp; Colours</label><button class="ai" onclick="openAddRange()">+ Add Range</button></div><div id="itmrng"></div></div><div class="shf" style="flex-wrap:wrap;gap:8px"><button class="btn bd bfl" id="itm-del-btn" style="display:none" onclick="deleteItem()">Delete Item</button><div style="display:flex;gap:8px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-item')">Cancel</button><button class="btn bp bfl" onclick="saveItem()">Save Item</button></div></div>
 </div></div>
-<div class="ov" id="m-rng" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Add Range &amp; Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-rng')">✕</button></div></div><div class="shb"><div class="fg" style="background:var(--Pl);border-radius:10px;padding:10px;margin-bottom:4px"><div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;font-size:13px;font-weight:700;color:var(--t1)"><span>📋</span> Copy from another item's range <span style="font-size:10px;color:var(--t3);font-weight:400">(optional)</span></div><select class="inp" id="rng-copyfrom-item" onchange="onRngCopyItemChange()" style="margin-bottom:6px"><option value="">— Enter manually below —</option></select><select class="inp" id="rng-copyfrom-rng" onchange="onRngCopyRngChange()" style="display:none"><option value="">Select range to copy</option></select></div><div class="fg"><label>Range Name *</label><input class="inp" id="rng-n" placeholder="e.g. A, B, PREMIUM" style="text-transform:uppercase" oninput="updateAllSkuPreviews('rng-rows')"/></div><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="rng-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('rng-rows','rng-cnt')"/></div><div id="rng-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-rng')">Cancel</button><button class="btn bp bfl" onclick="saveRange()">Add Range</button></div>
+<div class="ov" id="m-rng" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Add Range &amp; Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-rng')">✕</button></div></div><div class="shb"><div class="fg" style="background:var(--Pl);border-radius:10px;padding:10px;margin-bottom:4px"><div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;font-size:13px;font-weight:700;color:var(--t1)"><span>📋</span> Copy from another item's range <span style="font-size:10px;color:var(--t3);font-weight:400">(optional)</span></div><select class="inp" id="rng-copyfrom-item" onchange="onRngCopyItemChange()" style="margin-bottom:6px"><option value="">— Enter manually below —</option></select><div id="rng-copyfrom-rng-wrap" style="display:none"><select class="inp" id="rng-copyfrom-rng" onchange="onRngCopyRngChange()"><option value="">Select range to copy</option></select></div></div><div class="fg"><label>Range Name *</label><input class="inp" id="rng-n" placeholder="e.g. A, B, PREMIUM" style="text-transform:uppercase" oninput="updateAllSkuPreviews('rng-rows')"/></div><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="rng-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('rng-rows','rng-cnt')"/></div><div id="rng-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-rng')">Cancel</button><button class="btn bp bfl" onclick="saveRange()">Add Range</button></div>
 </div></div>
 <div class="ov" id="m-aclr" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3 id="aclrtit">Add Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-aclr')">✕</button></div></div><div class="shb"><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="aclr-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('aclr-rows','aclr-cnt')"/></div><div id="aclr-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-aclr')">Cancel</button><button class="btn bp bfl" onclick="saveAddClrs()">Add Colours</button></div>
 </div></div>
@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.7';
+const APP_VERSION='1.45.9';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -343,16 +343,53 @@ function mergeColours(local,remote){
   if(!remote||!remote.length)return local||[];
   if(!local||!local.length)return remote.slice();
   const map=new Map();
-  // Key: SKU if present, else fallback to name+code to handle colour renames
-  const colKey=c=>c.sku||(c.name+'::'+c.code);
+  /* Key by range+name — the LOGICAL identity of a colour within an item.
+     Keying by SKU caused duplicates whenever a SKU code was edited on one
+     device: the old-SKU entry survived on the other device as a separate colour
+     because it had a different key, giving double rows in the colour list.
+     range+name is stable across SKU/code renames. */
+  const colKey=c=>(c.range||'').toUpperCase()+':::'+(c.name||'').toUpperCase();
   local.forEach(c=>map.set(colKey(c),c));
   remote.forEach(c=>{
     const k=colKey(c);
     const existing=map.get(k);
     if(!existing){map.set(k,c);return;}
-    if((c._ts||0)>(existing._ts||0))map.set(k,c);
+    // Newer _ts wins; on a tie keep the one with higher stock
+    const remTs=c._ts||0, locTs=existing._ts||0;
+    if(remTs>locTs||(remTs===locTs&&(c.stock_taka||0)>(existing.stock_taka||0)))map.set(k,c);
   });
   return Array.from(map.values());
+}
+/* Admin utility: remove duplicate colours (same range+name within an item).
+   Keeps the entry with higher _ts; on a tie keeps higher stock.
+   Run once to clean up devices that synced before the mergeColours fix. */
+function deduplicateColours(){
+  if(STATE.user?.role!=='admin'){toast('Admin only','er');return;}
+  let totalRemoved=0;
+  STATE.items.forEach(item=>{
+    if(!item.colours||item.colours.length<2)return;
+    const seen=new Map();
+    const keep=[];
+    item.colours.forEach(c=>{
+      const k=(c.range||'').toUpperCase()+':::'+(c.name||'').toUpperCase();
+      const existing=seen.get(k);
+      if(!existing){seen.set(k,c);keep.push(c);return;}
+      // Duplicate — decide which to keep
+      const useNew=(c._ts||0)>(existing._ts||0)||
+                   ((c._ts||0)===(existing._ts||0)&&(c.stock_taka||0)>(existing.stock_taka||0));
+      if(useNew){
+        const idx=keep.indexOf(existing);if(idx>-1)keep.splice(idx,1);
+        seen.set(k,c);keep.push(c);
+      }
+      totalRemoved++;
+    });
+    item.colours=keep;
+  });
+  if(!totalRemoved){toast('No duplicate colours found — data is clean','ok');return;}
+  lsSave('vs_items',STATE.items);
+  autoSyncCloud();
+  toast('Removed '+totalRemoved+' duplicate colour(s) — syncing to all devices','ok');
+  try{refreshCurrentView();}catch(e){}
 }
 
 /*********************************************************************
@@ -2529,18 +2566,21 @@ if(!cf) return;
 cf.innerHTML='<option value="">— Enter manually below —</option>'+
   STATE.items.filter(i=>!i._deleted&&i.id!==excludeItemId&&(i.colours||[]).some(c=>!c._deleted)).sort((a,b)=>a.name.localeCompare(b.name))
   .map(i=>'<option value="'+i.id+'">'+escHtml(i.name)+'</option>').join('');
-const cr=el('rng-copyfrom-rng'); if(cr){cr.style.display='none';cr.innerHTML='<option value="">Select range to copy</option>';}
+const cr=el('rng-copyfrom-rng');
+if(cr)cr.innerHTML='<option value="">Select range to copy</option>';
+const wrap=el('rng-copyfrom-rng-wrap');if(wrap)wrap.style.display='none';
 }
 function onRngCopyItemChange(){
 const itemId=el('rng-copyfrom-item')?.value;
 const rngSel=el('rng-copyfrom-rng');
+const wrap=el('rng-copyfrom-rng-wrap');
 if(!rngSel) return;
-if(!itemId){rngSel.style.display='none';rngSel.innerHTML='<option value="">Select range to copy</option>';return;}
-const src=STATE.items.find(x=>x.id===itemId&&!x._deleted); if(!src){rngSel.style.display='none';return;}
+if(!itemId){if(wrap)wrap.style.display='none';rngSel.innerHTML='<option value="">Select range to copy</option>';return;}
+const src=STATE.items.find(x=>x.id===itemId&&!x._deleted); if(!src){if(wrap)wrap.style.display='none';return;}
 const ranges=[...new Set(src.colours.filter(c=>!c._deleted).map(c=>c.range))].filter(r=>r!==undefined);
-if(!ranges.length){rngSel.style.display='none';toast('That item has no ranges','er');return;}
+if(!ranges.length){if(wrap)wrap.style.display='none';toast('That item has no ranges','er');return;}
 rngSel.innerHTML='<option value="">Select range to copy</option>'+ranges.map(r=>'<option value="'+r+'">'+(r===''?'(default / no range)':'Range '+r)+'</option>').join('');
-rngSel.style.display='';
+if(wrap)wrap.style.display='';
 }
 function onRngCopyRngChange(){
 const itemId=el('rng-copyfrom-item')?.value; if(!itemId) return;
@@ -15137,6 +15177,7 @@ c.innerHTML=
 '<button class="btn bsuc bfl" onclick="syncToCloud()">&#x2191; Push All Data to Firebase</button>'+
 '<button class="btn bp bfl" onclick="syncFromCloud()">&#x2193; Pull Data from Firebase</button>'+
 '<button class="btn" onclick="forceRepairStock()" style="background:linear-gradient(135deg,#D97706,#F59E0B);color:white;font-weight:800">&#x1F527; Repair Stock from Ledger</button>'+
+'<button class="btn" onclick="deduplicateColours()" style="background:linear-gradient(135deg,#7C3AED,#A855F7);color:white;font-weight:800">&#x1F9F9; Fix Duplicate Colours (SKU Sync)</button>'+
 '</div>'+
 '<div style="font-size:10px;color:var(--t3);margin-top:8px">Last sync: '+lastSync+'</div>'+
 '</div>'+
