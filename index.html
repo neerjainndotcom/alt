@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="ALT Stock"/>
 <meta name="mobile-web-app-capable" content="yes"/>
-<meta name="theme-color" content="#1e1b4b"/>
+<meta name="theme-color" content="#1e1b4b"/>h
 <meta name="msapplication-TileColor" content="#1e1b4b"/>
 <meta name="description" content="Stock Management — Amrit Laxmi Textile, Surat"/>
 <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkFMVCBTdG9jayDigJQgQW1yaXQgThGF4bWkgVGV4dGlsZSIsCiAgInNob3J0X25hbWUiOiAiQUxUIFN0b2NrIiwKICAiZGVzY3JpcHRpb24iOiAiU3RvY2sgTWFuYWdlbWVudCBmb3IgQW1yaXQgTGF4bWkgVGV4dGlsZSwgU3VyYXQiLAogICJzdGFydF91cmwiOiAiLi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxZTFiNGIiLAogICJ0aGVtZV9jb2xvciI6ICIjMWUxYjRiIiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQiCn0="/>
@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.10';
+const APP_VERSION='1.45.13';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -7000,7 +7000,7 @@ function openEditBill(billId){
     _billRows.forEach((r,ri)=>{
       const k=r._lotIdx!==undefined?String(r._lotIdx):(r.lotIndex!==undefined?String(r.lotIndex):((r.itemId||'')+'|'+(r.range||'')+'|'+ri));
       if(!_eg[k]){_eg[k]={itemId:r.itemId,range:r.range,cut:r.cut||6,progs:[]};_eo.push(k);}
-      _eg[k].progs.push({itemId:r.itemId,colIdx:r.colIdx,pcs:r.pcs,rate:r.rate,billedPcs:0,bills:[],status:'pending'});
+      _eg[k].progs.push({itemId:r.itemId,colIdx:r.colIdx,sku:r.sku||'',pcs:r.pcs,rate:r.rate,billedPcs:0,bills:[],status:'pending'});
     });
     _billLots=[];_billLotId=0;_mixSareLots=[];_mixSareLotId=0;
     _eo.forEach(k=>{_billLotId++;_billLots.push({id:_billLotId,_prefill:_eg[k]});});
@@ -7030,7 +7030,7 @@ function openEditBill(billId){
     if(el('bl-brok-pct'))el('bl-brok-pct').value=bill.brokeragePct||0;
     if(el('bl-brok-flat'))el('bl-brok-flat').value=bill.brokerageFlat||0;
     if(el('bl-brok-lbl'))el('bl-brok-lbl').value=bill.brokerageLabel||'';
-    if(!isLotBill){const _rr=_billRows.slice();if(_rr.length>0){const _gg={};_rr.forEach(r=>{const k=(r.itemId||'')+('|'+(r.range||''));if(!_gg[k])_gg[k]={itemId:r.itemId,range:r.range,cut:r.cut||0,items:[]};_gg[k].items.push(r);});Object.values(_gg).forEach((g,gi)=>{const lid=gi+1;if(gi>0)addBillLot();const is=el('bl-lot-'+lid+'-i');if(is){is.value=g.itemId;billLotItemChange(lid);}setTimeout(()=>{const rs=el('bl-lot-'+lid+'-r');if(rs){rs.value=g.range;billLotRangeChange(lid);}const ct=el('bl-lot-'+lid+'-cut');if(ct)ct.value=g.cut;setTimeout(()=>{g.items.forEach(row=>{const ck=el('bl-lot-'+lid+'-ck-'+row.colIdx);const pe=el('bl-lot-'+lid+'-p-'+row.colIdx);const re=el('bl-lot-'+lid+'-r-'+row.colIdx);if(ck&&!ck.checked){ck.checked=true;ck.dispatchEvent(new Event('change',{bubbles:true}));}if(pe){pe.value=row.pcs;pe.dispatchEvent(new Event('input'));}if(re){re.value=row.rate;re.dispatchEvent(new Event('input'));}});detBillGST();},200);},100);});}}
+    if(!isLotBill){const _rr=_billRows.slice();if(_rr.length>0){const _gg={};_rr.forEach(r=>{const k=(r.itemId||'')+('|'+(r.range||''));if(!_gg[k])_gg[k]={itemId:r.itemId,range:r.range,cut:r.cut||0,items:[]};_gg[k].items.push(r);});Object.values(_gg).forEach((g,gi)=>{const lid=gi+1;if(gi>0)addBillLot();const is=el('bl-lot-'+lid+'-i');if(is){is.value=g.itemId;billLotItemChange(lid);}setTimeout(()=>{const rs=el('bl-lot-'+lid+'-r');if(rs){rs.value=g.range;billLotRangeChange(lid);}const ct=el('bl-lot-'+lid+'-cut');if(ct)ct.value=g.cut;setTimeout(()=>{g.items.forEach(row=>{let idx=row.colIdx;let ck=el('bl-lot-'+lid+'-ck-'+idx);if(!ck&&row.sku){const curItem=STATE.items.find(x=>x.id===row.itemId);const curIdx=curItem?curItem.colours.findIndex(c=>c.sku===row.sku):-1;if(curIdx>=0){idx=curIdx;ck=el('bl-lot-'+lid+'-ck-'+curIdx);}}const pe=el('bl-lot-'+lid+'-p-'+idx);const re=el('bl-lot-'+lid+'-r-'+idx);if(ck&&!ck.checked){ck.checked=true;ck.dispatchEvent(new Event('change',{bubbles:true}));}if(pe){pe.value=row.pcs;pe.dispatchEvent(new Event('input'));}if(re){re.value=row.rate;re.dispatchEvent(new Event('input'));}});detBillGST();},200);},100);});}}
     detBillGST();
   },80);
   showMod('m-bill');
@@ -7160,16 +7160,16 @@ const cust=STATE.customers.find(c=>c.id===el('bl-c')?.value);
 const info=el('bl-gi'); if(!info) return;
 /* When editing an existing bill, use the SAVED bill's GSTIN so that adding a GSTIN to the
    customer after creating the bill doesn't silently recalculate GST on the edit form. */
-const activeGstin=(_editBillId&&_editBillGstin!==null)?_editBillGstin:(cust?.gstin||'');
+const activeGstin=(_editBillGstin!==null)?_editBillGstin:(cust?.gstin||'');
 if(!activeGstin) info.textContent='No GSTIN — no GST';
 else {const t=gstType(activeGstin);info.textContent=t==='same'?'Gujarat \u2192 SGST 2.5% + CGST 2.5%':'Inter-state \u2192 IGST 5%';}
 /* Don't overwrite broker/discount when editing — saved values already restored */
-if(cust?.defaultBrokerId&&!_editBillId){const bs=el('bl-b');if(bs)bs.value=cust.defaultBrokerId;}
+if(cust?.defaultBrokerId&&_editBillGstin===null){const bs=el('bl-b');if(bs)bs.value=cust.defaultBrokerId;}
 checkPendingSampleSetsForBill(cust?.name||'');
 const discFld=el('bl-disc');
-if(discFld&&!_editBillId){const d=cust?.discount!=null?cust.discount:STATE.settings.discount||0;discFld.value=d;}
+if(discFld&&_editBillGstin===null){const d=cust?.discount!=null?cust.discount:STATE.settings.discount||0;discFld.value=d;}
 if(_billOrdId&&!_billFromProgLot) calcBillTot(); else calcBillLotTotal();
-const _bbl=el('bl-b');if(_bbl&&cust&&cust.defaultBrokerId&&!_editBillId){_bbl.value=cust.defaultBrokerId;}
+const _bbl=el('bl-b');if(_bbl&&cust&&cust.defaultBrokerId&&_editBillGstin===null){_bbl.value=cust.defaultBrokerId;}
 autoFillBillDueDate();
 }
 function autoFillBillDueDate(){
@@ -7224,7 +7224,7 @@ const brokAdj=brokPct!==0?Math.round(afterDisc*brokPct/100):0;
 const brokAmt=brokAdj+Math.round(brokFlat);/* positive=add, negative=deduct */
 const netTaxable=afterDisc+brokAmt;
 let gH='',grand=netTaxable;
-const _activeGstinB=(_editBillId&&_editBillGstin!==null)?_editBillGstin:(cust?.gstin||'');
+const _activeGstinB=(_editBillGstin!==null)?_editBillGstin:(cust?.gstin||'');
 if(_activeGstinB){const t=gstType(cust.gstin),gA=Math.round(netTaxable*0.05);
 grand=netTaxable+gA;
 gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
@@ -7263,9 +7263,11 @@ _billLots.forEach((lot,li)=>{
       const item=STATE.items.find(x=>x.id===pf.itemId);if(!item)return;
       if(!_progLotMap[lot.id])_progLotMap[lot.id]={};
       pf.progs.forEach(p=>{
-        const colIdx=p.colIdx;
-        const col=item.colours[colIdx];if(!col)return;
-        const chk=el('bl-lot-'+lot.id+'-ck-'+colIdx);
+        let colIdx=p.colIdx;
+        let col=item.colours[colIdx];
+        let chk=el('bl-lot-'+lot.id+'-ck-'+colIdx);
+        if((!chk||!col)&&p.sku){const ci=item.colours.findIndex(c=>c.sku===p.sku);if(ci>=0){colIdx=ci;col=item.colours[ci];chk=el('bl-lot-'+lot.id+'-ck-'+ci);}}
+        if(!col)return;
         if(chk&&!chk.checked){chk.checked=true;billLotClrToggle(lot.id,colIdx,true);}
         const prevBilled=(p.billedPcs||0)||(p.bills||[]).reduce((s,b)=>s+(b.pcs||0),0);
         const remaining=Math.max(0,(p.pcs||0)-prevBilled);
@@ -7564,7 +7566,7 @@ const brokAdj=brokPct!==0?Math.round(afterDisc*brokPct/100):0;
 const brokAmt=brokAdj+Math.round(brokFlat);/* positive=add, negative=deduct */
 const netTaxable=afterDisc+brokAmt;
 let gH='',grand=netTaxable;
-const _activeGstin=(_editBillId&&_editBillGstin!==null)?_editBillGstin:(cust?.gstin||'');
+const _activeGstin=(_editBillGstin!==null)?_editBillGstin:(cust?.gstin||'');
 if(_activeGstin){const t=gstType(_activeGstin),gA=Math.round(netTaxable*0.05);
 grand=netTaxable+gA;
 gH=t==='same'?'<div class="brow"><span>SGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div><div class="brow"><span>CGST @ 2.5%</span><span class="mono">'+fmtRs(gA/2)+'</span></div>':'<div class="brow"><span>IGST @ 5%</span><span class="mono">'+fmtRs(gA)+'</span></div>';}
