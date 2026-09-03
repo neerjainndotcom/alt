@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.18';
+const APP_VERSION='1.45.19';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -9035,9 +9035,7 @@ _sg('stock','📦','Stock Settings',true,_stock)+
 _sg('wa','📲','WhatsApp Sharing',true,_waSharing)+
 _sg('ordpdf','📄','Order Form PDF',false,(()=>{
 const ps=STATE.settings.orderPdfSettings||{};
-const cb=(k,lbl,desc,def=true)=>'<label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--s2)">'
-+'<input type="checkbox" id="s-opdf-'+k+'" style="width:18px;height:18px;accent-color:#4F46E5;flex-shrink:0"'+((ps[k]===false?false:def)?' checked':'')+' onchange="(STATE.settings.orderPdfSettings=STATE.settings.orderPdfSettings||{})[''+k+'']=this.checked"/>'
-+'<div><div class="fw7 sm">'+lbl+'</div><div class="xs ct3">'+desc+'</div></div></label>';
+const cb=(k,lbl,desc,def=true)=>'<label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--s2)"><input type="checkbox" data-k="'+k+'" id="s-opdf-'+k+'" style="width:18px;height:18px;accent-color:#4F46E5;flex-shrink:0"'+((ps[k]===false?false:def)?' checked':'')+' onchange="(STATE.settings.orderPdfSettings=STATE.settings.orderPdfSettings||{})[this.dataset.k]=this.checked"/><div><div class="fw7 sm">'+lbl+'</div><div class="xs ct3">'+desc+'</div></div></label>';
 return '<div class="xs ct3 mb12">Control what appears on the printed order form PDF. Changes take effect immediately.</div>'
 +cb('showDate','Order Date','Show the order date')
 +cb('showColour','Colour / Range column','Show which colour or range each item is')
