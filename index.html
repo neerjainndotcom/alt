@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.31';
+const APP_VERSION='1.45.32';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -6887,6 +6887,47 @@ function confirmBillLots(ordId){
   showMod('m-bill');
   toast('Bill form ready – check items and tap Save Bill','ok');
 }
+function billAllPendingLots(ordId){
+  /* Bills ALL pending lots at once — skips the selection modal */
+  const o=STATE.orders.find(x=>x.id===ordId); if(!o) return;
+  if(_billFromProgLot){toast('Save or cancel the open bill form first','er');return;}
+  /* Calculate legacy coverage (same as openBillLotSelector) */
+  const _ordBills=liveBills().filter(b=>b.ordId===ordId&&b.status!=='cancelled');
+  const _legacySkuPcs={};
+  _ordBills.forEach(b=>(b.items||[]).forEach(it=>{if(!it._progId){_legacySkuPcs[it.sku]=(_legacySkuPcs[it.sku]||0)+(it.pcs||0);}}));
+  const _progsBySku={};
+  (o.programmes||[]).forEach(p=>{if(!_progsBySku[p.sku])_progsBySku[p.sku]=[];_progsBySku[p.sku].push(p);});
+  const _legacyCov={};
+  Object.keys(_legacySkuPcs).forEach(sku=>{
+    let rem=_legacySkuPcs[sku];
+    const ps=(_progsBySku[sku]||[]).slice().sort((a,b)=>(a.lotNum||0)-(b.lotNum||0));
+    ps.forEach(p=>{const need=Math.max(0,(p.pcs||0)-(p.billedPcs||0));const cov=Math.min(rem,need);_legacyCov[p.id]=(cov||0);rem-=cov;});
+  });
+  /* Collect ALL pending programmes */
+  const progs=(o.programmes||[]).filter(p=>{
+    if(p.status==='billed') return false;
+    if((p.billedPcs||0)+(_legacyCov[p.id]||0)>=(p.pcs||1)) return false;
+    return true;
+  });
+  if(!progs.length){toast('No pending lots to bill','er');return;}
+  _billOrdId=ordId; _billRows=[]; _billLots=[]; _billLotId=0;
+  _mixSareLots=[];_mixSareLotId=0; _billFromProgLot=true; _progLotMap={};
+  /* Group by itemId+range so each group becomes one bill lot card */
+  const grpMap={};const grpOrder=[];
+  progs.forEach(p=>{
+    const key=(p.itemId||'')+'||'+(p.range||'');
+    if(!grpMap[key]){grpMap[key]={itemId:p.itemId,range:p.range,cut:p.cut||6,progs:[]};grpOrder.push(key);}
+    grpMap[key].progs.push(p);
+  });
+  grpOrder.forEach(key=>{
+    _billLotId++;const g=grpMap[key];
+    _billLots.push({id:_billLotId,_prefill:{itemId:g.itemId,range:g.range,cut:g.cut,progs:g.progs}});
+  });
+  hideMod('m-ord-det');hideMod('m-prog');
+  buildBillBody({custId:o.custId,custName:o.custName,orderNo:o.orderNo,ordId:ordId,fromProgLot:true});
+  showMod('m-bill');
+  toast('All '+progs.length+' pending lots ready — verify and save bill','ok');
+}
 function billProgramme(ordId,progId){
   const o=STATE.orders.find(x=>x.id===ordId); if(!o) return;
   const prog=o.programmes?.find(p=>p.id===progId); if(!prog) return;
@@ -8319,44 +8360,113 @@ const da=a.date?new Date(a.date).getTime():0, db=b.date?new Date(b.date).getTime
 });
 /* Summary figures */
 const totalOrderValue=pendingOrders.reduce((s,o)=>s+(o.total||0),0);
+const noProg=pendingOrders.filter(o=>o.type==='open'&&!(o.programmes||[]).length).length;
 let html='<div style="padding:8px 16px">';
-/* ── Summary card ── */
-html+='<div class="card" style="margin:0 0 8px;background:#FEF3C7;border:1.5px solid #FCD34D">'+
-'<div style="font-size:10px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Open Orders</div>'+
-'<div style="font-size:24px;font-weight:900;color:#D97706">'+pendingOrders.length+'</div>'+
-'<div style="font-size:11px;color:#92400E;font-weight:600;margin-top:2px">Value: '+fmtRs(Math.round(totalOrderValue))+'</div>'+
+/* ── Summary cards ── */
+html+='<div style="display:grid;grid-template-columns:'+(noProg?'1fr 1fr 1fr':'1fr 1fr')+';gap:8px;margin-bottom:10px">'+
+'<div class="card" style="margin:0;background:#FEF3C7;border:1.5px solid #FCD34D">'+
+'<div style="font-size:10px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">Pending</div>'+
+'<div style="font-size:26px;font-weight:900;color:#D97706">'+pendingOrders.length+'</div>'+
+'<div style="font-size:10px;color:#92400E;font-weight:600">orders</div>'+
+'</div>'+
+'<div class="card" style="margin:0;background:#EEF2FF;border:1.5px solid #818CF8">'+
+'<div style="font-size:10px;font-weight:800;color:#3730A3;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">Value</div>'+
+'<div style="font-size:16px;font-weight:900;color:#4F46E5">'+fmtRs(Math.round(totalOrderValue))+'</div>'+
+'<div style="font-size:10px;color:#3730A3;font-weight:600">total</div>'+
+'</div>'+
+(noProg?'<div class="card" style="margin:0;background:#FEE2E2;border:1.5px solid #FCA5A5">'+
+'<div style="font-size:10px;font-weight:800;color:#991B1B;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">No Prog</div>'+
+'<div style="font-size:26px;font-weight:900;color:#DC2626">'+noProg+'</div>'+
+'<div style="font-size:10px;color:#991B1B;font-weight:600">bulk orders</div>'+
+'</div>':'')+
 '</div>';
 if(!pendingOrders.length){
 c.innerHTML=html+'<div class="emp"><div class="emj">&#x2705;</div><h3>All Clear!</h3><p>No pending orders. Check the Payments tab for outstanding bills.</p></div></div>'; return;
 }
 /* ── Pending Orders ── */
-if(pendingOrders.length){
-html+='<div style="font-size:11px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;padding:6px 10px;background:#FEF3C7;border-radius:8px">&#x1F4CB; Pending Orders ('+pendingOrders.length+')</div>';
+html+='<div style="font-size:11px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:.5px;margin:4px 0 8px;padding:6px 10px;background:#FEF3C7;border-radius:8px">&#x1F4CB; Pending Orders ('+pendingOrders.length+')</div>';
 pendingOrders.forEach(o=>{
 const ordBills=STATE.bills.filter(b=>!b._deleted&&b.ordId===o.id&&b.status!=='cancelled'&&b.status!=='deleted');
 const billedAmt=ordBills.reduce((s,b)=>s+(b.grandTotal||0),0);
 const paidAmt=ordBills.reduce((s,b)=>s+(b.amtPaid||0),0);
 const balAmt=billedAmt-paidAmt;
-const totalPcs=(o.items||[]).reduce((s,i)=>s+(i.pcs||0),0);
 const billCount=ordBills.length;
 const stColor=o.status==='billed'?'bg-t':'bg-a';
-const _pendPcs=(o.type==='open')?calcProgStats(o).remaining:calcFixedOrderPending(o).totalRemaining;
-html+='<div class="et" style="cursor:pointer;align-items:flex-start" onclick="showOrderDetail(\''+o.id+'\')">'+
-'<div class="ei" style="background:#FEF3C7;color:#D97706;margin-top:4px">&#x1F4CB;</div>'+
-'<div class="eb">'+
-'<div class="etit mono cP">'+o.orderNo+'</div>'+
-'<div class="esub fw7">'+escHtml(o.custName)+'</div>'+
-'<div class="esub">'+fmtDate(o.date)+' &bull; '+totalPcs+' pcs ordered'+(_pendPcs>0?' &bull; <span style="color:#DC2626;font-weight:700">'+fmtN(_pendPcs)+' pcs pending</span>':' &bull; <span style="color:#059669;font-weight:700">all dispatched</span>')+'</div>'+
-(billCount>0?'<div class="esub" style="color:#059669">&#x1F9FE; '+billCount+' bill(s) raised &bull; Paid: '+fmtRs(Math.round(paidAmt))+(balAmt>0?' &bull; <span style="color:#DC2626">Bal: '+fmtRs(Math.round(balAmt))+'</span>':'')+'</div>':
-'<div class="esub" style="color:#D97706">No bill raised yet</div>')+
+const isOpen=o.type==='open';
+const hasProg=isOpen&&(o.programmes||[]).length>0;
+/* ── Pending breakdown ── */
+let totalOrdered=0,totalBilled=0,colourRows='';
+if(isOpen){
+  const stat=calcProgStats(o);
+  totalOrdered=stat.total;
+  totalBilled=stat.dispatched;
+  /* colour breakdown from pending programmes */
+  const pendProgs=(o.programmes||[]).filter(p=>p.status!=='billed'&&(p.pcs||0)-(p.billedPcs||0)>0);
+  if(pendProgs.length){
+    colourRows=pendProgs.map(p=>{
+      const rem=(p.pcs||0)-(p.billedPcs||0);
+      return '<span style="display:inline-flex;align-items:center;gap:3px;background:#FEE2E2;border:1px solid #FCA5A5;border-radius:5px;padding:2px 6px;font-size:10px;font-weight:700;color:#991B1B;white-space:nowrap">'+escHtml(p.colourName)+' <span style="color:#DC2626">'+fmtN(rem)+'</span></span>';
+    }).join(' ');
+  }
+} else {
+  const fp=calcFixedOrderPending(o);
+  totalOrdered=fp.totalOrdered; totalBilled=fp.totalBilled;
+  const pendSkus=Object.values(fp.bySku).filter(s=>s.remaining>0);
+  if(pendSkus.length){
+    colourRows=pendSkus.map(s=>'<span style="display:inline-flex;align-items:center;gap:3px;background:#FEE2E2;border:1px solid #FCA5A5;border-radius:5px;padding:2px 6px;font-size:10px;font-weight:700;color:#991B1B;white-space:nowrap">'+escHtml(s.colourName)+' <span style="color:#DC2626">'+fmtN(s.remaining)+'</span></span>').join(' ');
+  }
+}
+const pct=totalOrdered>0?Math.min(100,Math.round(totalBilled/totalOrdered*100)):0;
+const allDispatched=totalOrdered>0&&totalBilled>=totalOrdered;
+/* ── Progress bar ── */
+const progressBar='<div style="margin:6px 0 2px">'+
+'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">'+
+'<span style="font-size:9px;font-weight:700;color:#6B7280">'+fmtN(totalBilled)+' / '+fmtN(totalOrdered)+' pcs dispatched</span>'+
+'<span style="font-size:9px;font-weight:800;color:'+(allDispatched?'#059669':'#DC2626')+'">'+pct+'%</span>'+
 '</div>'+
-'<div class="er" style="text-align:right;flex-shrink:0">'+
+'<div style="height:6px;background:#E5E7EB;border-radius:4px;overflow:hidden">'+
+'<div style="height:100%;width:'+pct+'%;background:'+(allDispatched?'#059669':pct>50?'#F59E0B':'#EF4444')+';border-radius:4px;transition:width .3s"></div>'+
+'</div>'+
+'</div>';
+html+='<div style="background:white;border:1.5px solid #E5E4F0;border-radius:12px;margin-bottom:8px;overflow:hidden">'+
+/* Header row */
+'<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px 8px;cursor:pointer" onclick="showOrderDetail(\''+o.id+'\')">'+
+'<div style="width:32px;height:32px;border-radius:8px;background:#FEF3C7;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:2px">&#x1F4CB;</div>'+
+'<div style="flex:1;min-width:0">'+
+'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+
+'<span class="mono fw7 cP" style="font-size:14px">'+o.orderNo+'</span>'+
+(isOpen?'<span style="background:#EEF2FF;color:#3730A3;font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:.3px">BULK ORDER</span>':'')+
+(!isOpen||hasProg?'':'<span style="background:#FEE2E2;color:#991B1B;font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:.3px">&#x26A0; NO PROGRAMME</span>')+
+'<span class="bdg '+stColor+'" style="font-size:9px">'+o.status+'</span>'+
+'</div>'+
+'<div style="font-size:13px;font-weight:700;color:#1e1b4b;margin-top:1px">'+escHtml(o.custName)+'</div>'+
+'<div style="font-size:11px;color:#6B7280;margin-top:1px">'+fmtDate(o.date)+(o.salesmanName?' &bull; '+o.salesmanName:'')+'</div>'+
+progressBar+
+/* Colour breakdown pills */
+(colourRows?'<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center">'+
+'<span style="font-size:9px;font-weight:700;color:#6B7280;white-space:nowrap">Pending:</span>'+colourRows+
+'</div>':
+(allDispatched?'<div style="margin-top:4px;font-size:10px;font-weight:700;color:#059669">&#x2714; All dispatched</div>':
+(!isOpen||hasProg?'<div style="margin-top:4px;font-size:10px;color:#9CA3AF">No pending colours</div>':'')))+
+/* Bill status */
+'<div style="margin-top:4px">'+
+(billCount>0?'<div style="font-size:10px;color:#059669;font-weight:700">&#x1F9FE; '+billCount+' bill(s) raised &bull; Paid: '+fmtRs(Math.round(paidAmt))+(balAmt>0?' &bull; <span style="color:#DC2626">Bal: '+fmtRs(Math.round(balAmt))+'</span>':'')+'</div>':
+'<div style="font-size:10px;color:#D97706;font-weight:700">No bill raised yet</div>')+
+'</div>'+
+'</div>'+
+'<div style="text-align:right;flex-shrink:0">'+
 '<div class="mono fw7 cP" style="font-size:13px">'+fmtRs(o.total)+'</div>'+
-'<span class="bdg '+stColor+'" style="margin-top:4px">'+o.status+'</span>'+
+'</div>'+
+'</div>'+
+/* Action buttons row */
+'<div style="display:flex;gap:6px;padding:8px 12px;background:#F9F9FC;border-top:1px solid #E5E4F0;flex-wrap:wrap">'+
+'<button onclick="showOrderDetail(\''+o.id+'\')" style="flex:1;padding:7px 10px;border:none;border-radius:8px;background:#EEF2FF;color:#4F46E5;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">&#x1F441; View Details</button>'+
+(isOpen&&hasProg?'<button onclick="event.stopPropagation();billAllPendingLots(\''+o.id+'\')" style="flex:1;padding:7px 10px;border:none;border-radius:8px;background:#059669;color:white;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">&#x1F9FE; Bill ALL Lots</button>':'')+
+(isOpen&&!hasProg?'<button onclick="event.stopPropagation();hideMod(\'m-ord-det\');openProgModal(\''+o.id+'\')" style="flex:1;padding:7px 10px;border:none;border-radius:8px;background:#059669;color:white;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">&#x1F4CB; Add Programme</button>':'')+
+'<button onclick="event.stopPropagation();cancelOrder(\''+o.id+'\')" style="padding:7px 10px;border:none;border-radius:8px;background:#FEE2E2;color:#DC2626;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">&#x274C; Cancel</button>'+
 '</div>'+
 '</div>';
 });
-}
 html+='</div>';
 c.innerHTML=html;
 }
@@ -10767,9 +10877,12 @@ foot.appendChild(mk('btn bga','&#x1F4C4; PDF',()=>printOrderPdf(o.id)));
 if(_canViewInvoices()){
   if(o.type==='open'&&o.status!=='cancelled'){
     foot.appendChild(mk('bp bfl','&#x1F4CB; Programme Lot',()=>{hideMod('m-ord-det');openProgModal(o.id);}));
-    const pendingProgs=(o.programmes||[]).filter(p=>p.status!=='billed');
-    const pendingLotGroups=new Set(pendingProgs.map(p=>p.lotGroupId||p.id));
-    if(pendingLotGroups.size) foot.appendChild(mk('bs bfl','&#x1F9FE; Bill Lot ('+pendingLotGroups.size+')',()=>{hideMod('m-ord-det');openBillLotSelector(o.id);}));
+    const pendingProgs=(o.programmes||[]).filter(p=>p.status!=='billed'&&((p.pcs||0)-(p.billedPcs||0))>0);
+    const pendingLotGroups=new Set(pendingProgs.map(p=>p.lotGroupId||(p.lotNum?'lot_'+p.lotNum:p.id)));
+    if(pendingLotGroups.size){
+      /* Primary: Bill ALL lots in one shot */
+      foot.appendChild(mk('bp bfl','&#x1F9FE; Bill ALL Lots ('+pendingLotGroups.size+')',()=>{hideMod('m-ord-det');billAllPendingLots(o.id);}));
+    }
   }else if(o.status!=='fulfilled'&&o.status!=='cancelled'){
     foot.appendChild(mk('bp bfl','&#x1F9FE; Dispatch Bill',()=>{hideMod('m-ord-det');openDispatch(o.id);}));
   }
