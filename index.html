@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.32';
+const APP_VERSION='1.45.34';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -8400,21 +8400,60 @@ if(isOpen){
   const stat=calcProgStats(o);
   totalOrdered=stat.total;
   totalBilled=stat.dispatched;
-  /* colour breakdown from pending programmes */
+  /* colour breakdown from pending programmes, grouped by item+range */
   const pendProgs=(o.programmes||[]).filter(p=>p.status!=='billed'&&(p.pcs||0)-(p.billedPcs||0)>0);
   if(pendProgs.length){
-    colourRows=pendProgs.map(p=>{
-      const rem=(p.pcs||0)-(p.billedPcs||0);
-      return '<span style="display:inline-flex;align-items:center;gap:3px;background:#FEE2E2;border:1px solid #FCA5A5;border-radius:5px;padding:2px 6px;font-size:10px;font-weight:700;color:#991B1B;white-space:nowrap">'+escHtml(p.colourName)+' <span style="color:#DC2626">'+fmtN(rem)+'</span></span>';
-    }).join(' ');
+    const _grpColors=['#818CF8','#4ADE80','#FB923C','#C084FC','#FACC15','#38BDF8'];
+    const _grpLabels=['#3730A3','#166534','#7C2D12','#581C87','#713F12','#0C4A6E'];
+    const _pgMap={};const _pgOrd=[];
+    pendProgs.forEach(p=>{
+      const key=(p.itemName||'')+'|||'+(p.range||'');
+      if(!_pgMap[key]){_pgMap[key]={itemName:p.itemName||'',range:p.range||'',progs:[]};_pgOrd.push(key);}
+      _pgMap[key].progs.push(p);
+    });
+    colourRows=_pgOrd.map((key,gi)=>{
+      const grp=_pgMap[key];
+      const lc=_grpColors[gi%_grpColors.length];const ll=_grpLabels[gi%_grpLabels.length];
+      const pills=grp.progs.map(p=>{
+        const rem=(p.pcs||0)-(p.billedPcs||0);
+        const code=(STATE.items.find(x=>x.id===p.itemId)?.colours?.[p.colIdx]?.code||p.sku||'');
+        return '<span style="display:inline-flex;align-items:center;gap:3px;background:#FEE2E2;border:1px solid #FCA5A5;border-radius:6px;padding:3px 7px;font-size:10px;font-weight:700;color:#991B1B;white-space:nowrap">'+escHtml(p.colourName)+(code?' <span style="font-size:9px;color:#6B7280;font-weight:600">('+escHtml(code)+')</span>':'')+' <span style="background:#DC2626;color:white;border-radius:3px;padding:1px 4px;font-size:9px;font-weight:800;margin-left:2px">'+fmtN(rem)+'</span></span>';
+      }).join(' ');
+      return '<div style="margin-bottom:6px">'+
+        '<div style="font-size:10px;font-weight:800;color:'+ll+';margin-bottom:3px">'+escHtml(grp.itemName)+' / Range '+escHtml(grp.range)+'</div>'+
+        '<div style="display:flex;flex-wrap:wrap;gap:3px">'+pills+'</div>'+
+        '</div>';
+    }).join('');
   }
 } else {
   const fp=calcFixedOrderPending(o);
   totalOrdered=fp.totalOrdered; totalBilled=fp.totalBilled;
-  const pendSkus=Object.values(fp.bySku).filter(s=>s.remaining>0);
-  if(pendSkus.length){
-    colourRows=pendSkus.map(s=>'<span style="display:inline-flex;align-items:center;gap:3px;background:#FEE2E2;border:1px solid #FCA5A5;border-radius:5px;padding:2px 6px;font-size:10px;font-weight:700;color:#991B1B;white-space:nowrap">'+escHtml(s.colourName)+' <span style="color:#DC2626">'+fmtN(s.remaining)+'</span></span>').join(' ');
-  }
+  /* Group items by lot so pending colours are shown per lot/range */
+  const hasLotIdx=(o.items||[]).some(it=>it.lotIndex!=null);
+  const _lm={};const _lo=[];
+  (o.items||[]).forEach(it=>{
+    const key=hasLotIdx?String(it.lotIndex):((it.itemName||'')+'|||'+(it.range||''));
+    if(!_lm[key]){_lm[key]={itemName:it.itemName||'',range:it.range||'',items:[]};_lo.push(key);}
+    _lm[key].items.push(it);
+  });
+  const lotColors=['#818CF8','#4ADE80','#FB923C','#C084FC','#FACC15','#38BDF8'];
+  const lotLabels=['#3730A3','#166534','#7C2D12','#581C87','#713F12','#0C4A6E'];
+  const lotParts=_lo.map((key,li)=>{
+    const lot=_lm[key];
+    const pendItems=lot.items.filter(it=>(fp.bySku[it.sku]?.remaining||0)>0);
+    if(!pendItems.length) return '';
+    const ll=lotLabels[li%lotLabels.length];
+    const pills=pendItems.map(it=>{
+      const rem=fp.bySku[it.sku].remaining;
+      const code=(STATE.items.find(x=>x.id===it.itemId)?.colours?.[it.colIdx]?.code||'');
+      return '<span style="display:inline-flex;align-items:center;gap:3px;background:#FEE2E2;border:1px solid #FCA5A5;border-radius:6px;padding:3px 7px;font-size:10px;font-weight:700;color:#991B1B;white-space:nowrap">'+escHtml(it.colourName)+(code?' <span style="font-size:9px;color:#6B7280;font-weight:600">('+escHtml(code)+')</span>':'')+' <span style="background:#DC2626;color:white;border-radius:3px;padding:1px 4px;font-size:9px;font-weight:800;margin-left:2px">'+fmtN(rem)+'</span></span>';
+    }).join(' ');
+    return '<div style="margin-bottom:6px">'+
+      '<div style="font-size:10px;font-weight:800;color:'+ll+';margin-bottom:3px">'+escHtml(lot.itemName)+' / Range '+escHtml(lot.range)+'</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:3px">'+pills+'</div>'+
+      '</div>';
+  }).filter(Boolean);
+  colourRows=lotParts.join('');
 }
 const pct=totalOrdered>0?Math.min(100,Math.round(totalBilled/totalOrdered*100)):0;
 const allDispatched=totalOrdered>0&&totalBilled>=totalOrdered;
@@ -8443,8 +8482,8 @@ html+='<div style="background:white;border:1.5px solid #E5E4F0;border-radius:12p
 '<div style="font-size:11px;color:#6B7280;margin-top:1px">'+fmtDate(o.date)+(o.salesmanName?' &bull; '+o.salesmanName:'')+'</div>'+
 progressBar+
 /* Colour breakdown pills */
-(colourRows?'<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center">'+
-'<span style="font-size:9px;font-weight:700;color:#6B7280;white-space:nowrap">Pending:</span>'+colourRows+
+(colourRows?'<div style="margin-top:6px">'+
+'<div style="font-size:9px;font-weight:700;color:#6B7280;margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px">Pending colours</div>'+colourRows+
 '</div>':
 (allDispatched?'<div style="margin-top:4px;font-size:10px;font-weight:700;color:#059669">&#x2714; All dispatched</div>':
 (!isOpen||hasProg?'<div style="margin-top:4px;font-size:10px;color:#9CA3AF">No pending colours</div>':'')))+
