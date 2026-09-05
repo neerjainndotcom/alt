@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.30';
+const APP_VERSION='1.45.31';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -13963,7 +13963,7 @@ function printOrderPdf(id){
   var ordNo=o.orderNumber||o.orderNo||o.id.slice(-6)||'—';
 
   var TH='padding:8px 10px;text-align:left;background:#3730A3;color:#fff;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;white-space:nowrap';
-  var TD='padding:8px 10px;border-bottom:1px solid #f0eeff;font-size:12px;vertical-align:top';
+  var TD='padding:8px 10px 16px;border-bottom:1px solid #f0eeff;font-size:12px;vertical-align:top';
 
   var itemsHtml='';
   var showAmt=show('showAmounts');
@@ -14006,7 +14006,7 @@ function printOrderPdf(id){
       itemsHtml+='<div style="font-weight:800;color:#1e1b4b;font-size:13px;margin-bottom:1px">'+esc(first.itemName||first.name||'')+'</div>';
       if(first.range)itemsHtml+='<div style="color:#7c3aed;font-size:10px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">'+esc(first.range)+'</div>';
       itemsHtml+='<div style="margin-bottom:6px">'+colList+'</div>';
-      itemsHtml+='<div style="display:inline-flex;align-items:center;gap:6px;background:#1e1b4b;color:#fff;font-weight:800;font-size:14px;border-radius:6px;padding:3px 12px;letter-spacing:.3px">'+pcsPerColour+' &times; '+colCount+' <span style="font-weight:400;font-size:11px;opacity:.75;margin-left:2px">pcs</span></div>';
+      itemsHtml+='<div style="display:inline-flex;align-items:center;gap:6px;background:#1e1b4b;color:#fff;font-weight:800;font-size:14px;border-radius:6px;padding:3px 12px;letter-spacing:.3px">'+pcsPerColour+' pcs &times; '+colCount+' <span style="font-weight:600;font-size:12px;color:#6366f1;margin-left:2px">Colours</span></div>';
       itemsHtml+='</td>';
       itemsHtml+='<td style="'+TD+';text-align:center;font-weight:600;color:#374151">'+fmtCut(cut)+'</td>';
       itemsHtml+='<td style="'+TD+';text-align:right;font-weight:700;color:#3730A3;font-size:13px">'+(rowMtrs?rowMtrs.toFixed(2):'—')+'</td>';
@@ -14092,7 +14092,7 @@ function printOrderPdf(id){
   html+='.ord-meta{text-align:right;flex-shrink:0;padding-top:2px}';
   html+='.ord-lbl{font-size:9px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}';
   html+='.ord-no{font-size:28px;font-weight:900;color:#3730A3;letter-spacing:-.5px;line-height:1}';
-  html+='.ord-date{font-size:11px;color:#6b7280;font-weight:500;margin-top:5px}';
+  html+='.ord-date{font-size:13px;color:#1e1b4b;font-weight:700;margin-top:6px}';
 
   html+='.body-pad{padding:18px 24px}';
 
