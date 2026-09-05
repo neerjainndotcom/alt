@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.36';
+const APP_VERSION='1.45.37';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -8404,7 +8404,7 @@ if(isOpen){
   /* Only filter by range (if a specific range is selected) — item filter already controls which orders show */
   const pendProgs=(o.programmes||[]).filter(p=>{
     if(p.status==='billed'||(p.pcs||0)-(p.billedPcs||0)<=0) return false;
-    if(_pflt.range&&String(p.range)!==String(_pflt.range)) return false;
+    if(_pflt.range&&(p.range||'').toLowerCase()!==_pflt.range) return false;
     return true;
   });
   if(pendProgs.length){
@@ -8446,7 +8446,7 @@ if(isOpen){
   const lotParts=_lo.map((key,li)=>{
     const lot=_lm[key];
     /* Only filter colour rows by range (item filter already controls which orders appear) */
-    if(_pflt.range&&String(lot.range)!==String(_pflt.range)) return '';
+    if(_pflt.range&&(lot.range||'').toLowerCase()!==_pflt.range) return '';
     const pendItems=lot.items.filter(it=>(fp.bySku[it.sku]?.remaining||0)>0);
     if(!pendItems.length) return '';
     const ll=lotLabels[li%lotLabels.length];
