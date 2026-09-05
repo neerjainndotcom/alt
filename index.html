@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.38';
+const APP_VERSION='1.45.39';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -1251,7 +1251,7 @@ b.innerHTML='<span class="ni">'+icoMap[k]+'</span>'+tr(k);
 if(hasDot) b.appendChild(hasDot);
 });
 document.querySelectorAll('[data-i18n]').forEach(e=>{ e.textContent=tr(e.dataset.i18n); });
-document.querySelectorAll('#s-sales .tbb').forEach((b,i)=>{ b.textContent=['Orders','Bills','Pending','+ Invoice'][i]||b.textContent; });
+document.querySelectorAll('#s-sales .tbb').forEach((b,i)=>{ b.textContent=[tr('orders'),tr('bills'),tr('pending'),'+ Invoice'][i]||b.textContent; });
 document.querySelectorAll('#s-jw .tbb').forEach((b,i)=>{ b.textContent=tr(['pending','received','all'][i]||''); });
 document.querySelectorAll('#s-masters .tbb').forEach((b,i)=>{ b.textContent=tr(['items','customers','brokers','suppliers','products'][i]||''); });
 document.querySelectorAll('#s-admin .tbb').forEach((b,i)=>{ b.textContent=tr(['settings','users','devices','ledger','database'][i]||''); });
@@ -1260,6 +1260,7 @@ renderShortcuts();
 function toggleLang(){
 _hindi=!_hindi;
 applyLang();
+toast(_hindi?'हिंदी में बदला गया':'Switched to English','ok');
 }
 function switchTab(scr,tab,btn){
 const ctx=btn.closest('.scr')||btn.closest('.sh')||document;
@@ -6243,8 +6244,8 @@ return {
 };
 }
 function orderPassesFlt(o,flt){
-if(flt.item&&!(o.items||o.openItems||[]).some(i=>(i.itemName||'').toLowerCase().includes(flt.item))) return false;
-if(flt.range&&!(o.items||[]).some(i=>(i.range||'').toLowerCase().includes(flt.range))) return false;
+if(flt.item&&!(o.items||o.openItems||o.programmes||[]).some(i=>(i.itemName||'').toLowerCase()===flt.item)) return false;
+if(flt.range&&!((o.items||[]).concat(o.programmes||[])).some(i=>(i.range||'').toLowerCase()===flt.range)) return false;
 if(flt.party&&!(o.custName||'').toLowerCase().includes(flt.party)) return false;
 if(flt.from&&(!o.date||o.date<flt.from)) return false;
 if(flt.to&&(!o.date||o.date>flt.to)) return false;
@@ -8438,7 +8439,7 @@ if(isOpen){
   const _lm={};const _lo=[];
   (o.items||[]).forEach(it=>{
     const key=hasLotIdx?String(it.lotIndex):((it.itemName||'')+'|||'+(it.range||''));
-    if(!_lm[key]){_lm[key]={itemName:it.itemName||'',range:it.range||'',items:[]};_lo.push(key);}
+    if(!_lm[key]){_lm[key]={itemName:it.itemName||'',range:it.range||'',lotKey:key,items:[]};_lo.push(key);}
     _lm[key].items.push(it);
   });
   const lotColors=['#818CF8','#4ADE80','#FB923C','#C084FC','#FACC15','#38BDF8'];
@@ -8456,7 +8457,7 @@ if(isOpen){
       return '<span style="display:inline-flex;align-items:center;gap:3px;background:#FEE2E2;border:1px solid #FCA5A5;border-radius:6px;padding:3px 7px;font-size:10px;font-weight:700;color:#991B1B;white-space:nowrap">'+escHtml(it.colourName)+(code?' <span style="font-size:9px;color:#6B7280;font-weight:600">('+escHtml(code)+')</span>':'')+' <span style="background:#DC2626;color:white;border-radius:3px;padding:1px 4px;font-size:9px;font-weight:800;margin-left:2px">'+fmtN(rem)+'</span></span>';
     }).join(' ');
     return '<div style="margin-bottom:6px">'+
-      '<div style="font-size:10px;font-weight:800;color:'+ll+';margin-bottom:3px">'+escHtml(lot.itemName)+' / Range '+escHtml(lot.range)+'</div>'+
+      '<div style="font-size:10px;font-weight:800;color:'+ll+';margin-bottom:3px">'+escHtml(lot.itemName)+' / Range '+escHtml(lot.range)+(hasLotIdx?' — Lot '+(isNaN(lot.lotKey)?lot.lotKey:(parseInt(lot.lotKey)+1)):'')+' </div>'+
       '<div style="display:flex;flex-wrap:wrap;gap:3px">'+pills+'</div>'+
       '</div>';
   }).filter(Boolean);
