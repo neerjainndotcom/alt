@@ -110,7 +110,7 @@
  ********************************************************************/
 
 // ═══ APP VERSION — Change this number every time you update the file ═══
-const APP_VERSION='1.45.39';
+const APP_VERSION='1.45.40';
 const APP_BUILD_DATE='2026-09-03';
 const DATA_VERSION=2;
 // ═══ AUTO-RELOAD ON VERSION CHANGE ═══════════════════════════════════
@@ -966,6 +966,8 @@ if(!STATE.settings.currentFY){
 }
 setNav('dash');
 applySalesTabVisibility();
+/* Apply saved language preference on startup */
+try{ if(_hindi) setTimeout(function(){ applyLang(); },400); }catch(e){}
 renderSettingsForm();
 renderDBSetup();
 if(FIREBASE_URL)initFirebaseListener();
@@ -1211,57 +1213,269 @@ if(tab==='research') renderResearch();
 try{ pullLatestAndRefresh(); }catch(e){}
 }
 let _hindi=false;
+/* ═══════════════════════════════════════════════════════
+   COMPREHENSIVE HINDI TRANSLATION MAP  (~450 entries)
+   Key = exact English UI string → Value = Hindi
+   Only exact-match text nodes are translated so that
+   customer names / order numbers / amounts are NEVER touched.
+   ═══════════════════════════════════════════════════════ */
+const FULL_HINDI_MAP={
+/* Navigation */
+'Dashboard':'डैशबोर्ड','Sales':'बिक्री','Inward':'आवक','Job Work':'जॉब वर्क',
+'Masters':'मास्टर','Reports':'रिपोर्ट','Leads':'लीड','Tasks':'कार्य',
+'Admin':'एडमिन','Research':'रिसर्च','Dash':'डैश',
+/* Sales tabs */
+'Orders':'ऑर्डर','Bills':'बिल','Pending':'लंबित','Payments':'भुगतान',
+'Price List':'मूल्य सूची','+ Invoice':'+ चालान','+ Order':'+ ऑर्डर',
+'Completed':'पूर्ण','Cancelled':'रद्द',
+/* Sub-tabs */
+'All':'सभी','Mine':'मेरे','Won':'जीता','Lost':'हारा','Recurring':'नियमित',
+'My Tasks':'मेरे कार्य','All Tasks':'सभी कार्य','Templates':'टेम्पलेट','Leave':'छुट्टी',
+'Stock':'स्टॉक','vs Orders':'बनाम ऑर्डर','Daily Sales':'दैनिक बिक्री',
+'Top SKUs':'शीर्ष SKU','Trends':'रुझान','Day Wrap':'दिन का सारांश',
+'Star Follow-up':'स्टार फॉलो-अप','Top Customers':'शीर्ष ग्राहक',
+/* Masters tabs */
+'Items':'आइटम','Customers':'ग्राहक','Brokers':'दलाल',
+'Suppliers':'आपूर्तिकर्ता','Products':'उत्पाद','Party Groups':'पार्टी ग्रुप','All SKUs':'सभी SKU',
+/* Admin tabs */
+'Settings':'सेटिंग्स','Users':'उपयोगकर्ता','Devices':'डिवाइस',
+'Ledger':'खाता','Database':'डेटाबेस','Fin Year':'वित्त वर्ष','Flags':'फ्लैग',
+/* JW tabs */
+'Received':'प्राप्त',
+/* Leads tabs */
+'Follow Up':'फॉलो अप','Won/Lost':'जीते/हारे','Samples':'सैंपल','Report':'रिपोर्ट',
+/* Common buttons */
+'Save':'सेव करें','Cancel':'रद्द करें','Delete':'हटाएं','Edit':'संपादित करें',
+'Add':'जोड़ें','Close':'बंद करें','Back':'वापस','Next':'आगे','Submit':'जमा करें',
+'Confirm':'पुष्टि करें','Yes':'हाँ','No':'नहीं','OK':'ठीक है',
+'Update':'अपडेट करें','Create':'बनाएं','View':'देखें','Print':'प्रिंट',
+'Share':'शेयर','Download':'डाउनलोड','Search':'खोजें','Filter':'फिल्टर',
+'Clear':'साफ करें','Clear Filters':'फिल्टर साफ करें','More Filters':'अधिक फिल्टर',
+'Apply':'लागू करें','Refresh':'रीफ्रेश','Export':'एक्सपोर्ट','Go':'जाएं',
+'Generate':'बनाएं','View Details':'विवरण देखें','View Bill':'बिल देखें',
+'Bill ALL Lots':'सभी लॉट बिल करें','Add Programme':'प्रोग्राम जोड़ें',
+'Logout':'लॉगआउट','Login':'लॉगिन',
+/* Create/New buttons */
+'New Order':'नया ऑर्डर','New Bill':'नया बिल','New Invoice':'नया चालान',
+'New Customer':'नया ग्राहक','New Item':'नया आइटम','New Lead':'नई लीड',
+'New Task':'नया कार्य','New User':'नया उपयोगकर्ता',
+'Create Order':'ऑर्डर बनाएं','Create Bill':'बिल बनाएं',
+'+ Lead':'+ लीड','+ Task':'+ कार्य','+ Template':'+ टेम्पलेट',
+'Shop → Job Work':'दुकान → जॉब वर्क','Mill → Job Work':'मिल → जॉब वर्क',
+'+ Generate Receive Challan':'+ रिसीव चालान बनाएं',
+/* Order screen labels */
+'Order No':'ऑर्डर नंबर','Order Date':'ऑर्डर तारीख','Delivery Date':'डिलीवरी तारीख',
+'Customer':'ग्राहक','Item':'आइटम','Colour':'रंग','Range':'रेंज','Lot':'लॉट',
+'Programme':'प्रोग्राम','Qty':'मात्रा','Rate':'दर','Amount':'राशि',
+'Pieces':'पीस','Pcs':'पीस','Meters':'मीटर',
+'Lot No':'लॉट नंबर','Programme Lot':'प्रोग्राम लॉट','Bill Lot':'लॉट बिल करें',
+'No Programme':'कोई प्रोग्राम नहीं','No bill raised yet':'अभी तक कोई बिल नहीं',
+'PENDING COLOURS':'लंबित रंग','Pending Colours':'लंबित रंग',
+'PENDING ORDERS':'लंबित ऑर्डर','Pending Orders':'लंबित ऑर्डर',
+'pcs dispatched':'पीस भेजे गए','orders':'ऑर्डर','total':'कुल',
+'VALUE':'मूल्य','PENDING':'लंबित',
+/* Bill/Invoice labels */
+'Bill No':'बिल नंबर','Bill Date':'बिल तारीख','Invoice No':'चालान नंबर',
+'Due Date':'देय तारीख','Grand Total':'कुल योग','Sub Total':'उप योग',
+'Total':'कुल','Tax':'कर','GST':'जीएसटी','Discount':'छूट',
+'Amount Paid':'भुगतान राशि','Balance':'बकाया','Outstanding':'बकाया',
+'New Tax Invoice':'नया कर चालान','Tax Invoice':'कर चालान',
+'Bill Items':'बिल आइटम','Add Item':'आइटम जोड़ें',
+'Create Bill':'बिल बनाएं','Save Bill':'बिल सेव करें',
+/* Status labels */
+'Billed':'बिल हो गया','Dispatched':'भेजा गया','Processing':'प्रोसेसिंग',
+'Active':'सक्रिय','Inactive':'निष्क्रिय','Open':'खुला','Closed':'बंद',
+'Paid':'भुगतान हो गया','Unpaid':'बकाया','Partial':'आंशिक',
+/* Payment */
+'Cash':'नकद','Cheque':'चेक','UPI':'यूपीआई','NEFT/RTGS':'एनईएफटी/आरटीजीएस',
+'Bank Transfer':'बैंक ट्रांसफर','Payment Mode':'भुगतान मोड',
+'Record Payment':'भुगतान दर्ज करें','Payment Date':'भुगतान तारीख',
+/* Inward */
+'Mill G.P':'मिल गेट पास','Gate Pass':'गेट पास','Challan No':'चालान नंबर',
+'Exchange':'एक्सचेंज','Transfer In':'ट्रांसफर','JW Inward':'जेडब्ल्यू आवक',
+'Job Work Challan':'जॉब वर्क चालान','Exchange Sarees':'एक्सचेंज साड़ियाँ',
+/* Stock */
+'Stock Overview':'स्टॉक सारांश','Opening Stock':'शुरुआती स्टॉक',
+'Stock Adjustment':'स्टॉक सुधार','Manual Entry':'मैनुअल एंट्री',
+'Available':'उपलब्ध','Ordered':'ऑर्डर में','In Stock':'स्टॉक में',
+'Out of Stock':'स्टॉक खत्म','Low Stock':'कम स्टॉक',
+'Inward Stock':'आवक स्टॉक','Stock Report':'स्टॉक रिपोर्ट',
+/* Masters fields */
+'Item Name':'आइटम नाम','Item Code':'आइटम कोड','HSN Code':'HSN कोड',
+'Colour Name':'रंग का नाम','Colour Code':'रंग कोड',
+'Customer Name':'ग्राहक का नाम','Phone':'फोन','Mobile':'मोबाइल',
+'Address':'पता','City':'शहर','State':'राज्य','Market':'मंडी/बाजार',
+'Commission':'कमीशन','GSTIN':'जीएसटीआईएन','PAN':'पैन',
+'Opening Balance':'शुरुआती बकाया','Credit Limit':'क्रेडिट सीमा',
+/* Reports */
+'From Date':'से तारीख','To Date':'तक तारीख','From':'से','To':'तक',
+'Total Sales':'कुल बिक्री','Total Bills':'कुल बिल','Pending Amount':'लंबित राशि',
+'Day End Report':'दिन अंत रिपोर्ट','Sales Report':'बिक्री रिपोर्ट',
+/* Dashboard */
+'Welcome':'स्वागत','Recent Activity':'हालिया गतिविधि','Quick Actions':'त्वरित कार्य',
+'Today':'आज','This Week':'इस सप्ताह','This Month':'इस महीने',
+/* Settings */
+'Company Name':'कंपनी का नाम','Financial Year':'वित्त वर्ष',
+'Language':'भाषा','Theme':'थीम','Dark Mode':'डार्क मोड',
+/* Form labels */
+'Select Customer':'ग्राहक चुनें','Select Item':'आइटम चुनें',
+'All Items':'सभी आइटम','All Ranges':'सभी रेंज','All Parties':'सभी पार्टियां',
+'All Customers':'सभी ग्राहक','All Brokers':'सभी दलाल',
+'All Markets':'सभी मंडियां','All Status':'सभी स्थिति',
+'All Types':'सभी प्रकार','All Staff':'सभी स्टाफ',
+'Date':'तारीख','Note':'नोट','Remarks':'टिप्पणी','Description':'विवरण',
+/* Common messages */
+'No records found':'कोई रिकॉर्ड नहीं मिला','No orders found':'कोई ऑर्डर नहीं मिला',
+'No bills found':'कोई बिल नहीं मिला','No items found':'कोई आइटम नहीं मिला',
+'No customers found':'कोई ग्राहक नहीं मिला','No data available':'कोई डेटा नहीं',
+'Loading...':'लोड हो रहा है...','Saving...':'सेव हो रहा है...',
+'Saved!':'सेव हो गया!','Error':'त्रुटि','Success':'सफल',
+/* Leads */
+'Lead':'लीड','Salesman':'सेल्समैन','Status':'स्थिति','Priority':'प्राथमिकता',
+'Overdue':'समय सीमा पार','Due Today':'आज देय','Follow-up':'फॉलो अप',
+/* User/Auth */
+'Password':'पासवर्ड','Username':'उपयोगकर्ता नाम','Role':'भूमिका',
+/* Shortcut labels */
+'New Sale Order':'नया बिक्री ऑर्डर','Record stock in':'स्टॉक दर्ज करें',
+'Create order':'ऑर्डर बनाएं','Set initial balance':'प्रारंभिक शेष',
+'Correct variances':'फर्क सुधारें','Send to processing':'प्रोसेसिंग के लिए भेजें',
+'Send from stock':'स्टॉक से भेजें','Mark challan received':'चालान प्राप्त दर्ज करें',
+'Receive Job Work':'जॉब वर्क प्राप्त','New Supplier':'नया आपूर्तिकर्ता',
+'New Broker':'नया दलाल',
+'Add fabric type':'कपड़े का प्रकार जोड़ें','Add buyer':'खरीदार जोड़ें',
+'Add mill / JW party':'मिल / जेडब्ल्यू जोड़ें','Add commission agent':'दलाल जोड़ें',
+/* Pending order card */
+'✕ Cancel':'✕ रद्द करें','→ View Details':'→ विवरण देखें',
+'📋 Programme Lot':'📋 प्रोग्राम लॉट',
+};
+/* Reverse map for restoring English on toggle-back */
+const FULL_ENGLISH_MAP=Object.fromEntries(Object.entries(FULL_HINDI_MAP).map(([k,v])=>[v,k]));
+/* Legacy key-based dicts kept for tr(key) calls */
 const HI={
-dash:'\u0921\u0948\u0936\u092C\u094B\u0930\u094D\u0921',sales:'\u092C\u093F\u0915\u094D\u0930\u0940',inward:'\u0906\u0935\u0915',
-jw:'\u091C\u0949\u092C\u0935\u0930\u094D\u0915',masters:'\u092E\u093E\u0938\u094D\u091F\u0930',admin:'\u090F\u0921\u092E\u093F\u0928',
-'mill_gp':'\u092E\u093F\u0932 \u0917\u0947\u091F \u092A\u093E\u0938','new_order':'\u0928\u0908 \u0911\u0930\u094D\u0921\u0930',
-'opening':'\u0936\u0941\u0930\u0941\u0906\u0924\u0940 \u0938\u094D\u091F\u0949\u0915','adjustment':'\u0938\u094D\u091F\u0949\u0915 \u0938\u0941\u0927\u093E\u0930',
-'record_stk':'\u0938\u094D\u091F\u0949\u0915 \u0926\u0930\u094D\u091C','create_ord':'\u0911\u0930\u094D\u0921\u0930 \u092C\u0928\u093E\u090F\u0902',
-'set_init':'\u092A\u094D\u0930\u093E\u0930\u0902\u092D\u093F\u0915 \u0936\u0947\u0937','correct':'\u092B\u0930\u094D\u0915 \u0938\u0941\u0927\u093E\u0930\u0947\u0902',
-'stock_ov':'\u0938\u094D\u091F\u0949\u0915 \u0938\u093E\u0930\u093E\u0902\u0936','recent':'\u0939\u093E\u0932\u093F\u092F\u093E \u0917\u0924\u093F\u0935\u093F\u0927\u093F',
-'quick':'\u0924\u0941\u0930\u0902\u0924 \u0915\u093E\u0930\u094D\u092F',
-'items':'\u0906\u0907\u091F\u092E','customers':'\u0917\u094D\u0930\u093E\u0939\u0915','brokers':'\u0926\u0932\u093E\u0932',
-'suppliers':'\u0906\u092A\u0942\u0930\u094D\u0924\u093F\u0915\u0930\u094D\u0924\u093E','products':'\u0909\u0924\u094D\u092A\u093E\u0926',
-'settings':'\u0938\u0947\u091F\u093F\u0902\u0917\u094D\u0938','users':'\u0909\u092A\u092F\u094B\u0917\u0915\u0930\u094D\u0924\u093E',
-'devices':'\u0921\u093F\u0935\u093E\u0907\u0938','ledger':'\u0916\u093E\u0924\u093E','database':'\u0921\u0947\u091F\u093E\u092C\u0947\u0938',
-'orders':'\u0911\u0930\u094D\u0921\u0930','bills':'\u092C\u093F\u0932','payments':'\u092D\u0941\u0917\u0924\u093E\u0928','outstanding':'\u092C\u0915\u093E\u092F\u093E',
-'pending':'\u0932\u0902\u092C\u093F\u0924','received':'\u092A\u094D\u0930\u093E\u092A\u094D\u0924','all':'\u0938\u092D\u0940',
-'save':'\u0938\u0939\u0947\u091C\u0947\u0902','cancel':'\u0930\u0926\u094D\u0926','logout':'\u0932\u0949\u0917\u0906\u0909\u091F','mill_gp':'मिल जी.पी','jwin':'जेडब्ल्यू आवक','exch':'एक्सचेंज','xfer':'ट्रांसफर','new_bill':'नया बिल','rec_pay':'भुगतान दर्ज','outstanding_v':'बकाया देखें','mill_jw':'मिल → जॉब वर्क','shop_jw':'दुकान → जॉब वर्क','recv_jw':'जॉब वर्क प्राप्त','new_item':'नया आइटम','new_cust':'नया ग्राहक','new_sup':'नया आपूर्तिकर्ता','new_brk':'नया दलाल','stk_adj':'स्टॉक सुधार','opening_stk':'शुरुआती स्टॉक','send_proc':'प्रसंस्करण के लिए भेजें','from_stk':'स्टॉक से भेजें','mark_recv':'चालान प्राप्त दर्ज करें','corr_var':'फर्क सुधारें','add_fabric':'कपड़े का प्रकार जोड़ें','add_buyer':'खरीदार जोड़ें','add_mill':'मिल / जेडब्ल्यू जोड़ें','add_agent':'दलाल जोड़ें','inward_stk':'आवक स्टॉक'
+dash:'डैशबोर्ड',sales:'बिक्री',inward:'आवक',jw:'जॉब वर्क',masters:'मास्टर',admin:'एडमिन',
+mill_gp:'मिल जी.पी',new_order:'नया बिक्री ऑर्डर',opening:'शुरुआती स्टॉक',adjustment:'स्टॉक सुधार',
+record_stk:'स्टॉक दर्ज करें',create_ord:'ऑर्डर बनाएं',set_init:'प्रारंभिक शेष',correct:'फर्क सुधारें',
+stock_ov:'स्टॉक सारांश',recent:'हालिया गतिविधि',quick:'त्वरित कार्य',
+items:'आइटम',customers:'ग्राहक',brokers:'दलाल',suppliers:'आपूर्तिकर्ता',products:'उत्पाद',
+settings:'सेटिंग्स',users:'उपयोगकर्ता',devices:'डिवाइस',ledger:'खाता',database:'डेटाबेस',
+orders:'ऑर्डर',bills:'बिल',payments:'भुगतान',outstanding:'बकाया',
+pending:'लंबित',received:'प्राप्त',all:'सभी',save:'सेव करें',cancel:'रद्द करें',logout:'लॉगआउट',
+jwin:'जेडब्ल्यू आवक',exch:'एक्सचेंज',xfer:'ट्रांसफर',new_bill:'नया बिल',
+rec_pay:'भुगतान दर्ज',outstanding_v:'बकाया',mill_jw:'मिल → जॉब वर्क',
+shop_jw:'दुकान → जॉब वर्क',recv_jw:'जॉब वर्क प्राप्त',new_item:'नया आइटम',
+new_cust:'नया ग्राहक',new_sup:'नया आपूर्तिकर्ता',new_brk:'नया दलाल',
+stk_adj:'स्टॉक सुधार',opening_stk:'शुरुआती स्टॉक',send_proc:'प्रोसेसिंग के लिए भेजें',
+from_stk:'स्टॉक से भेजें',mark_recv:'चालान प्राप्त दर्ज करें',corr_var:'फर्क सुधारें',
+add_fabric:'कपड़े का प्रकार जोड़ें',add_buyer:'खरीदार जोड़ें',add_mill:'मिल / जेडब्ल्यू जोड़ें',
+add_agent:'दलाल जोड़ें',inward_stk:'आवक स्टॉक'
 };
 const EN={
 dash:'Dashboard',sales:'Sales',inward:'Inward',jw:'Job Work',masters:'Masters',admin:'Admin',
-'mill_gp':'Mill G.P','new_order':'New Sale Order','opening':'Opening Stock','adjustment':'Stock Adjustment',
-'record_stk':'Record stock in','create_ord':'Create order','set_init':'Set initial balance','correct':'Correct variances',
-'stock_ov':'Stock Overview','recent':'Recent Activity','quick':'Quick Actions',
-'items':'Items','customers':'Customers','brokers':'Brokers','suppliers':'Suppliers','products':'Products',
-'settings':'Settings','users':'Users','devices':'Devices','ledger':'Ledger','database':'Database',
-'orders':'Orders','bills':'Bills','payments':'Payments','outstanding':'Outstanding',
-'pending':'Pending','received':'Received','all':'All',
-'save':'Save','cancel':'Cancel','logout':'Logout','mill_gp':'Mill G.P','jwin':'JW Inward','exch':'Exchange','xfer':'Transfer In','new_bill':'New Bill','rec_pay':'Record Payment','outstanding_v':'Outstanding','mill_jw':'Mill → Job Work','shop_jw':'Shop → Job Work','recv_jw':'Receive Job Work','new_item':'New Item','new_cust':'New Customer','new_sup':'New Supplier','new_brk':'New Broker','stk_adj':'Stock Adjustment','opening_stk':'Opening Stock','send_proc':'Send to processing','from_stk':'Send from stock','mark_recv':'Mark challan received','corr_var':'Correct variances','add_fabric':'Add fabric type','add_buyer':'Add buyer','add_mill':'Add mill / JW party','add_agent':'Add commission agent','inward_stk':'Inward Stock'
+mill_gp:'Mill G.P',new_order:'New Sale Order',opening:'Opening Stock',adjustment:'Stock Adjustment',
+record_stk:'Record stock in',create_ord:'Create order',set_init:'Set initial balance',correct:'Correct variances',
+stock_ov:'Stock Overview',recent:'Recent Activity',quick:'Quick Actions',
+items:'Items',customers:'Customers',brokers:'Brokers',suppliers:'Suppliers',products:'Products',
+settings:'Settings',users:'Users',devices:'Devices',ledger:'Ledger',database:'Database',
+orders:'Orders',bills:'Bills',payments:'Payments',outstanding:'Outstanding',
+pending:'Pending',received:'Received',all:'All',save:'Save',cancel:'Cancel',logout:'Logout',
+jwin:'JW Inward',exch:'Exchange',xfer:'Transfer In',new_bill:'New Bill',
+rec_pay:'Record Payment',outstanding_v:'Outstanding',mill_jw:'Mill → Job Work',
+shop_jw:'Shop → Job Work',recv_jw:'Receive Job Work',new_item:'New Item',
+new_cust:'New Customer',new_sup:'New Supplier',new_brk:'New Broker',
+stk_adj:'Stock Adjustment',opening_stk:'Opening Stock',send_proc:'Send to processing',
+from_stk:'Send from stock',mark_recv:'Mark challan received',corr_var:'Correct variances',
+add_fabric:'Add fabric type',add_buyer:'Add buyer',add_mill:'Add mill / JW party',
+add_agent:'Add commission agent',inward_stk:'Inward Stock'
 };
 function tr(k){ return (_hindi?HI:EN)[k]||k; }
+/* DOM-walker translation engine */
+function _walkTranslate(root,map){
+  try{
+    const skip=new Set(['SCRIPT','STYLE','INPUT','TEXTAREA','OPTION','SELECT']);
+    const walker=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT,{
+      acceptNode:function(n){
+        const p=n.parentElement;
+        if(!p||skip.has(p.tagName)) return NodeFilter.FILTER_REJECT;
+        if(p.closest('[data-notr]')) return NodeFilter.FILTER_REJECT;
+        return n.textContent.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;
+      }
+    });
+    const nodes=[];
+    while(walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function(n){
+      const raw=n.textContent;
+      const t=raw.trim();
+      if(map[t]) n.textContent=raw.replace(t,map[t]);
+    });
+    /* Also translate placeholder attributes */
+    (root||document).querySelectorAll('[placeholder]').forEach(function(inp){
+      const ph=inp.getAttribute('placeholder');
+      if(map[ph]) inp.setAttribute('placeholder',map[ph]);
+    });
+  }catch(e){}
+}
+/* Debounced MutationObserver — catches dynamic renders without stuttering */
+let _trObs=null,_trTimer=null;
+function _startTrObs(){
+  if(_trObs) return;
+  _trObs=new MutationObserver(function(){
+    if(!_hindi) return;
+    clearTimeout(_trTimer);
+    _trTimer=setTimeout(function(){ _walkTranslate(document.body,FULL_HINDI_MAP); },120);
+  });
+  _trObs.observe(document.body,{childList:true,subtree:true});
+}
+function _stopTrObs(){
+  if(_trObs){_trObs.disconnect();_trObs=null;}
+  clearTimeout(_trTimer);
+}
 function applyLang(){
-document.body.classList.toggle('hindi',_hindi);
-if(el('ll')) el('ll').textContent=_hindi?'English':'हिंदी';
-['dash','sales','inward','jw','masters','admin'].forEach(k=>{
-const b=el('nb-'+k); if(!b) return;
-const hasDot=b.querySelector('.ndot');
-const icoMap={dash:'📊',sales:'🧾',inward:'📥',jw:'⚙️',masters:'🗂️',admin:'👑'};
-b.innerHTML='<span class="ni">'+icoMap[k]+'</span>'+tr(k);
-if(hasDot) b.appendChild(hasDot);
-});
-document.querySelectorAll('[data-i18n]').forEach(e=>{ e.textContent=tr(e.dataset.i18n); });
-document.querySelectorAll('#s-sales .tbb').forEach((b,i)=>{ b.textContent=[tr('orders'),tr('bills'),tr('pending'),'+ Invoice'][i]||b.textContent; });
-document.querySelectorAll('#s-jw .tbb').forEach((b,i)=>{ b.textContent=tr(['pending','received','all'][i]||''); });
-document.querySelectorAll('#s-masters .tbb').forEach((b,i)=>{ b.textContent=tr(['items','customers','brokers','suppliers','products'][i]||''); });
-document.querySelectorAll('#s-admin .tbb').forEach((b,i)=>{ b.textContent=tr(['settings','users','devices','ledger','database'][i]||''); });
-renderShortcuts();
+  document.body.classList.toggle('hindi',_hindi);
+  if(el('ll')) el('ll').textContent=_hindi?'🔤 English':'🔤 हिंदी';
+  if(_hindi){
+    _walkTranslate(document.body,FULL_HINDI_MAP);
+    _startTrObs();
+  } else {
+    _stopTrObs();
+    _walkTranslate(document.body,FULL_ENGLISH_MAP);
+    /* Re-render visible dynamic content to get fresh English */
+    try{
+      const an=document.querySelector('.scr.on')||document.querySelector('.scr');
+      if(an){
+        const sid=an.id.replace('s-','');
+        if(sid==='dash') { try{renderDash();}catch(e){} }
+        else if(sid==='sales'){ try{renderOrders();}catch(e){} try{renderBills();}catch(e){} try{renderPendingOrders();}catch(e){} }
+        else if(sid==='inward') { try{renderInRec();}catch(e){} }
+        else if(sid==='masters'){ try{renderItems();}catch(e){} try{renderCusts();}catch(e){} }
+        else if(sid==='leads') { try{renderLeads('all');}catch(e){} }
+        else if(sid==='tasks') { try{renderMyTasks();}catch(e){} }
+      }
+    }catch(e){}
+  }
+  /* Update nav buttons */
+  ['dash','sales','inward','jw','masters','admin'].forEach(function(k){
+    const b=el('nb-'+k); if(!b) return;
+    const hasDot=b.querySelector('.ndot');
+    const icoMap={dash:'📊',sales:'🧾',inward:'📥',jw:'⚙️',masters:'🗂️',admin:'👑'};
+    b.innerHTML='<span class="ni">'+icoMap[k]+'</span>'+tr(k);
+    if(hasDot) b.appendChild(hasDot);
+  });
+  document.querySelectorAll('[data-i18n]').forEach(function(e){ e.textContent=tr(e.dataset.i18n); });
+  document.querySelectorAll('#s-sales .tbb').forEach(function(b,i){ b.textContent=[tr('orders'),tr('bills'),tr('pending'),'+ '+tr('new_bill')][i]||b.textContent; });
+  document.querySelectorAll('#s-jw .tbb').forEach(function(b,i){ b.textContent=tr(['pending','received','all'][i]||''); });
+  document.querySelectorAll('#s-masters .tbb').forEach(function(b,i){ b.textContent=tr(['items','customers','brokers','suppliers','products'][i]||''); });
+  document.querySelectorAll('#s-admin .tbb').forEach(function(b,i){ b.textContent=tr(['settings','users','devices','ledger','database'][i]||''); });
+  renderShortcuts();
 }
 function toggleLang(){
-_hindi=!_hindi;
-applyLang();
-toast(_hindi?'हिंदी में बदला गया':'Switched to English','ok');
+  _hindi=!_hindi;
+  try{localStorage.setItem('_alt_lang',_hindi?'hi':'en');}catch(e){}
+  applyLang();
+  toast(_hindi?'हिंदी में बदला गया ✓':'Switched to English ✓','ok');
 }
+/* Restore language preference on page load */
+(function(){try{if(localStorage.getItem('_alt_lang')==='hi'){_hindi=true;}}catch(e){}})();
+
 function switchTab(scr,tab,btn){
 const ctx=btn.closest('.scr')||btn.closest('.sh')||document;
 ctx.querySelectorAll('.tbb').forEach(b=>b.classList.remove('on'));
