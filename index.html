@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.207";const APP_BUILD_DATE="2026-09-07";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);const stored=localStorage.getItem("vs_app_version");if(params.has("_cb")){localStorage.setItem("vs_app_version",APP_VERSION);return}if(stored!==APP_VERSION){localStorage.setItem("vs_app_version",APP_VERSION);window.location.replace(window.location.href.split("?")[0]+"?_cb="+Date.now());return}}catch(e){}})();let GAS_URL="";const DEFAULT_FIREBASE_URL="https://amrit-laxmi-textiles-do-default-rtdb.firebaseio.com";let FIREBASE_URL=DEFAULT_FIREBASE_URL;const OWNER_SETUP_HASH="479a1808c325c26f483c1ae55a1a549bba9d6435bc02f6449029db086ba07a2b";const el=id=>document.getElementById(id);
+</div></div><script>const APP_VERSION="1.45.209";const APP_BUILD_DATE="2026-09-07";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);const stored=localStorage.getItem("vs_app_version");if(params.has("_cb")){localStorage.setItem("vs_app_version",APP_VERSION);return}if(stored!==APP_VERSION){localStorage.setItem("vs_app_version",APP_VERSION);window.location.replace(window.location.href.split("?")[0]+"?_cb="+Date.now());return}}catch(e){}})();let GAS_URL="";const DEFAULT_FIREBASE_URL="https://amrit-laxmi-textiles-do-default-rtdb.firebaseio.com";let FIREBASE_URL=DEFAULT_FIREBASE_URL;const OWNER_SETUP_HASH="479a1808c325c26f483c1ae55a1a549bba9d6435bc02f6449029db086ba07a2b";const el=id=>document.getElementById(id);
 const isMob=()=>window.innerWidth<=520;
 (function(){const _u=()=>document.body&&document.body.classList.toggle("mob",isMob());window.addEventListener("resize",_u);document.addEventListener("DOMContentLoaded",_u);_u()})();const escHtml=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");// ── the bigger store ───────────────────────────────────────────────────
 // Which lists are too big for localStorage. Everything else stays there.
@@ -2754,6 +2754,39 @@ function csBillPlanFromRows(){
 // Asks about every slip this bill would leave part-finished, BEFORE the bill is
 // written. Resolves with the choices, or null if the user backed out -- in which
 // case nothing at all is saved and the bill has to be made again.
+// Bill ban chuka hai, par kuchh parchi aadhi reh gayi aur unka jawab nahi
+// aaya. Wahi sheet, lekin ab bill ko khatra nahi hai -- jawab na do to
+// parchi khuli reh jaati hai.
+function csAskLeftovers(csIds){
+  var list=[];
+  (csIds||[]).forEach(function(id){
+    var r=csFindSlip(id);
+    if(!r||r.slip.csShortClosed)return;
+    var eff=csSlipEffQty(r.slip),done=csSlipDoneQty(r);
+    if(done<=0||done>=eff)return;
+    var effM=csSlipEffMtrs(r.slip,r.lot),doneM=csSlipDoneMtrs(r);
+    list.push({order:r.order,lot:r.lot,slip:r.slip,
+      done:done,delta:done,prev:0,eff:eff,rem:Math.max(0,eff-done),
+      doneMtrs:doneM,deltaMtrs:doneM,prevMtrs:0,effMtrs:effM,
+      remMtrs:Math.max(0,csRound1(effM-doneM)),mtrShort:csMtrShort(effM,doneM),full:false});
+  });
+  if(!list.length)return;
+  _csAsk={list:list,dec:{},post:true,resolve:function(dec){
+    if(!dec)return;                      // jawab nahi diya -- parchi khuli rahegi
+    var n=0;
+    Object.keys(dec).forEach(function(id){
+      if(dec[id]==="clear"&&csApplyClearSlip(id))n++;
+    });
+    if(!n)return;
+    try{list.forEach(function(x){if(dec[x.slip.csId]==="clear"&&x.order)csMirrorPut(x.order,x.lot&&x.lot.key,x.slip,false)})}catch(e){}
+    persist();
+    try{csRefreshFlowViews()}catch(e){}
+    try{renderOrders()}catch(e){}
+    try{renderPendingOrders()}catch(e){}
+    toast(n+(_hindi?" पर्ची क्लियर — बाकी वापस पेंडिंग में":" parchi clear &mdash; baaki wapas pending mein"),"ok");
+  }};
+  csRenderAskSheet();
+}
 function csAskSlipDispositions(plan){
   var list=[];
   (plan||[]).forEach(function(p){
@@ -2841,11 +2874,14 @@ function csRenderAskSheet(){
   html+='<button onclick="csAskConfirm()" '+(ready?"":"disabled ")
     +'style="width:100%;margin-top:4px;background:'+(ready?"var(--G)":"var(--bg)")+';color:'+(ready?"#fff":"var(--t3)")
     +';border:none;padding:13px;border-radius:12px;font-size:14.5px;font-weight:800;font-family:inherit;cursor:'+(ready?"pointer":"not-allowed")+'">'
-    +(ready?(_hindi?"बिल सेव करो":"Bill save karo"):(_hindi?("पहले सब स्लिप का जवाब दो ("+answered+"/"+total+")"):("Pehle sab slip ka jawab do ("+answered+"/"+total+")")))+'</button>'
+    +(ready?(a.post?(_hindi?"लागू करो":"Laagu karo"):(_hindi?"बिल सेव करो":"Bill save karo"))
+           :(_hindi?("पहले सब स्लिप का जवाब दो ("+answered+"/"+total+")"):("Pehle sab slip ka jawab do ("+answered+"/"+total+")")))+'</button>'
     +'<button onclick="csAskCancel()" class="btn bgh" style="width:100%;margin-top:8px;font-family:inherit;font-weight:800">'
-    +(_hindi?"रहने दो — बिल मत बनाओ":"Rehne do &mdash; bill mat banao")+'</button>'
+    +(a.post?(_hindi?"अभी नहीं — पर्ची खुली रहने दो":"Abhi nahi &mdash; parchi khuli rehne do")
+            :(_hindi?"रहने दो — बिल मत बनाओ":"Rehne do &mdash; bill mat banao"))+'</button>'
     +'<div style="font-size:10.5px;color:var(--t3);text-align:center;margin-top:7px;line-height:1.5">'
-    +(_hindi?"बंद करने पर बिल सेव नहीं होगा, दोबारा बनाना पड़ेगा":"Band karne par bill save nahi hoga, dobara banana padega")+'</div>'
+    +(a.post?(_hindi?"बिल सेव हो चुका है। बाद में पर्ची पर से भी क्लियर कर सकते हैं।":"Bill save ho chuka hai. Baad me parchi par se bhi clear kar sakte ho.")
+            :(_hindi?"बंद करने पर बिल सेव नहीं होगा, दोबारा बनाना पड़ेगा":"Band karne par bill save nahi hoga, dobara banana padega"))+'</div>'
     +'</div>';
   csShowSheet("m-csclose",(_hindi?"📦 बाकी माल का क्या करें?":"&#128230; Baaki maal ka kya karein?"),html);
   // Backing out of this sheet means backing out of the bill, so both the X and a
@@ -2856,6 +2892,10 @@ function csRenderAskSheet(){
     var xb=ov.querySelector(".shh button");
     if(xb)xb.onclick=csAskCancel;
   }
+  try{
+    var hd=ov&&ov.querySelector(".shh h3");
+    if(hd&&a.post)hd.innerHTML=(_hindi?"📦 बिल बन गया — बाकी माल का क्या करें?":"&#128230; Bill ban gaya &mdash; baaki maal ka kya karein?");
+  }catch(e){}
 }
 // Applied only once the bill itself has been written.
 function csAfterBill(ordIds,decisions){
@@ -2881,14 +2921,18 @@ function csAfterBill(ordIds,decisions){
         });
       });
     });
-    var dec=decisions||{},cleared=0;
+    var dec=decisions||{},cleared=0,unasked=[];
     partial.forEach(function(id){
       if(dec[id]==="clear"&&csApplyClearSlip(id))cleared++;
-      else csApplyKeepOpen(id);
+      else{
+        csApplyKeepOpen(id);
+        if(!dec[id])unasked.push(id);     // iska jawab aaya hi nahi
+      }
     });
     persist();
     if(cleared)toast(cleared+(_hindi?" स्लिप क्लियर — बाकी वापस पेंडिंग में":" slip clear &mdash; baaki wapas pending mein"),"ok");
     csCloseFinish();
+    if(unasked.length&&csCan("cs_short_close"))setTimeout(function(){csAskLeftovers(unasked)},250);
   }catch(e){console.error("csAfterBill",e)}
 }
 function csCloseFinish(){
@@ -2910,6 +2954,55 @@ function csApplyKeepOpen(csId){
 }
 // The balance was never cut, so it stops counting as slipped and flows back into
 // Pending Lots, where a fresh slip can be raised once the goods exist.
+// Parchi ko kabhi bhi clear karo -- baaki maal wapas pending lot me.
+async function csClearSlipNow(csId){
+  if(!csCan("cs_short_close"))return csDeny(_hindi?"पर्ची क्लियर करने की अनुमति नहीं है":"Parchi clear karne ki permission nahi hai");
+  var r=csFindSlip(csId);
+  if(!r){toast(_hindi?"पर्ची नहीं मिली":"Parchi nahi mili","warn");return}
+  if(r.slip.csShortClosed){toast(_hindi?"ये पर्ची पहले से क्लियर है":"Ye parchi pehle se clear hai","warn");return}
+  var eff=csSlipEffQty(r.slip),done=csSlipDoneQty(r),rem=Math.max(0,eff-done);
+  if(rem<=0){toast(_hindi?"इस पर्ची में कुछ बाकी नहीं है":"Is parchi me kuch baaki nahi hai","warn");return}
+  var ok=await appConfirm(
+    _hindi?"पर्ची क्लियर करें?":"Parchi clear karein?",
+    (r.slip.csNo||"")+"\n\n"+done+(_hindi?" जा चुके · ":" ja chuke · ")+rem+(_hindi?" बाकी":" baaki")
+      +"\n\n"+(_hindi?("बाकी "+rem+" सारी वापस लॉट की पेंडिंग लिस्ट में आ जाएँगी — इनकी नई पर्ची बन सकेगी।")
+                     :("Baaki "+rem+" sarees wapas lot ki pending list me aa jayengi — inki nayi parchi ban sakegi."))
+      +"\n\n"+(_hindi?"बिल और स्टॉक पर कोई असर नहीं पड़ेगा।":"Bill aur stock par koi asar nahi padega."),
+    "✂️",_hindi?"हाँ, क्लियर करो":"Haan, clear karo","dr");
+  if(!ok)return;
+  if(!csApplyClearSlip(csId)){toast(_hindi?"क्लियर नहीं हो पाया":"Clear nahi ho paya","er");return}
+  try{if(r.order)csMirrorPut(r.order,r.lot&&r.lot.key,r.slip,false)}catch(e){}
+  _csAfterSlipClearRefresh();
+  toast(rem+(_hindi?" सारी वापस पेंडिंग में — ":" sarees wapas pending me — ")+(r.slip.csNo||"")+(_hindi?" क्लियर":" clear"),"ok");
+}
+// Galti se clear ho gayi -- wapas khol do.
+async function csUnclearSlip(csId){
+  if(!csCan("cs_short_close"))return csDeny(_hindi?"अनुमति नहीं है":"Permission nahi hai");
+  var r=csFindSlip(csId);
+  if(!r||!r.slip.csShortClosed){toast(_hindi?"ये पर्ची क्लियर नहीं है":"Ye parchi clear nahi hai","warn");return}
+  var ok=await appConfirm(
+    _hindi?"क्लियर वापस लें?":"Clear wapas lein?",
+    (r.slip.csNo||"")+"\n\n"+(_hindi?"पर्ची फिर से खुल जाएगी और बाकी माल इसी के नाम पर रहेगा।"
+                                    :"Parchi phir se khul jayegi aur baaki maal isi ke naam par rahega."),
+    "↩",_hindi?"हाँ, वापस खोलो":"Haan, wapas kholo","ok");
+  if(!ok)return;
+  delete r.slip.csShortLines;
+  r.slip.csShortClosed=false;
+  r.slip.csStatusTs=Date.now();
+  try{csLogHist(r.slip,"reopened",{})}catch(e){}
+  if(r.order)r.order._ts=Date.now();
+  if(r.slip.standalone)r.slip._ts=Date.now();
+  try{if(r.order)csMirrorPut(r.order,r.lot&&r.lot.key,r.slip,false)}catch(e){}
+  _csAfterSlipClearRefresh();
+  toast((r.slip.csNo||"")+(_hindi?" फिर से खुली":" phir se khuli"),"ok");
+}
+function _csAfterSlipClearRefresh(){
+  persist();
+  try{csRefreshFlowViews()}catch(e){}
+  try{renderOrders()}catch(e){}
+  try{renderPendingOrders()}catch(e){}
+  try{renderDash()}catch(e){}
+}
 function csApplyClearSlip(csId){
   if(!csCan("cs_short_close"))return false;
   var r=csFindSlip(csId);
@@ -3901,6 +3994,19 @@ function csRenderUnderProcess(keepFocus){
 }
 
 // ── SHARED SLIP CARD (Under Process + Floor tabs) ────────────────────────────
+// Parchi par "clear karo" / "wapas kholo" -- jahan bhi parchi dikhti hai.
+function csSlipClearBtn(sl,doneQ,remQ){
+  if(!sl||!csCan("cs_short_close"))return"";
+  if(sl.csShortClosed)
+    return'<button onclick="csUnclearSlip(\''+sl.csId+'\')" style="width:100%;margin-top:7px;background:var(--bg);color:var(--t2);border:1px solid var(--br);padding:9px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">'
+      +(_hindi?"↩ क्लियर वापस लो":"&#8617; Clear wapas lo")+'</button>';
+  if(!(doneQ>0&&remQ>0))return"";
+  return'<button onclick="csClearSlipNow(\''+sl.csId+'\')" style="width:100%;margin-top:7px;background:var(--R);color:#fff;border:none;padding:10px;border-radius:9px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;line-height:1.35">'
+    +(_hindi?"✂️ पर्ची क्लियर करो":"&#9986;&#65039; Parchi clear karo")
+    +'<br><span style="font-size:10px;font-weight:600;opacity:.9">'
+    +(_hindi?("बाकी "+remQ+" वापस पेंडिंग — नई पर्ची बन सकेगी"):("baaki "+remQ+" wapas pending — nayi parchi ban sakegi"))
+    +'</span></button>';
+}
 function csFlowBtn(fn,bg,col,label){
   return'<button onclick="'+fn+'" style="background:'+bg+';color:'+col+';border:none;padding:8px 12px;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit">'+label+'</button>';
 }
@@ -3961,6 +4067,7 @@ function csFlowCard(row,ctx){
     +csRateLine(row)
     +(doneQ>0?'<div style="margin-top:8px;background:var(--Gl);border-radius:9px;padding:7px 10px;font-size:11.5px;font-weight:800;color:var(--Gd);line-height:1.5">&#10004; '+csGoneLabel(sl,doneQ)+(_hindi?" जा चुके":" ja chuke")+(remQ>0?' <span style="color:var(--Ad)">&middot; '+remQ+(_hindi?" अभी बाकी — कटे हुए, रेडी":" abhi baaki &mdash; kate hue, ready")+'</span>':"")+'</div>':"")
     +(sl.csShortClosed?'<div style="margin-top:6px;background:var(--Rl);border-radius:9px;padding:6px 10px;font-size:11px;font-weight:800;color:var(--Rd)">'+(_hindi?"शॉर्ट क्लोज़ — बाकी वापस पेंडिंग लॉट्स में":"Short closed &mdash; baaki wapas Pending Lots mein")+'</div>':"")
+    +csSlipClearBtn(sl,doneQ,remQ)
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:8px;flex-wrap:wrap">'
     +'<div style="font-size:24px;font-weight:900;white-space:nowrap">'+q+' <span style="font-size:13px;font-weight:600;color:var(--t3)">'+(_hindi?"पीस":"pcs")+' '+csFormatCut(row.lot.cut)+'</span></div>'
     +'<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">'+btns+'</div>'
@@ -4785,6 +4892,7 @@ function csRenderAllSlips(keepFocus){
     +csRemarkChip(row.lot&&row.lot.remark)
       +'<div style="font-size:11px;color:var(--t3);margin-top:3px;line-height:1.6">'+colStr+'</div>'
       +(sl.csStatus==="partial"?'<div style="margin-top:6px;font-size:11px;font-weight:700;color:var(--T)">'+(_hindi?"भेजा गया ":"Dispatched ")+dq+' / '+q+' &mdash; '+(q-dq)+(_hindi?" godown mein pada hai":" godown mein pada hai")+'</div>':"")
+      +csSlipClearBtn(sl,dq,Math.max(0,q-dq))
       +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">'
       +'<div style="font-size:22px;font-weight:900">'+q+' <span style="font-size:12px;font-weight:600;color:var(--t3)">'+(_hindi?"पीस":"pcs")+' &nbsp; '+(_hindi?"कट: ":"Cut: ")+csFormatCut(row.lot.cut)+'</span></div>'
       +'<div style="display:flex;gap:6px">'
