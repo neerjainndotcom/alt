@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.219";const APP_BUILD_DATE="2026-09-07";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);const stored=localStorage.getItem("vs_app_version");if(params.has("_cb")){localStorage.setItem("vs_app_version",APP_VERSION);return}if(stored!==APP_VERSION){localStorage.setItem("vs_app_version",APP_VERSION);window.location.replace(window.location.href.split("?")[0]+"?_cb="+Date.now());return}}catch(e){}})();let GAS_URL="";const DEFAULT_FIREBASE_URL="https://amrit-laxmi-textiles-do-default-rtdb.firebaseio.com";let FIREBASE_URL=DEFAULT_FIREBASE_URL;const OWNER_SETUP_HASH="479a1808c325c26f483c1ae55a1a549bba9d6435bc02f6449029db086ba07a2b";const el=id=>document.getElementById(id);
+</div></div><script>const APP_VERSION="1.45.221";const APP_BUILD_DATE="2026-09-07";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);const stored=localStorage.getItem("vs_app_version");if(params.has("_cb")){localStorage.setItem("vs_app_version",APP_VERSION);return}if(stored!==APP_VERSION){localStorage.setItem("vs_app_version",APP_VERSION);window.location.replace(window.location.href.split("?")[0]+"?_cb="+Date.now());return}}catch(e){}})();let GAS_URL="";const DEFAULT_FIREBASE_URL="https://amrit-laxmi-textiles-do-default-rtdb.firebaseio.com";let FIREBASE_URL=DEFAULT_FIREBASE_URL;const OWNER_SETUP_HASH="479a1808c325c26f483c1ae55a1a549bba9d6435bc02f6449029db086ba07a2b";const el=id=>document.getElementById(id);
 const isMob=()=>window.innerWidth<=520;
 (function(){const _u=()=>document.body&&document.body.classList.toggle("mob",isMob());window.addEventListener("resize",_u);document.addEventListener("DOMContentLoaded",_u);_u()})();const escHtml=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");// ── the bigger store ───────────────────────────────────────────────────
 // Which lists are too big for localStorage. Everything else stays there.
@@ -510,7 +510,10 @@ function dashWidgetAllowed(id){
     var eff=0;try{eff=csSlipEffQty(r.slip)-csSlipDoneQty(r)}catch(e){eff=0}
     return a+Math.max(0,eff);
   },0)};
-  var up=rows.filter(function(r){return r.slip.csStatus==="generated"||r.slip.csStatus==="cutting"});
+  // Dashboard par sirf wahi parchi jo ABHI machine par hai -- cutting me.
+  // Jo bani hi hai aur cutting shuru nahi hui, wo Cutting tab ke Under
+  // Process me hai; dashboard ko sirf chalti hui ginti chahiye.
+  var up=rows.filter(function(r){return r.slip.csStatus==="cutting"});
   var byRoute=function(route){
     return rows.filter(function(r){
       var st=r.slip.csStatus;
@@ -528,7 +531,7 @@ function dashWidgetAllowed(id){
     {id:"packing",lbl:_hindi?"पैकिंग में":"Packing me",icon:"&#127873;",pack:true,
      col:"#DB2777",bg:"#FCE7F3",n:packing.length,p:pcs(packing),rows:old(packing),
      go:"setNav('floor')"},
-    {id:"uproc",lbl:_hindi?"अंडर प्रोसेस":"Under Process",icon:"&#9986;&#65039;",
+    {id:"uproc",lbl:_hindi?"कटिंग में":"Cutting me",icon:"&#9986;&#65039;",
      col:"var(--P)",bg:"var(--Pl)",n:up.length,p:pcs(up),rows:old(up),
      go:"setNav('cutting');setTimeout(function(){try{csSwitchTab('uproc')}catch(e){}},60)"},
     {id:"shop",lbl:_hindi?"शॉप डिलीवरी":"Shop Delivery",icon:"&#127978;",
