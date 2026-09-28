@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.264-->
+<!DOCTYPE html><!--ALTV:1.45.265-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.264";const APP_BUILD_DATE="2026-09-28";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);const stored=localStorage.getItem("vs_app_version");if(params.has("_cb")){localStorage.setItem("vs_app_version",APP_VERSION);return}if(stored!==APP_VERSION){localStorage.setItem("vs_app_version",APP_VERSION);window.location.replace(window.location.href.split("?")[0]+"?_cb="+Date.now());return}}catch(e){}})();let GAS_URL="";const DEFAULT_FIREBASE_URL="https://amrit-laxmi-textiles-do-default-rtdb.firebaseio.com";let FIREBASE_URL=DEFAULT_FIREBASE_URL;const OWNER_SETUP_HASH="479a1808c325c26f483c1ae55a1a549bba9d6435bc02f6449029db086ba07a2b";const el=id=>document.getElementById(id);
+</div></div><script>const APP_VERSION="1.45.265";const APP_BUILD_DATE="2026-09-28";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);const stored=localStorage.getItem("vs_app_version");if(params.has("_cb")){localStorage.setItem("vs_app_version",APP_VERSION);return}if(stored!==APP_VERSION){localStorage.setItem("vs_app_version",APP_VERSION);window.location.replace(window.location.href.split("?")[0]+"?_cb="+Date.now());return}}catch(e){}})();let GAS_URL="";const DEFAULT_FIREBASE_URL="https://amrit-laxmi-textiles-do-default-rtdb.firebaseio.com";let FIREBASE_URL=DEFAULT_FIREBASE_URL;const OWNER_SETUP_HASH="479a1808c325c26f483c1ae55a1a549bba9d6435bc02f6449029db086ba07a2b";const el=id=>document.getElementById(id);
 const isMob=()=>window.innerWidth<=520;
 (function(){const _u=()=>document.body&&document.body.classList.toggle("mob",isMob());window.addEventListener("resize",_u);document.addEventListener("DOMContentLoaded",_u);_u()})();const escHtml=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");// ── the bigger store ───────────────────────────────────────────────────
 // Which lists are too big for localStorage. Everything else stays there.
@@ -989,7 +989,88 @@ function checkSess(){
 function _appHealthHtml(){
   return'<div class="card mt12" id="app-health" style="padding:12px 14px">'
     +'<div class="xs ct3" style="font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">App ki sehat</div>'
-    +'<div id="app-health-rows" class="xs ct3">dekh rahe hain\u2026</div></div>';
+    +'<div id="app-health-rows" class="xs ct3">dekh rahe hain\u2026</div>'
+    +'<button onclick="openTaskDiag()" style="width:100%;margin-top:10px;background:var(--sf);border:1.5px solid var(--br);color:var(--t2);padding:9px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">\uD83E\uDE7A Task ka hisaab (do device milao)</button></div>';
+}
+// Is device par task ka data kaisa pada hai -- seedha, bina rang-roghan.
+function taskDiagLines(){
+  var td=today(),L=[];
+  var all=(STATE.taskInstances||[]);
+  var live=all.filter(function(t){return t&&!t._deleted});
+  var supp=all.filter(function(t){return t&&t._deleted&&t._supp});
+  var del=all.filter(function(t){return t&&t._deleted&&!t._supp});
+  var recur=function(a){return a.filter(function(t){return t.templateId&&t.templateId!=="manual"})};
+  var when=function(t){
+    var d=String(t.generatedDate||"");
+    return d<td?"purane":(d===td?"aaj":"aage ke");
+  };
+  var tally=function(a){
+    var m={purane:0,aaj:0,"aage ke":0};
+    a.forEach(function(t){m[when(t)]=(m[when(t)]||0)+1});
+    return m.purane+" purane / "+m.aaj+" aaj / "+m["aage ke"]+" aage ke";
+  };
+  L.push("VERSION  "+APP_VERSION);
+  L.push("AAJ      "+td+"  ("+new Date().toString().slice(0,33)+")");
+  L.push("");
+  L.push("SAB ROWS "+all.length);
+  L.push("  chalu    "+live.length+"   "+tally(live));
+  L.push("  dabi hui "+supp.length+"   "+tally(supp));
+  L.push("  mitayi   "+del.length);
+  var pend=live.filter(function(t){return t.status==="Pending"});
+  L.push("  chalu me pending "+pend.length+"   "+tally(pend));
+  L.push("");
+  L.push("GINTI");
+  var stale=[];try{stale=Array.from(taskStaleTpls(td))}catch(e){stale=[]}
+  L.push("  reh gaye template  "+stale.length);
+  L.push("  bina bheje rows    "+(function(){try{return _unsyncedCount()}catch(e){return "?"}})());
+  L.push("  aakhri push        "+(function(){try{var t=_dsLastPush();return t?new Date(t).toLocaleString():"kabhi nahi"}catch(e){return "?"}})());
+  L.push("");
+  L.push("TEMPLATE-WAR (chalu pending)");
+  var byT={};
+  recur(pend).forEach(function(t){
+    if(!byT[t.templateId])byT[t.templateId]={n:0,old:0,tdy:0,fut:0,who:t.assignedUserName||""};
+    byT[t.templateId].n++;
+    var w=when(t);
+    if(w==="purane")byT[t.templateId].old++;
+    else if(w==="aaj")byT[t.templateId].tdy++;else byT[t.templateId].fut++;
+  });
+  var ks=Object.keys(byT).sort(function(a,b){return byT[b].n-byT[a].n});
+  if(!ks.length)L.push("  (koi nahi)");
+  ks.slice(0,14).forEach(function(k){
+    var x=byT[k];
+    var nm=((STATE.taskTemplates||[]).filter(function(t){return t.id===k})[0]||{}).name||k;
+    L.push("  "+String(x.n).padStart(3)+"  "+String(nm).slice(0,22).padEnd(22)
+      +" "+x.old+"p/"+x.tdy+"a/"+x.fut+"f  "+String(x.who).slice(0,10));
+  });
+  if(ks.length>14)L.push("  \u2026aur "+(ks.length-14)+" template");
+  return L.join("\n");
+}
+function openTaskDiag(){
+  var txt="";try{txt=taskDiagLines()}catch(e){txt="ERROR: "+e.message}
+  var d=document.getElementById("m-task-diag");if(d)d.remove();
+  d=document.createElement("div");d.className="ov";d.id="m-task-diag";
+  d.innerHTML='<div class="sh" style="max-height:88vh;display:flex;flex-direction:column">'
+    +'<div style="padding:13px 15px 9px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between">'
+    +'<div><div style="font-weight:900;font-size:15px">\uD83E\uDE7A Task ka hisaab</div>'
+    +'<div class="xs ct3" style="font-weight:600;margin-top:2px">Dono device par kholo aur number milao</div></div>'
+    +'<button onclick="document.getElementById(\'m-task-diag\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">&#10005;</button></div>'
+    +'<div style="flex:1;overflow:auto;padding:12px 14px">'
+    +'<pre id="task-diag-txt" style="margin:0;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--t1)">'+esc(txt)+'</pre></div>'
+    +'<div style="padding:10px 15px;border-top:1px solid var(--br);display:flex;gap:8px">'
+    +'<button class="btn bs" onclick="document.getElementById(\'m-task-diag\').remove()">Band karo</button>'
+    +'<button class="btn bp bfl" style="flex:1" onclick="taskDiagCopy()">\uD83D\uDCCB Copy karo</button></div></div>';
+  _ovOpen(d);
+}
+function taskDiagCopy(){
+  var t="";try{t=(el("task-diag-txt")||{}).textContent||""}catch(e){}
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t).then(function(){toast("Copy ho gaya","ok")},
+        function(){toast("Copy nahi hua \u2014 screenshot le lo","warn")});
+      return;
+    }
+  }catch(e){}
+  toast("Copy nahi hua \u2014 screenshot le lo","warn");
 }
 function _healthRow(ok,good,bad,hint){
   return'<div style="display:flex;align-items:flex-start;gap:7px;padding:4px 0">'
