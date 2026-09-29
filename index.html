@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.280-->
+<!DOCTYPE html><!--ALTV:1.45.283-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.280";const APP_BUILD_DATE="2026-09-29";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);const stored=localStorage.getItem("vs_app_version");if(params.has("_cb")){localStorage.setItem("vs_app_version",APP_VERSION);return}if(stored!==APP_VERSION){localStorage.setItem("vs_app_version",APP_VERSION);window.location.replace(window.location.href.split("?")[0]+"?_cb="+Date.now());return}}catch(e){}})();let GAS_URL="";const DEFAULT_FIREBASE_URL="https://amrit-laxmi-textiles-do-default-rtdb.firebaseio.com";let FIREBASE_URL=DEFAULT_FIREBASE_URL;const OWNER_SETUP_HASH="479a1808c325c26f483c1ae55a1a549bba9d6435bc02f6449029db086ba07a2b";const el=id=>document.getElementById(id);
+</div></div><script>const APP_VERSION="1.45.283";const APP_BUILD_DATE="2026-09-29";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);const stored=localStorage.getItem("vs_app_version");if(params.has("_cb")){localStorage.setItem("vs_app_version",APP_VERSION);return}if(stored!==APP_VERSION){localStorage.setItem("vs_app_version",APP_VERSION);window.location.replace(window.location.href.split("?")[0]+"?_cb="+Date.now());return}}catch(e){}})();let GAS_URL="";const DEFAULT_FIREBASE_URL="https://amrit-laxmi-textiles-do-default-rtdb.firebaseio.com";let FIREBASE_URL=DEFAULT_FIREBASE_URL;const OWNER_SETUP_HASH="479a1808c325c26f483c1ae55a1a549bba9d6435bc02f6449029db086ba07a2b";const el=id=>document.getElementById(id);
 const isMob=()=>window.innerWidth<=520;
 (function(){const _u=()=>document.body&&document.body.classList.toggle("mob",isMob());window.addEventListener("resize",_u);document.addEventListener("DOMContentLoaded",_u);_u()})();const escHtml=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");// ── the bigger store ───────────────────────────────────────────────────
 // Which lists are too big for localStorage. Everything else stays there.
@@ -891,7 +891,8 @@ function _renderUnsyncedBar(){
     +(_hindi?"काम सेव नहीं हुआ":"Kaam save nahi hua")
     +'<span style="background:rgba(255,255,255,.25);border-radius:99px;padding:0 7px;font-size:10.5px;font-weight:800">'+n+'</span></div>'
     +'<div style="font-size:10px;opacity:.9;font-weight:600">'
-    +(window._syncTrying?(_hindi?"भेज रहे हैं…":"Bhej rahe hain…")
+    +(window._syncTrying?((window._pushTotal?(_hindi?"भेज रहे हैं… ":"Bhej rahe hain… ")+window._pushSent+"/"+window._pushTotal
+                          :(_hindi?"भेज रहे हैं…":"Bhej rahe hain…")))
                         :(_hindi?"नेट आने पर अपने आप चला जाएगा — ऐप खुली रखें":"Net aane par apne aap chala jayega — app khuli rakho"))+'</div></div>'
     +'<button onclick="_syncRetryNow(true)" style="flex-shrink:0;background:rgba(255,255,255,.22);color:#fff;border:none;'
     +'border-radius:8px;padding:7px 11px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">'
@@ -1095,6 +1096,19 @@ function netDiagLines(){
     Object.keys(r).sort().forEach(function(k){bits.push(k+" "+nmMB(r[k]))});
     L.push("  "+d+"  "+nmMB(nmDayTotal(d))+"   "+bits.join(", "));
   });
+  L.push("");
+  L.push("");
+  L.push("BHEJNE KA HAAL");
+  var _un=0;try{_un=_unsyncedCount()}catch(e){}
+  L.push("  Ruka hua kaam: "+_un);
+  L.push("  Aakhri baar bheja: "+(_dsLastPush()?new Date(_dsLastPush()).toLocaleString():"kabhi nahi"));
+  L.push("  Net se data utra: "+(window._fbLastPullOk?"haan":"nahi"));
+  var _bad=[];try{_bad=window._pushBadList||[]}catch(e){}
+  if(_bad.length){
+    L.push("  \u26A0\uFE0F "+_bad.length+" record ka naam kharab hai -- ye upar nahi ja sakte:");
+    _bad.slice(0,12).forEach(function(b){L.push("      "+b.col+" / "+b.id)});
+    if(_bad.length>12)L.push("      \u2026aur "+(_bad.length-12)+" aur");
+  }
   L.push("");
   L.push("poora = pehli baar saara data");
   L.push("badlav = doosron ke kiye hue badlav");
@@ -3376,6 +3390,11 @@ function npCanSeeAll(){
   if(STATE.user.role==="admin")return true;
   try{return!!hasPerm("leads_view_all")}catch(e){return false}
 }
+/* Aaj ka KAAM hamesha apna hota hai. "leads_view_all" se register aur
+   report me sab dikh sakta hai -- wo dekhne ki baat hai. Par jis list
+   par aadmi kaam karta hai, usme sirf uski apni party honi chahiye,
+   warna do salesman ek hi party ke paas pahunch jaate hain. */
+function wiSeeAll(){return !!(STATE.user&&STATE.user.role==="admin")}
 function npMine(l){
   var u=STATE.user||{};
   return l.assignedId===u.id||(!l.assignedId&&String(l.assignedName||"").trim().toLowerCase()===String(u.name||"").trim().toLowerCase());
@@ -3763,7 +3782,7 @@ function _wiMine(uid,id,nm){
   return id===uid||(!id&&!!nm&&String(nm).trim().toLowerCase()===String((STATE.user&&STATE.user.name)||"").trim().toLowerCase());
 }
 function workItems(kind){
-  var adm=npCanSeeAll(),uid=adm?"":((STATE.user&&STATE.user.id)||"");
+  var adm=wiSeeAll(),uid=adm?"":((STATE.user&&STATE.user.id)||"");
   var out=[];
   // 1. Inquiry -- chalu leads
   if(!kind||kind==="inq"){
@@ -4034,7 +4053,7 @@ function _wiRs(n){
 }
 // Upar ki patti: is mahine ka apna hisaab. Admin ko sabka, salesman ko apna.
 function wiScoreHtml(){
-  var tgt=npTargetPerMonth(),rows=npScore(),adm=npCanSeeAll();
+  var tgt=npTargetPerMonth(),rows=npScore(),adm=wiSeeAll();
   var box=function(inner){return'<div style="background:var(--Pl);border-radius:12px;padding:11px 13px;margin-bottom:10px">'+inner+"</div>"};
   var cell=function(lbl,val,col){
     return'<div style="flex:1;min-width:72px">'
@@ -4068,7 +4087,7 @@ function wiScoreHtml(){
 }
 function npTargetHtml(){
   var tgt=npTargetPerMonth(),rows=npScore();
-  if(!npCanSeeAll()){
+  if(!wiSeeAll()){
     var me=rows.filter(function(x){return x.id===(STATE.user&&STATE.user.id)})[0]||{won:0,open:0};
     var pct=Math.min(100,Math.round((me.won/tgt)*100));
     return'<div style="background:var(--Pl);border-radius:12px;padding:11px 13px;margin-bottom:10px">'
@@ -4199,7 +4218,7 @@ function _wiCard(x){
     +(phone?_wiLine("\uD83D\uDCF1",(p.contact?p.contact+" \u00b7 ":"")+phone):"")
     +(p.brkName?_wiLine("\uD83E\uDD1D",p.brkName+(p.brkPhone?" \u00b7 "+p.brkPhone:" \u00b7 number nahi")):"")
     +(x.why?'<div class="xs" style="font-weight:700;color:'+m.c+';margin-top:4px">'+esc(x.why)+"</div>":"")
-    +(npCanSeeAll()&&x.who?'<div class="xs ct3" style="font-weight:700;margin-top:4px">\uD83D\uDC64 '+esc(x.who)+"</div>":"")
+    +(wiSeeAll()&&x.who?'<div class="xs ct3" style="font-weight:700;margin-top:4px">\uD83D\uDC64 '+esc(x.who)+"</div>":"")
     +'<div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;align-items:center">'
     +(phone?_wiWaBtn(phone,"\uD83D\uDCF2 Party","#25D366","#fff")
       :'<button onclick="bdAddPhone(\''+x.t+'\',\''+x.id+'\')" style="background:#FEF3C7;color:#92400E;border:1.5px solid #FDE68A;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">\u26A0\uFE0F Number laao</button>')
@@ -4963,7 +4982,7 @@ function renderStarDashWidget(){
   var c=el("dash-star-widget");if(!c)return;
   var n=0,done=0;
   try{n=todayWork().length}catch(e){n=0}
-  try{done=wiDoneToday(npCanSeeAll()?"":((STATE.user&&STATE.user.name)||""))}catch(e){done=0}
+  try{done=wiDoneToday(wiSeeAll()?"":((STATE.user&&STATE.user.name)||""))}catch(e){done=0}
   if(!n){
     c.innerHTML=done
       ?'<div style="margin:10px 16px 0;background:var(--Gl);border:1px solid var(--G);border-radius:14px;padding:11px 14px;font-size:12px;font-weight:800;color:var(--Gd)">\u2705 Aaj ka saara follow-up ho gaya ('+done+')</div>'
@@ -5441,6 +5460,13 @@ function writeSettings(settings) {
   }catch(e){}
   if(nmOver()){dot.style.background="#F59E0B";txt.style.color="#B45309";
     txt.textContent="\u26A0\uFE0F Bachat mode";return}
+  /* Net chalu hai (data utar raha hai) par bhejna atak raha hai -- to
+     "Offline" likhna jhooth hai. Aadmi net dhoondhta rehta hai jabki
+     dikkat kahin aur hai. */
+  if(state!=="live"&&window._fbLastPullOk){
+    dot.style.background="#F59E0B";txt.style.color="#B45309";
+    txt.textContent="\u26A0\uFE0F Bhej nahi pa rahe";return;
+  }
 if(state==="live"){dot.style.background="#10B981";txt.style.color="#10B981";txt.textContent="● Live"}else if(state==="connecting"){dot.style.background="#F59E0B";txt.style.color="#F59E0B";txt.textContent="⏳ Syncing"}else{dot.style.background="#EF4444";txt.style.color="#EF4444";txt.textContent="○ Offline"}}function showSyncToast(){if(window._lastSyncToast&&Date.now()-window._lastSyncToast<5e3)return;window._lastSyncToast=Date.now();let bar=document.getElementById("sync-toast");if(!bar){bar=document.createElement("div");bar.id="sync-toast";bar.style.cssText="position:fixed;top:0;left:0;right:0;z-index:700;background:linear-gradient(135deg,#059669,#10B981);color:white;font-size:12px;font-weight:700;text-align:center;padding:6px 16px;transform:translateY(-100%);transition:transform .3s ease;pointer-events:none";document.body.appendChild(bar)}bar.textContent="⚡ Data updated from another device";bar.style.transform="translateY(0)";clearTimeout(window._syncToastTimer);window._syncToastTimer=setTimeout(()=>{bar.style.transform="translateY(-100%)"},2500)}async function syncFromJsonBin(){const binId=STATE.settings.jsonbinId,key=STATE.settings.jsonbinKey;if(!binId||!key){toast("Set JSONBin credentials first","er");return}const ok=await appConfirm("Pull from JSONBin?","This will overwrite your local data with the cloud version.\n\nContinue?","?","Pull from Cloud","ok");if(!ok)return;const s=el("jb-status");if(s)s.innerHTML='<span style="color:var(--Ad)">Downloading...</span>';try{const r=await fetch("https://api.jsonbin.io/v3/b/"+binId+"/latest",{headers:{"X-Master-Key":key,"X-Bin-Meta":"false"}});const d=await r.json();if(r.ok&&d.items){STATE.items=d.items||[];STATE.entries=d.entries||[];STATE.customers=d.customers||[];STATE.brokers=d.brokers||[];STATE.suppliers=d.suppliers||[];STATE.users=d.users||[];STATE.orders=d.orders||[];STATE.bills=d.bills||[];STATE.jobWork=d.jobWork||[];STATE.leads=d.leads||[];STATE.flaggedEntries=d.flaggedEntries||[];if(d.settings)STATE.settings={...STATE.settings,...d.settings};persist();STATE.settings.lastSync=(new Date).toLocaleString();lsSave("vs_settings",STATE.settings);if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pulled at '+STATE.settings.lastSync+"</span>";renderDash();renderOrders();renderBills();toast("Data pulled from JSONBin","ok")}else{if(s)s.innerHTML='<span style="color:var(--Rd)">&#x274C; No data or error</span>';toast("Pull failed","er")}}catch(e){if(s)s.innerHTML='<span style="color:var(--Rd)">&#x274C; '+e.message+"</span>";toast("Pull error","er")}}function triggerImport(){const f=el("import-file");if(f)f.click()}function exportData(){const payload={_meta:{exportedAt:(new Date).toISOString(),version:"1.0",app:"ALT Stock"},items:STATE.items,entries:STATE.entries,customers:STATE.customers,brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,orders:STATE.orders,bills:STATE.bills,jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],settings:STATE.settings};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");const date=(new Date).toISOString().split("T")[0];a.href=url;a.download="ALTStock_backup_"+date+".json";a.click();URL.revokeObjectURL(url);toast("Backup downloaded","ok")}async function importData(event){const file=event.target.files?.[0];if(!file)return;const ok=await appConfirm("Import Backup?","This will REPLACE all current data with the backup file.\n\nFile: "+file.name+"\n\nMake sure you have exported a backup first!","?","Import & Replace","dr");if(!ok){event.target.value="";return}try{const text=await file.text();const d=JSON.parse(text);if(!d._meta||!d.items){toast("Invalid backup file","er");return}STATE.items=d.items||[];STATE.entries=d.entries||[];STATE.customers=d.customers||[];STATE.brokers=d.brokers||[];STATE.suppliers=d.suppliers||[];STATE.users=d.users||[];STATE.orders=d.orders||[];STATE.bills=d.bills||[];STATE.jobWork=d.jobWork||[];STATE.leads=d.leads||[];STATE.flaggedEntries=d.flaggedEntries||[];if(d.settings)STATE.settings={...STATE.settings,...d.settings,gasUrl:STATE.settings.gasUrl,jsonbinId:STATE.settings.jsonbinId,jsonbinKey:STATE.settings.jsonbinKey};persist();renderDash();renderOrders();renderBills();toast("Backup imported from "+d._meta.exportedAt.split("T")[0],"ok");event.target.value=""}catch(e){toast("Import failed: "+e.message,"er");event.target.value=""}}async function silentPullGAS(){try{if(FIREBASE_URL){await pullDeltaFromFirebase();return}const d=await api("getAll");if(!d||!d.items)return;const cloudFrt=d.settings?.forceReloadToken||"";const myFrt=lsGet("vs_frt")||"";if(cloudFrt&&cloudFrt!==myFrt){lsSave("vs_frt",cloudFrt);try{applyCloudData(d,true)}catch(e){}const _t=el("tst");if(_t){_t.textContent="🔄 Admin cleared data — reloading in 3s...";_t.className="on er"}setTimeout(()=>window.location.reload(),3e3);return}const cloudDate=d._savedAt||d.syncedAt?new Date(d._savedAt||d.syncedAt):new Date(0);const localDate=STATE.settings.lastSync?new Date(STATE.settings.lastSync):new Date(0);if(cloudDate>localDate){applyCloudData(d,true);toast("☁️ Data updated from cloud","ok")}}catch(e){}}function openEditClr(itemId,colIdx){const item=STATE.items.find(i=>i.id===itemId);if(!item)return;const col=item.colours[colIdx];if(!col)return;el("ec-item-id").value=itemId;el("ec-col-idx").value=colIdx;el("edit-clr-range-sub").textContent=item.name+" · Range "+col.range;el("ec-old-sku").textContent=col.sku;el("ec-name").value=col.name||"";el("ec-code").value=col.code||"";el("ec-hex").value=col.hex||"#cccccc";el("ec-hex-lbl").textContent=col.hex||"#cccccc";const oldSku=col.sku;const entryCount=(STATE.entries||[]).filter(e=>e.sku===oldSku).length;const note=el("ec-entries-note");if(entryCount>0){note.style.display="block";note.textContent="⚠️ "+entryCount+" ledger entr"+(entryCount===1?"y":"ies")+" will also be updated to the new SKU."}else{note.style.display="none"}previewEditSKU();el("ec-hex").oninput=()=>{el("ec-hex-lbl").textContent=el("ec-hex").value;previewEditSKU()};showMod("m-edit-clr")}function previewEditSKU(){const itemId=el("ec-item-id")?.value;const item=STATE.items.find(i=>i.id===itemId);if(!item)return;const colIdx=parseInt(el("ec-col-idx")?.value);const col=item.colours[colIdx];if(!col)return;const name=(el("ec-name")?.value||"").trim().toUpperCase();const code=(el("ec-code")?.value||"").trim().toUpperCase();const newSku=genSKU(item.name,col.range,name||col.name,code||col.code);el("ec-new-sku").textContent=newSku||"—";const wrap=el("ec-new-sku-wrap");if(wrap)wrap.style.background=newSku===col.sku?"var(--bg)":"var(--Gl)"}async function saveEditClr(){const itemId=el("ec-item-id")?.value;const item=STATE.items.find(i=>i.id===itemId);if(!item){toast("Item not found","er");return}const colIdx=parseInt(el("ec-col-idx")?.value);const col=item.colours[colIdx];if(!col){toast("Colour not found","er");return}const newName=(el("ec-name")?.value||"").trim().toUpperCase();const newCode=(el("ec-code")?.value||"").trim().toUpperCase();const newHex=el("ec-hex")?.value||col.hex||"#cccccc";if(!newName){toast("Enter colour name","er");return}if(!newCode){toast("Enter colour code","er");return}const newSku=genSKU(item.name,col.range,newName,newCode);const dupExists=item.colours.some((c,i)=>i!==colIdx&&c.sku===newSku);if(dupExists){toast('SKU "'+newSku+'" already exists on another colour',"er");return}const oldSku=col.sku;const oldName=col.name;col.name=newName;col.code=newCode;col.hex=newHex;col.sku=newSku;stamp(col);stamp(item);let patchedEntries=0;(STATE.entries||[]).forEach(e=>{if(e.sku===oldSku&&e.itemId===itemId&&e.colIdx===colIdx){e.sku=newSku;e.colourName=newName;patchedEntries++}});lsSave("vs_items",STATE.items);if(patchedEntries>0)lsSave("vs_entries",STATE.entries);persist();hideMod("m-edit-clr");showMod("m-item");try{renderItems()}catch(e){}try{const itm=STATE.items.find(i=>i.id===itemId);if(itm)renderItemRanges(itm)}catch(e){}renderDash();const msg="SKU updated"+(oldSku!==newSku?" · "+oldSku+" → "+newSku:"")+(patchedEntries>0?" · "+patchedEntries+" entries updated":"");toast(msg,"ok")}async function discontinueSKU(itemId,colIdx){const item=STATE.items.find(x=>x.id===itemId);if(!item)return;const col=item.colours[colIdx];if(!col)return;const isDisc=col.discontinued||false;if(isDisc){const ok=await appConfirm("Re-activate SKU?",col.name+" ("+col.sku+")\nThis SKU will appear in orders and stock again.","?","Re-activate","ok");if(!ok)return;col.discontinued=false;delete col._deleted;col._ts=_bumpTs(col);item._ts=col._ts;persist();renderItems();renderDash();if(el("m-item")?.classList.contains("on")&&el("itm-id")?.value===itemId)renderItemRanges(item);toast(col.name+" re-activated","ok")}else{const ok=await appConfirm("Discontinue this SKU?",col.name+" ("+col.sku+")\n\nDiscontinued SKUs:\n• Hidden from new order forms\n• Hidden from stock overview\n• Shown separately in Masters\n• Can be re-activated anytime","?","Discontinue","dr");if(!ok)return;col.discontinued=true;col._ts=_bumpTs(col);item._ts=col._ts;persist();renderItems();renderDash();if(el("m-item")?.classList.contains("on")&&el("itm-id")?.value===itemId)renderItemRanges(item);toast(col.name+" discontinued","ok")}}async function clearLedger(){const fy=STATE.settings.currentFY||getCurrentFY();const txCollections=["entries","orders","bills","payments","jobWork","flaggedEntries","exchanges","mixedSarees"];let totalCount=0;txCollections.forEach(c=>{totalCount+=(STATE[c]||[]).filter(r=>!r._deleted).length});if(!totalCount){toast("All transaction records are already empty","ok");return}const entryCnt=(STATE.entries||[]).filter(r=>!r._deleted).length;const orderCnt=(STATE.orders||[]).filter(r=>!r._deleted).length;const billCnt=(STATE.bills||[]).filter(r=>!r._deleted).length;const ok=await appConfirm("Clear All Transaction Data?","This will permanently delete ALL transaction records for FY "+fy+":\n\n• "+entryCnt+" ledger entries (stock resets to 0)\n• "+orderCnt+" orders\n• "+billCnt+" bills/invoices\n• Payments, Job Work, Exchanges & more\n\n⚠️ Master data (Items, Customers, Users) is kept.\n⚠️ This CANNOT be undone.","?","Delete ALL "+totalCount+" Records","dr");if(!ok)return;const pinOk=await appPinConfirm("Danger PIN Required","Enter your Danger PIN to clear all transaction data.");if(!pinOk)return;const nowTs=Date.now();txCollections.forEach(col=>{(STATE[col]||[]).forEach(r=>{if(r&&!r._deleted){r._deleted=true;r._ts=nowTs}})});_ledSelected.clear();recalcStockFromEntries();STATE.items.forEach(i=>{i._ts=nowTs});persist();renderLedger();renderDash();toast("All transaction data cleared — "+totalCount+" records deleted, stock recalculated","ok")}function applyRoleUI(){refreshCurrentUser();const isAdmin=STATE.user?.role==="admin";const adminBtn=el("nb-admin");if(adminBtn)adminBtn.style.display=isAdmin?"":"none";const repBtn=el("nb-reports");if(repBtn)repBtn.style.display=isAdmin||hasPerm("reports")?"":"none";const leadBtn=el("nb-leads");if(leadBtn)leadBtn.style.display=isAdmin||hasPerm("leads_view")?"":"none";const leadCleanupBtn=el("lead-cleanup-btn");if(leadCleanupBtn)leadCleanupBtn.style.display=isAdmin?"":"none";const inwBtn=el("nb-inward");if(inwBtn)inwBtn.style.display=isAdmin||hasPerm("inward_view")||hasPerm("inward")?"":"none";const jwBtn=el("nb-jw");if(jwBtn)jwBtn.style.display=isAdmin||hasPerm("jw")?"":"none";const cutBtn=el("nb-cutting");if(cutBtn)cutBtn.style.display=csCanSeeCutTab()?"":"none";const floorBtn=el("nb-floor");if(floorBtn)floorBtn.style.display=csCan("floor_view")?"":"none";const tasksBtn=el("nb-tasks");if(tasksBtn)tasksBtn.style.display="";const salesBtn=el("nb-sales");if(salesBtn)salesBtn.style.display=isAdmin||hasPerm("sales_view")||hasPerm("sales_order")?"":"none";const researchBtn=el("nb-research");if(researchBtn)researchBtn.style.display=isAdmin||hasPerm("research")?"":"none";const mastBtn=el("nb-masters");if(mastBtn)mastBtn.style.display=isAdmin||hasPerm("masters_view")||hasPerm("masters_edit")?"":"none";const manualStockBtn=el("inward-manual-btn");if(manualStockBtn)manualStockBtn.style.display=isAdmin||hasPerm("manual_stock")?"flex":"none";const isAC2=_isAdminOrCRE();const leadAllBtn=el("lead-tab-all");if(leadAllBtn)leadAllBtn.style.display=isAC2?"":"none";}function refreshStaffTypeDropdown(selectedId){const sel=el("usr-stype");if(!sel)return;const types=getStaffTypes();sel.innerHTML='<option value="">Select type...</option>'+types.map(t=>'<option value="'+t.id+'"'+(t.id===selectedId?" selected":"")+">"+t.name+"</option>").join("")}function waShareCheck(fnName){if(canWAShare("reports")){if(fnName==="waStockReport")waStockReport();else if(fnName==="waVsOrderReport")waVsOrderReport();else if(fnName==="waTopSKU")waTopSKU();else if(fnName==="waDailyReport")waDailyReport(el("rep-daily-date")?.value||today())}else{toast("No permission to share via WhatsApp — ask admin to enable it","er")}}function renderUserReportAccessUI(uid){const c=el("s-rpt-checkboxes");if(!c)return;if(!uid){c.innerHTML='<span style="font-size:12px;color:var(--t3)">Select a user above to configure their report access.</span>';return;}const user=(STATE.users||[]).find(u=>u.id===uid);if(!user){c.innerHTML="User not found";return;}const ura=(STATE.settings?.userReportAccess||{})[uid]||{};const reports=[["Stock","stock"],["vs Orders","vsorder"],["Daily Sales","daily"],["Top SKUs","topsku"],["Trends","trends"],["Day Wrap","dayend"],["Star Follow-up","star"],["Top Customers","topcust"]];let h='<div style="font-size:12px;font-weight:700;color:var(--tx);margin-bottom:8px">Reports for '+escHtml(user.name)+':</div>';h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">';reports.forEach(([label,key])=>{const on=ura[key]!==false;h+='<label style="display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:8px;border:1.5px solid var(--br);cursor:pointer;background:var(--bg)">';h+='<input type="checkbox" id="s-rpt-'+key+'" '+( on?" checked":"")+' style="width:16px;height:16px;cursor:pointer"/>';h+='<span style="font-size:12px;font-weight:600;color:var(--tx)">'+label+'</span></label>';});h+='</div>';h+='<button class="btn bp bsm" onclick="saveUserReportAccess(el(\'s-rpt-user\').value)">💾 Save Access for '+escHtml(user.name)+'</button>';c.innerHTML=h;}function saveUserReportAccess(uid){if(!uid)return;const reports=[["Stock","stock"],["vs Orders","vsorder"],["Daily Sales","daily"],["Top SKUs","topsku"],["Trends","trends"],["Day Wrap","dayend"],["Star Follow-up","star"],["Top Customers","topcust"]];const access={};reports.forEach(([label,key])=>{const cb=el("s-rpt-"+key);access[key]=cb?cb.checked:true;});if(!STATE.settings.userReportAccess)STATE.settings.userReportAccess={};STATE.settings.userReportAccess[uid]=access;persist();api("saveSettings",{settings:STATE.settings});const user=(STATE.users||[]).find(u=>u.id===uid);toast("Report access saved for "+(user?.name||uid),"ok");}function applyReportTabVisibility(){const isAdmin=STATE.user?.role==="admin";const rscr=el("s-reports");if(!rscr)return;const tabMap={stock:"rep_stock",vsorder:"rep_vsorder",daily:"rep_daily",topsku:"rep_topsku",dayend:"rep_dayend"};rscr.querySelectorAll(".tbb").forEach(btn=>{const fn=btn.getAttribute("onclick")||"";const match=fn.match(/repTab\('(\w+)'/);if(match){const repKey=match[1];const permKey=tabMap[repKey];let allowed=isAdmin;if(!isAdmin){const uid=STATE.user?.id;const ura=STATE.settings?.userReportAccess?.[uid]||{};const raAllowed=ura[repKey]!==false;const permAllowed=!permKey||hasPerm(permKey);allowed=raAllowed&&permAllowed;}if(!allowed){btn.style.display="none"}else{btn.style.display="";btn.style.opacity="";btn.style.cursor="";btn.title=""}}})}async function convertLeadToCustomer(){const id=el("lead-id")?.value;if(!id)return;hideMod("m-lead");await convertLead(id)}function _stypeUserCount(id){return active(STATE.users).filter(function(u){return(u.role==="admin"?"admin":(u.staffTypeId||""))===id}).length}
 function _stypePermCount(id){var p=getPermPreset(id)||{};return Object.keys(p).filter(function(k){return p[k]}).length}
 function openStaffTypeMgr(){
@@ -5804,6 +5830,12 @@ function nmUsedPct(){return Math.round(nmMonth()/(nmBudget()*1048576)*100)}
 function nmOver(){return nmMonth()>=nmBudget()*1048576}
 function nmNear(){return nmUsedPct()>=80}
 
+/* Firebase ka naam ka niyam: in aksharon wala naam wo leta hi nahi. */
+function _fbBadKey(id){
+  var k=String(id==null?"":id);
+  if(!k)return true;
+  return /[.#$\[\]\/]/.test(k);
+}
 function _dsCloudHi(){
   try{return parseInt(localStorage.getItem("vs_cloud_hi")||"0",10)||0}catch(e){return 0}
 }
@@ -5928,7 +5960,26 @@ function _dsSettingsSig(){try{return localStorage.getItem("vs_set_sig")||""}catc
 function _dsSetSettingsSig(v){try{localStorage.setItem("vs_set_sig",v)}catch(e){}}
 async function pushDeltaToFirebase(full){if(!FIREBASE_URL)return false;
   if(window._lsFull){setLiveStatus("off");return false}   // nothing it holds can be trusted
-  ensureAllTimestamps();const pushStartTs=nowTs();_dsNoteCloudTs(pushStartTs);const cutoff=full?0:_dsLastPush();const updates={};DELTA_COLLECTIONS.forEach(col=>{let touched=false;(STATE[col]||[]).forEach(rec=>{if(!rec||!rec.id)return;if((rec._ts||0)>cutoff){updates["altstock/"+col+"/"+rec.id]=rec;touched=true}});if(touched)updates["_meta/"+col]={ts:pushStartTs}});const nowIso=(new Date).toISOString();
+  ensureAllTimestamps();const pushStartTs=nowTs();_dsNoteCloudTs(pushStartTs);const cutoff=full?0:_dsLastPush();const updates={};
+/* Bhejne wale rows alag se, purane se naye ke kram me. Ek phone pichhe
+   reh jaye to 200-300 rows jama ho jaate the, aur poora dher ek hi
+   PATCH me jaata tha -- 4G par wo 20 second me poora nahi jaata,
+   timeout, kuchh bhi save nahi, aur agli baar dher aur bada. Wahi
+   chakkar sirf us phone ko band kar deta tha. Ab tukdo me. */
+const _pushRecs=[];const _pushBad=[];
+DELTA_COLLECTIONS.forEach(col=>{let touched=false;(STATE[col]||[]).forEach(rec=>{
+  if(!rec||!rec.id)return;
+  if((rec._ts||0)<=cutoff)return;
+  /* Firebase kuchh akshar naam me nahi leta: . # $ [ ] /
+     Aisa ek bhi record poore packet ko thukra deta hai -- aur phir
+     us phone ka kaam kabhi upar nahi jaata. Use alag rakh do. */
+  if(_fbBadKey(rec.id)||rec._pushBad){_pushBad.push({col:col,id:String(rec.id)});return}
+  _pushRecs.push({p:"altstock/"+col+"/"+rec.id,r:rec,ts:Number(rec._ts)||0,c:col});touched=true;
+});if(touched)updates["_meta/"+col]={ts:pushStartTs}});
+try{window._pushBadList=_pushBad}catch(e){}
+
+_pushRecs.sort((a,b)=>a.ts-b.ts);
+const nowIso=(new Date).toISOString();
 const _setOut={...STATE.settings,lastSync:nowIso,appVersion:_verMax(STATE.settings.appVersion,APP_VERSION)};
 const _setSig=_settingsSig(_setOut);
 let _setChanged=!!full||_setSig!==_dsSettingsSig();
@@ -5954,7 +6005,96 @@ if(_ctrChanged&&!_setChanged){
   if(Date.now()-_lastSetPush>6e5)_setChanged=true;
 }
 if(_setChanged){updates["altstock/settings"]=_setOut;updates["_meta/settings"]={ts:pushStartTs};try{localStorage.setItem("vs_set_push_at",String(Date.now()))}catch(e){}}
-if(!Object.keys(updates).length){_dsSetLastPush(pushStartTs);setLiveStatus("live");return true}try{const ctrl=new AbortController;const tid=setTimeout(()=>ctrl.abort(),2e4);const r=await fetch(FIREBASE_URL+"/.json",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(updates),signal:ctrl.signal});clearTimeout(tid);if(r.ok){_dsSetLastPush(pushStartTs);if(_setChanged)_dsSetSettingsSig(_setSig);if(_ctrChanged){const _k2=_ctrCloudGet();Object.keys(_ctrSent).forEach(function(k){// Haath se set ki hui ginti chhoti bhi ho sakti hai -- uspar "bada wala" mat lagao, warna device samajhta rahega ki cloud par abhi bhi badi ginti hai aur aage kuchh bhejega hi nahi.
+if(!_pushRecs.length&&!Object.keys(updates).length){_dsSetLastPush(pushStartTs);setLiveStatus("live");return true}
+try{
+  /* Ek tukda: 40 row ya 200 KB, jo pehle aaye. Ek hi samay ke rows
+     kabhi do tukdo me nahi bantte -- warna beech wala chhoot jaata. */
+  const _CH_N=40,_CH_B=2e5;
+  let _i=0,_sent=0;
+  /* Rozana ka aam haal: thode se rows. Unhe nishan ke saath ek hi
+     call me bhej do -- tukdo ka jhanjhat sirf tab jab dher bada ho. */
+  if(_pushRecs.length<=_CH_N){
+    _pushRecs.forEach(function(x){updates[x.p]=x.r});
+    _i=_pushRecs.length;
+  }
+  while(_i<_pushRecs.length){
+    const part={};let bytes=0,j=_i;
+    while(j<_pushRecs.length){
+      const x=_pushRecs[j];
+      if(j>_i&&(j-_i>=_CH_N||bytes>=_CH_B)&&x.ts!==_pushRecs[j-1].ts)break;
+      part[x.p]=x.r;
+      try{bytes+=JSON.stringify(x.r).length}catch(e){bytes+=500}
+      j++;
+    }
+    const last=_pushRecs[j-1];
+    const c1=new AbortController,t1=setTimeout(()=>c1.abort(),45e3);
+    let rr=null;
+    try{rr=await fetch(FIREBASE_URL+"/.json",{method:"PATCH",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(part),signal:c1.signal})}catch(e){rr=null}
+    clearTimeout(t1);
+    if(!rr){setLiveStatus("off");try{_renderUnsyncedBar()}catch(e){}return false}
+    if(!rr.ok&&rr.status!==400){setLiveStatus("off");try{_renderUnsyncedBar()}catch(e){}return false}
+    if(!rr.ok){
+      /* Server ne kaha "ye data hi galat hai" (400). Ek kharab row poore
+         tukde ko rok deta hai -- to ek-ek karke bhejo, kharab ko alag
+         nikaal do, baaki ka kaam upar chala jaye. */
+      let moved=0;
+      for(let k=_i;k<j;k++){
+        const one=_pushRecs[k];
+        const c2=new AbortController,t2=setTimeout(()=>c2.abort(),2e4);
+        let r2=null;
+        try{const b={};b[one.p]=one.r;
+          r2=await fetch(FIREBASE_URL+"/.json",{method:"PATCH",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify(b),signal:c2.signal})}catch(e){r2=null}
+        clearTimeout(t2);
+        if(r2&&r2.ok){moved++;continue}
+        if(!r2||r2.status!==400){setLiveStatus("off");try{_renderUnsyncedBar()}catch(e){}return false}
+        /* Yahi row kharab hai. Nishan laga do taaki aage ka kaam
+           ruke nahi, aur admin ko dikha do. */
+        try{one.r._pushBad=true;_pushBad.push({col:one.c,id:String(one.r.id)})}catch(e){}
+      }
+      try{window._pushBadList=_pushBad;lsSave("vs_"+"push_bad",_pushBad)}catch(e){}
+      _dsSetLastPush(last.ts);_i=j;_sent=j;
+      try{_renderUnsyncedBar()}catch(e){}
+      continue;
+    }
+    /* Yahan tak ka sab pahunch gaya -- nishan yahin tak aage karo,
+       taaki beech me net jaye to jitna gaya utna gaya hi rahe. */
+    _dsSetLastPush(last.ts);
+    _sent=j;_i=j;
+    try{window._pushSent=_sent;window._pushTotal=_pushRecs.length;_renderUnsyncedBar()}catch(e){}
+  }
+  try{window._pushSent=0;window._pushTotal=0}catch(e){}
+  /* Aakhri me sirf nishan (meta/settings/counters) -- ye chhote hain.
+     Ek hi badlav ho to koi tukda banta hi nahi, aur ye ek hi call
+     jaati hai; do call nahi. */
+  const ctrl=new AbortController;const tid=setTimeout(()=>ctrl.abort(),45e3);let r=await fetch(FIREBASE_URL+"/.json",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(updates),signal:ctrl.signal});clearTimeout(tid);
+  if(r&&!r.ok&&r.status===400&&_i>0){
+    /* Chhote kaam ke saath bhi koi kharab row ho sakta hai -- use
+       alag nikaal kar baaki ka kaam bhej do. */
+    for(let k=0;k<_i;k++){
+      const one=_pushRecs[k];delete updates[one.p];
+      const c3=new AbortController,t3=setTimeout(()=>c3.abort(),2e4);
+      let r3=null;
+      try{const b={};b[one.p]=one.r;
+        r3=await fetch(FIREBASE_URL+"/.json",{method:"PATCH",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify(b),signal:c3.signal})}catch(e){r3=null}
+      clearTimeout(t3);
+      if(r3&&r3.ok)continue;
+      if(!r3||r3.status!==400){setLiveStatus("off");try{_renderUnsyncedBar()}catch(e){}return false}
+      try{one.r._pushBad=true;_pushBad.push({col:one.c,id:String(one.r.id)})}catch(e){}
+    }
+    try{window._pushBadList=_pushBad}catch(e){}
+    const c4=new AbortController,t4=setTimeout(()=>c4.abort(),45e3);
+    try{r=await fetch(FIREBASE_URL+"/.json",{method:"PATCH",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(updates),signal:c4.signal})}catch(e){r=null}
+    clearTimeout(t4);
+  }
+  if(r&&r.ok){_dsSetLastPush(pushStartTs);if(_setChanged)_dsSetSettingsSig(_setSig);if(_ctrChanged){const _k2=_ctrCloudGet();Object.keys(_ctrSent).forEach(function(k){// Haath se set ki hui ginti chhoti bhi ho sakti hai -- uspar "bada wala" mat lagao, warna device samajhta rahega ki cloud par abhi bhi badi ginti hai aur aage kuchh bhejega hi nahi.
 if(_ctrSetSent[k]){_k2[k]=_ctrSent[k];return}_k2[k]=Math.max(_k2[k]||0,_ctrSent[k])});_ctrCloudSet(_k2)}STATE.settings.lastSync=nowIso;lsSave("vs_settings",STATE.settings);setLiveStatus("live");return true}setLiveStatus("off");return false}catch(e){setLiveStatus("off");return false}}async function pullDeltaFromFirebase(){if(!FIREBASE_URL)return false;try{let metaR=await fetch(FIREBASE_URL+"/_meta.json");if(!metaR.ok&&FIREBASE_URL!==DEFAULT_FIREBASE_URL){const fallbackR=await fetch(DEFAULT_FIREBASE_URL+"/_meta.json");if(fallbackR.ok){FIREBASE_URL=DEFAULT_FIREBASE_URL;delete STATE.settings.firebaseUrl;lsSave("vs_settings",STATE.settings);metaR=fallbackR}}if(!metaR.ok){window._fbLastPullOk=false;return false}window._fbLastPullOk=true;
     const meta=(await _fbRead(metaR,"jaanch"))||{};
     try{Object.keys(meta||{}).forEach(function(k){_dsNoteCloudTs(meta[k]&&meta[k].ts)})}catch(e){}
