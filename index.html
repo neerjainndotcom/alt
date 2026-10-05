@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.298-->
+<!DOCTYPE html><!--ALTV:1.45.299-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.298";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.299";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -179,6 +179,9 @@ function _altResetScreen(){
       +'<pre id="alt-reset-info" style="background:#1e293b;border-radius:10px;padding:13px;'
       +'font:12px/1.7 ui-monospace,monospace;white-space:pre-wrap;margin:0 0 16px">'
       +'dekh raha hoon\u2026</pre>'
+      +'<button id="alt-diag-go" onclick="_altDiagRun(this)" style="width:100%;padding:13px;'
+      +'border:none;border-radius:11px;background:#2563eb;color:#fff;font-weight:800;font-size:15px;'
+      +'font-family:inherit;cursor:pointer;margin-bottom:10px">Jaanch karo</button>'
       +'<button id="alt-reset-go" onclick="_altResetDo(this)" style="width:100%;padding:13px;'
       +'border:none;border-radius:11px;background:#dc2626;color:#fff;font-weight:800;font-size:15px;'
       +'font-family:inherit;cursor:pointer">Safai karo</button>'
@@ -218,6 +221,93 @@ function _altResetInfo(){
     show();
   });
   show();
+}
+/* App ka boot kadam-kadam chalao aur har kadam ka waqt likhte jao.
+   Har kadam ke baad screen ko saans dete hain, isliye agar koi kadam
+   jaam ho jaye to uske pehle wali saari lines screen par likhi reh
+   jaati hain -- aur wahi kadam mujrim hai. Cloud ko haath nahi lagta. */
+async function _altDiagRun(btn){
+  if(btn){btn.disabled=true;btn.textContent="jaanch chal rahi hai\u2026"}
+  var L=["JAANCH \u2014 app ka boot, kadam kadam","(jahan ruk jaye, wahi jagah kharab hai)",""];
+  var paint=function(){
+    var p=document.getElementById("alt-reset-info");
+    if(p)p.textContent=L.join("\n");
+  };
+  var step=async function(name,fn){
+    var i=L.length;
+    L.push("  "+name+" \u2026");paint();
+    await new Promise(function(r){setTimeout(r,50)});
+    var t=performance.now(),note="";
+    try{note=(await fn())||""}catch(e){note="GALTI: "+((e&&e.message)||e)}
+    L[i]="  "+name+"   "+Math.round(performance.now()-t)+" ms"+(note?("   "+note):"");
+    paint();
+    await new Promise(function(r){setTimeout(r,50)});
+  };
+  /* Cloud bilkul band -- jaanch sirf is device ke data par. */
+  try{sessionStorage.setItem("vs_nopull","1")}catch(e){}
+
+  await step("store se data padha",async function(){
+    await _idbLoadAll();
+    var ks=Object.keys(_idbCache),tot=0,big=[];
+    ks.forEach(function(k){
+      var n=0;try{n=JSON.stringify(_idbCache[k]).length}catch(_){}
+      tot+=n;
+      big.push({k:k,n:n,c:Array.isArray(_idbCache[k])?_idbCache[k].length:"-"});
+    });
+    big.sort(function(a,b){return b.n-a.n});
+    L.push("");
+    L.push("  SABSE BADI LIST:");
+    big.slice(0,9).forEach(function(x){
+      L.push("    "+x.k+"   "+Math.round(x.n/1024)+" KB   rows "+x.c);
+    });
+    var lsN=0,lsB=0;
+    try{for(var i=0;i<localStorage.length;i++){lsN++;lsB+=(localStorage.getItem(localStorage.key(i))||"").length}}catch(e){}
+    L.push("    (localStorage: "+lsN+" cheezein, "+Math.round(lsB/1024)+" KB)");
+    L.push("");
+    return Math.round(tot/1048576)+" MB,  "+ks.length+" list";
+  });
+
+  await step("loadData()",function(){
+    loadData();
+    return "order "+(STATE.orders||[]).length
+      +", bill "+(STATE.bills||[]).length
+      +", parchi "+(STATE.csSlips||[]).length
+      +", entry "+(STATE.entries||[]).length;
+  });
+  await step("migrateData()",function(){migrateData();return ""});
+  await step("checkSess()",function(){
+    var ok=false;try{ok=!!checkSess()}catch(e){}
+    return ok?"login hua hua hai":"login nahi hai";
+  });
+  await step("recalcStockFromEntries()",function(){
+    if(typeof recalcStockFromEntries!=="function")return "hai hi nahi";
+    recalcStockFromEntries();return "";
+  });
+  await step("pending lot ginna",function(){
+    if(typeof csGetAllPendingLots!=="function")return "hai hi nahi";
+    var a=csGetAllPendingLots();return "lot "+((a&&a.length)||0);
+  });
+  await step("renderDash()",function(){
+    if(typeof renderDash!=="function")return "hai hi nahi";
+    renderDash();return "";
+  });
+  await step("renderOrders()",function(){
+    if(typeof renderOrders!=="function")return "hai hi nahi";
+    renderOrders();return "";
+  });
+  await step("renderPendingOrders()",function(){
+    if(typeof renderPendingOrders!=="function")return "hai hi nahi";
+    renderPendingOrders();return "";
+  });
+  await step("renderBills()",function(){
+    if(typeof renderBills!=="function")return "hai hi nahi";
+    renderBills();return "";
+  });
+
+  L.push("");
+  L.push("  Jaanch poori. Koi kadam bada ho to wahi mujrim hai.");
+  paint();
+  if(btn){btn.disabled=false;btn.textContent="Jaanch dobara karo"}
 }
 async function _altResetDo(btn){
   if(btn){btn.disabled=true;btn.textContent="saaf kar raha hoon\u2026"}
