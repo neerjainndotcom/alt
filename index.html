@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.291-->
+<!DOCTYPE html><!--ALTV:1.45.293-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.291";const APP_BUILD_DATE="2026-09-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);const stored=localStorage.getItem("vs_app_version");if(params.has("_cb")){localStorage.setItem("vs_app_version",APP_VERSION);return}if(stored!==APP_VERSION){localStorage.setItem("vs_app_version",APP_VERSION);window.location.replace(window.location.href.split("?")[0]+"?_cb="+Date.now());return}}catch(e){}})();let GAS_URL="";const DEFAULT_FIREBASE_URL="https://amrit-laxmi-textiles-do-default-rtdb.firebaseio.com";let FIREBASE_URL=DEFAULT_FIREBASE_URL;const OWNER_SETUP_HASH="479a1808c325c26f483c1ae55a1a549bba9d6435bc02f6449029db086ba07a2b";const el=id=>document.getElementById(id);
+</div></div><script>const APP_VERSION="1.45.293";const APP_BUILD_DATE="2026-10-04";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);const stored=localStorage.getItem("vs_app_version");if(params.has("_cb")){localStorage.setItem("vs_app_version",APP_VERSION);return}if(stored!==APP_VERSION){localStorage.setItem("vs_app_version",APP_VERSION);window.location.replace(window.location.href.split("?")[0]+"?_cb="+Date.now());return}}catch(e){}})();let GAS_URL="";const DEFAULT_FIREBASE_URL="https://amrit-laxmi-textiles-do-default-rtdb.firebaseio.com";let FIREBASE_URL=DEFAULT_FIREBASE_URL;const OWNER_SETUP_HASH="479a1808c325c26f483c1ae55a1a549bba9d6435bc02f6449029db086ba07a2b";const el=id=>document.getElementById(id);
 const isMob=()=>window.innerWidth<=520;
 (function(){const _u=()=>document.body&&document.body.classList.toggle("mob",isMob());window.addEventListener("resize",_u);document.addEventListener("DOMContentLoaded",_u);_u()})();const escHtml=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");// ── the bigger store ───────────────────────────────────────────────────
 // Which lists are too big for localStorage. Everything else stays there.
@@ -1109,6 +1109,30 @@ function netDiagLines(){
     _bad.slice(0,12).forEach(function(b){L.push("      "+b.col+" / "+b.id)});
     if(_bad.length>12)L.push("      \u2026aur "+(_bad.length-12)+" aur");
   }
+  /* Do device milane ke liye yahi ginti kaafi hai. */
+  L.push("  Aakhri baar liya (poora): "+(function(){
+    var t=0;try{t=_lastFullPull()}catch(e){}
+    return t?new Date(t).toLocaleString():"kabhi nahi";
+  })());
+  L.push("  Badlav ka cursor: "+(function(){
+    var m={};try{m=_dsPullTsMap()||{}}catch(e){}
+    var ks=Object.keys(m),mx=0;
+    ks.forEach(function(k){if(Number(m[k])>mx)mx=Number(m[k])});
+    return ks.length?(ks.length+" collection, aakhri "+new Date(mx).toLocaleString()):"khali";
+  })());
+  L.push("  Ghadi ka farak: "+(function(){
+    var o=0;try{o=_dsClockOff()||0}catch(e){}
+    return Math.round(o/1000)+" second"+(Math.abs(o)>6e4?"  \u26A0\uFE0F":"");
+  })());
+  L.push("");
+  L.push("IS DEVICE PAR KITNA DATA");
+  L.push((function(){
+    var liv=function(a){return(a||[]).filter(function(x){return x&&!x._deleted}).length};
+    var pl=-1;try{pl=csGetAllPendingLots({}).length}catch(e){pl=-1}
+    return "  Order "+liv(STATE.orders)+"   Parchi "+liv(STATE.csSlips)
+      +"   Bill "+liv(STATE.bills)+"   Pending lot "+(pl<0?"?":pl);
+  })());
+  L.push("  (dono device par ye line milao \u2014 jo kam hai wahi pichhe hai)");
   L.push("");
   L.push("poora = pehli baar saara data");
   L.push("badlav = doosron ke kiye hue badlav");
@@ -1126,11 +1150,21 @@ function openNetDiag(){
     +'<button onclick="document.getElementById(\'m-net-diag\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">&times;</button></div>'
     +'<pre id="net-diag-txt" style="margin:0;padding:12px 15px;overflow:auto;flex:1;font-size:11px;line-height:1.55;white-space:pre-wrap;font-family:ui-monospace,monospace"></pre>'
     +'<div style="padding:10px 15px;border-top:1px solid var(--br);display:flex;gap:8px">'
+    +'<button onclick="netDiagFullSync(this)" style="flex:1;padding:9px;border-radius:9px;border:none;background:#059669;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit">&#128260; Cloud se poora milao</button>'
     +'<button onclick="netDiagCopy()" style="flex:1;padding:9px;border-radius:9px;border:none;background:#4F46E5;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit">Copy karo</button>'
     +'</div></div>';
   document.body.appendChild(d);
   var pre=d.querySelector("#net-diag-txt");if(pre)pre.textContent=txt;
   try{_ovOpen(d)}catch(e){d.classList.add("on")}
+}
+/* Cursor bhool kar poora data dobara uthao. Sirf padhta hai -- is device
+   ka bina bheja kaam pehle upar jaata hai, isliye kuchh khota nahi. */
+async function netDiagFullSync(btn){
+  if(btn){btn.disabled=true;btn.textContent="Mil raha hai\u2026"}
+  try{await syncFullReconcile()}catch(e){}
+  var pre=document.getElementById("net-diag-txt");
+  if(pre){try{pre.textContent=netDiagLines()}catch(e){}}
+  if(btn){btn.disabled=false;btn.innerHTML="\u{1F504} Cloud se poora milao"}
 }
 function netDiagCopy(){
   var t=document.getElementById("net-diag-txt");if(!t)return;
@@ -3289,10 +3323,152 @@ const lotCleared=_fixPend?lot.items.reduce(function(s,i,ci){var r=_lotRow(i,ci);
     try{toast("Order load nahi hua: "+(e&&e.message||e),"er")}catch(x){}
   }
 }
-function _onDispOrderChangeInner(){const sel=el("disp-ord-sel");if(!sel)return;const ordId=sel.value;_dispOrdId=ordId||null;if(!ordId){const t=el("disp-table");if(t)t.innerHTML='<div style="padding:14px;text-align:center;color:var(--t3);font-size:12px">Select a pending order above</div>';const tot=el("disp-total");if(tot)tot.style.display="none";return}const o=STATE.orders.find(x=>x.id===ordId);if(!o)return;var _ordNoEl=el("disp-ordno");if(_ordNoEl)_ordNoEl.textContent=o.orderNo;const lots=[];const lotMap={};(o.items||[]).forEach(item=>{const key=item.lotIndex!==undefined?"li"+item.lotIndex:(item.itemName||"")+"|||"+(item.range||"");if(!lotMap[key]){const obj={lotNum:lots.length+1,key:key,itemName:item.itemName||"",range:item.range||"",cut:item.cut||6,items:[]};lots.push(obj);lotMap[key]=obj}lotMap[key].items.push(item)});const dispatched={};liveBills().filter(b=>((b.ordId===ordId||b.ordNo&&b.ordNo===o.orderNo||(b.ordIds&&b.ordIds.includes(ordId))))&&b.status!=="cancelled").forEach(bill=>{(bill.items||[]).forEach(bi=>{if(bi.srcOrdId&&bi.srcOrdId!==ordId)return;const lotI=bi._lotIdx!==undefined?bi._lotIdx:bi.lotIndex;const k=lotI!==undefined?bi.sku+"-li"+lotI:bi.sku;dispatched[k]=(dispatched[k]||0)+(bi.dispQty||bi.pcs||0)})});if(!_csInvShowAll&&lots.length&&!lots.some(lot=>csDispLotHasPacking(o,lot)||_dispExtraLots[csDispLotKey(lot.items[0])])){el("disp-table").innerHTML='<div style="padding:14px;text-align:center;color:var(--t3);font-size:12px">Koi bhi lot abhi "packing" mein nahi hai. Bina packing ke bill banane ke liye upar wala checkbox tick karo, ya neeche se lot jodo.</div>'+_dispHiddenLotsHtml(o,lots,[],dispatched);const totE=el("disp-total");if(totE)totE.style.display="none";const addBtnE=el("disp-add-ord-btn");if(addBtnE)addBtnE.style.display="none";return}const lotColors=["#EEF2FF","#F0FDF4","#FFF7ED","#FDF4FF","#FEFCE8","#F0F9FF"];const lotBorders=["#818CF8","#4ADE80","#FB923C","#C084FC","#FACC15","#38BDF8"];const lotLabels=["#3730A3","#166534","#7C2D12","#581C87","#713F12","#0C4A6E"];const pendingLots=lots.filter(lot=>lot.items.some(item=>{const k=item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku;return Math.max(0,(item.pcs||0)-(dispatched[k]||0))>0})&&(_csInvShowAll||csDispLotHasPacking(o,lot)||_dispExtraLots[csDispLotKey(lot.items[0])]));let html="";pendingLots.forEach((lot,li)=>{const lc=lotColors[li%lotColors.length];const border=lotBorders[li%lotBorders.length];const label=lotLabels[li%lotLabels.length];html+='<div style="margin-bottom:12px;border:2px solid '+border+';border-radius:12px;overflow:hidden" id="disp-lot-'+li+'">'+'<div style="background:'+border+';padding:7px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+'<span style="background:'+label+';color:#fff;font-size:10px;font-weight:900;padding:2px 7px;border-radius:5px">LOT '+lot.lotNum+"</span>"+'<span style="font-size:13px;font-weight:800;color:#0F0E1A">'+lot.itemName+"</span>"+'<span style="font-size:11px;font-weight:700;color:'+label+';background:white;padding:1px 7px;border-radius:4px">Range '+lot.range+"</span>"+'<div style="display:flex;align-items:center;gap:3px">'+'<span style="font-size:11px;color:'+label+'">Cut</span>'+'<input type="number" id="disp-lot-'+li+'-cut" value="'+lot.cut+'" step="0.01" min="0.5" max="200"'+' oninput="updateDispLotCut('+li+')"'+' style="width:48px;background:rgba(255,255,255,0.9);border:none;border-radius:5px;padding:2px 5px;font-size:12px;font-weight:800;font-family:monospace;color:'+label+'"/>'+'<span style="font-size:11px;color:'+label+'">m</span></div>'+'<button id="disp-lot-skip-'+li+'" data-skipped="0" onclick="skipDispLot('+li+',this)" '+'style="margin-left:auto;padding:3px 10px;border:none;background:rgba(255,255,255,0.25);color:white;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;letter-spacing:.3px"'+">✕ Skip Lot</button>"+"</div>"+csLotReadyLine(o,csDispLotKey(lot.items[0]))+'<div id="disp-lot-body-'+li+'" style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;background:#1e1b4b;padding:5px 10px">'+'<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-transform:uppercase">Colour</div>'+'<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-align:center;text-transform:uppercase">Ord</div>'+'<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:center;text-transform:uppercase">Sent</div>'+'<div style="font-size:9px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Dispatch</div>'+'<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:right;text-transform:uppercase">Amount</div>'+"</div>";lot.items.forEach((item,ci)=>{const alreadySent=dispatched[item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku]||0;const remaining=Math.max(0,(item.pcs||0)-alreadySent);const bg=ci%2===0?"#fff":lc;const curMstItem=STATE.items.find(x=>x.id===item.itemId);const curMstCol=curMstItem&&item.colIdx!=null?curMstItem.colours[item.colIdx]:null;const dispColourName=(curMstCol&&curMstCol.name)||item.colourName;var _rdyMap=csLotReadyMap(o,csDispLotKey(lot.items[0]));var _hasRdy=Object.keys(_rdyMap).length>0;var defQty=(_hasRdy&&!_csInvShowAll)?Math.min(remaining,_rdyMap[item.sku]||0):remaining;html+='<div class="disp-lot-row-'+li+'" style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;align-items:center;padding:7px 10px;background:'+bg+';border-top:1px solid #E5E4F0">'+"<div>"+'<div style="font-size:12px;font-weight:700">'+dispColourName+"</div>"+'<div style="font-size:9px;color:#9897B0;font-family:monospace">'+item.sku+"</div>"+"</div>"+'<div style="text-align:center;font-size:12px;font-weight:700;color:#454460">'+item.pcs+"</div>"+'<div style="text-align:center;font-size:11px;font-weight:600;color:'+(alreadySent>0?"#10B981":"#9897B0")+'">'+alreadySent+"</div>"+'<input type="number" id="disp-qty-'+(item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku)+'" step="1" min="0" max="'+remaining+'" value="'+defQty+'" '+'data-sku="'+item.sku+'" data-rate="'+item.rate+'" data-cut="'+item.cut+'" data-orig="'+remaining+'" '+'oninput="calcDispTotal()" '+'style="width:100%;text-align:center;border:2px solid #F59E0B;border-radius:7px;padding:4px 2px;font-size:14px;font-weight:800;font-family:monospace;background:#FFFBEB;color:#92400E"/>'+'<div id="disp-amt-'+(item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku)+'" style="text-align:right;font-size:12px;font-weight:700;color:#9897B0">—</div>'+"</div>"});html+="</div>"});html+=_dispHiddenLotsHtml(o,lots,pendingLots,dispatched);el("disp-table").innerHTML=html||'<div style="padding:14px;color:#B45309;font-size:12px;line-height:1.6"><b>Is order me bill karne layak koi row nahi mili.</b><br>Saara maal pehle hi bill ho chuka hai, ya order me item rows hain hi nahi.</div>';if(_dispFocusLot){var _fk=_dispFocusLot;_dispFocusLot=null;csFocusDispLot(pendingLots,_fk)}const addBtn=el("disp-add-ord-btn");if(addBtn)addBtn.style.display="block";const discInp0=el("disp-disc");if(discInp0){const _c0=STATE.customers.find(c=>c.id===o.custId);discInp0.value=_c0?.discount!=null?_c0.discount:STATE.settings.discount||0}calcDispTotal()}function skipDispLot(li,btn){const isSkipped=btn.dataset.skipped==="1";const lotDiv=el("disp-lot-"+li);if(!lotDiv)return;const rows=lotDiv.querySelectorAll(".disp-lot-row-"+li);if(!isSkipped){rows.forEach(row=>{const inp=row.querySelector('input[type="number"]');if(inp){inp.value=0;inp.disabled=true;inp.style.opacity="0.3"}row.style.opacity="0.35"});btn.textContent="↩ Undo Skip";btn.dataset.skipped="1";btn.style.background="rgba(255,255,255,0.6)";btn.style.color="#4338CA"}else{rows.forEach(row=>{const inp=row.querySelector('input[type="number"]');if(inp){inp.value=inp.dataset.orig||0;inp.disabled=false;inp.style.opacity=""}row.style.opacity=""});btn.textContent="✕ Skip Lot";btn.dataset.skipped="0";btn.style.background="rgba(255,255,255,0.25)";btn.style.color="white"}calcDispTotal()}function addExtraDispOrd(){const idx=_dispExtraOrds.length;_dispExtraOrds.push(null);const c=el("disp-extra-ords");if(!c)return;const usedIds=[_dispOrdId,..._dispExtraOrds.slice(0,-1)].filter(Boolean);const pendOrds=STATE.orders.filter(o=>!o._deleted&&o.type!=="open"&&(o.items||[]).length&&o.custId===_dispCustId&&(o.status==="pending"||o.status==="billed")&&!usedIds.includes(o.id));const div=document.createElement("div");div.id="disp-extra-"+idx;div.style.cssText="margin-top:10px;border:2px solid var(--P);border-radius:12px;overflow:hidden;background:var(--Pl)";div.innerHTML='<div style="background:var(--P);padding:7px 12px;display:flex;align-items:center;gap:8px">'+'<span style="background:white;color:var(--P);font-size:9px;font-weight:900;padding:2px 7px;border-radius:5px;letter-spacing:.5px">ORDER '+(idx+2)+"</span>"+'<select class="sel" id="disp-extra-sel-'+idx+'" onchange="onExtraDispOrdChange('+idx+')" style="flex:1;font-size:12px;font-weight:700">'+'<option value="">Select order...</option>'+pendOrds.map(o=>{let _pt="";try{_pt=csOrdParchiTag(o)}catch(e){}return'<option value="'+o.id+'">'+o.orderNo+" ("+fmtDate(o.date)+") &ndash; "+(o.items||[]).length+" items"+(_pt?"  \u00b7  "+_pt:"")+"</option>"}).join("")+"</select>"+'<button onclick="removeExtraDispOrd('+idx+')" class="btn bsm" style="background:rgba(255,255,255,.25);color:white;border:none;flex-shrink:0;font-size:12px">&#x2715; Remove</button>'+"</div>"+'<div id="disp-extra-table-'+idx+'" style="background:white"><div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select an order above</div></div>';c.appendChild(div)}function removeExtraDispOrd(idx){_dispExtraOrds[idx]=null;const div=el("disp-extra-"+idx);if(div)div.remove();calcDispTotal()}function onExtraDispOrdChange(idx){const sel=el("disp-extra-sel-"+idx);if(!sel)return;const ordId=sel.value;_dispExtraOrds[idx]=ordId||null;const tableEl=el("disp-extra-table-"+idx);if(!ordId){if(tableEl)tableEl.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select an order above</div>';calcDispTotal();return}const o=STATE.orders.find(x=>x.id===ordId);if(!o||!tableEl)return;const dispatched={};liveBills().filter(b=>((b.ordId===ordId||b.ordNo&&b.ordNo===o.orderNo||(b.ordIds&&b.ordIds.includes(ordId))))&&b.status!=="cancelled").forEach(bill=>{(bill.items||[]).forEach(bi=>{if(bi.srcOrdId&&bi.srcOrdId!==ordId)return;const lotI=bi._lotIdx!==undefined?bi._lotIdx:bi.lotIndex;const k=lotI!==undefined?bi.sku+"-li"+lotI:bi.sku;dispatched[k]=(dispatched[k]||0)+(bi.dispQty||bi.pcs||0)})});const lots=[];const lotMap={};(o.items||[]).forEach(item=>{const key=item.lotIndex!==undefined?"li"+item.lotIndex:(item.itemName||"")+"|||"+(item.range||"");if(!lotMap[key]){const obj={lotNum:lots.length+1,key:key,itemName:item.itemName||"",range:item.range||"",cut:item.cut||6,items:[]};lots.push(obj);lotMap[key]=obj}lotMap[key].items.push(item)});const lotColors=["#EEF2FF","#F0FDF4","#FFF7ED","#FDF4FF","#FEFCE8","#F0F9FF"];const lotBorders=["#818CF8","#4ADE80","#FB923C","#C084FC","#FACC15","#38BDF8"];const lotLabels=["#3730A3","#166534","#7C2D12","#581C87","#713F12","#0C4A6E"];let html="";lots.forEach((lot,li)=>{const lc=lotColors[li%lotColors.length],border=lotBorders[li%lotBorders.length],label=lotLabels[li%lotLabels.length];html+='<div id="disp-e'+idx+'-lot-'+li+'" style="margin-bottom:8px;border:2px solid '+border+';border-radius:10px;overflow:hidden">'+'<div style="background:'+border+';padding:6px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+'<span style="background:'+label+';color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:4px">LOT '+lot.lotNum+"</span>"+'<span style="font-size:12px;font-weight:800;color:#0F0E1A">'+lot.itemName+"</span>"+'<span style="font-size:10px;font-weight:700;color:'+label+';background:white;padding:1px 6px;border-radius:4px">Range '+lot.range+"</span>"+'<span style="font-size:10px;color:'+label+'">Cut: '+lot.cut+"m</span>"+'<button id="disp-e'+idx+'-lot-skip-'+li+'" data-skipped="0" onclick="skipExtraDispLot('+idx+','+li+',this)" '+'style="margin-left:auto;padding:3px 10px;border:none;background:rgba(255,255,255,0.25);color:white;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;letter-spacing:.3px"'+">✕ Skip Lot</button>"+"</div>"+'<div style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;background:#1e1b4b;padding:5px 10px">'+'<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-transform:uppercase">Colour</div>'+'<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-align:center;text-transform:uppercase">Ord</div>'+'<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:center;text-transform:uppercase">Sent</div>'+'<div style="font-size:9px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Dispatch</div>'+'<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:right;text-transform:uppercase">Amount</div>'+"</div>";lot.items.forEach((item,ci)=>{const alreadySent=dispatched[item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku]||0;const remaining=Math.max(0,(item.pcs||0)-alreadySent);const bg=ci%2===0?"#fff":lc;const eKey=item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku;html+='<div class="disp-e'+idx+'-lot-row-'+li+'" style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;align-items:center;padding:7px 10px;background:'+bg+';border-top:1px solid #E5E4F0">'+'<div><div style="font-size:11px;font-weight:700">'+liveColourName(item.itemId,item.colIdx,item.colourName,item.sku)+'</div><div style="font-size:9px;color:#9897B0;font-family:monospace">'+item.sku+"</div></div>"+'<div style="text-align:center;font-size:12px;font-weight:700;color:#454460">'+item.pcs+"</div>"+'<div style="text-align:center;font-size:11px;font-weight:600;color:'+(alreadySent>0?"#10B981":"#9897B0")+'">'+alreadySent+"</div>"+'<input type="number" id="disp-e'+idx+"-qty-"+eKey+'" step="1" min="0" max="'+remaining+'" value="'+remaining+'" '+'data-sku="'+item.sku+'" data-rate="'+item.rate+'" data-cut="'+item.cut+'" data-orig="'+remaining+'" '+'oninput="calcDispTotal()" '+'style="width:100%;text-align:center;border:2px solid #F59E0B;border-radius:7px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#FFFBEB;color:#92400E"/>'+'<div id="disp-e'+idx+"-amt-"+eKey+'" style="text-align:right;font-size:11px;font-weight:700;color:#9897B0">—</div>'+"</div>"});html+="</div>"});tableEl.innerHTML=html;const discInp=el("disp-disc");if(discInp){const _c=STATE.customers.find(c=>c.id===o.custId);discInp.value=_c?.discount!=null?_c.discount:STATE.settings.discount||0}calcDispTotal()}function skipExtraDispLot(idx,li,btn){const isSkipped=btn.dataset.skipped==="1";const lotDiv=el("disp-e"+idx+"-lot-"+li);if(!lotDiv)return;const rows=lotDiv.querySelectorAll(".disp-e"+idx+"-lot-row-"+li);if(!isSkipped){rows.forEach(row=>{const inp=row.querySelector('input[type="number"]');if(inp){inp.value=0;inp.disabled=true;inp.style.opacity="0.3"}row.style.opacity="0.35"});btn.textContent="↩ Undo Skip";btn.dataset.skipped="1";btn.style.background="rgba(255,255,255,0.6)";btn.style.color="#4338CA"}else{rows.forEach(row=>{const inp=row.querySelector('input[type="number"]');if(inp){inp.value=inp.dataset.orig||0;inp.disabled=false;inp.style.opacity=""}row.style.opacity=""});btn.textContent="✕ Skip Lot";btn.dataset.skipped="0";btn.style.background="rgba(255,255,255,0.25)";btn.style.color="white"}calcDispTotal()}function calcDispTotal(){if(!_dispOrdId)return;const o=STATE.orders.find(x=>x.id===_dispOrdId);if(!o)return;const cust=STATE.customers.find(c=>c.id===o.custId);const gstT=gstType(cust?.gstin||"");const disc=parseFloat(el("disp-disc")?.value);const discFinal=isNaN(disc)?cust?.discount!=null?cust.discount:STATE.settings.discount||0:disc;let sub=0;document.querySelectorAll('[id^="disp-qty-"]').forEach(inp=>{const qty=parseInt(inp.value)||0;const rate=parseFloat(inp.dataset.rate)||0;const cut=parseFloat(inp.dataset.cut)||6;const amt=Math.round(qty*cut*rate);const amtEl=document.getElementById(inp.id.replace("disp-qty-","disp-amt-"));if(amtEl){amtEl.textContent=amt>0?"₹"+fmtN(amt):"—"}sub+=amt});_dispExtraOrds.forEach((extraOrdId,idx)=>{if(!extraOrdId)return;const eo=STATE.orders.find(x=>x.id===extraOrdId);if(!eo)return;eo.items.forEach(item=>{const eKey=item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku;const inp=el("disp-e"+idx+"-qty-"+eKey);if(!inp)return;const qty=parseInt(inp.value)||0;const rate=item.rate||0;const cut=item.cut||6;const amt=Math.round(qty*cut*rate);const amtEl=el("disp-e"+idx+"-amt-"+eKey);if(amtEl){amtEl.textContent=amt>0?"₹"+fmtN(amt):"—";amtEl.style.color=amt>0?"var(--P)":"#9897B0"}sub+=amt})});const discAmt=discFinal>0?Math.round(sub*discFinal/100):0;const afterDisc=sub-discAmt;const brokPct=parseFloat(el("disp-brok-pct")?.value)||0;const brokFlat=parseFloat(el("disp-brok-flat")?.value)||0;const brokLbl=(el("disp-brok-lbl")?.value||"").trim();const brokAdj=brokPct!==0?Math.round(afterDisc*brokPct/100):0;const brokAmt=brokAdj+Math.round(brokFlat);const netTaxable=afterDisc+brokAmt;const gA=cust?.gstin?Math.round(netTaxable*.05):0;const grand=netTaxable+gA;const extraCount=_dispExtraOrds.filter(Boolean).length;const t=el("disp-total");if(sub>0){t.style.display="block";t.innerHTML=(extraCount>0?'<div class="brow" style="color:var(--Pd);font-size:11px"><span>&#x1F4CB; Orders combined: '+(1+extraCount)+'</span><span class="mono">&mdash;</span></div>':"")+'<div class="brow"><span>Taxable Amount</span><span class="mono fw7">₹'+fmtN(sub)+"</span></div>"+(discFinal!==0?'<div class="brow cG"><span>Discount ('+discFinal+'%)</span><span class="mono cG">- ₹'+fmtN(discAmt)+"</span></div>":"")+(discAmt>0?'<div class="brow"><span>After Discount</span><span class="mono fw7">₹'+fmtN(afterDisc)+"</span></div>":"")+(brokAmt!==0&&brokLbl?'<div class="brow" style="color:'+(brokAmt<0?"#DC2626":"#059669")+'"><span>'+brokLbl+(brokPct!==0?" ("+brokPct+"%)":"")+'</span><span class="mono">'+(brokAmt<0?"− ₹"+fmtN(-brokAmt):"+  ₹"+fmtN(brokAmt))+'</span></div><div class="brow"><span>Net Taxable</span><span class="mono fw7">₹'+fmtN(netTaxable)+"</span></div>":"")+(gA>0?'<div class="brow"><span>'+(gstT==="same"?"SGST 2.5% + CGST 2.5%":"IGST 5%")+'</span><span class="mono">₹'+fmtN(gA)+"</span></div>":"")+'<div class="brow tot"><span>Grand Total</span><span class="mono fw7" style="font-size:16px">₹'+fmtN(grand)+"</span></div>"}else t.style.display="none"}function updateDispLotCut(li){const cutInp=el("disp-lot-"+li+"-cut");const newCut=parseFloat(cutInp?.value)||6;document.querySelectorAll(".disp-lot-row-"+li+" input[data-cut]").forEach(inp=>{inp.dataset.cut=String(newCut)});calcDispTotal()}async function saveDispatchBill(){const billNo=(el("disp-billno")?.value||"").trim();if(!billNo){toast("Enter bill number","er");return}if(STATE.bills.find(b=>b.billNo===billNo&&!b._deleted)){toast('Invoice number "'+billNo+'" already exists — please use a different number',"er");const bnf=el("disp-billno");if(bnf){bnf.style.border="2px solid #EF4444";bnf.focus();setTimeout(()=>{bnf.style.border=""},2500)}return}const o=STATE.orders.find(x=>x.id===_dispOrdId);if(!o)return;/* Settle the slips first. Backing out here means nothing is written at all -- no stock deducted, no bill saved. */const _csDec=await csAskSlipDispositions(csDispPlanFromModal());if(_csDec===null){toast(_hindi?"बिल सेव नहीं हुआ — दोबारा बनाइए":"Bill save nahi hua &mdash; dobara banao","warn");return}const billToCustId=el("disp-bill-to")?.value||o.custId;const cust=STATE.customers.find(c=>c.id===billToCustId)||STATE.customers.find(c=>c.id===o.custId);const gstT2=gstType(cust?.gstin||"");const dispItems=[];let sub=0;for(const item of o.items){const inp=el("disp-qty-"+(item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku));if(!inp)continue;const qty=parseInt(inp.value)||0;if(!qty)continue;const rate=item.rate||0;const cut=parseFloat(inp.dataset.cut)||item.cut||6;const amt=Math.round(qty*cut*rate);const taka=Math.floor(Math.round(qty*cut*10)/10/STATE.settings.avgMtrPerTaka);const ok=await checkAdj(item.itemId,item.colIdx,taka,item.sku);if(!ok)continue;deductStock(item.itemId,item.colIdx,taka,"sale",o.custName,billNo);dispItems.push({...item,dispQty:qty,mtrs:Math.round(qty*cut*10)/10,taka:taka,amount:amt,cut:cut,srcOrdId:o.id,srcOrdNo:o.orderNo});sub+=amt}const extraOrdObjs=[];for(let idx=0;idx<_dispExtraOrds.length;idx++){const extraOrdId=_dispExtraOrds[idx];if(!extraOrdId)continue;const eo=STATE.orders.find(x=>x.id===extraOrdId);if(!eo)continue;extraOrdObjs.push(eo);for(const item of eo.items){const eKey=item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku;const inp=el("disp-e"+idx+"-qty-"+eKey);if(!inp)continue;const qty=parseInt(inp.value)||0;if(!qty)continue;const rate=item.rate||0,cut=parseFloat(inp.dataset.cut)||item.cut||6;const amt=Math.round(qty*cut*rate);const taka=Math.floor(Math.round(qty*cut*10)/10/STATE.settings.avgMtrPerTaka);const ok=await checkAdj(item.itemId,item.colIdx,taka,item.sku);if(!ok)continue;deductStock(item.itemId,item.colIdx,taka,"sale",eo.custName,billNo);dispItems.push({...item,dispQty:qty,mtrs:Math.round(qty*cut*10)/10,taka:taka,amount:amt,srcOrdId:eo.id,srcOrdNo:eo.orderNo});sub+=amt}}if(!dispItems.length){toast("Enter dispatch qty for at least one item","er");return}const _discInpVal2=parseFloat(el("disp-disc")?.value);const disc2=isNaN(_discInpVal2)?cust?.discount!=null?cust.discount:STATE.settings.discount||0:_discInpVal2;const discAmt2=Math.round(sub*disc2/100);const afterDisc2=sub-discAmt2;const _brokPct2=parseFloat(el("disp-brok-pct")?.value)||0;const _brokFlat2=parseFloat(el("disp-brok-flat")?.value)||0;const _brokLbl2=(el("disp-brok-lbl")?.value||"").trim();const _brokAdj2=_brokPct2!==0?Math.round(afterDisc2*_brokPct2/100):0;const _brokAmt2=_brokAdj2+Math.round(_brokFlat2);const _netTax2=afterDisc2+_brokAmt2;const _gstAmt2=Math.round(_netTax2*(cust?.gstin?.05:0));const allOrdIds=[_dispOrdId,...extraOrdObjs.map(e=>e.id)];const allOrdNos=[o.orderNo,...extraOrdObjs.map(e=>e.orderNo)];/* Bill par likh do ki uska maal kis parchi se gaya -- warna baad me
+function _onDispOrderChangeInner(){const sel=el("disp-ord-sel");if(!sel)return;const ordId=sel.value;_dispOrdId=ordId||null;if(!ordId){const t=el("disp-table");if(t)t.innerHTML='<div style="padding:14px;text-align:center;color:var(--t3);font-size:12px">Select a pending order above</div>';const tot=el("disp-total");if(tot)tot.style.display="none";return}const o=STATE.orders.find(x=>x.id===ordId);if(!o)return;var _ordNoEl=el("disp-ordno");if(_ordNoEl)_ordNoEl.textContent=o.orderNo;const lots=[];const lotMap={};(o.items||[]).forEach(item=>{const key=item.lotIndex!==undefined?"li"+item.lotIndex:(item.itemName||"")+"|||"+(item.range||"");if(!lotMap[key]){const obj={lotNum:lots.length+1,key:key,itemName:item.itemName||"",range:item.range||"",cut:item.cut||6,items:[]};lots.push(obj);lotMap[key]=obj}lotMap[key].items.push(item)});const dispatched={};liveBills().filter(b=>((b.ordId===ordId||b.ordNo&&b.ordNo===o.orderNo||(b.ordIds&&b.ordIds.includes(ordId))))&&b.status!=="cancelled").forEach(bill=>{(bill.items||[]).forEach(bi=>{if(bi.srcOrdId&&bi.srcOrdId!==ordId)return;const lotI=bi._lotIdx!==undefined?bi._lotIdx:bi.lotIndex;const k=lotI!==undefined?bi.sku+"-li"+lotI:bi.sku;dispatched[k]=(dispatched[k]||0)+(bi.dispQty||bi.pcs||0)})});if(!_csInvShowAll&&lots.length&&!lots.some(lot=>csDispLotHasPacking(o,lot)||_dispExtraLots[csDispLotKey(lot.items[0])])){el("disp-table").innerHTML='<div style="padding:14px;text-align:center;color:var(--t3);font-size:12px">Koi bhi lot abhi "packing" mein nahi hai. Bina packing ke bill banane ke liye upar wala checkbox tick karo, ya neeche se lot jodo.</div>'+_dispHiddenLotsHtml(o,lots,[],dispatched);const totE=el("disp-total");if(totE)totE.style.display="none";const addBtnE=el("disp-add-ord-btn");if(addBtnE)addBtnE.style.display="none";return}const lotColors=["#EEF2FF","#F0FDF4","#FFF7ED","#FDF4FF","#FEFCE8","#F0F9FF"];const lotBorders=["#818CF8","#4ADE80","#FB923C","#C084FC","#FACC15","#38BDF8"];const lotLabels=["#3730A3","#166534","#7C2D12","#581C87","#713F12","#0C4A6E"];const pendingLots=lots.filter(lot=>lot.items.some(item=>{const k=item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku;return Math.max(0,(item.pcs||0)-(dispatched[k]||0))>0})&&(_csInvShowAll||csDispLotHasPacking(o,lot)||_dispExtraLots[csDispLotKey(lot.items[0])]));/* Ek lot me kai parchi ho sakti hai (colour-wise ya hisse me). Har
+   parchi ka apna dabba banao -- warna pata hi nahi chalta ki bill kis
+   parchi ka ban raha hai, aur app ko khud andaza lagana padta hai. */
+const _dispBlocks=[];
+pendingLots.forEach((lot,li)=>{
+  const _lk=csDispLotKey(lot.items[0]);
+  let _rdy=[];try{_rdy=csLotReadyRows(o,_lk)}catch(e){_rdy=[]}
+  if(_rdy.length&&!_csInvShowAll)_rdy.forEach(rw=>_dispBlocks.push({lot:lot,li:li,lotKey:_lk,slip:rw}));
+  else _dispBlocks.push({lot:lot,li:li,lotKey:_lk,slip:null});
+});
+let html="";
+_dispBlocks.forEach((blk,bi)=>{
+  const lot=blk.lot,li=blk.li,cap=blk.slip?blk.slip.bySku:null;
+  const lc=lotColors[li%lotColors.length];
+  const border=lotBorders[li%lotBorders.length];
+  const label=lotLabels[li%lotLabels.length];
+  html+='<div style="margin-bottom:12px;border:2px solid '+border+';border-radius:12px;overflow:hidden" id="disp-lot-'+bi+'">'
+    +'<div style="background:'+border+';padding:7px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+    +'<span style="background:'+label+';color:#fff;font-size:10px;font-weight:900;padding:2px 7px;border-radius:5px">LOT '+lot.lotNum+"</span>"
+    +(blk.slip?'<span style="background:#065F46;color:#fff;font-size:10.5px;font-weight:900;padding:2px 9px;border-radius:5px;letter-spacing:.3px">&#129534; '+escHtml(blk.slip.csNo||"")+' &middot; '+blk.slip.pcs+' pcs</span>':"")
+    +'<span style="font-size:13px;font-weight:800;color:#0F0E1A">'+lot.itemName+"</span>"
+    +'<span style="font-size:11px;font-weight:700;color:'+label+';background:white;padding:1px 7px;border-radius:4px">Range '+lot.range+"</span>"
+    +'<div style="display:flex;align-items:center;gap:3px">'
+    +'<span style="font-size:11px;color:'+label+'">Cut</span>'
+    +'<input type="number" id="disp-lot-'+bi+'-cut" value="'+lot.cut+'" step="0.01" min="0.5" max="200"'
+    +' oninput="updateDispLotCut('+bi+')"'
+    +' style="width:48px;background:rgba(255,255,255,0.9);border:none;border-radius:5px;padding:2px 5px;font-size:12px;font-weight:800;font-family:monospace;color:'+label+'"/>'
+    +'<span style="font-size:11px;color:'+label+'">m</span></div>'
+    +'<button id="disp-lot-skip-'+bi+'" data-skipped="0" onclick="skipDispLot('+bi+',this)" '
+    +'style="margin-left:auto;padding:3px 10px;border:none;background:rgba(255,255,255,0.25);color:white;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;letter-spacing:.3px"'
+    +">&#10005; "+(blk.slip?"Skip Parchi":"Skip Lot")+"</button>"+"</div>"
+    +(blk.slip?"":csLotReadyLine(o,blk.lotKey))
+    +'<div id="disp-lot-body-'+bi+'" style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;background:#1e1b4b;padding:5px 10px">'
+    +'<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-transform:uppercase">Colour</div>'
+    +'<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-align:center;text-transform:uppercase">Ord</div>'
+    +'<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:center;text-transform:uppercase">Sent</div>'
+    +'<div style="font-size:9px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Dispatch</div>'
+    +'<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:right;text-transform:uppercase">Amount</div>'
+    +"</div>";
+  lot.items.forEach((item,ci)=>{
+    const dk=item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku;
+    const alreadySent=dispatched[dk]||0;
+    const remaining=Math.max(0,(item.pcs||0)-alreadySent);
+    const capQ=cap?Math.min(remaining,cap[item.sku]||0):remaining;
+    if(cap&&capQ<=0)return;             // ye colour is parchi me hai hi nahi
+    const bg=ci%2===0?"#fff":lc;
+    const curMstItem=STATE.items.find(x=>x.id===item.itemId);
+    const curMstCol=curMstItem&&item.colIdx!=null?curMstItem.colours[item.colIdx]:null;
+    const dispColourName=(curMstCol&&curMstCol.name)||item.colourName;
+    const rid="b"+bi+"-"+dk;
+    html+='<div class="disp-lot-row-'+bi+'" style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;align-items:center;padding:7px 10px;background:'+bg+';border-top:1px solid #E5E4F0">'
+      +"<div>"+'<div style="font-size:12px;font-weight:700">'+dispColourName+"</div>"
+      +'<div style="font-size:9px;color:#9897B0;font-family:monospace">'+item.sku+"</div>"+"</div>"
+      +'<div style="text-align:center;font-size:12px;font-weight:700;color:#454460">'+item.pcs+"</div>"
+      +'<div style="text-align:center;font-size:11px;font-weight:600;color:'+(alreadySent>0?"#10B981":"#9897B0")+'">'+alreadySent+"</div>"
+      +'<input type="number" id="disp-qty-'+rid+'" step="1" min="0" max="'+capQ+'" value="'+capQ+'" '
+      +'data-ord="'+o.id+'" data-sku="'+item.sku+'" data-lot="'+blk.lotKey+'" data-cs="'+(blk.slip?blk.slip.csId:"")+'" '
+      +'data-li="'+(item.lotIndex!==undefined?item.lotIndex:"")+'" '
+      +'data-rate="'+item.rate+'" data-cut="'+item.cut+'" data-orig="'+capQ+'" '
+      +'oninput="calcDispTotal()" '
+      +'style="width:100%;text-align:center;border:2px solid #F59E0B;border-radius:7px;padding:4px 2px;font-size:14px;font-weight:800;font-family:monospace;background:#FFFBEB;color:#92400E"/>'
+      +'<div id="disp-amt-'+rid+'" style="text-align:right;font-size:12px;font-weight:700;color:#9897B0">&mdash;</div>'
+      +"</div>";
+  });
+  html+="</div>";
+});
+html+=_dispHiddenLotsHtml(o,lots,pendingLots,dispatched);el("disp-table").innerHTML=html||'<div style="padding:14px;color:#B45309;font-size:12px;line-height:1.6"><b>Is order me bill karne layak koi row nahi mili.</b><br>Saara maal pehle hi bill ho chuka hai, ya order me item rows hain hi nahi.</div>';if(_dispFocusLot){var _fk=_dispFocusLot;_dispFocusLot=null;csFocusDispLot(pendingLots,_fk)}const addBtn=el("disp-add-ord-btn");if(addBtn)addBtn.style.display="block";const discInp0=el("disp-disc");if(discInp0){const _c0=STATE.customers.find(c=>c.id===o.custId);discInp0.value=_c0?.discount!=null?_c0.discount:STATE.settings.discount||0}calcDispTotal()}function skipDispLot(li,btn){const isSkipped=btn.dataset.skipped==="1";const lotDiv=el("disp-lot-"+li);if(!lotDiv)return;const rows=lotDiv.querySelectorAll(".disp-lot-row-"+li);if(!isSkipped){rows.forEach(row=>{const inp=row.querySelector('input[type="number"]');if(inp){inp.value=0;inp.disabled=true;inp.style.opacity="0.3"}row.style.opacity="0.35"});btn.textContent="↩ Undo Skip";btn.dataset.skipped="1";btn.style.background="rgba(255,255,255,0.6)";btn.style.color="#4338CA"}else{rows.forEach(row=>{const inp=row.querySelector('input[type="number"]');if(inp){inp.value=inp.dataset.orig||0;inp.disabled=false;inp.style.opacity=""}row.style.opacity=""});btn.textContent="✕ Skip Lot";btn.dataset.skipped="0";btn.style.background="rgba(255,255,255,0.25)";btn.style.color="white"}calcDispTotal()}function addExtraDispOrd(){const idx=_dispExtraOrds.length;_dispExtraOrds.push(null);const c=el("disp-extra-ords");if(!c)return;const usedIds=[_dispOrdId,..._dispExtraOrds.slice(0,-1)].filter(Boolean);const pendOrds=STATE.orders.filter(o=>!o._deleted&&o.type!=="open"&&(o.items||[]).length&&o.custId===_dispCustId&&(o.status==="pending"||o.status==="billed")&&!usedIds.includes(o.id));const div=document.createElement("div");div.id="disp-extra-"+idx;div.style.cssText="margin-top:10px;border:2px solid var(--P);border-radius:12px;overflow:hidden;background:var(--Pl)";div.innerHTML='<div style="background:var(--P);padding:7px 12px;display:flex;align-items:center;gap:8px">'+'<span style="background:white;color:var(--P);font-size:9px;font-weight:900;padding:2px 7px;border-radius:5px;letter-spacing:.5px">ORDER '+(idx+2)+"</span>"+'<select class="sel" id="disp-extra-sel-'+idx+'" onchange="onExtraDispOrdChange('+idx+')" style="flex:1;font-size:12px;font-weight:700">'+'<option value="">Select order...</option>'+pendOrds.map(o=>{let _pt="";try{_pt=csOrdParchiTag(o)}catch(e){}return'<option value="'+o.id+'">'+o.orderNo+" ("+fmtDate(o.date)+") &ndash; "+(o.items||[]).length+" items"+(_pt?"  \u00b7  "+_pt:"")+"</option>"}).join("")+"</select>"+'<button onclick="removeExtraDispOrd('+idx+')" class="btn bsm" style="background:rgba(255,255,255,.25);color:white;border:none;flex-shrink:0;font-size:12px">&#x2715; Remove</button>'+"</div>"+'<div id="disp-extra-table-'+idx+'" style="background:white"><div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select an order above</div></div>';c.appendChild(div)}function removeExtraDispOrd(idx){_dispExtraOrds[idx]=null;const div=el("disp-extra-"+idx);if(div)div.remove();calcDispTotal()}function onExtraDispOrdChange(idx){const sel=el("disp-extra-sel-"+idx);if(!sel)return;const ordId=sel.value;_dispExtraOrds[idx]=ordId||null;const tableEl=el("disp-extra-table-"+idx);if(!ordId){if(tableEl)tableEl.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:12px">Select an order above</div>';calcDispTotal();return}const o=STATE.orders.find(x=>x.id===ordId);if(!o||!tableEl)return;const dispatched={};liveBills().filter(b=>((b.ordId===ordId||b.ordNo&&b.ordNo===o.orderNo||(b.ordIds&&b.ordIds.includes(ordId))))&&b.status!=="cancelled").forEach(bill=>{(bill.items||[]).forEach(bi=>{if(bi.srcOrdId&&bi.srcOrdId!==ordId)return;const lotI=bi._lotIdx!==undefined?bi._lotIdx:bi.lotIndex;const k=lotI!==undefined?bi.sku+"-li"+lotI:bi.sku;dispatched[k]=(dispatched[k]||0)+(bi.dispQty||bi.pcs||0)})});const lots=[];const lotMap={};(o.items||[]).forEach(item=>{const key=item.lotIndex!==undefined?"li"+item.lotIndex:(item.itemName||"")+"|||"+(item.range||"");if(!lotMap[key]){const obj={lotNum:lots.length+1,key:key,itemName:item.itemName||"",range:item.range||"",cut:item.cut||6,items:[]};lots.push(obj);lotMap[key]=obj}lotMap[key].items.push(item)});const lotColors=["#EEF2FF","#F0FDF4","#FFF7ED","#FDF4FF","#FEFCE8","#F0F9FF"];const lotBorders=["#818CF8","#4ADE80","#FB923C","#C084FC","#FACC15","#38BDF8"];const lotLabels=["#3730A3","#166534","#7C2D12","#581C87","#713F12","#0C4A6E"];const _eBlocks=[];
+lots.forEach((lot,li)=>{
+  const _lk=csDispLotKey(lot.items[0]);
+  let _rdy=[];try{_rdy=csLotReadyRows(o,_lk)}catch(e){_rdy=[]}
+  if(_rdy.length&&!_csInvShowAll)_rdy.forEach(rw=>_eBlocks.push({lot:lot,li:li,lotKey:_lk,slip:rw}));
+  else _eBlocks.push({lot:lot,li:li,lotKey:_lk,slip:null});
+});
+let html="";
+_eBlocks.forEach((blk,bi)=>{
+  const lot=blk.lot,li=blk.li,cap=blk.slip?blk.slip.bySku:null;
+  const lc=lotColors[li%lotColors.length],border=lotBorders[li%lotBorders.length],label=lotLabels[li%lotLabels.length];
+  html+='<div id="disp-e'+idx+'-lot-'+bi+'" style="margin-bottom:8px;border:2px solid '+border+';border-radius:10px;overflow:hidden">'
+    +'<div style="background:'+border+';padding:6px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+    +'<span style="background:'+label+';color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:4px">LOT '+lot.lotNum+"</span>"
+    +(blk.slip?'<span style="background:#065F46;color:#fff;font-size:10px;font-weight:900;padding:2px 8px;border-radius:4px;letter-spacing:.3px">&#129534; '+escHtml(blk.slip.csNo||"")+' &middot; '+blk.slip.pcs+' pcs</span>':"")
+    +'<span style="font-size:12px;font-weight:800;color:#0F0E1A">'+lot.itemName+"</span>"
+    +'<span style="font-size:10px;font-weight:700;color:'+label+';background:white;padding:1px 6px;border-radius:4px">Range '+lot.range+"</span>"
+    +'<span style="font-size:10px;color:'+label+'">Cut: '+lot.cut+"m</span>"
+    +'<button id="disp-e'+idx+'-lot-skip-'+bi+'" data-skipped="0" onclick="skipExtraDispLot('+idx+','+bi+',this)" '
+    +'style="margin-left:auto;padding:3px 10px;border:none;background:rgba(255,255,255,0.25);color:white;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;letter-spacing:.3px"'
+    +">&#10005; "+(blk.slip?"Skip Parchi":"Skip Lot")+"</button>"+"</div>"
+    +'<div style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;background:#1e1b4b;padding:5px 10px">'
+    +'<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-transform:uppercase">Colour</div>'
+    +'<div style="font-size:9px;font-weight:800;color:#A5B4FC;text-align:center;text-transform:uppercase">Ord</div>'
+    +'<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:center;text-transform:uppercase">Sent</div>'
+    +'<div style="font-size:9px;font-weight:800;color:#FBBF24;text-align:center;text-transform:uppercase">Dispatch</div>'
+    +'<div style="font-size:9px;font-weight:800;color:#6EE7B7;text-align:right;text-transform:uppercase">Amount</div>'
+    +"</div>";
+  lot.items.forEach((item,ci)=>{
+    const dk=item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku;
+    const alreadySent=dispatched[dk]||0;
+    const remaining=Math.max(0,(item.pcs||0)-alreadySent);
+    const capQ=cap?Math.min(remaining,cap[item.sku]||0):remaining;
+    if(cap&&capQ<=0)return;
+    const bg=ci%2===0?"#fff":lc;
+    const rid="b"+bi+"-"+dk;
+    html+='<div class="disp-e'+idx+'-lot-row-'+bi+'" style="display:grid;grid-template-columns:1fr 48px 48px 60px 70px;align-items:center;padding:7px 10px;background:'+bg+';border-top:1px solid #E5E4F0">'
+      +'<div><div style="font-size:11px;font-weight:700">'+liveColourName(item.itemId,item.colIdx,item.colourName,item.sku)+'</div><div style="font-size:9px;color:#9897B0;font-family:monospace">'+item.sku+"</div></div>"
+      +'<div style="text-align:center;font-size:12px;font-weight:700;color:#454460">'+item.pcs+"</div>"
+      +'<div style="text-align:center;font-size:11px;font-weight:600;color:'+(alreadySent>0?"#10B981":"#9897B0")+'">'+alreadySent+"</div>"
+      +'<input type="number" id="disp-qty-e'+idx+'-'+rid+'" step="1" min="0" max="'+capQ+'" value="'+capQ+'" '
+      +'data-ord="'+o.id+'" data-sku="'+item.sku+'" data-lot="'+blk.lotKey+'" data-cs="'+(blk.slip?blk.slip.csId:"")+'" '
+      +'data-li="'+(item.lotIndex!==undefined?item.lotIndex:"")+'" '
+      +'data-rate="'+item.rate+'" data-cut="'+item.cut+'" data-orig="'+capQ+'" '
+      +'oninput="calcDispTotal()" '
+      +'style="width:100%;text-align:center;border:2px solid #F59E0B;border-radius:7px;padding:4px 2px;font-size:13px;font-weight:800;font-family:monospace;background:#FFFBEB;color:#92400E"/>'
+      +'<div id="disp-amt-e'+idx+'-'+rid+'" style="text-align:right;font-size:11px;font-weight:700;color:#9897B0">&mdash;</div>'
+      +"</div>";
+  });
+  html+="</div>";
+});
+tableEl.innerHTML=html;const discInp=el("disp-disc");if(discInp){const _c=STATE.customers.find(c=>c.id===o.custId);discInp.value=_c?.discount!=null?_c.discount:STATE.settings.discount||0}calcDispTotal()}function skipExtraDispLot(idx,li,btn){const isSkipped=btn.dataset.skipped==="1";const lotDiv=el("disp-e"+idx+"-lot-"+li);if(!lotDiv)return;const rows=lotDiv.querySelectorAll(".disp-e"+idx+"-lot-row-"+li);if(!isSkipped){rows.forEach(row=>{const inp=row.querySelector('input[type="number"]');if(inp){inp.value=0;inp.disabled=true;inp.style.opacity="0.3"}row.style.opacity="0.35"});btn.textContent="↩ Undo Skip";btn.dataset.skipped="1";btn.style.background="rgba(255,255,255,0.6)";btn.style.color="#4338CA"}else{rows.forEach(row=>{const inp=row.querySelector('input[type="number"]');if(inp){inp.value=inp.dataset.orig||0;inp.disabled=false;inp.style.opacity=""}row.style.opacity=""});btn.textContent="✕ Skip Lot";btn.dataset.skipped="0";btn.style.background="rgba(255,255,255,0.25)";btn.style.color="white"}calcDispTotal()}function calcDispTotal(){if(!_dispOrdId)return;const o=STATE.orders.find(x=>x.id===_dispOrdId);if(!o)return;const cust=STATE.customers.find(c=>c.id===o.custId);const gstT=gstType(cust?.gstin||"");const disc=parseFloat(el("disp-disc")?.value);const discFinal=isNaN(disc)?cust?.discount!=null?cust.discount:STATE.settings.discount||0:disc;let sub=0;document.querySelectorAll('[id^="disp-qty-"]').forEach(inp=>{const qty=parseInt(inp.value)||0;const rate=parseFloat(inp.dataset.rate)||0;const cut=parseFloat(inp.dataset.cut)||6;const amt=Math.round(qty*cut*rate);const amtEl=document.getElementById(inp.id.replace("disp-qty-","disp-amt-"));if(amtEl){amtEl.textContent=amt>0?"₹"+fmtN(amt):"—"}sub+=amt});const discAmt=discFinal>0?Math.round(sub*discFinal/100):0;const afterDisc=sub-discAmt;const brokPct=parseFloat(el("disp-brok-pct")?.value)||0;const brokFlat=parseFloat(el("disp-brok-flat")?.value)||0;const brokLbl=(el("disp-brok-lbl")?.value||"").trim();const brokAdj=brokPct!==0?Math.round(afterDisc*brokPct/100):0;const brokAmt=brokAdj+Math.round(brokFlat);const netTaxable=afterDisc+brokAmt;const gA=cust?.gstin?Math.round(netTaxable*.05):0;const grand=netTaxable+gA;const extraCount=_dispExtraOrds.filter(Boolean).length;const t=el("disp-total");if(sub>0){t.style.display="block";t.innerHTML=(extraCount>0?'<div class="brow" style="color:var(--Pd);font-size:11px"><span>&#x1F4CB; Orders combined: '+(1+extraCount)+'</span><span class="mono">&mdash;</span></div>':"")+'<div class="brow"><span>Taxable Amount</span><span class="mono fw7">₹'+fmtN(sub)+"</span></div>"+(discFinal!==0?'<div class="brow cG"><span>Discount ('+discFinal+'%)</span><span class="mono cG">- ₹'+fmtN(discAmt)+"</span></div>":"")+(discAmt>0?'<div class="brow"><span>After Discount</span><span class="mono fw7">₹'+fmtN(afterDisc)+"</span></div>":"")+(brokAmt!==0&&brokLbl?'<div class="brow" style="color:'+(brokAmt<0?"#DC2626":"#059669")+'"><span>'+brokLbl+(brokPct!==0?" ("+brokPct+"%)":"")+'</span><span class="mono">'+(brokAmt<0?"− ₹"+fmtN(-brokAmt):"+  ₹"+fmtN(brokAmt))+'</span></div><div class="brow"><span>Net Taxable</span><span class="mono fw7">₹'+fmtN(netTaxable)+"</span></div>":"")+(gA>0?'<div class="brow"><span>'+(gstT==="same"?"SGST 2.5% + CGST 2.5%":"IGST 5%")+'</span><span class="mono">₹'+fmtN(gA)+"</span></div>":"")+'<div class="brow tot"><span>Grand Total</span><span class="mono fw7" style="font-size:16px">₹'+fmtN(grand)+"</span></div>"}else t.style.display="none"}function updateDispLotCut(li){const cutInp=el("disp-lot-"+li+"-cut");const newCut=parseFloat(cutInp?.value)||6;document.querySelectorAll(".disp-lot-row-"+li+" input[data-cut]").forEach(inp=>{inp.dataset.cut=String(newCut)});calcDispTotal()}async function saveDispatchBill(){const billNo=(el("disp-billno")?.value||"").trim();if(!billNo){toast("Enter bill number","er");return}if(STATE.bills.find(b=>b.billNo===billNo&&!b._deleted)){toast('Invoice number "'+billNo+'" already exists — please use a different number',"er");const bnf=el("disp-billno");if(bnf){bnf.style.border="2px solid #EF4444";bnf.focus();setTimeout(()=>{bnf.style.border=""},2500)}return}const o=STATE.orders.find(x=>x.id===_dispOrdId);if(!o)return;/* Settle the slips first. Backing out here means nothing is written at all -- no stock deducted, no bill saved. */const _csDec=await csAskSlipDispositions(csDispPlanFromModal());if(_csDec===null){toast(_hindi?"बिल सेव नहीं हुआ — दोबारा बनाइए":"Bill save nahi hua &mdash; dobara banao","warn");return}const billToCustId=el("disp-bill-to")?.value||o.custId;const cust=STATE.customers.find(c=>c.id===billToCustId)||STATE.customers.find(c=>c.id===o.custId);const gstT2=gstType(cust?.gstin||"");const dispItems=[];let sub=0;const extraOrdObjs=[];
+for(const r of _dispRowsRead()){
+  const ro=(STATE.orders||[]).filter(x=>x.id===r.ord)[0];
+  if(!ro)continue;
+  if(ro.id!==o.id&&!extraOrdObjs.some(x=>x.id===ro.id))extraOrdObjs.push(ro);
+  const item=(ro.items||[]).filter(x=>x&&x.sku===r.sku&&(r.li==null||Number(x.lotIndex)===r.li))[0];
+  if(!item)continue;
+  const qty=r.qty,rate=item.rate||0,cut=r.cut||item.cut||6;
+  const amt=Math.round(qty*cut*rate);
+  const taka=Math.floor(Math.round(qty*cut*10)/10/STATE.settings.avgMtrPerTaka);
+  const ok=await checkAdj(item.itemId,item.colIdx,taka,item.sku);
+  if(!ok)continue;
+  deductStock(item.itemId,item.colIdx,taka,"sale",ro.custName,billNo);
+  /* Har line apni parchi ka naam saath le jaati hai -- isi se bill par
+     "Is bill ki parchi" likha jaata hai, bina kisi andaze ke. */
+  dispItems.push({...item,dispQty:qty,mtrs:Math.round(qty*cut*10)/10,taka:taka,amount:amt,cut:cut,
+    srcOrdId:ro.id,srcOrdNo:ro.orderNo,csId:r.cs||undefined});
+  sub+=amt;
+}
+if(!dispItems.length){toast("Enter dispatch qty for at least one item","er");return}const _discInpVal2=parseFloat(el("disp-disc")?.value);const disc2=isNaN(_discInpVal2)?cust?.discount!=null?cust.discount:STATE.settings.discount||0:_discInpVal2;const discAmt2=Math.round(sub*disc2/100);const afterDisc2=sub-discAmt2;const _brokPct2=parseFloat(el("disp-brok-pct")?.value)||0;const _brokFlat2=parseFloat(el("disp-brok-flat")?.value)||0;const _brokLbl2=(el("disp-brok-lbl")?.value||"").trim();const _brokAdj2=_brokPct2!==0?Math.round(afterDisc2*_brokPct2/100):0;const _brokAmt2=_brokAdj2+Math.round(_brokFlat2);const _netTax2=afterDisc2+_brokAmt2;const _gstAmt2=Math.round(_netTax2*(cust?.gstin?.05:0));const allOrdIds=[_dispOrdId,...extraOrdObjs.map(e=>e.id)];const allOrdNos=[o.orderNo,...extraOrdObjs.map(e=>e.orderNo)];/* Bill par likh do ki uska maal kis parchi se gaya -- warna baad me
    sirf "hisaab se" andaza lagta hai aur wo galat parchi par chala
    jaata hai. */
-let _dispCsIds=[];try{_dispCsIds=csDispBillSlipIds(dispItems)}catch(e){_dispCsIds=[]}
+let _dispCsIds=[];
+try{
+  dispItems.forEach(function(it){
+    if(it&&it.csId&&_dispCsIds.indexOf(it.csId)<0)_dispCsIds.push(it.csId);
+  });
+  if(!_dispCsIds.length)_dispCsIds=csDispBillSlipIds(dispItems);
+}catch(e){_dispCsIds=[]}
 const bill={id:uid(),billNo:billNo,csIds:(_dispCsIds.length?_dispCsIds:undefined),ordId:_dispOrdId,ordNo:o.orderNo,ordIds:allOrdIds,ordNos:allOrdNos,date:el("disp-date")?.value,dueDate:el("disp-due")?.value,custId:o.custId,custName:o.custName,custGstin:cust?.gstin||"",brkId:o.brkId,brkName:o.brkName||"",receivedBy:el("disp-recv")?.value.trim(),receiverPhone:el("disp-recv-ph")?.value.trim(),challanNo:el("disp-challan")?.value.trim(),lrNo:el("disp-lr")?.value.trim(),items:dispItems,subtotal:sub,discountPct:disc2,discountAmt:discAmt2,afterDiscount:afterDisc2,brokeragePct:_brokPct2,brokerageFlat:_brokFlat2,brokerageLabel:_brokLbl2,brokerageAmt:_brokAmt2,netTaxable:_netTax2,gstAmt:_gstAmt2,gstType:gstT2,grandTotal:_netTax2+_gstAmt2,notes:el("disp-notes")?.value,payStatus:"unpaid",amtPaid:0,status:"active",by:STATE.user?.name||"",fy:STATE.settings.currentFY||getCurrentFY()};if(!o.bills)o.bills=[];o.bills.push(bill);STATE.bills.push(bill);const totalOrdered=(o.items||o.openItems||[]).reduce((s,i)=>s+(i.pcs||i.totalPcs||0),0);const totalDispatched=liveBills().filter(b=>((b.ordId===o.id||b.ordNo&&b.ordNo===o.orderNo||(b.ordIds&&b.ordIds.includes(o.id))))&&b.status!=="cancelled").reduce((s,b)=>s+(b.items||[]).filter(bi=>bi.srcOrdId===o.id||!bi.srcOrdId).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);o.status=totalDispatched>=totalOrdered?"fulfilled":"billed";o._ts=_bumpTs(o);extraOrdObjs.forEach(eo=>{if(!eo.bills)eo.bills=[];eo.bills.push(bill);const tot=eo.items.reduce((s,i)=>s+(i.pcs||0),0);const sent=liveBills().filter(b=>b.ordId===eo.id&&b.status!=="cancelled").reduce((s,b)=>s+(b.items||[]).filter(bi=>bi.srcOrdId===eo.id).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0)+dispItems.filter(bi=>bi.srcOrdId===eo.id).reduce((s,bi)=>s+(bi.dispQty||0),0);eo.status=sent>=tot?"fulfilled":"billed"});persist();hideMod("m-dispatch");renderOrders();renderBills();renderDash();csAfterBill([o.id].concat(extraOrdObjs.map(function(_eo){return _eo.id})),_csDec);const ordLabel=allOrdNos.length>1?allOrdNos.join(" + "):allOrdNos[0];toast("Bill "+billNo+" saved — "+dispItems.length+" items from "+ordLabel,"ok");api("saveBill",{bills:STATE.bills,entries:STATE.entries,items:STATE.items,orders:STATE.orders})}// Every order a bill is linked to, however it was linked.
 function _ordersLinkedToBill(bill){
   if(!bill)return[];
@@ -7113,7 +7289,8 @@ function csAllocOrder(order,lotKey){
   var rank={};try{rank=csBillNamedSlips(order)}catch(e){rank={}}
   /* Tarteeb: (1) jis parchi ka naam kisi bill par likha hai, usi kram me;
      (2) jo packing tak pahunch chuki hai; (3) baaki -- har group ke andar
-     purani pehle. */
+     purani pehle. Bina iske, abhi cutting me padi parchi par bill chadh
+     jaata tha aur uska "baaki maal ka kya karein?" poochha jaata tha. */
   return slips.map(function(sl,i){return{sl:sl,i:i}}).sort(function(a,b){
     var ar=rank[a.sl.csId],br=rank[b.sl.csId];
     if(ar!=null&&br!=null)return ar-br;
@@ -7425,79 +7602,42 @@ function csPlanSlipEffects(o,add){
   });
   return out;
 }
+/* Dispatch modal me jo kuchh bhara hai -- har row apne saath bata deti
+   hai ki kis order, lot, parchi aur colour ki hai. Pehle id jod kar
+   dhoondha jaata tha, isliye ek lot ki kai parchi alag nahi ho paati
+   thi. */
+function _dispRowsRead(){
+  var out=[];
+  document.querySelectorAll('input[id^="disp-qty-"]').forEach(function(inp){
+    var d=inp.dataset||{};
+    if(!d.ord||!d.sku)return;
+    var q=parseInt(inp.value)||0;
+    if(q<=0)return;
+    out.push({ord:d.ord,sku:d.sku,lot:d.lot||"",cs:d.cs||"",
+      li:(d.li===""||d.li==null)?null:Number(d.li),qty:q,
+      cut:parseFloat(d.cut)||0,rate:parseFloat(d.rate)||0});
+  });
+  return out;
+}
 // Quantities currently typed into the New Invoice dispatch modal.
 function csDispPlanFromModal(){
-  var plan=[];
-  var o=(STATE.orders||[]).filter(function(x){return x.id===_dispOrdId})[0];
-  if(o){
-    var by={},byM={},byLot={},byLotM={};
-    (o.items||[]).forEach(function(item){
-      var inp=el("disp-qty-"+(item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku));
-      if(!inp)return;
-      var q=parseInt(inp.value)||0;
-      if(q>0){
-        by[item.sku]=(by[item.sku]||0)+q;
-        var c=parseFloat(inp.dataset.cut)||Number(item.cut)||0;
-        byM[item.sku]=csRound1((byM[item.sku]||0)+q*c);
-        // the row belongs to one lot, and saying so keeps another lot of the
-        // same colour out of it
-        var lk=csDispLotKey(item);
-        if(lk){
-          if(!byLot[lk])byLot[lk]={};
-          if(!byLotM[lk])byLotM[lk]={};
-          byLot[lk][item.sku]=(byLot[lk][item.sku]||0)+q;
-          byLotM[lk][item.sku]=csRound1((byLotM[lk][item.sku]||0)+q*c);
-        }
-      }
-    });
-    // whatever a lot claimed is no longer loose
-    Object.keys(byLot).forEach(function(lk){
-      Object.keys(byLot[lk]).forEach(function(sk){
-        by[sk]=Math.max(0,(by[sk]||0)-byLot[lk][sk]);
-        byM[sk]=Math.max(0,csRound1((byM[sk]||0)-byLotM[lk][sk]));
-        if(!by[sk])delete by[sk];
-        if(!byM[sk])delete byM[sk];
-      });
-    });
-    plan.push({order:o,addBySku:by,addBySkuM:byM,addByLot:byLot,addByLotM:byLotM});
-  }
-  (_dispExtraOrds||[]).forEach(function(eid,idx){
-    if(!eid)return;
-    var eo=(STATE.orders||[]).filter(function(x){return x.id===eid})[0];
-    if(!eo)return;
-    var by={},byM={},byLot={},byLotM={};
-    (eo.items||[]).forEach(function(item){
-      var k=item.lotIndex!==undefined?item.sku+"-li"+item.lotIndex:item.sku;
-      var inp=el("disp-e"+idx+"-qty-"+k);
-      if(!inp)return;
-      var q=parseInt(inp.value)||0;
-      if(q>0){
-        by[item.sku]=(by[item.sku]||0)+q;
-        var c=parseFloat(inp.dataset.cut)||Number(item.cut)||0;
-        byM[item.sku]=csRound1((byM[item.sku]||0)+q*c);
-        /* Row kis lot ki hai ye likh do -- warna ye ginti usi colour ke
-           purane lot me chali jaati hai aur Skip kiya hua lot bhi adha
-           bill hua dikhne lagta hai. */
-        var lk=csDispLotKey(item);
-        if(lk){
-          if(!byLot[lk])byLot[lk]={};
-          if(!byLotM[lk])byLotM[lk]={};
-          byLot[lk][item.sku]=(byLot[lk][item.sku]||0)+q;
-          byLotM[lk][item.sku]=csRound1((byLotM[lk][item.sku]||0)+q*c);
-        }
-      }
-    });
-    Object.keys(byLot).forEach(function(lk){
-      Object.keys(byLot[lk]).forEach(function(sk){
-        by[sk]=Math.max(0,(by[sk]||0)-byLot[lk][sk]);
-        byM[sk]=Math.max(0,csRound1((byM[sk]||0)-byLotM[lk][sk]));
-        if(!by[sk])delete by[sk];
-        if(!byM[sk])delete byM[sk];
-      });
-    });
-    plan.push({order:eo,addBySku:by,addBySkuM:byM,addByLot:byLot,addByLotM:byLotM});
+  var byOrd={},out=[];
+  _dispRowsRead().forEach(function(r){
+    var o=(STATE.orders||[]).filter(function(x){return x.id===r.ord})[0];
+    if(!o)return;
+    var m=byOrd[r.ord];
+    if(!m){m=byOrd[r.ord]={order:o,addBySku:{},addBySkuM:{},addByLot:{},addByLotM:{}};out.push(m)}
+    if(r.lot){
+      if(!m.addByLot[r.lot])m.addByLot[r.lot]={};
+      if(!m.addByLotM[r.lot])m.addByLotM[r.lot]={};
+      m.addByLot[r.lot][r.sku]=(m.addByLot[r.lot][r.sku]||0)+r.qty;
+      m.addByLotM[r.lot][r.sku]=csRound1((m.addByLotM[r.lot][r.sku]||0)+r.qty*r.cut);
+    }else{
+      m.addBySku[r.sku]=(m.addBySku[r.sku]||0)+r.qty;
+      m.addBySkuM[r.sku]=csRound1((m.addBySkuM[r.sku]||0)+r.qty*r.cut);
+    }
   });
-  return plan;
+  return out;
 }
 // Quantities on the rows of the plain bill modal.
 function csBillPlanFromRows(){
