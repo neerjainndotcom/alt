@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.302-->
+<!DOCTYPE html><!--ALTV:1.45.303-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.302";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.303";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -179,6 +179,9 @@ function _altResetScreen(){
       +'<pre id="alt-reset-info" style="background:#1e293b;border-radius:10px;padding:13px;'
       +'font:12px/1.7 ui-monospace,monospace;white-space:pre-wrap;margin:0 0 16px">'
       +'dekh raha hoon\u2026</pre>'
+      +'<button id="alt-dump-go" onclick="_altDumpLocal(this)" style="width:100%;padding:13px;'
+      +'border:none;border-radius:11px;background:#059669;color:#fff;font-weight:800;font-size:15px;'
+      +'font-family:inherit;cursor:pointer;margin-bottom:10px">Local copy ki file nikalo</button>'
       +'<button id="alt-diag-go" onclick="_altDiagRun(this)" style="width:100%;padding:13px;'
       +'border:none;border-radius:11px;background:#2563eb;color:#fff;font-weight:800;font-size:15px;'
       +'font-family:inherit;cursor:pointer;margin-bottom:10px">Jaanch karo</button>'
@@ -226,6 +229,40 @@ function _altResetInfo(){
    Har kadam ke baad screen ko saans dete hain, isliye agar koi kadam
    jaam ho jaye to uske pehle wali saari lines screen par likhi reh
    jaati hain -- aur wahi kadam mujrim hai. Cloud ko haath nahi lagta. */
+/* Is device ke store me jo pada hai wo jaisa ka taisa ek file me utaar
+   do. App chalti nahi, data badalta nahi -- sirf nakal. Ye file dekh kar
+   hi pata chalega ki kaun sa record app ko phansa raha hai. */
+async function _altDumpLocal(btn){
+  if(btn){btn.disabled=true;btn.textContent="file bana raha hoon\u2026"}
+  var out={_what:"ALT local store dump",_at:new Date().toISOString(),
+    _version:APP_VERSION,idb:{},ls:{}};
+  try{await _idbLoadAll()}catch(e){}
+  try{Object.keys(_idbCache||{}).forEach(function(k){out.idb[k]=_idbCache[k]})}catch(e){}
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      var v=localStorage.getItem(k);
+      /* session me user ka password-vagairah ho sakta hai -- wo nahi lenge */
+      if(k==="vs_session"){out.ls[k]="(nahi liya)";continue}
+      out.ls[k]=v;
+    }
+  }catch(e){}
+  var name="ALT-local-"+new Date().toISOString().slice(0,10)+".json";
+  try{
+    var blob=new Blob([JSON.stringify(out)],{type:"application/json"});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");a.href=url;a.download=name;a.click();
+    setTimeout(function(){URL.revokeObjectURL(url)},4000);
+  }catch(e){
+    var p=document.getElementById("alt-reset-info");
+    if(p)p.textContent="File nahi ban payi: "+((e&&e.message)||e);
+  }
+  var p2=document.getElementById("alt-reset-info");
+  if(p2)p2.textContent="File ban gayi: "+name+"\n"
+    +Object.keys(out.idb).length+" list + "+Object.keys(out.ls).length+" chhoti cheezein.\n"
+    +"Downloads me milegi. Data ko haath nahi lagaya.";
+  if(btn){btn.disabled=false;btn.textContent="Local copy ki file nikalo"}
+}
 async function _altDiagRun(btn){
   if(btn){btn.disabled=true;btn.textContent="jaanch chal rahi hai\u2026"}
   var L=["JAANCH \u2014 app ka boot, kadam kadam","(jahan ruk jaye, wahi jagah kharab hai)",""];
@@ -313,6 +350,21 @@ async function _altDiagRun(btn){
       ["starTabLabel()",function(){starTabLabel()}],
       ["renderPriceListDayAlert()",function(){renderPriceListDayAlert()}],
       ["renderPriceListSalesmanAlert()",function(){renderPriceListSalesmanAlert()}],
+      /* renderDash ke aakhri kaam, jo abhi tak alag nahi chale the */
+      ["dash: stats khana",function(){
+        var a=STATE.items.filter(function(i){return!i._deleted});
+        var b=liveBills();
+        return "item "+a.length+", live bill "+b.length;
+      }],
+      ["dash: khane ka kram",function(){
+        var c=getDashConfig();
+        return "kram "+((c.order||[]).length)+", chhipe "+((c.hidden||[]).length);
+      }],
+      ["autoCleanLeads()",function(){autoCleanLeads()}],
+      ["generateTodayRecurringTasks()",function(){generateTodayRecurringTasks()}],
+      ["renderDash() poora",function(){renderDash()}],
+      ["renderExchangeList()",function(){renderExchangeList()}],
+      ["pullLatestAndRefresh()",function(){pullLatestAndRefresh()}],
       ["poora setNav(dash)",function(){setNav("dash")}],
       ["applySalesTabVisibility()",function(){applySalesTabVisibility()}],
       ["renderSettingsForm()",function(){renderSettingsForm()}],
