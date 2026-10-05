@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.300-->
+<!DOCTYPE html><!--ALTV:1.45.302-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.300";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.302";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -291,7 +291,29 @@ async function _altDiagRun(btn){
       ["_starSheetReset()",function(){_starSheetReset()}],
       ["actWatchAll()",function(){actWatchAll()}],
       ["recalcStockFromEntries()",function(){recalcStockFromEntries()}],
-      ["setNav(dash)",function(){setNav("dash")}],
+      /* setNav("dash") = renderDash(). Dashboard ke har khane ko alag
+         chalao -- jahan rukega, wahi khana mujrim hai. */
+      ["applyRoleUI()",function(){applyRoleUI()}],
+      ["renderShortcuts()",function(){renderShortcuts()}],
+      ["dash: alerts",function(){renderDashAlerts()}],
+      ["dash: tasks",function(){renderDashTaskWidget()}],
+      ["dash: leads pipeline",function(){renderDashLeadsPipeline()}],
+      ["dash: day wrap",function(){renderDashDayWrapWidget()}],
+      ["dash: followups",function(){renderFollowupAlert()}],
+      ["dash: recurring visits",function(){renderDashRecurringVisits()}],
+      ["dash: stock",function(){renderStock()}],
+      ["dash: mixed sarees",function(){renderMixedSareesWidget()}],
+      ["dash: exchanges",function(){renderDashExchangeWidget()}],
+      ["dash: recent act",function(){renderRecentAct()}],
+      ["dash: star",function(){renderStarDashWidget()}],
+      ["dash: floor status",function(){renderFloorStatusWidget()}],
+      ["dash: price list",function(){renderPriceListWidget()}],
+      ["renderDashHolidayPrompt()",function(){renderDashHolidayPrompt()}],
+      ["_renderStarBar()",function(){_renderStarBar()}],
+      ["starTabLabel()",function(){starTabLabel()}],
+      ["renderPriceListDayAlert()",function(){renderPriceListDayAlert()}],
+      ["renderPriceListSalesmanAlert()",function(){renderPriceListSalesmanAlert()}],
+      ["poora setNav(dash)",function(){setNav("dash")}],
       ["applySalesTabVisibility()",function(){applySalesTabVisibility()}],
       ["renderSettingsForm()",function(){renderSettingsForm()}],
       ["renderDBSetup()",function(){renderDBSetup()}],
@@ -6728,7 +6750,17 @@ if(ctrCloudTs>(pullMap.counters||0)){
   const cr=await fetch(FIREBASE_URL+"/altstock/counters.json").catch(()=>null);
   if(cr&&cr.ok){const cd=await cr.json();if(_ctrApply(cd))anyUpdated=true;pullMap.counters=ctrCloudTs}
 }
-const settingsCloudTs=meta.settings&&meta.settings.ts||0;if(settingsCloudTs>(pullMap.settings||0)){const sr=await fetch(FIREBASE_URL+"/altstock/settings.json");if(sr.ok){const sd=await sr.json();if(sd){const cloudFrt=sd.forceReloadToken||"";const myFrt=lsGet("vs_frt")||"";if(cloudFrt&&cloudFrt!==myFrt){lsSave("vs_frt",cloudFrt);const _t=el("tst");if(_t){_t.textContent="🔄 Admin cleared data — reloading in 3s...";_t.className="on er"}setTimeout(()=>window.location.reload(),3e3);return true}try{_checkAppVersion(sd.appVersion)}catch(e){}const mergedPerUser={...STATE.settings.dashConfigPerUser||{},...sd.dashConfigPerUser||{}};const _localCtr={nextInwardNo:STATE.settings.nextInwardNo||1,nextExchNo:STATE.settings.nextExchNo||1,nextCsNo:STATE.settings.nextCsNo||1};
+const settingsCloudTs=meta.settings&&meta.settings.ts||0;if(settingsCloudTs>(pullMap.settings||0)){const sr=await fetch(FIREBASE_URL+"/altstock/settings.json");if(sr.ok){const sd=await sr.json();if(sd){const cloudFrt=sd.forceReloadToken||"";const myFrt=lsGet("vs_frt")||"";
+if(cloudFrt&&cloudFrt!==myFrt){lsSave("vs_frt",cloudFrt);
+  /* Ek token par ek hi baar page dobara kholo. sessionStorage page
+     dobara khulne par bhi bacha rehta hai, isliye wahi token doosri
+     baar kabhi reload nahi karwayega -- warna ye hamesha ka chakkar
+     ban jaata hai aur app us patti par hi atak jaati hai. */
+  var _frtDone="";try{_frtDone=sessionStorage.getItem("vs_frt_done")||""}catch(e){}
+  if(_frtDone===cloudFrt){try{toast("Cloud ka data aa gaya","ok")}catch(e){}return true}
+  try{sessionStorage.setItem("vs_frt_done",cloudFrt)}catch(e){}
+  const _t=el("tst");if(_t){_t.textContent="🔄 Admin cleared data — reloading in 3s...";
+  _t.className="on er"}setTimeout(()=>window.location.reload(),3e3);return true}try{_checkAppVersion(sd.appVersion)}catch(e){}const mergedPerUser={...STATE.settings.dashConfigPerUser||{},...sd.dashConfigPerUser||{}};const _localCtr={nextInwardNo:STATE.settings.nextInwardNo||1,nextExchNo:STATE.settings.nextExchNo||1,nextCsNo:STATE.settings.nextCsNo||1};
 const _localSet={...(STATE.settings.ctrSet||{})};
 STATE.settings={...STATE.settings,...sd};
 // Settings ka poora blob bhi ginti le kar aata hai. Yahan bhi wahi niyam:
