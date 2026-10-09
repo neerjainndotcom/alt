@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.335-->
+<!DOCTYPE html><!--ALTV:1.45.336-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.335";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.336";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -2826,12 +2826,33 @@ function onProgLotRangeChange(id){const itemId=el("pl-"+id+"-itm")?.value;if(!it
 // One bill's untagged pieces, into the lots of that colour that already
 // existed when it was made, oldest lot first. Nothing reaches a lot added
 // after the bill's date.
+/* Bill par likhi parchi se uske lot ke programme nikaalo. Bill ki jis
+   line par programme ki id nahi chadhi, uska ghar yahi hai -- warna wo
+   usi colour ke pehle lot par chipak jaati hai, jo B/789 me hua: LOT 6
+   ka 240 ka bill LOT 3 par chadh gaya. */
+function _billPinProgs(o,b){
+  if(!o||!b||!Array.isArray(b.csIds)||!b.csIds.length)return null;
+  var keys={},got=false;
+  b.csIds.forEach(function(id){
+    var r=null;try{r=csFindSlip(id)}catch(e){r=null}
+    if(!r||!r.lot||!r.order||r.order.id!==o.id)return;
+    keys[r.lot.key]=1;got=true;
+  });
+  if(!got)return null;
+  var pin={},n=0;
+  var lots=[];try{lots=csOrderLots(o)}catch(e){lots=[]}
+  lots.forEach(function(L){
+    if(!keys[L.key])return;
+    (L.items||[]).forEach(function(it){if(it&&it._progId){pin[it._progId]=1;n++}});
+  });
+  return n?pin:null;
+}
 function legacySpread(legacy,bySku,out,wantOf){
   legacy.sort(function(a,b){return String(a.date).localeCompare(String(b.date))});
   legacy.forEach(function(e){
     var rem=e.pcs;
     if(rem<=0)return;
-    (bySku[e.sku]||[]).filter(function(p){
+    var _cand=(bySku[e.sku]||[]).filter(function(p){
       // No date on either side means we cannot say the lot came later, so it
       // stays in. A lot written up within a week either side of the bill is the
       // same batch -- a bill is often entered a day or two before the lot is
@@ -2841,7 +2862,14 @@ function legacySpread(legacy,bySku,out,wantOf){
       if(String(p.date)<=e.date)return true;
       var d=(new Date(String(p.date)+"T00:00:00")-new Date(String(e.date)+"T00:00:00"))/864e5;
       return d===d&&d<=7;
-    }).sort(function(a,b){return(a.lotNum||0)-(b.lotNum||0)}).forEach(function(p){
+    }).sort(function(a,b){return(a.lotNum||0)-(b.lotNum||0)});
+    /* Bill par parchi likhi hai to pehle usi ke lot me daalo. Jagah na
+       bache tabhi baaki lot ki baari aaye -- taaki kuchh gum na ho. */
+    if(e.pin){
+      var _in=_cand.filter(function(p){return e.pin[p.id]});
+      if(_in.length)_cand=_in.concat(_cand.filter(function(p){return!e.pin[p.id]}));
+    }
+    _cand.forEach(function(p){
       if(rem<=0)return;
       var need=Math.max(0,wantOf(p)-(out[p.id]||0)),c=Math.min(rem,need);
       out[p.id]=(out[p.id]||0)+c;rem-=c;
@@ -2851,7 +2879,11 @@ function legacySpread(legacy,bySku,out,wantOf){
 function progBilledMtrsMap(o){
   var out={};
   if(!o||o.type!=="open")return out;
-  var progs=o.programmes||[],legacy=[],bySku={};
+  var progs=o.programmes||[],legacy=[],bySku={},_pc2={};
+  var _pinOf=function(b){
+    if(_pc2[b.id]===undefined)_pc2[b.id]=_billPinProgs(o,b);
+    return _pc2[b.id];
+  };
   progs.forEach(function(p){out[p.id]=0;if(!bySku[p.sku])bySku[p.sku]=[];bySku[p.sku].push(p)});
   liveBills().filter(function(b){return b.ordId===o.id&&b.status!=="cancelled"})
     .forEach(function(b){(b.items||[]).forEach(function(it){
@@ -2861,7 +2893,7 @@ function progBilledMtrsMap(o){
       if(!_pc){var _ps=(bySku[it.sku]||[])[0];_pc=Number(_ps&&_ps.cut)||0}
       var m=it.mtrs!=null?(Number(it.mtrs)||0):csRound1(pcs*_pc);
       if(it._progId){if(out[it._progId]!=null)out[it._progId]=csRound1(out[it._progId]+m);return}
-      legacy.push({sku:it.sku,pcs:m,date:String(b.date||"")});
+      legacy.push({sku:it.sku,pcs:m,date:String(b.date||""),pin:_pinOf(b)});
     })});
   legacySpread(legacy,bySku,out,function(p){return csRound1((p.pcs||0)*(Number(p.cut)||0))});
   Object.keys(out).forEach(function(k){out[k]=csRound1(out[k])});
@@ -2870,13 +2902,17 @@ function progBilledMtrsMap(o){
 function progBilledMap(o){
   var out={};
   if(!o||o.type!=="open")return out;
-  var progs=o.programmes||[],legacy=[],bySku={};
+  var progs=o.programmes||[],legacy=[],bySku={},_pc1={};
+  var _pinOf=function(b){
+    if(_pc1[b.id]===undefined)_pc1[b.id]=_billPinProgs(o,b);
+    return _pc1[b.id];
+  };
   progs.forEach(function(p){out[p.id]=0;if(!bySku[p.sku])bySku[p.sku]=[];bySku[p.sku].push(p)});
   liveBills().filter(function(b){return b.ordId===o.id&&b.status!=="cancelled"})
     .forEach(function(b){(b.items||[]).forEach(function(it){
       var pcs=Number(it.dispQty||it.pcs)||0;
       if(it._progId){if(out[it._progId]!=null)out[it._progId]+=pcs;return}
-      legacy.push({sku:it.sku,pcs:pcs,date:String(b.date||"")});
+      legacy.push({sku:it.sku,pcs:pcs,date:String(b.date||""),pin:_pinOf(b)});
     })});
   legacySpread(legacy,bySku,out,function(p){return p.pcs||0});
   return out;
@@ -3277,7 +3313,7 @@ function calcBillLotTotal(){try{csBillParchiRender()}catch(e){}const cust=STATE.
   }
   _csDec2=await csAskSlipDispositions(csBillPlanFromRows());if(_csDec2===null){_savingBill=false;toast(_hindi?"बिल सेव नहीं हुआ — दोबारा बनाइए":"Bill save nahi hua &mdash; dobara banao","warn");return}}if(!bno){_savingBill=false;toast("Enter invoice number","er");return}
 if(STATE.bills.find(b=>b.billNo===bno&&b.id!==_editBillId&&!b._deleted)){_savingBill=false;toast('Invoice number "'+bno+'" already exists — please use a different number',"er");const _bnf=el("bl-bno");if(_bnf){_bnf.style.border="2px solid #EF4444";_bnf.focus();setTimeout(()=>{_bnf.style.border=""},2500)}return}
-if(editingBill){editingBill.items.forEach(item=>{if(item.isMixSaree){const b=(STATE.mixedSarees||[]).find(x=>x.id===item.mixBatchId);if(b){b.sareesSold=Math.max(0,(b.sareesSold||0)-(item.pcs||0));stamp(b)}}else{let revColIdx=item.colIdx;if(item.sku){const _rci=STATE.items.find(x=>x.id===item.itemId)?.colours.findIndex(c=>c.sku===item.sku);if(_rci>=0)revColIdx=_rci}addStock(item.itemId,revColIdx,item.taka,"adjustment","Bill Edit - Return",editingBill.billNo,"Editing bill "+editingBill.billNo)}})}if(!bno){_savingBill=false;toast("Enter invoice number","er");return}if(STATE.bills.find(b=>b.billNo===bno&&b.id!==_editBillId&&!b._deleted)){_savingBill=false;toast('Invoice number "'+bno+'" already exists — please use a different number',"er");const bnf=el("bl-bno");if(bnf){bnf.style.border="2px solid #EF4444";bnf.focus();setTimeout(()=>{bnf.style.border=""},2500)}return}if(!_billOrdId||_billLots.length>0){for(const lot of _billLots){const iid=el("bl-lot-"+lot.id+"-i")?.value;const item=STATE.items.find(x=>x.id===iid);if(!item)continue;const rng=el("bl-lot-"+lot.id+"-r")?.value;if(rng!=="__norange__"&&!rng)continue;const actualRng=rng==="__norange__"?"":rng;for(const col of item.colours.filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted)){const idx=item.colours.indexOf(col);const chk=el("bl-lot-"+lot.id+"-ck-"+idx);if(!chk?.checked)continue;const p=parseInt(el("bl-lot-"+lot.id+"-p-"+idx)?.value)||0;const r=parseFloat(el("bl-lot-"+lot.id+"-r-"+idx)?.value)||0;const _bcf=el("bl-lot-"+lot.id+"-cut");const _bBox=parseFloat(_bcf?.value)||6;const _bTouched=!_bcf||!_bcf.dataset.origCut||String(_bcf.value)!==_bcf.dataset.origCut;const cut=_bTouched?_bBox:(Number(((window._billCutMap||{})[lot.id]||{})[col.sku])||_bBox);if(!p)continue;const mtrs=Math.round(p*cut*10)/10;const taka=Math.round(p*cut/STATE.settings.avgMtrPerTaka);const ok=await checkAdj(iid,idx,taka);if(!ok)continue;deductStock(iid,idx,taka,"sale",cust.name,bno);items.push({itemId:iid,colIdx:idx,sku:col.sku,itemName:item.name,colourName:col.name,pcs:p,cut:cut,rate:r,amount:Math.round(p*cut*r),mtrs:mtrs,taka:taka,range:col.range,_lotIdx:_billLots.indexOf(lot),lotUid:(_billLotUid[lot.id]||""),_progId:(_progLotMap[lot.id]||{})[idx]||null})}}}else{for(let i=0;i<_billRows.length;i++){const row=_billRows[i];let iid,cIdx,sku,iName,cName;if(row.itemId){iid=row.itemId;cIdx=row.colIdx;sku=row.sku;iName=row.itemName;cName=row.colourName}else{const sel=getSel("bl"+i);if(!sel)continue;iid=sel.itemId;cIdx=sel.colIdx;sku=sel.col.sku;iName=sel.item.name;cName=sel.col.name}const p=parseInt(el("bl"+i+"-p")?.value)||0,r=parseFloat(el("bl"+i+"-r")?.value)||0;if(!p)continue;const cut=row.cut||6;const taka=Math.round(p*cut/STATE.settings.avgMtrPerTaka);const ok=await checkAdj(iid,cIdx,taka);if(!ok)continue;deductStock(iid,cIdx,taka,"sale",cust.name,bno);items.push({itemId:iid,colIdx:cIdx,sku:sku,itemName:iName,colourName:cName,pcs:p,cut:cut,rate:r,amount:p*r,mtrs:Math.round(p*cut),taka:taka,_progId:row._progId||null})}}const mixSareItemsToRecord=[];for(const lot of _mixSareLots){const batchId=el("bl-mix-lot-"+lot.id+"-batch")?.value;const pcs=parseInt(el("bl-mix-lot-"+lot.id+"-pcs")?.value)||0;const rate=parseFloat(el("bl-mix-lot-"+lot.id+"-rate")?.value)||0;if(!batchId||!pcs){continue}const batch=(STATE.mixedSarees||[]).find(b=>b.id===batchId);if(!batch){toast("Invalid mixed sarees batch","er");_savingBill=false;return}const avail=(batch.totalSarees||0)-(batch.sareesSold||0);if(pcs>avail){toast("Only "+avail+" pcs available in "+batch.ref,"er");_savingBill=false;return}const src=(batch.sourceItems||[]).map(r=>r.colourName).join(", ");items.push({isMixSaree:true,mixBatchId:batchId,mixBatchRef:batch.ref,itemName:"Mixed Sarees",colourName:src,pcs:pcs,rate:rate,amount:pcs*rate,mtrs:0,taka:0,sku:batch.ref});mixSareItemsToRecord.push({batchId:batchId,pcs:pcs})}if(!items.length){
+if(editingBill){editingBill.items.forEach(item=>{if(item.isMixSaree){const b=(STATE.mixedSarees||[]).find(x=>x.id===item.mixBatchId);if(b){b.sareesSold=Math.max(0,(b.sareesSold||0)-(item.pcs||0));stamp(b)}}else{let revColIdx=item.colIdx;if(item.sku){const _rci=STATE.items.find(x=>x.id===item.itemId)?.colours.findIndex(c=>c.sku===item.sku);if(_rci>=0)revColIdx=_rci}addStock(item.itemId,revColIdx,item.taka,"adjustment","Bill Edit - Return",editingBill.billNo,"Editing bill "+editingBill.billNo)}})}if(!bno){_savingBill=false;toast("Enter invoice number","er");return}if(STATE.bills.find(b=>b.billNo===bno&&b.id!==_editBillId&&!b._deleted)){_savingBill=false;toast('Invoice number "'+bno+'" already exists — please use a different number',"er");const bnf=el("bl-bno");if(bnf){bnf.style.border="2px solid #EF4444";bnf.focus();setTimeout(()=>{bnf.style.border=""},2500)}return}if(!_billOrdId||_billLots.length>0){for(const lot of _billLots){const iid=el("bl-lot-"+lot.id+"-i")?.value;const item=STATE.items.find(x=>x.id===iid);if(!item)continue;const rng=el("bl-lot-"+lot.id+"-r")?.value;if(rng!=="__norange__"&&!rng)continue;const actualRng=rng==="__norange__"?"":rng;for(const col of item.colours.filter(c=>c.range===actualRng&&!c.discontinued&&!c._deleted)){const idx=item.colours.indexOf(col);const chk=el("bl-lot-"+lot.id+"-ck-"+idx);if(!chk?.checked)continue;const p=parseInt(el("bl-lot-"+lot.id+"-p-"+idx)?.value)||0;const r=parseFloat(el("bl-lot-"+lot.id+"-r-"+idx)?.value)||0;const _bcf=el("bl-lot-"+lot.id+"-cut");const _bBox=parseFloat(_bcf?.value)||6;const _bTouched=!_bcf||!_bcf.dataset.origCut||String(_bcf.value)!==_bcf.dataset.origCut;const cut=_bTouched?_bBox:(Number(((window._billCutMap||{})[lot.id]||{})[col.sku])||_bBox);if(!p)continue;const mtrs=Math.round(p*cut*10)/10;const taka=Math.round(p*cut/STATE.settings.avgMtrPerTaka);const ok=await checkAdj(iid,idx,taka);if(!ok)continue;deductStock(iid,idx,taka,"sale",cust.name,bno);items.push({itemId:iid,colIdx:idx,sku:col.sku,itemName:item.name,colourName:col.name,pcs:p,cut:cut,rate:r,amount:Math.round(p*cut*r),mtrs:mtrs,taka:taka,range:col.range,_lotIdx:_billLots.indexOf(lot),lotUid:(_billLotUid[lot.id]||""),_progId:(_progLotMap[lot.id]||{})[idx]||_billProgForSku(col.sku)||null})}}}else{for(let i=0;i<_billRows.length;i++){const row=_billRows[i];let iid,cIdx,sku,iName,cName;if(row.itemId){iid=row.itemId;cIdx=row.colIdx;sku=row.sku;iName=row.itemName;cName=row.colourName}else{const sel=getSel("bl"+i);if(!sel)continue;iid=sel.itemId;cIdx=sel.colIdx;sku=sel.col.sku;iName=sel.item.name;cName=sel.col.name}const p=parseInt(el("bl"+i+"-p")?.value)||0,r=parseFloat(el("bl"+i+"-r")?.value)||0;if(!p)continue;const cut=row.cut||6;const taka=Math.round(p*cut/STATE.settings.avgMtrPerTaka);const ok=await checkAdj(iid,cIdx,taka);if(!ok)continue;deductStock(iid,cIdx,taka,"sale",cust.name,bno);items.push({itemId:iid,colIdx:cIdx,sku:sku,itemName:iName,colourName:cName,pcs:p,cut:cut,rate:r,amount:p*r,mtrs:Math.round(p*cut),taka:taka,_progId:row._progId||null})}}const mixSareItemsToRecord=[];for(const lot of _mixSareLots){const batchId=el("bl-mix-lot-"+lot.id+"-batch")?.value;const pcs=parseInt(el("bl-mix-lot-"+lot.id+"-pcs")?.value)||0;const rate=parseFloat(el("bl-mix-lot-"+lot.id+"-rate")?.value)||0;if(!batchId||!pcs){continue}const batch=(STATE.mixedSarees||[]).find(b=>b.id===batchId);if(!batch){toast("Invalid mixed sarees batch","er");_savingBill=false;return}const avail=(batch.totalSarees||0)-(batch.sareesSold||0);if(pcs>avail){toast("Only "+avail+" pcs available in "+batch.ref,"er");_savingBill=false;return}const src=(batch.sourceItems||[]).map(r=>r.colourName).join(", ");items.push({isMixSaree:true,mixBatchId:batchId,mixBatchRef:batch.ref,itemName:"Mixed Sarees",colourName:src,pcs:pcs,rate:rate,amount:pcs*rate,mtrs:0,taka:0,sku:batch.ref});mixSareItemsToRecord.push({batchId:batchId,pcs:pcs})}if(!items.length){
   if(editingBill){editingBill.items.forEach(item=>{
     if(item.isMixSaree){const _mb=(STATE.mixedSarees||[]).find(x=>x.id===item.mixBatchId);if(_mb){_mb.sareesSold=(_mb.sareesSold||0)+(item.pcs||0);stamp(_mb)}}
     else{let _rc=item.colIdx;if(item.sku){const _r=STATE.items.find(x=>x.id===item.itemId)?.colours.findIndex(c=>c.sku===item.sku);if(_r>=0)_rc=_r}
@@ -9135,6 +9171,31 @@ function _csBillLotRows(){
   });
   return out;
 }
+/* Form ne line par programme ki id nahi chadhai (lot haath se joda
+   gaya, ya prefill chal hi nahi paya) -- par parchi chuni hui hai. Tab
+   us parchi ke lot ka wahi colour dhoondh lo. Bina iske line bin-ghar
+   reh jaati hai aur baad me galat lot par chipakti hai. */
+function _billProgForSku(sku){
+  try{
+    var ids=window._billCsIds||[];
+    if(!ids.length||!sku)return null;
+    var o=(STATE.orders||[]).filter(function(x){return x.id===_billOrdId})[0];
+    if(!o||o.type!=="open")return null;
+    var keys={};
+    ids.forEach(function(id){
+      var r=null;try{r=csFindSlip(id)}catch(e){r=null}
+      if(r&&r.lot&&r.order&&r.order.id===o.id)keys[r.lot.key]=1;
+    });
+    var hit=null;
+    csOrderLots(o).forEach(function(L){
+      if(hit||!keys[L.key])return;
+      (L.items||[]).forEach(function(it){
+        if(!hit&&it&&it.sku===sku&&it._progId)hit=it._progId;
+      });
+    });
+    return hit;
+  }catch(e){return null}
+}
 function csBillPlanFromRows(){
   var o=_billOrdId?(STATE.orders||[]).filter(function(x){return x.id===_billOrdId})[0]:null;
   if(!o)return[];
@@ -9198,10 +9259,46 @@ function csAskLeftovers(csIds){
   }};
   csRenderAskSheet();
 }
+/* Is bill ka maal kin lot me se ja raha hai. Jo lot is bill me hai hi
+   nahi, uski parchi ka hisaab poochhna galat hai -- B/789 me yahi hua:
+   LOT 4 ki parchi ka bill ban raha tha aur sheet LOT 3 ki parchi
+   (CS/3535) ka jawab maang rahi thi. null matlab pata nahi chala; tab
+   pehle jaisa sab dikhao. */
+function _csTouchedLots(o,add){
+  var keys={},any=false,lots=[];
+  try{lots=csOrderLots(o)}catch(e){lots=[]}
+  var byLot=add.byLot||{};
+  Object.keys(byLot).forEach(function(k){
+    var t=0;Object.keys(byLot[k]||{}).forEach(function(sk){t+=Number(byLot[k][sk])||0});
+    if(t>0){keys[k]=1;any=true}
+  });
+  var pr={};Object.keys(add.byProg||{}).forEach(function(id){
+    if((Number(add.byProg[id])||0)>0)pr[id]=1;
+  });
+  var sk={};Object.keys(add.bySku||{}).forEach(function(k){
+    if((Number(add.bySku[k])||0)>0)sk[k]=1;
+  });
+  if(Object.keys(pr).length||Object.keys(sk).length){
+    lots.forEach(function(L){
+      (L.items||[]).forEach(function(it){
+        if(!it)return;
+        if(it._progId&&pr[it._progId]){keys[L.key]=1;any=true}
+        if(sk[it.sku]){keys[L.key]=1;any=true}
+      });
+    });
+  }
+  return any?keys:null;
+}
 function csAskSlipDispositions(plan){
   var list=[];
   (plan||[]).forEach(function(p){
-    csPlanSlipEffects(p.order,{bySku:p.addBySku||{},byProg:p.byProg||{},bySkuM:p.addBySkuM,byProgM:p.byProgM,byLot:p.addByLot,byLotM:p.addByLotM}).forEach(function(x){if(!x.full)list.push(x)});
+    var add={bySku:p.addBySku||{},byProg:p.byProg||{},bySkuM:p.addBySkuM,byProgM:p.byProgM,byLot:p.addByLot,byLotM:p.addByLotM};
+    var touch=_csTouchedLots(p.order,add);
+    csPlanSlipEffects(p.order,add).forEach(function(x){
+      if(x.full)return;
+      if(touch&&x.lot&&!touch[x.lot.key])return;
+      list.push(x);
+    });
   });
   if(!list.length)return Promise.resolve({});
   return new Promise(function(resolve){
