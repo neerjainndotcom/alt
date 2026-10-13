@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.363-->
+<!DOCTYPE html><!--ALTV:1.45.366-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.363";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.366";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -2638,84 +2638,89 @@ function smDaysLeft(mk){
 /* Ek salesman ki patti. big=apni patti (bada), chhota=admin ki list. */
 /* Ek salesman ki patti. big = apni (dashboard par bada), warna admin
    ki list ka chhota card. */
+/* Target card. Do patti -- upar ORDER AAYA (jo salesman khud laata
+   hai), neeche MAAL GAYA (jisse target poora hota hai). Pehle sirf
+   "maal gaya" ki patti thi aur order uspar ek patla nishan bhar tha. */
 function smBarHtml(r,big){
+  var tgt=Number(r.target)||0;
+  var po=tgt>0?Math.max(0,Math.min(100,Math.round(r.order/tgt*100))):0;
   var pb=Math.max(0,Math.min(100,r.pct));
-  var po=r.target>0?Math.max(0,Math.min(100,Math.round(r.order/r.target*100))):0;
+  var oLeft=Math.max(0,tgt-(Number(r.order)||0));
   var c1=r.hit?"#10B981":(pb>=70?"#3B82F6":(pb>=40?"#F59E0B":"#EF4444"));
   var c2=r.hit?"#047857":(pb>=70?"#1D4ED8":(pb>=40?"#B45309":"#B91C1C"));
-  var BH=big?26:18;
+  var o1=oLeft<=0?"#10B981":"#6366F1",o2=oLeft<=0?"#047857":"#3730A3";
+  var BH=big?22:17;
   var h="";
-  /* Naam, aur mahine ka nishan */
-  h+='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:'+(big?"9":"7")+'px">'
-    +'<div style="font-size:'+(big?"15":"13")+'px;font-weight:900;letter-spacing:-.2px">'+escHtml(r.name)+'</div>'
-    +(r.hit?'<span style="background:#D1FAE5;color:#047857;font-size:'+(big?"10.5":"9.5")
+  /* Naam, aur saamne poora target */
+  h+='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:'+(big?"11":"9")+'px">'
+    +'<div><div style="font-size:'+(big?"15":"13")+'px;font-weight:900;letter-spacing:-.2px">'+escHtml(r.name)+'</div>'
+    +(r.hit?'<span style="display:inline-block;margin-top:4px;background:#D1FAE5;color:#047857;font-size:'+(big?"10.5":"9.5")
       +'px;font-weight:900;padding:2px 9px;border-radius:99px;white-space:nowrap">\uD83C\uDF89 TARGET POORA</span>':"")
-    +'</div>';
-  /* Bada number -- jitna maal gaya -- aur saamne target */
-  h+='<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px">'
-    +'<div><div style="font-size:'+(big?"30":"21")+'px;font-weight:900;line-height:1;color:'+c2+';letter-spacing:-.8px">'
-    +_wiRs(r.bill)+'</div>'
-    +'<div style="font-size:'+(big?"10.5":"9.5")+'px;font-weight:800;color:var(--t3);'
-    +'text-transform:uppercase;letter-spacing:.5px;margin-top:3px">maal gaya</div></div>'
-    +'<div style="text-align:right"><div style="font-size:'+(big?"16":"13")+'px;font-weight:900;color:var(--t2);line-height:1">'
-    +_wiRs(r.target)+'</div>'
-    +'<div style="font-size:'+(big?"10.5":"9.5")+'px;font-weight:800;color:var(--t3);'
-    +'text-transform:uppercase;letter-spacing:.5px;margin-top:3px">ka target</div></div></div>';
-  /* Moti patti */
-  h+='<div style="position:relative;height:'+BH+'px;background:var(--bg);border-radius:99px;'
-    +'overflow:hidden;margin:'+(big?"11":"9")+'px 0 0;box-shadow:inset 0 1px 2px rgba(0,0,0,.07)">'
-    +'<div style="position:absolute;left:0;top:0;bottom:0;width:'+Math.max(pb,pb>0?3:0)+'%;'
-    +'background:linear-gradient(90deg,'+c1+','+c2+');border-radius:99px"></div>'
-    +(po>0?('<div style="position:absolute;top:0;bottom:0;left:'+Math.min(99,po)
-      +'%;width:3px;background:#1E3A8A;opacity:.65"></div>'):"")
-    +'<div style="position:absolute;inset:0;display:flex;align-items:center;'
-    +'padding:0 '+(big?"11":"9")+'px;font-size:'+(big?"12":"10.5")+'px;font-weight:900;'
-    +'color:'+(pb>=18?"#fff":"var(--t2)")+';justify-content:'+(pb>=18?"flex-start":"flex-end")+'">'
-    +r.pct+'%</div></div>';
-  /* Patti ke neeche: order ka nishan kahan hai */
-  if(po>0){
-    h+='<div style="position:relative;height:'+(big?"14":"12")+'px">'
-      +'<div style="position:absolute;left:'+Math.min(92,po)+'%;transform:translateX(-50%);'
-      +'font-size:'+(big?"9.5":"9")+'px;font-weight:800;color:#1E3A8A;white-space:nowrap">'
-      +'\u25B2 order '+po+'%</div></div>';
-  }
-  /* Kaam ki line -- kitna baaki, kitne din, roz kitna */
-  if(!r.hit){
-    h+='<div style="margin-top:'+(po>0?"2":"8")+'px;font-size:'+(big?"12.5":"11")+'px;'
-      +'font-weight:800;color:var(--t2);line-height:1.5">'
-      +'<span style="color:'+c2+'">'+_wiRs(r.left)+' baaki</span>'
-      +(r.days>0?('<span style="color:var(--t3)"> \u00b7 '+r.days+' din \u00b7 roz '
-        +_wiRs(Math.ceil(r.left/r.days))+'</span>'):"")+'</div>';
-  }
-  /* Do chhote khaane: order aur cancel */
-  var chip=function(lbl,val,bg,fg,sub,btn){
-    return'<div style="flex:1;min-width:0;background:'+bg+';border-radius:10px;padding:'
-      +(big?"8px 11px":"7px 9px")+'">'
-      +'<div style="font-size:'+(big?"9.5":"9")+'px;font-weight:900;color:'+fg+';opacity:.75;'
-      +'text-transform:uppercase;letter-spacing:.4px">'+lbl+'</div>'
-      +(btn||('<div style="font-size:'+(big?"14":"12")+'px;font-weight:900;color:'+fg+';margin-top:1px">'+val+'</div>'))
-      +(sub?('<div style="font-size:'+(big?"10":"9.5")+'px;font-weight:700;color:'+fg
-        +';opacity:.8;margin-top:1px;line-height:1.4">'+sub+'</div>'):"")+'</div>';
+    +'</div>'
+    +'<div style="text-align:right;background:rgba(255,255,255,.75);border:1px solid var(--br);'
+    +'border-radius:12px;padding:'+(big?"6px 12px":"5px 10px")+';flex:none">'
+    +'<div style="font-size:'+(big?"18":"14.5")+'px;font-weight:900;color:var(--tx);line-height:1;'
+    +'letter-spacing:-.5px;font-variant-numeric:tabular-nums">'+_wiRs(tgt)+'</div>'
+    +'<div style="font-size:'+(big?"9.5":"9")+'px;font-weight:900;color:var(--t3);'
+    +'text-transform:uppercase;letter-spacing:.7px;margin-top:2px">ka target</div></div></div>';
+  /* Ek patti banane wala -- sar par naam aur number, phir patti, phir
+     niche ki kaam ki line. */
+  /* Ek patti: sar par naam ka chhota chip aur % ka gol nishan, phir
+     moti patti, phir neeche kaam ki line. Dono patti ek jaisi dikhti
+     hain taaki aankh seedha dono number mila sake. */
+  var band=function(lbl,val,pct,ca,cb,vSize,sub){
+    var w=Math.max(pct,pct>0?4:0);
+    return'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">'
+      +'<div style="display:flex;align-items:center;gap:6px;min-width:0">'
+      +'<span style="width:'+(big?"8":"7")+'px;height:'+(big?"8":"7")+'px;border-radius:99px;'
+      +'background:'+cb+';flex:none;box-shadow:0 0 0 3px '+ca+'22"></span>'
+      +'<span style="font-size:'+(big?"10.5":"9.5")+'px;font-weight:900;color:var(--t3);'
+      +'text-transform:uppercase;letter-spacing:.7px;white-space:nowrap">'+lbl+'</span></div>'
+      +'<span style="background:'+cb+';color:#fff;font-size:'+(big?"11.5":"10.5")+'px;'
+      +'font-weight:900;padding:'+(big?"2px 10px":"2px 8px")+';border-radius:99px;'
+      +'white-space:nowrap;letter-spacing:-.2px">'+pct+'%</span></div>'
+      +'<div style="font-size:'+vSize+'px;font-weight:900;line-height:1.02;color:'+cb+';'
+      +'letter-spacing:-1.2px;margin-top:'+(big?"4":"3")+'px;font-variant-numeric:tabular-nums">'
+      +val+'</div>'
+      +'<div style="position:relative;height:'+BH+'px;background:var(--bg);border-radius:99px;'
+      +'overflow:hidden;margin:'+(big?"8":"6")+'px 0 0;box-shadow:inset 0 1px 3px rgba(0,0,0,.10)">'
+      +'<div style="position:absolute;left:0;top:0;bottom:0;width:'+w+'%;border-radius:99px;'
+      +'background:linear-gradient(90deg,'+ca+' 0%,'+cb+' 100%);'
+      +'box-shadow:0 1px 4px '+cb+'55">'
+      +'<div style="position:absolute;left:0;right:0;top:1px;height:'+(big?"7":"5")+'px;'
+      +'border-radius:99px;background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,0))"></div>'
+      +'</div></div>'
+      +(sub?('<div style="margin-top:'+(big?"7":"6")+'px;font-size:'+(big?"12.5":"11")+'px;'
+        +'font-weight:800;color:var(--t2);line-height:1.5">'+sub+'</div>'):"");
   };
-  var cancBtn=(r.canc&&r.canc.total>0)
-    ?('<button onclick="smCancelDetail(\''+r.id+'\',\''+(r.mk||"")+'\')" '
-      +'style="background:none;border:none;padding:0;margin-top:1px;font-size:'+(big?"14":"12")
-      +'px;font-weight:900;color:#B91C1C;cursor:pointer;font-family:inherit;text-align:left">'
-      +'\u2212'+_wiRs(r.canc.total)+' \u203A</button>')
-    :null;
-  h+='<div style="display:flex;gap:7px;margin-top:'+(big?"10":"8")+'px">'
-    +chip("order aaya",_wiRs(r.order),"#EFF6FF","#1E3A8A",
-      r.gap>0?(_wiRs(r.gap)+" bhejna baaki"):"")
-    +((r.canc&&r.canc.total>0)
-      ?chip("cancel hua","","#FEF2F2","#B91C1C",
-        [r.canc.orderN?(r.canc.orderN+" order/lot"):"",r.canc.billN?(r.canc.billN+" bill"):""]
-          .filter(Boolean).join(", ")
-        +((r.canc.minus>0)?(" \u00b7 "+_wiRs(r.canc.minus)+" ginti se minus"):""),cancBtn)
-      :"")
+  /* 1. ORDER AAYA -- yahi salesman khud laata hai, isliye sabse bada */
+  var oSub=oLeft>0
+    ?('<span style="color:'+o2+'">'+_wiRs(oLeft)+' aur order laana hai</span>'
+      +(r.days>0?('<span style="color:var(--t3)"> \u00b7 '+r.days+' din \u00b7 roz '
+        +_wiRs(Math.ceil(oLeft/r.days))+'</span>'):""))
+    :('<span style="color:#047857">\u2705 '+_wiRs(tgt)+' ka order aa gaya</span>');
+  h+=band("order aaya",_wiRs(r.order),po,o1,o2,(big?34:24),oSub);
+  /* 2. MAAL GAYA -- target isi se poora hota hai */
+  var bSub=r.hit
+    ?'<span style="color:#047857">\uD83C\uDF89 Target poora ho gaya</span>'
+    :('<span style="color:'+c2+'">'+_wiRs(r.left)+' aur bhejna hai</span>'
+      +'<span style="color:var(--t3)"> \u2014 target isi se poora hoga</span>');
+  h+='<div style="margin-top:'+(big?"14":"11")+'px;padding-top:'+(big?"13":"11")+'px;'
+    +'border-top:1px solid var(--br)">'
+    +band("maal gaya",_wiRs(r.bill),r.pct,c1,c2,(big?26:19),bSub)
     +'</div>';
-  /* Mahine ke kinare ka sach -- 30 taarikh ka order jo 3 ko gaya. */
+  /* Neer: "35 L ka order to laya hoon already, aur 20 L hi gaya hai --
+     usme mera kya fault?" Ye farak ab saaf likha rehta hai.
+     Carry wala khana isi baat ko mahine ke hisaab se tod kar batata
+     hai, isliye wo ho to ye line nahi -- warna ek hi baat do baar. */
+  if(r.gap>0&&!(r.carry&&r.carry.ahead>0)){
+    h+='<div style="margin-top:5px;font-size:'+(big?"11.5":"10.5")+'px;font-weight:700;'
+      +'color:var(--t3);line-height:1.5">Jo order aaya usme se <b style="color:var(--t2)">'
+      +_wiRs(r.gap)+'</b> abhi bhejna baaki</div>';
+  }
+  /* Mahine ke kinare ka sach -- 30 taarikh ka order jo 3 ko gaya */
   if(r.carry&&(r.carry.old>0||r.carry.ahead>0)){
-    h+='<div style="margin-top:9px;background:rgba(255,255,255,.72);border:1px solid var(--br);'
+    h+='<div style="margin-top:8px;background:rgba(255,255,255,.72);border:1px solid var(--br);'
       +'border-radius:10px;padding:8px 11px;font-size:11px;font-weight:700;'
       +'color:var(--t2);line-height:1.6">'
       +(r.carry.old>0?('\u21A9 Isme <b>'+_wiRs(r.carry.old)+'</b> pichhle mahine ke order ka maal hai'
@@ -2731,6 +2736,37 @@ function smBarHtml(r,big){
       +[r.where.wait>0?(_wiRs(r.where.wait)+" ki parchi hi nahi bani"):"",
         r.where.floor>0?(_wiRs(r.where.floor)+" parchi floor par"):""]
         .filter(Boolean).join(" \u00b7 ")+'</div>';
+  }
+  /* Cancel -- aur sabse zaroori, uska target par asar.
+     Asar reason se tay hota hai, aur reason Settings me badla ja
+     sakta hai. Pehle ye kahin likha hi nahi tha, isliye laal number
+     dekh kar lagta tha ki wo kat chuka hai. */
+  if(r.canc&&r.canc.total>0){
+    var cn=[r.canc.orderN?(r.canc.orderN+" order/lot"):"",
+            r.canc.billN?(r.canc.billN+" bill"):""].filter(Boolean).join(", ");
+    /* Neer: "wahan likha hua nahi aana chahiye ki asar nahi hua -- jo
+       minus hona hai wo seedha minus hi ho jaye, aur jo minus nahi
+       hota uspar minus ka nishan hi mat lagao. Itni detail nahi
+       likhni." Isliye ab nishan hi sari baat kehta hai:
+         -X  = itna ginti me se kat gaya
+         +X  = itna ginti me jud gaya
+          X  = cancel to hua, par ginti waisi ki waisi */
+    var cAmt,cSign;
+    if(r.canc.minus>0){cSign="\u2212";cAmt=r.canc.minus}
+    else if(r.canc.add>0){cSign="+";cAmt=r.canc.add}
+    else{cSign="";cAmt=r.canc.total}
+    h+='<div style="margin-top:'+(big?"11":"9")+'px;background:#FEF2F2;border-radius:10px;'
+      +'padding:'+(big?"9px 12px":"8px 10px")+'">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
+      +'<div style="font-size:'+(big?"10":"9.5")+'px;font-weight:900;color:#B91C1C;opacity:.8;'
+      +'text-transform:uppercase;letter-spacing:.4px">cancel hua</div>'
+      +'<button onclick="smCancelDetail(\''+r.id+'\',\''+(r.mk||"")+'\')" '
+      +'style="background:none;border:none;padding:0;font-size:'+(big?"16":"13.5")
+      +'px;font-weight:900;color:#B91C1C;cursor:pointer;font-family:inherit">'
+      +cSign+_wiRs(cAmt)+' \u203A</button></div>'
+      +(cn?('<div style="font-size:'+(big?"10.5":"10")+'px;font-weight:700;color:#B91C1C;'
+        +'opacity:.8;margin-top:1px">'+cn+'</div>'):"")
+      +'</div>';
   }
   /* Mahino ka record -- gol nishan */
   if(r.rec&&r.rec.n){
@@ -2776,7 +2812,9 @@ function renderSmTargetWidget(){
       :p>=70?["#DBEAFE","#93C5FD","#2563EB"]
       :p>=40?["#FEF3C7","#FCD34D","#D97706"]
       :["#FEE2E2","#FCA5A5","#DC2626"];
-    return'<div style="background:linear-gradient(165deg,'+sk[0]+' 0%,var(--cd) 62%);'
+    /* Rang ka halka sa ishara upar, baaki card saaf -- warna neeche ki
+       do patti ke rang se takraata hai. */
+    return'<div style="background:linear-gradient(170deg,'+sk[0]+' 0%,var(--cd) 30%);'
       +'border:1.5px solid '+sk[1]+';border-left:5px solid '+sk[2]+';border-radius:16px;'
       +'padding:'+(pad||"13px 15px")+';margin-bottom:10px;'
       +'box-shadow:0 2px 10px rgba(0,0,0,.07)">'+inner+'</div>';
@@ -4963,8 +5001,14 @@ function pendTableHtml(list,flt){
         +TD(fmtN(r.ord),"right","color:var(--t3)")
         +TD(r.gaya?fmtN(r.gaya):"\u2014","right","color:#047857;font-weight:700")
         +TD('<span style="font-weight:900;font-size:13px;color:#B45309">'+fmtN(r.baaki)+'</span>',"right")
+        /* Haal, aur uske neeche lot ka remark. Remark lot par pehle se
+           likha jaata tha par is table me kabhi dikhta hi nahi tha. */
         +TD('<span style="background:'+r.st.bg+';color:'+r.st.col+';border-radius:6px;'
-          +'padding:2px 8px;font-size:10px;font-weight:800">'+escHtml(r.st.txt)+'</span>')
+          +'padding:2px 8px;font-size:10px;font-weight:800">'+escHtml(r.st.txt)+'</span>'
+          +(r.remark?('<div style="margin-top:3px;font-size:10.5px;font-weight:700;'
+            +'color:#B45309;line-height:1.4;max-width:250px;white-space:normal">\uD83D\uDCDD '
+            +escHtml(r.remark)+'</div>'):""),
+          "left","white-space:normal")
         +'</tr>';
     });
     h+='<tr><td colspan="9" style="padding:5px 9px;text-align:right;font-size:10.5px;'
@@ -9245,7 +9289,24 @@ function writeSettings(settings) {
     },gap-(now-window._fbNudgeAt));
   };
   es.addEventListener("put",_nudge);es.addEventListener("patch",_nudge);es.onerror=function(){try{es.close()}catch(e){}window._fbSSE=null;
-  if(!window._fbSSERetry)window._fbSSERetry=setTimeout(function(){window._fbSSERetry=null;initFirebaseSSE()},15e3)};window._fbSSE=es}catch(e){console.warn("Firebase SSE unavailable:",e)}}function refreshCurrentView(){try{if(document.querySelector(".ov.show, .ov.on"))return;const cur=window._currentNav||"";if(cur==="tasks"){try{renderMyTasks()}catch(e){}try{renderAllTasks()}catch(e){}try{updateTaskDot()}catch(e){}}else if(cur==="dash"){try{renderDash()}catch(e){}}else if(cur==="sales"){try{renderOrders()}catch(e){}try{renderBills()}catch(e){}}else if(cur==="leads"){try{renderLeads("all")}catch(e){}try{renderLeads("mine")}catch(e){}try{renderLeads("today")}catch(e){}}else if(cur==="masters"){try{renderItems()}catch(e){}try{renderCusts()}catch(e){}try{renderBrks()}catch(e){}try{renderSups()}catch(e){}try{renderPrds()}catch(e){}try{renderCustGroups()}catch(e){}}else if(cur==="inward"){try{renderInRec()}catch(e){}try{renderExchangeList()}catch(e){}}else if(cur==="jw"){try{renderJWLists()}catch(e){}}else if(cur==="admin"){try{renderUsers()}catch(e){}try{renderDevices()}catch(e){}try{renderLedger()}catch(e){}}
+  if(!window._fbSSERetry)window._fbSSERetry=setTimeout(function(){window._fbSSERetry=null;initFirebaseSSE()},15e3)};window._fbSSE=es}catch(e){console.warn("Firebase SSE unavailable:",e)}}/* Koi sheet khuli ho to screen banti nahi -- par ab wo baat yaad
+   rehti hai. Sheet band hote hi refresh apne aap ho jaata hai.
+   Pehle ye bhool jaata tha, isliye jis sync ke waqt koi sheet khuli
+   thi uska data screen par kabhi aata hi nahi tha. */
+function _viewOvOpen(){
+  try{return !!document.querySelector(".ov.show, .ov.on")}catch(e){return false}
+}
+function _viewDirtyWatch(){
+  if(window._vdTimer)return;
+  window._vdTimer=setInterval(function(){
+    if(_viewOvOpen())return;
+    clearInterval(window._vdTimer);window._vdTimer=null;
+    if(!window._viewDirty)return;
+    window._viewDirty=false;
+    try{refreshCurrentView()}catch(e){}
+  },700);
+}
+function refreshCurrentView(){try{if(_viewOvOpen()){window._viewDirty=true;_viewDirtyWatch();return}window._viewDirty=false;const cur=window._currentNav||"";if(cur==="tasks"){try{renderMyTasks()}catch(e){}try{renderAllTasks()}catch(e){}try{updateTaskDot()}catch(e){}}else if(cur==="dash"){try{renderDash()}catch(e){}}else if(cur==="sales"){try{renderOrders()}catch(e){}try{renderBills()}catch(e){}}else if(cur==="leads"){try{renderLeads("all")}catch(e){}try{renderLeads("mine")}catch(e){}try{renderLeads("today")}catch(e){}}else if(cur==="masters"){try{renderItems()}catch(e){}try{renderCusts()}catch(e){}try{renderBrks()}catch(e){}try{renderSups()}catch(e){}try{renderPrds()}catch(e){}try{renderCustGroups()}catch(e){}}else if(cur==="inward"){try{renderInRec()}catch(e){}try{renderExchangeList()}catch(e){}}else if(cur==="jw"){try{renderJWLists()}catch(e){}}else if(cur==="admin"){try{renderUsers()}catch(e){}try{renderDevices()}catch(e){}try{renderLedger()}catch(e){}}
   else if(cur==="cutting"||cur==="floor"){try{csRefreshFlowViews()}catch(e){}}}catch(e){}}async function pullLatestAndRefresh(){if(!FIREBASE_URL)return;if(window._saveLock||window._syncRunning)return;if(window._lastSaveAt&&Date.now()-window._lastSaveAt<8e3)return;await pullDeltaFromFirebase()}function saveGasUrl(){const url=(el("gas-url")?.value||"").trim();STATE.settings.gasUrl=url;GAS_URL=url;lsSave("vs_settings",STATE.settings);toast("GAS URL saved","ok")}async function testGasConnection(){testFirebaseConnection()}async function testFirebaseConnection(){const url=(el("firebase-url")?.value||STATE.settings.firebaseUrl||"").trim().replace(/\/$/,"");if(!url){toast("Paste Firebase URL first","er");return}const s=el("gas-status");if(s)s.innerHTML='<span style="color:var(--Ad)">Testing...</span>';try{const r=await fetch(url+"/altstock/_ping.json",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({t:Date.now()})});if(r.ok){if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Connected to Firebase!</span>';toast("Firebase connected","ok")}else{if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; HTTP '+r.status+" — Check database is in test mode</span>"}}catch(e){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; Cannot reach Firebase. Check URL.</span>'}}async function syncToCloud(){if(!FIREBASE_URL&&!GAS_URL){toast("Set Firebase URL in Admin → Database first","er");return}const s=el("gas-status");if(s)s.innerHTML='<span style="color:var(--Ad)">Pushing...</span>';try{window._autoSyncTimer&&clearTimeout(window._autoSyncTimer);let ok=false;if(FIREBASE_URL){ok=await pushDeltaToFirebase(true)}else if(GAS_URL){const nowTs=(new Date).toISOString();const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],custGroups:STATE.custGroups||[],markets:STATE.markets||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],settings:{...STATE.settings,lastSync:nowTs},_savedAt:nowTs};const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"saveAll",...pl})});const j=await r.json().catch(()=>null);ok=j&&!j.error;if(ok){STATE.settings.lastSync=nowTs;lsSave("vs_settings",STATE.settings)}}if(ok){if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pushed at '+(new Date).toTimeString().slice(0,8)+"</span>";toast("Pushed to Firebase","ok");setLiveStatus("live")}else{if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; Push failed — check connection</span>'}}catch(e){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; '+e.message+"</span>"}}async function syncFromCloud(){if(!FIREBASE_URL&&!GAS_URL){toast("Set Firebase URL in Admin → Database first","er");return}const ok=await appConfirm("Pull from Firebase?","Merges cloud data into local. Newer records win.","?","Pull","ok");if(!ok)return;const s=el("gas-status");if(s)s.innerHTML='<span style="color:var(--Ad)">Downloading...</span>';try{if(FIREBASE_URL){const got=await pullAllFromFirebase(true);if(!got){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; No data in Firebase yet — push first</span>';return}persist();if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pulled and merged successfully</span>';toast("Data pulled from Firebase","ok");refreshCurrentView();return}const d=await api("getAll");if(!d||!d.items){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; No data in Firebase yet — push first</span>';return}applyCloudData(d,true);persist();if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pulled and merged successfully</span>';toast("Data pulled from Firebase","ok");refreshCurrentView()}catch(e){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; '+e.message+"</span>"}}function saveJsonBinCreds(){STATE.settings.jsonbinId=(el("jb-bin")?.value||"").trim();STATE.settings.jsonbinKey=(el("jb-key")?.value||"").trim();lsSave("vs_settings",STATE.settings);toast("JSONBin credentials saved","ok")}async function testJsonBin(){const binId=STATE.settings.jsonbinId,key=STATE.settings.jsonbinKey;if(!binId||!key){toast("Enter Bin ID and API Key first","er");return}const s=el("jb-status");if(s)s.innerHTML='<span style="color:var(--Ad)">Testing...</span>';try{const r=await fetch("https://api.jsonbin.io/v3/b/"+binId+"/latest",{headers:{"X-Master-Key":key,"X-Bin-Meta":"false"}});if(r.ok){if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Connected to JSONBin!</span>';toast("JSONBin connected","ok")}else{const d=await r.json();if(s)s.innerHTML='<span style="color:var(--Rd)">&#x274C; Error: '+(d.message||r.status)+"</span>";toast("JSONBin test failed","er")}}catch(e){if(s)s.innerHTML='<span style="color:var(--Rd)">&#x274C; '+e.message+"</span>";toast("Connection error","er")}}function setLiveStatus(state){const dot=document.getElementById("live-dot");const txt=document.getElementById("live-txt");if(!dot||!txt)return;
   try{
     var box=txt.parentNode;
