@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.372-->
+<!DOCTYPE html><!--ALTV:1.45.375-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.372";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.375";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -4651,11 +4651,17 @@ const _ordVars={company:STATE.settings.companyName||"",address:STATE.settings.ad
    nahi aate -- warna 2400 ke order par 4800 dispatched dikhta hai. */
 const _sareeProgs=progs.filter(p=>!p.isExtra);
 const totDisp=_sareeProgs.reduce((s,p)=>s+(p.pcs||0),0);const totRem=Math.max(0,totOrdered-totDisp);const totSent=_sareeProgs.reduce((s,p)=>s+(p.billedPcs||(p.status==="billed"?(p.pcs||0):0)||0),0);const Xsr=mg+2,Xitem=mg+12,Xpcs=W-mg-35,Xrate=W-mg-2;setF(...IND);doc.rect(mg,y,CW,HDR_H,"F");doc.setFont("helvetica","bold");doc.setFontSize(7.5);setC(255,255,255);doc.text("#",Xsr,y+5.5);doc.text("ITEM",Xitem,y+5.5);doc.text("TOTAL SAREES",Xpcs,y+5.5,{align:"right"});doc.text("RATE",Xrate,y+5.5,{align:"right"});y+=HDR_H;let openTot=0;openItems.forEach((it,i)=>{const pcs=it.totalPcs||0;openTot+=pcs;if(i%2===0){setF(250,249,255);doc.rect(mg,y,CW,10,"F")}else{setF(255,255,255);doc.rect(mg,y,CW,10,"F")}doc.setFont("helvetica","bold");doc.setFontSize(7.5);setC(165,180,252);doc.text(String(i+1),Xsr,y+6.5);doc.setFont("helvetica","bold");doc.setFontSize(9);setC(...INK);doc.text((it.itemName||it.name||"").slice(0,42),Xitem,y+6.5);doc.setFont("helvetica","bold");doc.setFontSize(11);setC(...IND);doc.text(String(pcs),Xpcs,y+6.5,{align:"right"});doc.setFont("helvetica","normal");doc.setFontSize(8);setC(55,65,81);const rateText=it.rate?"Rs."+it.rate:"—";doc.text(rateText,Xrate,y+6.5,{align:"right"});y+=10;if(y>260){doc.addPage();y=20}});y+=2;setF(...IND);doc.roundedRect(mg,y,CW,11,1.5,1.5,"F");doc.setFont("helvetica","bold");doc.setFontSize(9);setC(199,210,254);doc.text("TOTAL SAREES",mg+4,y+7.5);doc.setFontSize(13);setC(255,255,255);doc.text(String(openTot),Xpcs,y+7.5,{align:"right"});y+=16;const tileW=(CW-12)/4;const tileH=16;setF(219,234,254);doc.roundedRect(mg,y,tileW,tileH,2,2,"F");doc.setFont("helvetica","bold");doc.setFontSize(6.5);setC(29,78,216);doc.text("ORDERED",mg+tileW/2,y+5.5,{align:"center"});doc.setFontSize(13);setC(30,64,175);doc.text(String(totOrdered),mg+tileW/2,y+13,{align:"center"});const t2x=mg+tileW+4;setF(209,250,229);doc.roundedRect(t2x,y,tileW,tileH,2,2,"F");doc.setFont("helvetica","bold");doc.setFontSize(6.5);setC(6,95,70);doc.text("PROGRAMMED",t2x+tileW/2,y+5.5,{align:"center"});doc.setFontSize(13);setC(4,120,87);doc.text(String(totDisp),t2x+tileW/2,y+13,{align:"center"});const tSx=mg+2*(tileW+4);setF(237,233,254);doc.roundedRect(tSx,y,tileW,tileH,2,2,"F");doc.setFont("helvetica","bold");doc.setFontSize(6.5);setC(91,33,182);doc.text("DISPATCHED",tSx+tileW/2,y+5.5,{align:"center"});doc.setFontSize(13);setC(109,40,217);doc.text(String(totSent),tSx+tileW/2,y+13,{align:"center"});const t3x=mg+3*(tileW+4);const remColor=totRem>0?[254,226,226]:[209,250,229];const remTxtColor=totRem>0?[153,27,27]:[4,120,87];setF(...remColor);doc.roundedRect(t3x,y,tileW,tileH,2,2,"F");doc.setFont("helvetica","bold");doc.setFontSize(6.5);setC(totRem>0?153:6,totRem>0?27:95,totRem>0?27:70);doc.text("REMAINING",t3x+tileW/2,y+5.5,{align:"center"});doc.setFontSize(13);setC(...remTxtColor);doc.text(String(totRem),t3x+tileW/2,y+13,{align:"center"});y+=tileH+6}else{const lots={};items.forEach(it=>{const li=it.lotIndex!==undefined?it.lotIndex:0;(lots[li]=lots[li]||[]).push(it)});const lotKeys=Object.keys(lots).map(Number).sort((a,b)=>a-b);const isGrouped=lotKeys.length>0&&(lotKeys.length<items.length||lotKeys.some(k=>lots[k].length>1));const HDR_H2=8;setF(...IND);doc.rect(mg,y,CW,HDR_H2,"F");doc.setFont("helvetica","bold");doc.setFontSize(7.5);setC(255,255,255);if(isGrouped){const amtW=showAmt?22:0;const fixW=8+16+23+18+16+amtW;const detW=CW-fixW;const Xsr=mg+2,Xdet=mg+10,Xcut=mg+10+detW,Xmtrs=mg+10+detW+16,Xpcs=mg+10+detW+16+23,Xrate=mg+10+detW+16+23+18,Xamt=W-mg-5;doc.text("#",Xsr,y+5.5);doc.text("ITEM / DETAILS",Xdet,y+5.5);doc.text("CUT",Xcut,y+5.5);doc.text("TOT.MTRS",Xmtrs,y+5.5);doc.text("PCS",Xpcs,y+5.5);doc.text("RATE",Xrate,y+5.5);if(showAmt)doc.text("AMT (Rs.)",Xamt,y+5.5,{align:"right"});y+=HDR_H2;let grandPcs=0,grandMtrs=0,grandAmt=0,rowNum=1;lotKeys.forEach((li,idx)=>{const lot=lots[li];const first=lot[0];const totalPcs=lot.reduce((s,it)=>s+(Number(it.pcs)||0),0);const totalAmt=lot.reduce((s,it)=>s+(it.amount||0),0);const cutNum=parseFloat(first.cut)||0;const rowMtrs=cutNum&&totalPcs?cutNum*totalPcs:0;grandPcs+=totalPcs;grandMtrs+=rowMtrs;grandAmt+=totalAmt;const multiCol=lot.length>1;
+/* Lot ke sab colour ki ginti barabar ho to "40 pcs x 8 colours" chhota aur
+   sach hai. Alag ho to har colour ke saath uski apni ginti likhni padti hai,
+   warna PDF party ko galat ginti bata deta hai. */
+const _sameQtyP=lot.every(function(it){return(Number(it.pcs)||0)===(Number(lot[0].pcs)||0)});
+const _colTxt=function(it){var c=getColCode(it);
+  return(it.colourName||"")+(c?"-"+c:"")+(_sameQtyP?"":" \u00b7 "+(Number(it.pcs)||0))};
 // Rangon ki list do line tak ja sakti hai, aur uske neeche "pcs x colours"
 // ki apni line. Row utni hi lambi hogi jitni zaroorat.
-const _colStrPre=lot.map(function(it){var c=getColCode(it);return(it.colourName||"")+(c?"-"+c:"")}).join(", ");
+const _colStrPre=lot.map(_colTxt).join(", ");
 doc.setFontSize(7);const _cl=doc.splitTextToSize(_colStrPre,(CW-(8+16+23+18+16+(showAmt?22:0)))-4);
-const _colN=Math.min(2,_cl.length||1);
+const _colN=Math.min(_sameQtyP?2:3,_cl.length||1);
 // Lot ki remark bhi chhapegi -- uske liye row me ek line aur.
 var _lotRemP="";try{_lotRemP=csLotRemark(lot)}catch(e){_lotRemP=""}
 doc.setFont("helvetica","bold");doc.setFontSize(7.5);
@@ -4669,12 +4675,13 @@ if(first.isExtra){
   doc.setFontSize(7);setC(146,64,14);
   doc.text("BLOUSE / LUMP",Xdet+_lblW+3,y+6);
   doc.setFont("helvetica","bold");doc.setFontSize(9);setC(...INK);
-}const colStr=lot.map(it=>{const code=getColCode(it);return(it.colourName||"")+(code?"-"+code:"")}).join(", ");doc.setFont("helvetica","normal");doc.setFontSize(7);setC(100,80,180);const colLines=doc.splitTextToSize(colStr,detW-4);
+}const colStr=lot.map(_colTxt).join(", ");doc.setFont("helvetica","normal");doc.setFontSize(7);setC(100,80,180);const colLines=doc.splitTextToSize(colStr,detW-4);
 if(multiCol){
   for(var _li=0;_li<_colN;_li++)doc.text(colLines[_li]||"",Xdet,y+10.5+_li*3.6);
   const pcsPerCol=Number(first.pcs)||0;
   doc.setFont("helvetica","bold");doc.setFontSize(9);setC(...INK);
-  doc.text(pcsPerCol+" pcs x "+lot.length+" colours",Xdet,y+10.5+_colN*3.6+4);
+  doc.text((_sameQtyP?(pcsPerCol+" pcs x "+lot.length+" colours")
+                  :(fmtN(totalPcs)+" pcs \u00b7 "+lot.length+" colours")),Xdet,y+10.5+_colN*3.6+4);
 }else{doc.text(colLines[0]||"",Xdet,y+9.5)}
 if(_remL.length){
   doc.setFont("helvetica","bold");doc.setFontSize(7.5);setC(146,64,14);
@@ -4851,21 +4858,13 @@ try{
   var _ssAdd=Array.isArray(window._billSSAdd)?window._billSSAdd.slice():[];
   window._billSSAdd=[];
   if(!_ssB&&_ssAdd.length)_ssB=null;
-  _ssAdd.forEach(function(id){
-    if(editingBill)return;
-    var row=(STATE.sampleSets||[]).filter(function(x){return x&&x.id===id})[0];
-    if(!row||row.status==="Billed")return;
-    row.status="Billed";row.billNo=newBill.billNo;row.billId=newBill.id;
-    row.billedAt=today();row._ts=_bumpTs(row);
-  });
-  if(_ssAdd.length){try{lsSave("vs_sample_sets",STATE.sampleSets);renderSampleSets()}catch(e){}}
-  if(_ssB&&!editingBill){
-    var _ssRow=(STATE.sampleSets||[]).filter(function(x){return x&&x.id===_ssB})[0];
-    if(_ssRow){
-      _ssRow.status="Billed";_ssRow.billNo=newBill.billNo;_ssRow.billId=newBill.id;
-      _ssRow.billedAt=today();_ssRow._ts=_bumpTs(_ssRow);
-      lsSave("vs_sample_sets",STATE.sampleSets);
-      try{renderSampleSets()}catch(e){}
+  if(!editingBill){
+    var _ssAll=_ssAdd.slice();
+    if(_ssB&&_ssAll.indexOf(_ssB)<0)_ssAll.push(_ssB);
+    var _ssAny=_ssAll.length||(newBill.items||[]).some(function(it){return it&&it._fromSS});
+    if(_ssAny){
+      ssRecordFromBill(newBill,_ssAll);
+      try{lsSave("vs_sample_sets",STATE.sampleSets);renderSampleSets()}catch(e){}
     }
   }
 }catch(e){}if(_billOrdId){const o=STATE.orders.find(x=>x.id===_billOrdId);if(o){if(!editingBill){if(!o.bills)o.bills=[];o.bills.push(newBill)}else{const bi=o.bills?o.bills.findIndex(b=>b.id===billId):-1;if(bi>=0)o.bills[bi]=newBill;else{if(!o.bills)o.bills=[];o.bills.push(newBill)}}}if(o&&o.type!=="open"){const ordTotal=(o.items||[]).reduce((s,i)=>s+(i.pcs||0),0);const totalBilled=liveBills().filter(b=>b.ordId===_billOrdId&&b.status!=="cancelled").reduce((s,b)=>s+b.items.reduce((ss,i)=>ss+(i.dispQty||i.pcs||0),0),0);o.status=totalBilled>=ordTotal?"fulfilled":"billed"}if(o&&o.type==="open"){o.status="billed"}const savedBillId=newBill.id||"";const savedBillNo=newBill.billNo||bno;let anyProgBilled=false;_billRows.forEach((row,rIdx)=>{if(row._progId&&o){const prog=(o.programmes||[]).find(p=>p.id===row._progId);if(prog){const billItem=newBill.items?.find(it=>it._progId===row._progId);const dispPcs=billItem?.pcs||row.pcs||0;if(!prog.bills)prog.bills=[];if(!prog.bills.some(x=>x&&x.billId===savedBillId))prog.bills.push({billId:savedBillId,billNo:savedBillNo,pcs:dispPcs,date:newBill.date});anyProgBilled=true}}});if(_wasBillFromProgLot&&Object.keys(_savedProgLotMap).length>0&&o){for(const lot of _billLots){const progMap=_savedProgLotMap[lot.id]||{};for(const[colIdxStr,progId]of Object.entries(progMap)){const prog=(o.programmes||[]).find(p=>p.id===progId);if(!prog)continue;const billItem=(newBill.items||[]).find(it=>it._progId===progId);if(!billItem)continue;if(!prog.bills)prog.bills=[];if(!prog.bills.some(x=>x&&x.billId===savedBillId))prog.bills.push({billId:savedBillId,billNo:savedBillNo,pcs:billItem.pcs||0,date:newBill.date});anyProgBilled=true}}}if(o&&o.type==="open")progRecalcBilled(o);if(anyProgBilled&&o){const stat=calcProgStats(o);if(stat.remaining<=0&&stat.pending<=0)o.status="fulfilled";else if(stat.remaining<=0)o.status="billed"}lsSave("vs_orders",STATE.orders)}if(window._billSingleProg){window._billSingleProg=null}const _refreshOrdId=_billOrdId;_savingBill=false;persist();closeBillMod();renderBills();renderOrders();renderDash();csAfterBill(_refreshOrdId?[_refreshOrdId]:[],_csDec2);if(_refreshOrdId){const _det=el("m-ord-det");if(_det&&_det.style.display&&_det.style.display!=="none")showOrderDetail(_refreshOrdId)}const isEdit=!!editingBill;mixSareItemsToRecord.forEach(r=>{const b=(STATE.mixedSarees||[]).find(x=>x.id===r.batchId);if(b){b.sareesSold=(b.sareesSold||0)+r.pcs;stamp(b)}});if(mixSareItemsToRecord.length){lsSave("vs_mixed_sarees",STATE.mixedSarees)}toast("Bill "+bno+(isEdit?" updated":" created"),"ok");api("saveBill",{bills:STATE.bills,entries:STATE.entries,items:STATE.items,orders:STATE.orders,mixedSarees:STATE.mixedSarees})}function linkBillToOrder(billId){const bill=STATE.bills.find(b=>b.id===billId);if(!bill)return;const matchOrds=(STATE.orders||[]).filter(o=>!o._deleted&&o.status!=="cancelled"&&o.status!=="fulfilled"&&(o.custId===bill.custId||(STATE.customers.find(c=>c.id===o.custId)?.name||"").toLowerCase()===(bill.custName||"").toLowerCase()));if(!matchOrds.length){toast("No pending orders found for this customer","er");return}const div=document.createElement("div");div.id="m-link-ord";div.style.cssText="position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center";div.innerHTML='<div style="background:white;border-radius:16px 16px 0 0;width:min(960px,100%);padding:16px;max-height:80vh;overflow-y:auto">'+'<div style="display:flex;justify-content:space-between;margin-bottom:14px">'+'<div><h3 style="margin:0;font-size:17px;font-weight:800">🔗 Link Bill to Order</h3>'+'<p style="margin:4px 0 0;font-size:12px;color:var(--t3)">Bill '+escHtml(bill.billNo)+" • "+escHtml(bill.custName)+"</p></div>"+'<button onclick="rmEl(\'m-link-ord\')" style="background:none;border:none;font-size:24px;cursor:pointer">&times;</button></div>'+matchOrds.map(o=>{const tot=(o.items||[]).reduce((s,i)=>s+(i.pcs||i.taka||0),0);let remaining=tot,linkedCount=0;try{linkedCount=(STATE.bills||[]).filter(b=>b.ordId===o.id&&!b._deleted&&b.status!=="cancelled"&&b.id!==billId).length;if(o.type!=="open")remaining=calcFixedOrderPending(o).totalRemaining}catch(e){}return"<div onclick=\"saveBillOrderLink('"+billId+"','"+o.id+'\')" style="border:1.5px solid var(--br);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:.15s" onmouseenter="this.style.background=\'var(--Pl)\'" onmouseleave="this.style.background=\'\'">'+'<div style="display:flex;justify-content:space-between;align-items:center">'+'<div><div style="font-size:14px;font-weight:800;color:var(--P)">'+escHtml(o.orderNo||o.id)+"</div>"+'<div style="font-size:12px;color:var(--t2);margin-top:2px">'+escHtml(o.custName||"")+(o.date?" • "+fmtDate(o.date):"")+"</div>"+(o.items&&o.items.length?'<div style="font-size:11px;color:var(--t3);margin-top:3px">'+(o.items||[]).slice(0,3).map(i=>(i.itemName||"")+(i.colourName?" "+i.colourName:"")+" • "+(i.pcs||i.taka||0)+" pcs").join(" | ")+"</div>":"")+(linkedCount?'<div style="font-size:10.5px;color:#B45309;margin-top:3px;font-weight:700">🔗 '+linkedCount+" bill"+(linkedCount>1?"s":"")+" already linked to this order — you can link more (multi-lot)</div>":"")+'</div><div style="text-align:right;flex-shrink:0">'+'<span class="bdg "style="background:#EDE9FE;color:#5B21B6">'+escHtml(o.status||"pending")+"</span>"+'<div style="font-size:12px;font-weight:700;color:var(--P);margin-top:4px">'+fmtN(remaining)+" pcs left</div>"+(remaining!==tot?'<div style="font-size:10px;color:var(--t3)">of '+fmtN(tot)+" total</div>":"")+"</div></div></div>"}).join("")+"</div>";document.body.appendChild(div)}function saveBillOrderLink(billId,ordId){const bill=STATE.bills.find(b=>b.id===billId);if(!bill)return;const ord=STATE.orders.find(o=>o.id===ordId);if(!ord)return;bill.ordId=ordId;bill._ts=_bumpTs(bill);if(ord.type!=="open"){const ordTotal=(ord.items||[]).reduce((s,i)=>s+(i.pcs||0),0);const totalBilled=(STATE.bills||[]).filter(b=>b.ordId===ordId&&b.status!=="cancelled"&&!b._deleted).reduce((s,b)=>s+b.items.reduce((ss,i)=>ss+(i.dispQty||i.pcs||0),0),0);ord.status=totalBilled>=ordTotal?"fulfilled":"billed"}else{ord.status="billed"}ord._ts=_bumpTs(ord);rmEl("m-link-ord");persist();renderBills();renderOrders();renderDash();toast("Bill "+bill.billNo+" linked to Order "+ord.orderNo,"ok");autoSyncCloud()}
@@ -4903,7 +4902,8 @@ function savePay(){const b=STATE.bills.find(x=>x.id===_payBillId);if(!b)return;c
   try{
     var _back=csRestoreDetachedSlips();
     if(_back){changed=true;setTimeout(function(){try{toast(_back+" parchi wapas apne lot par lag gayi","ok")}catch(e){}},1200)}
-  }catch(e){console.error("csRestoreDetachedSlips",e)}try{if(_migrateFixedLotUids())changed=true}catch(e){}STATE.orders.filter(o=>!o._deleted&&o.type!=="open").forEach(o=>{if(o.status!=="pending"&&o.status!=="billed"&&o.status!=="fulfilled")return;/* Status ka faisla usi hisaab se jo screen par dikhta hai. Pehle
+  }catch(e){console.error("csRestoreDetachedSlips",e)}try{if(_migrateFixedLotUids())changed=true}catch(e){}
+  try{_ssBackfillBilled()}catch(e){}STATE.orders.filter(o=>!o._deleted&&o.type!=="open").forEach(o=>{if(o.status!=="pending"&&o.status!=="billed"&&o.status!=="fulfilled")return;/* Status ka faisla usi hisaab se jo screen par dikhta hai. Pehle
      yahan apna alag jod hota tha jo cancel lot aur per-lot clear dono
      ko nahi jaanta tha -- isliye poora ho chuka order bhi hamesha
      "pending" rehta tha. */
@@ -6568,7 +6568,7 @@ function dispSSPending(){
   if(!o)return[];
   var pn=String(o.custName||"").trim().toLowerCase();
   return(STATE.sampleSets||[]).filter(function(x){
-    return x&&!x._deleted&&x.status!=="Returned"&&x.status!=="Billed"
+    return x&&!x._deleted&&x.status!=="Returned"&&!ssFullyBilled(x)
       &&String(x.custName||"").trim().toLowerCase()===pn
       &&_dispSS.every(function(y){return y.ssId!==x.id});
   });
@@ -6577,22 +6577,21 @@ function dispSSAdd(ssId){
   var ss=(STATE.sampleSets||[]).filter(function(x){return x&&x.id===ssId})[0];
   if(!ss){toast("Sample set nahi mila","er");return}
   var n=0;
-  (ss.lots||[]).forEach(function(L){
+  // Jo colour kisi bill me ja chuka hai wo dobara nahi judega
+  ssRemainColours(ss).forEach(function(R){
+    var L=R.lot,c=R.col;
     var item=(STATE.items||[]).filter(function(x){return x&&x.id===L.itemId})[0];
     if(!item)return;
-    (L.colours||[]).forEach(function(c){
-      if(!c||!(Number(c.pcs)>0))return;
-      var ci=c.idx;
-      var col=(item.colours||[])[ci];
-      if(!col||col.sku!==c.sku){
-        var k=(item.colours||[]).findIndex(function(x){return x&&x.sku===c.sku});
-        if(k<0)return;ci=k;col=item.colours[k];
-      }
-      _dispSS.push({ssId:ssId,vno:ss.voucherNo||"",itemId:item.id,itemName:item.name,
-        ci:ci,sku:col.sku,colourName:col.name,range:col.range||"",
-        pcs:Number(c.pcs)||0,cut:Number(c.cut)||6,rate:0});
-      n++;
-    });
+    var ci=c.idx;
+    var col=(item.colours||[])[ci];
+    if(!col||col.sku!==c.sku){
+      var k=(item.colours||[]).findIndex(function(x){return x&&x.sku===c.sku});
+      if(k<0)return;ci=k;col=item.colours[k];
+    }
+    _dispSS.push({ssId:ssId,vno:ss.voucherNo||"",itemId:item.id,itemName:item.name,
+      ci:ci,sku:col.sku,colourName:col.name,range:col.range||"",
+      pcs:R.left,cut:Number(c.cut)||6,rate:0});
+    n++;
   });
   if(!n){toast("Is set me kisi colour ke pcs likhe hi nahi hain","er");return}
   dispSSRender();
@@ -6712,12 +6711,7 @@ try{
 const bill={id:uid(),billNo:billNo,csIds:(_dispCsIds.length?_dispCsIds:undefined),salesmanId:o.salesmanId||(STATE.user&&STATE.user.id)||"",salesmanName:o.salesmanName||(STATE.user&&STATE.user.name)||"",ordId:_dispOrdId,ordNo:o.orderNo,ordIds:allOrdIds,ordNos:allOrdNos,date:el("disp-date")?.value,dueDate:el("disp-due")?.value,custId:o.custId,custName:o.custName,custGstin:cust?.gstin||"",brkId:o.brkId,brkName:o.brkName||"",receivedBy:el("disp-recv")?.value.trim(),receiverPhone:el("disp-recv-ph")?.value.trim(),challanNo:el("disp-challan")?.value.trim(),lrNo:el("disp-lr")?.value.trim(),items:dispItems,subtotal:sub,discountPct:disc2,discountAmt:discAmt2,afterDiscount:afterDisc2,brokeragePct:_brokPct2,brokerageFlat:_brokFlat2,brokerageLabel:_brokLbl2,brokerageAmt:_brokAmt2,netTaxable:_netTax2,gstAmt:_gstAmt2,gstType:gstT2,grandTotal:_netTax2+_gstAmt2,notes:el("disp-notes")?.value,payStatus:"unpaid",amtPaid:0,status:"active",by:STATE.user?.name||"",fy:STATE.settings.currentFY||getCurrentFY()};if(!o.bills)o.bills=[];o.bills.push(bill);STATE.bills.push(bill);
 /* Jo sample set is bill me gaye, unpar nishan -- wahi bill number. */
 if(_ssUsed.length){
-  _ssUsed.forEach(function(id){
-    var row=(STATE.sampleSets||[]).filter(function(x){return x&&x.id===id})[0];
-    if(!row||row.status==="Billed")return;
-    row.status="Billed";row.billNo=bill.billNo;row.billId=bill.id;
-    row.billedAt=today();row._ts=_bumpTs(row);
-  });
+  ssRecordFromBill(bill,_ssUsed);
   try{lsSave("vs_sample_sets",STATE.sampleSets);renderSampleSets()}catch(e){}
   _dispSS=[];
 }const totalOrdered=(o.items||o.openItems||[]).reduce((s,i)=>s+(i.pcs||i.totalPcs||0),0);const totalDispatched=liveBills().filter(b=>((b.ordId===o.id||b.ordNo&&b.ordNo===o.orderNo||(b.ordIds&&b.ordIds.includes(o.id))))&&b.status!=="cancelled").reduce((s,b)=>s+(b.items||[]).filter(bi=>bi.srcOrdId===o.id||!bi.srcOrdId).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0);o.status=totalDispatched>=totalOrdered?"fulfilled":"billed";o._ts=_bumpTs(o);extraOrdObjs.forEach(eo=>{if(!eo.bills)eo.bills=[];eo.bills.push(bill);const tot=eo.items.reduce((s,i)=>s+(i.pcs||0),0);const sent=liveBills().filter(b=>b.ordId===eo.id&&b.status!=="cancelled").reduce((s,b)=>s+(b.items||[]).filter(bi=>bi.srcOrdId===eo.id).reduce((ss,bi)=>ss+(bi.dispQty||bi.pcs||0),0),0)+dispItems.filter(bi=>bi.srcOrdId===eo.id).reduce((s,bi)=>s+(bi.dispQty||0),0);eo.status=sent>=tot?"fulfilled":"billed"});persist();hideMod("m-dispatch");renderOrders();renderBills();renderDash();csAfterBill([o.id].concat(extraOrdObjs.map(function(_eo){return _eo.id})),_csDec);const ordLabel=allOrdNos.length>1?allOrdNos.join(" + "):allOrdNos[0];toast("Bill "+billNo+" saved — "+dispItems.length+" items from "+ordLabel,"ok");api("saveBill",{bills:STATE.bills,entries:STATE.entries,items:STATE.items,orders:STATE.orders})}// Every order a bill is linked to, however it was linked.
@@ -9883,16 +9877,123 @@ const out=Array.from(map.values());out.forEach(t=>{if(t.deadline&&/Z$/.test(t.de
    range, aur colour ke saath pcs. Isliye seedha wahi lot bana kar bill
    form khol dete hain. Rate khali chhodte hain: sample ka rate kabhi
    likha hi nahi jaata, wo Neer hi tay karte hain. */
+/* Ek sample set me do lot ho sakte hain. Ho sakta hai aaj sirf ek lot ka
+   bill bane aur doosra bahar hi pada rahe -- isliye "bill ho gaya" poore
+   set ka nishan nahi, har colour ki apni ginti hai. */
+function _ssKey(itemId,sku){return String(itemId||"")+"|"+String(sku||"")}
+function ssBilledPcs(ss,itemId,sku){
+  return Number(((ss&&ss.billedPcs)||{})[_ssKey(itemId,sku)])||0;
+}
+function ssRemainPcs(ss,itemId,sku,want){
+  /* Purane set jinpar sirf "Billed" likha hai, ginti nahi -- unhe poora
+     bana hua hi maano, warna wo dobara pending me aa jayenge. */
+  if(ss&&ss.status==="Billed"&&!ss.billedPcs)return 0;
+  return Math.max(0,(Number(want)||0)-ssBilledPcs(ss,itemId,sku));
+}
+function ssRemainColours(ss){
+  var out=[];
+  (((ss||{}).lots)||[]).forEach(function(L){
+    (L.colours||[]).forEach(function(c){
+      if(!c||!(Number(c.pcs)>0))return;
+      var left=ssRemainPcs(ss,L.itemId,c.sku,c.pcs);
+      if(left>0)out.push({lot:L,col:c,left:left});
+    });
+  });
+  return out;
+}
+function ssHasQty(ss){
+  var n=0;
+  (((ss||{}).lots)||[]).forEach(function(L){
+    (L.colours||[]).forEach(function(c){if(c&&Number(c.pcs)>0)n++});
+  });
+  return n>0;
+}
+function ssFullyBilled(ss){
+  if(!ss)return false;
+  if(ss.status==="Billed"&&!ss.billedPcs)return true;
+  if(!ssHasQty(ss))return false;
+  return ssRemainColours(ss).length===0;
+}
+function ssBilledCount(ss){
+  var m=(ss&&ss.billedPcs)||{},t=0;
+  Object.keys(m).forEach(function(k){t+=Number(m[k])||0});
+  return t;
+}
+/* Bill ki har line par likha hota hai ki wo kis sample set ki hai. Jo
+   line bill me hai hi nahi (X dabakar nikaal di), uska maal set par bacha
+   rehta hai -- agle bill ke liye. */
+function ssRecordFromBill(bill,ssIds){
+  if(!bill)return;
+  var ids={};
+  (ssIds||[]).forEach(function(id){if(id)ids[id]=1});
+  (bill.items||[]).forEach(function(it){if(it&&it._fromSS)ids[it._fromSS]=1});
+  Object.keys(ids).forEach(function(id){
+    var row=(STATE.sampleSets||[]).filter(function(x){return x&&x.id===id})[0];
+    if(!row)return;
+    if(!row.billedPcs)row.billedPcs={};
+    (bill.items||[]).forEach(function(it){
+      if(!it||it._fromSS!==id)return;
+      var p=Number(it.dispQty||it.pcs)||0;
+      if(p<=0)return;
+      var k=_ssKey(it.itemId,it.sku);
+      row.billedPcs[k]=(row.billedPcs[k]||0)+p;
+    });
+    if(!Array.isArray(row.billNos))row.billNos=[];
+    if(bill.billNo&&row.billNos.indexOf(bill.billNo)<0)row.billNos.push(bill.billNo);
+    if(ssFullyBilled(row)){
+      row.status="Billed";row.billNo=bill.billNo;row.billId=bill.id;row.billedAt=today();
+    }else if(row.status==="Billed"){
+      row.status="Pending";                 // abhi poora nahi gaya
+    }
+    row._ts=_bumpTs(row);
+  });
+}
+/* Purane bill par nishan pehle se hai, bas set par ginti nahi likhi thi.
+   Ek baar bana do -- kisi ko kuchh poochhna na pade. */
+function _ssBackfillBilled(){
+  var sets=(STATE.sampleSets||[]).filter(function(x){return x&&!x._deleted&&!x.billedPcs});
+  if(!sets.length)return false;
+  var byId={};sets.forEach(function(x){byId[x.id]={}});
+  var any=false;
+  (STATE.bills||[]).forEach(function(b){
+    if(!b||b._deleted||b.status==="cancelled")return;
+    (b.items||[]).forEach(function(it){
+      if(!it||!it._fromSS||!byId[it._fromSS])return;
+      var p=Number(it.dispQty||it.pcs)||0;
+      if(p<=0)return;
+      var k=_ssKey(it.itemId,it.sku);
+      byId[it._fromSS][k]=(byId[it._fromSS][k]||0)+p;
+      byId[it._fromSS]._no=b.billNo||"";
+      any=true;
+    });
+  });
+  if(!any)return false;
+  var changed=false;
+  sets.forEach(function(row){
+    var m=byId[row.id];if(!m)return;
+    var no=m._no||"";delete m._no;
+    if(!Object.keys(m).length)return;
+    row.billedPcs=m;
+    if(no){if(!Array.isArray(row.billNos))row.billNos=[];
+      if(row.billNos.indexOf(no)<0)row.billNos.push(no)}
+    if(!ssFullyBilled(row)&&row.status==="Billed")row.status="Pending";
+    row._ts=_bumpTs(row);changed=true;
+  });
+  if(changed){try{lsSave("vs_sample_sets",STATE.sampleSets)}catch(e){}}
+  return changed;
+}
 function ssBillLots(ss){
   return((ss&&ss.lots)||[]).map(function(L){
     var cut=0;
     (L.colours||[]).forEach(function(c){if(!cut&&Number(c.cut)>0)cut=Number(c.cut)});
     return{itemId:L.itemId,range:L.range||"",cut:cut||6,
-      progs:(L.colours||[]).filter(function(c){return c&&Number(c.pcs)>0})
-        .map(function(c){
-          return{colIdx:c.idx,sku:c.sku,pcs:Number(c.pcs)||0,rate:0,
+      progs:(L.colours||[]).map(function(c){
+          if(!c)return null;
+          var left=ssRemainPcs(ss,L.itemId,c.sku,c.pcs);
+          if(left<=0)return null;
+          return{colIdx:c.idx,sku:c.sku,pcs:left,rate:0,
             cut:Number(c.cut)||cut||6,_capped:true};
-        })};
+        }).filter(Boolean)};
   }).filter(function(x){return x.progs.length});
 }
 /* Jo bill abhi khula hai usi me sample jod do -- naya bill nahi. Yahi
@@ -9900,7 +10001,7 @@ function ssBillLots(ss){
 function ssAddToOpenBill(ssId){
   var ss=(STATE.sampleSets||[]).filter(function(x){return x&&x.id===ssId})[0];
   if(!ss){toast("Sample set nahi mila","er");return}
-  if(ss.status==="Billed"){toast("Iska bill pehle hi ban chuka hai"+(ss.billNo?(" \u2014 "+ss.billNo):""),"warn");return}
+  if(ssFullyBilled(ss)){toast("Iska bill pehle hi ban chuka hai"+(ss.billNo?(" \u2014 "+ss.billNo):""),"warn");return}
   var lots=ssBillLots(ss);
   if(!lots.length){toast("Is set me kisi colour ke pcs likhe hi nahi hain","er");return}
   if(!_billFromProgLot){toast("Ye bill lot wale roop me nahi hai \u2014 sample yahan nahi judega","er");return}
@@ -9919,7 +10020,7 @@ function ssAddToOpenBill(ssId){
 function ssMakeInvoice(ssId){
   var ss=(STATE.sampleSets||[]).filter(function(x){return x&&x.id===ssId})[0];
   if(!ss){toast("Sample set nahi mila","er");return}
-  if(ss.status==="Billed"){toast("Iska bill pehle hi ban chuka hai"+(ss.billNo?(" \u2014 "+ss.billNo):""),"warn");return}
+  if(ssFullyBilled(ss)){toast("Iska bill pehle hi ban chuka hai"+(ss.billNo?(" \u2014 "+ss.billNo):""),"warn");return}
   var lots=ssBillLots(ss);
   if(!lots.length){toast("Is set me kisi colour ke pcs likhe hi nahi hain","er");return}
   _billOrdId=null;_billRows=[];_billLots=[];_billLotId=0;
@@ -9938,8 +10039,17 @@ function ssMakeInvoice(ssId){
 function renderSampleSets(){const c=el("lead-lst-samples");if(!c)return;
   var _cs=el("lead-chips-ss");if(_cs)_cs.innerHTML=leadChipsHtml("sample");let sets=(STATE.sampleSets||[]).filter(s=>!s._deleted);const flt=_ssFlt||"pending";/* Jiska bill ban gaya wo ab bahar nahi pada hai -- na pending me
      rahega, na "returned" me. Uska apna haal hai. */
-  if(flt==="pending")sets=sets.filter(s=>s.status!=="Returned"&&s.status!=="Billed");
-  else if(flt==="returned")sets=sets.filter(s=>s.status==="Returned"||s.status==="Billed");sets.sort((a,b)=>(b.date||"").localeCompare(a.date||""));if(!sets.length){c.innerHTML='<div class="emp"><h3>No sample sets'+(flt==="pending"?" pending":"")+"</h3><p>"+(flt==="pending"?"All sets returned or none exist.":"No sample sets recorded yet.")+"</p></div>";return}c.innerHTML=sets.map(ss=>{const billed=ss.status==="Billed";const pending=ss.status!=="Returned"&&!billed;const ls=ss.lots?ss.lots.map(l=>'<div style="font-size:11px;margin-bottom:2px"><b>'+escHtml(l.itemName)+"</b>"+(l.range?' <span style="color:#7C3AED;font-size:10px">'+escHtml(l.range)+"</span>":"")+": "+(l.colours||[]).map(c=>'<span class="sku" style="margin:1px">'+escHtml(c.name)+"</span>").join(" ")+"</div>").join(""):"";return'<div style="border-left:4px solid '+(pending?"#F59E0B":billed?"#4F46E5":"#10B981")+';background:white;border-radius:0 12px 12px 0;margin:8px 16px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)">'+'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'+'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-size:14px;font-weight:800;color:#0F0E1A">'+escHtml(ss.custName||"—")+"</span>"+(ss.voucherNo?'<span style="font-size:9px;font-weight:800;background:#F0F9FF;color:#0369A1;padding:2px 7px;border-radius:5px;font-family:monospace;flex-shrink:0">'+escHtml(ss.voucherNo)+"</span>":"")+"</div>"+'<div style="font-size:11px;color:var(--t3);margin-top:1px">'+fmtDate(ss.date)+(ss.salesmanName?" · SM: <b>"+escHtml(ss.salesmanName)+"</b>":"")+(ss.brokerName?" · Brk: "+escHtml(ss.brokerName):"")+(ss.carrier?" · Carrier: <b>"+escHtml(ss.carrier)+"</b>":"")+"</div></div>"+'<span style="font-size:9px;font-weight:800;background:'+(pending?"#FEF3C7":billed?"#EEF2FF":"#D1FAE5")+";color:"+(pending?"#92400E":billed?"#3730A3":"#065F46")+';padding:3px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0;margin-left:8px">'+(pending?"Pending":billed?"Bill ho gaya":"Returned")+"</span></div>"+'<div style="background:#F8F7FF;border-radius:8px;padding:8px;margin-bottom:8px">'+ls+"</div>"+(ss.note?'<div style="font-size:11px;color:var(--t2);margin-bottom:8px;font-style:italic">'+escHtml(ss.note)+"</div>":"")+'<div style="display:flex;gap:6px;flex-wrap:wrap">'+(ss.carrierId?"<button onclick=\"waSampleSetSingle('"+ss.id+'\',\'carrier\')" class="btn bsm" style="background:#6D28D9;color:white;border:none;font-size:11px">&#x1F4F2; WA Staff</button>':"")+"<button onclick=\"waSampleSetSingle('"+ss.id+'\',\'salesman\')" class="btn bsm" style="background:#25D366;color:white;border:none;font-size:11px">&#x1F4F2; WA SM</button>'+"<button onclick=\"waSampleSetSingle('"+ss.id+'\',\'broker\')" class="btn bsm" style="background:#059669;color:white;border:none;font-size:11px">&#x1F4F2; WA Brk</button>'+(pending?"<button onclick=\"ssMakeInvoice('"+ss.id+'\')" class="btn bsm" style="background:#4F46E5;color:white;border:none;font-size:11px">&#x1F9FE; Bill banao</button>':"")
+  if(flt==="pending")sets=sets.filter(s=>s.status!=="Returned"&&!ssFullyBilled(s));
+  else if(flt==="returned")sets=sets.filter(s=>s.status==="Returned"||ssFullyBilled(s));sets.sort((a,b)=>(b.date||"").localeCompare(a.date||""));if(!sets.length){c.innerHTML='<div class="emp"><h3>No sample sets'+(flt==="pending"?" pending":"")+"</h3><p>"+(flt==="pending"?"All sets returned or none exist.":"No sample sets recorded yet.")+"</p></div>";return}c.innerHTML=sets.map(ss=>{const billed=ssFullyBilled(ss);const pending=ss.status!=="Returned"&&!billed;
+  const partBilled=!billed&&ssBilledCount(ss)>0;const ls=ss.lots?ss.lots.map(l=>'<div style="font-size:11px;margin-bottom:2px"><b>'+escHtml(l.itemName)+"</b>"+(l.range?' <span style="color:#7C3AED;font-size:10px">'+escHtml(l.range)+"</span>":"")+": "+(l.colours||[]).map(c=>{
+      var _gone=Number(c.pcs)>0&&ssRemainPcs(ss,l.itemId,c.sku,c.pcs)<=0;
+      return '<span class="sku" style="margin:1px'+(_gone?";opacity:.4;text-decoration:line-through":"")
+        +'">'+escHtml(c.name)+"</span>";
+    }).join(" ")+"</div>").join(""):"";return'<div style="border-left:4px solid '+(pending?"#F59E0B":billed?"#4F46E5":"#10B981")+';background:white;border-radius:0 12px 12px 0;margin:8px 16px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)">'+'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'+'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-size:14px;font-weight:800;color:#0F0E1A">'+escHtml(ss.custName||"—")+"</span>"+(ss.voucherNo?'<span style="font-size:9px;font-weight:800;background:#F0F9FF;color:#0369A1;padding:2px 7px;border-radius:5px;font-family:monospace;flex-shrink:0">'+escHtml(ss.voucherNo)+"</span>":"")+"</div>"+'<div style="font-size:11px;color:var(--t3);margin-top:1px">'+fmtDate(ss.date)+(ss.salesmanName?" · SM: <b>"+escHtml(ss.salesmanName)+"</b>":"")+(ss.brokerName?" · Brk: "+escHtml(ss.brokerName):"")+(ss.carrier?" · Carrier: <b>"+escHtml(ss.carrier)+"</b>":"")+"</div></div>"+'<span style="font-size:9px;font-weight:800;background:'+(pending?"#FEF3C7":billed?"#EEF2FF":"#D1FAE5")+";color:"+(pending?"#92400E":billed?"#3730A3":"#065F46")+';padding:3px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0;margin-left:8px">'+(pending?"Pending":billed?"Bill ho gaya":"Returned")+"</span></div>"+'<div style="background:#F8F7FF;border-radius:8px;padding:8px;margin-bottom:8px">'+ls
+  +(partBilled?'<div style="font-size:10.5px;font-weight:800;color:#3730A3;margin-top:4px">\u2714 '
+    +ssBilledCount(ss)+' saree bill ho chuki'
+    +((ss.billNos&&ss.billNos.length)?(" \u00b7 "+escHtml(ss.billNos.join(", "))):"")
+    +' \u00b7 baaki abhi bahar</div>':"")+"</div>"+(ss.note?'<div style="font-size:11px;color:var(--t2);margin-bottom:8px;font-style:italic">'+escHtml(ss.note)+"</div>":"")+'<div style="display:flex;gap:6px;flex-wrap:wrap">'+(ss.carrierId?"<button onclick=\"waSampleSetSingle('"+ss.id+'\',\'carrier\')" class="btn bsm" style="background:#6D28D9;color:white;border:none;font-size:11px">&#x1F4F2; WA Staff</button>':"")+"<button onclick=\"waSampleSetSingle('"+ss.id+'\',\'salesman\')" class="btn bsm" style="background:#25D366;color:white;border:none;font-size:11px">&#x1F4F2; WA SM</button>'+"<button onclick=\"waSampleSetSingle('"+ss.id+'\',\'broker\')" class="btn bsm" style="background:#059669;color:white;border:none;font-size:11px">&#x1F4F2; WA Brk</button>'+(pending?"<button onclick=\"ssMakeInvoice('"+ss.id+'\')" class="btn bsm" style="background:#4F46E5;color:white;border:none;font-size:11px">&#x1F9FE; Bill banao</button>':"")
       +(ss.status==="Billed"&&ss.billNo?'<span style="font-size:10px;font-weight:800;color:#065F46;align-self:center">'+escHtml(ss.billNo)+'</span>':"")
       +(pending?"<button onclick=\"markSampleSetReturned('"+ss.id+'\')" class="btn bsm" style="background:#10B981;color:white;border:none;font-size:11px">&#x2714; Returned</button>':"")+(!pending?"<button onclick=\"markSampleSetPending('"+ss.id+'\')" class="btn bsm" style="background:#F59E0B;color:white;border:none;font-size:11px">&#x21A9; Pending</button>':"")+"<button onclick=\"openEditSampleSet('"+ss.id+'\')" class="btn bsm bd" style="font-size:11px">&#x270E; Edit</button>'+"</div></div>"}).join("")}function markSampleSetReturned(ssId){const ss=(STATE.sampleSets||[]).find(s=>s.id===ssId);if(!ss)return;ss.status="Returned";ss.returnedAt=today();ss._ts=_bumpTs(ss);lsSave("vs_sample_sets",STATE.sampleSets);autoSyncCloud();toast("Marked as returned","ok");renderSampleSets()}function markSampleSetPending(ssId){const ss=(STATE.sampleSets||[]).find(s=>s.id===ssId);if(!ss)return;ss.status="Pending";delete ss.returnedAt;ss._ts=_bumpTs(ss);lsSave("vs_sample_sets",STATE.sampleSets);autoSyncCloud();toast("Moved back to Pending","ok");renderSampleSets()}function openEditSampleSet(ssId){const ss=(STATE.sampleSets||[]).find(s=>s.id===ssId);if(!ss)return;_ssLeadId=ss.leadId||null;_ssEditId=ssId;_ssLots=[];_ssLotId=0;const co=[...STATE.customers].filter(c=>!c._deleted).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(c=>'<option value="'+c.id+'"'+(c.id===ss.custId?" selected":"")+">"+c.name+(c.market?" · "+c.market:"")+(c.gstin?" ("+c.gstin.substring(0,2)+")":"")+"</option>").join("");const bo=[...STATE.brokers].filter(b=>!b._deleted).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(b=>'<option value="'+b.id+'"'+(b.id===ss.brokerId?" selected":"")+">"+b.name+"</option>").join("");const so=[...STATE.users].filter(u=>!u._deleted).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(u=>'<option value="'+u.id+'"'+(u.id===ss.salesmanId?" selected":"")+">"+u.name+"</option>").join("");const ttl=el("ss-form-title");if(ttl)ttl.textContent="📦 Edit Sample Set";el("ss-form-body").innerHTML='<div class="fg"><label>Date *</label><input class="inp" type="date" id="ss-date" value="'+(ss.date||today())+'"/></div><div class="fg"><label>Party *</label><select class="sel" id="ss-cust" onchange="ssCustChg()"><option value="">Select...</option>'+co+'</select></div><div id="ss-cust-addr" style="display:none;font-size:12px;font-weight:600;color:#4F46E5;background:#EEF2FF;border-radius:8px;padding:7px 12px;margin-top:-6px;margin-bottom:10px">📍 </div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="fg"><label>Broker</label><select class="sel" id="ss-brk"><option value="">None</option>'+bo+'</select></div><div class="fg"><label>Salesman</label><select class="sel" id="ss-sm"><option value="">None</option>'+so+'</select></div></div><div class="fg"><label>Carrier (staff taking the set)</label><select class="sel" id="ss-carrier-uid" onchange="ssCrChg()"><option value="">Select user...</option>'+so+'<option value="__other__">Other / External</option></select></div><div class="fg" id="ss-carrier-txt-wrap" style="display:none"><label>Name</label><input class="inp" type="text" id="ss-carrier" value="'+escHtml(ss.carrier||"")+'"/></div><div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs</div><div style="background:#FFF7ED;border:1.5px solid #FDBA74;border-radius:12px;padding:10px 12px;margin-bottom:12px"><div style="font-size:10px;font-weight:800;color:#C2410C;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px">⚡ Quick Fill Selected</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input class="inp" type="text" id="ss-fill-cut" placeholder="Cut (e.g. 5.5m)" style="flex:1;min-width:90px;font-size:13px;font-weight:700"/><input class="inp" type="number" id="ss-fill-pcs" placeholder="Pcs" style="width:80px;font-size:13px;font-weight:700"/><button onclick="ssFillAll()" style="padding:8px 18px;background:#EA580C;color:white;border:none;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">⚡ Fill All</button></div></div><div id="ss-lots"></div><button class="btn bs bfl mt8" onclick="addSsLot()">+ Add LOT / Item</button><div class="fg mt8"><label>Notes</label><textarea class="ta" id="ss-note" rows="2">'+escHtml(ss.note||"")+"</textarea></div>";const ssBtnE=el("ss-save-btn");if(ssBtnE){ssBtnE.textContent="💾 Update"}showMod("m-sample-set");setTimeout(()=>ssCustChg(),80);if(ss.carrierId){const cuid=el("ss-carrier-uid");if(cuid){cuid.value=ss.carrierId;ssCrChg()}}else if(ss.carrier){const cuid=el("ss-carrier-uid");if(cuid){cuid.value="__other__";ssCrChg();const _cn=el("ss-carrier");if(_cn)_cn.value=ss.carrier;const _cp=el("ss-carrier-phone");if(_cp){const _sph=ss.carrierPhone||(STATE.settings?.carrierContacts||[]).find(c=>c.name.toLowerCase()===(ss.carrier||"").toLowerCase())?.phone||"";_cp.value=_sph;}}}if(ss.lots&&ss.lots.length){ss.lots.forEach((_,i)=>{addSsLot()});setTimeout(()=>{ss.lots.forEach((lotData,li)=>{const lid=li+1;const iSel=el("ssl-"+lid+"-i");if(iSel&&lotData.itemId){iSel.value=lotData.itemId;ssLotItemChange(lid);setTimeout(()=>{const rSel=el("ssl-"+lid+"-r");if(rSel&&lotData.range!==undefined){rSel.value=lotData.range===""?"__norange__":lotData.range;ssLotRangeChange(lid);setTimeout(()=>{if(lotData.colours)lotData.colours.forEach(cd=>{const ch=el("ssl-"+lid+"-ck-"+cd.idx);if(ch){ch.checked=true;ssLotClrToggle(lid,cd.idx,true)}const pe=el("ssl-"+lid+"-p-"+cd.idx);if(pe)pe.value=cd.pcs||"";const ce=el("ssl-"+lid+"-c-"+cd.idx);if(ce)ce.value=cd.cut||""})},150)}},100)}})},100)}}function _ssText(lots){return(lots||[]).map(l=>{const hdr="Items/Range: *"+l.itemName+(l.range?" / "+l.range:"")+"*";const clrs=(l.colours||[]).map((c,i,a)=>c.name+(c.cut?" ["+c.cut+"]":"")+(c.pcs?" ("+c.pcs+" pcs)":"")+(i<a.length-1?",":""));return hdr+"\n"+clrs.join("\n")}).join("\n\n")}function waSampleSetSingle(ssId,type){const ss=(STATE.sampleSets||[]).find(s=>s.id===ssId);if(!ss)return;const co=STATE.settings?.companyName||"ALT";let phone="",rn="";if(type==="carrier"){const cr=STATE.users.find(u=>u.id===ss.carrierId);const _crName=cr?cr.name:(ss.carrier||"Carrier");const _fallbackPhone=ss.carrierPhone||(STATE.settings?.carrierContacts||[]).find(c=>c.name.toLowerCase()===(ss.carrier||"").toLowerCase())?.phone||"";if(!cr){if(_fallbackPhone){phone=_fallbackPhone;}else{toast("No carrier phone — open the set and add a WhatsApp number for "+ss.carrier,"er");return;}}else if(!(cr.whatsapp||cr.phone)){if(_fallbackPhone){phone=_fallbackPhone;}else{toast("No phone number on file for "+cr.name+". Add one in Admin → Users.","er");return;}}else{phone=cr.whatsapp||cr.phone;}const _crCust=(STATE.customers||[]).find(c=>c.id===ss.custId);const _crBrk=(STATE.brokers||[]).filter(function(b){return b&&b.id===ss.brokerId})[0];
 const _crSm=_waSm(ss.salesmanId||"","");
@@ -11898,16 +12008,21 @@ function csAskLeftovers(csIds){
   _csAsk={list:list,dec:{},post:true,resolve:function(dec){
     if(!dec)return;                      // jawab nahi diya -- parchi khuli rahegi
     var n=0;
+    var nLot=0;
     Object.keys(dec).forEach(function(id){
-      if(dec[id]==="clear"&&csApplyClearSlip(id))n++;
+      if(dec[id]==="clearlot"&&csApplyClearSlipAndLot(id)){n++;nLot++}
+      else if(dec[id]==="clear"&&csApplyClearSlip(id))n++;
     });
     if(!n)return;
-    try{list.forEach(function(x){if(dec[x.slip.csId]==="clear"&&x.order)csMirrorPut(x.order,x.lot&&x.lot.key,x.slip,false)})}catch(e){}
+    try{list.forEach(function(x){var d=dec[x.slip.csId];
+      if((d==="clear"||d==="clearlot")&&x.order)csMirrorPut(x.order,x.lot&&x.lot.key,x.slip,false)})}catch(e){}
     persist();
     try{csRefreshFlowViews()}catch(e){}
     try{renderOrders()}catch(e){}
     try{renderPendingOrders()}catch(e){}
-    toast(n+(_hindi?" पर्ची क्लियर — बाकी वापस पेंडिंग में":" parchi clear &mdash; baaki wapas pending mein"),"ok");
+    toast(n+(nLot===n
+      ?(_hindi?" पर्ची क्लियर — बाकी माल लॉट से भी हटा दिया":" parchi clear &mdash; baaki maal lot se bhi hata diya")
+      :(_hindi?" पर्ची क्लियर — बाकी वापस पेंडिंग में":" parchi clear &mdash; baaki wapas pending mein")),"ok");
   }};
   csRenderAskSheet();
 }
@@ -11962,6 +12077,8 @@ function csAskPick(csId,choice){
   if(!_csAsk)return;
   if(choice==="clear"&&!csCan("cs_short_close"))
     return csDeny(_hindi?"स्लिप क्लियर करने की अनुमति नहीं है":"Slip clear karne ki permission nahi hai");
+  if(choice==="clearlot"&&!(csCan("cs_short_close")&&csCan("cs_clear_lot")))
+    return csDeny(_hindi?"लॉट से हटाने की अनुमति नहीं है":"Lot se hatane ki permission nahi hai");
   _csAsk.dec[csId]=choice;
   csRenderAskSheet();
 }
@@ -11998,7 +12115,8 @@ function csRenderAskSheet(){
       +'<span style="font-size:15px;font-weight:900;color:var(--P)">'+esc(sl.csNo)+'</span>'
       +'<span style="font-size:11.5px;font-weight:700;color:var(--t2)">'+esc(x.lot.itemName)+(x.lot.range?" &mdash; "+esc(x.lot.range):"")+'</span>'
       +(pick?'<span style="margin-left:auto;font-size:10.5px;font-weight:800;color:var(--P)">&#10003; '
-        +(pick==="clear"?(_hindi?"क्लियर":"Clear"):(_hindi?"खुली":"Khuli"))+'</span>':"")
+        +(pick==="clearlot"?(_hindi?"क्लियर + लॉट":"Clear + lot")
+  :pick==="clear"?(_hindi?"क्लियर":"Clear"):(_hindi?"खुली":"Khuli"))+'</span>':"")
       +'</div>'
       +'<div style="display:flex;gap:8px;margin-top:8px">'
       +'<div style="flex:1;background:var(--Gl);border-radius:9px;padding:7px 9px">'
@@ -12028,7 +12146,16 @@ function csRenderAskSheet(){
           +(x.rem>0?(_hindi?("बाकी "+x.rem+" वापस पेंडिंग"):("baaki "+x.rem+" wapas pending"))
                    :(_hindi?("बाकी "+csRound1(x.remMtrs)+"m वापस पेंडिंग"):("baaki "+csRound1(x.remMtrs)+"m wapas pending")))+'</span></button>'
         :"")
-      +'</div></div>';
+      +'</div>'
+      /* Teesra raasta sabse neeche, poori chaudai me -- ye sabse bada
+         faisla hai (maal ab jayega hi nahi), isliye alag dikhna chahiye. */
+      +((csCan("cs_short_close")&&csCan("cs_clear_lot")&&(x.rem>0||x.remMtrs>0))
+        ?'<button onclick="csAskPick(\''+sl.csId+'\',\'clearlot\')" style="width:100%;margin-top:8px;background:#7F1D1D;color:#fff;border:none;padding:10px 8px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;line-height:1.35;'+(pick==="clearlot"?on:(pick?off:""))+'">'
+          +(_hindi?"क्लियर + लॉट से हटाओ":"Clear + lot se hatao")+'<br><span style="font-size:9.5px;font-weight:600;opacity:.9">'
+          +(x.rem>0?(_hindi?("बाकी "+x.rem+" अब पेंडिंग में नहीं आएगा"):("baaki "+x.rem+" ab pending me nahi aayega"))
+                   :(_hindi?("बाकी "+csRound1(x.remMtrs)+"m अब पेंडिंग में नहीं आएगा"):("baaki "+csRound1(x.remMtrs)+"m ab pending me nahi aayega")))+'</span></button>'
+        :"")
+      +'</div>';
   });
   var ready=answered>=total;
   html+='<button onclick="csAskConfirm()" '+(ready?"":"disabled ")
@@ -12081,9 +12208,10 @@ function csAfterBill(ordIds,decisions){
         });
       });
     });
-    var dec=decisions||{},cleared=0,unasked=[];
+    var dec=decisions||{},cleared=0,clearedLot=0,unasked=[];
     partial.forEach(function(id){
-      if(dec[id]==="clear"&&csApplyClearSlip(id))cleared++;
+      if(dec[id]==="clearlot"&&csApplyClearSlipAndLot(id))clearedLot++;
+      else if(dec[id]==="clear"&&csApplyClearSlip(id))cleared++;
       else{
         csApplyKeepOpen(id);
         if(!dec[id])unasked.push(id);     // iska jawab aaya hi nahi
@@ -12091,6 +12219,7 @@ function csAfterBill(ordIds,decisions){
     });
     persist();
     if(cleared)toast(cleared+(_hindi?" स्लिप क्लियर — बाकी वापस पेंडिंग में":" slip clear &mdash; baaki wapas pending mein"),"ok");
+    if(clearedLot)toast(clearedLot+(_hindi?" पर्ची क्लियर — बाकी माल लॉट से भी हटा दिया":" parchi clear &mdash; baaki maal lot se bhi hata diya"),"ok");
     csCloseFinish();
     if(unasked.length&&csCan("cs_short_close"))setTimeout(function(){csAskLeftovers(unasked)},250);
   }catch(e){console.error("csAfterBill",e)}
@@ -12153,6 +12282,14 @@ async function csUnclearSlip(csId){
   try{actPush({act:"parchi_unclear",col:"csSlips",rec:csId,
     label:(r.slip.csNo||"")+((r.order&&r.order.orderNo)?" \u2014 "+r.order.orderNo:"")
       +(r.custName?" \u00b7 "+r.custName:"")})}catch(e){}
+  /* Lot se bhi hataya tha to wo wapas laao -- warna parchi khul jaati hai
+     par maal pending me kabhi nahi aata. */
+  if(r.order&&Array.isArray(r.slip.csLotCleared)){
+    var _lk=r.slip.csLotClearedKey||(r.lot&&r.lot.key)||"";
+    r.slip.csLotCleared.forEach(function(x){csClearedSub(r.order,_lk,x.sku,x.pcs,x.mtrs)});
+    delete r.slip.csLotCleared;delete r.slip.csLotClearedKey;
+    if(r.order.status==="fulfilled")r.order.status="";
+  }
   delete r.slip.csShortLines;
   r.slip.csShortClosed=false;
   r.slip.csStatusTs=nowTs();
@@ -12188,6 +12325,41 @@ function csApplyClearSlip(csId){
   r.slip.csStatusTs=nowTs();
   csLogHist(r.slip,"short",{pcs:released});
   if(r.order)r.order._ts=_bumpTs(r.order);
+  return true;
+}
+/* Teesra raasta: parchi clear karo aur jo baaki bacha wo lot se bhi hata do.
+   "Clear karo" baaki maal wapas pending me daalta hai; ye usse aage jaata hai --
+   baaki maal ab jayega hi nahi, isliye pending list me dobara nahi aayega.
+   Jo hataya wo parchi par likh dete hain, taaki unclear karne par poora
+   wapas aa jaye. */
+function csApplyClearSlipAndLot(csId){
+  if(!csCan("cs_short_close")||!csCan("cs_clear_lot"))return false;
+  var r=csFindSlip(csId);
+  if(!r||!r.order)return false;
+  // Naap pehle -- clear hote hi lines badal jaati hain
+  var doneM=csSlipDoneMap(r),doneMt=csSlipDoneMtrsMap(r);
+  var left=csSlipEffLines(r.slip).map(function(l){
+    var gone=doneM[l.sku]||0;
+    var goneM=doneMt[l.sku];
+    if(goneM==null)goneM=csRound1(gone*csLineCut(l,r.lot));
+    return{sku:l.sku,
+           pcs:Math.max(0,(Number(l.pcs)||0)-gone),
+           mtrs:Math.max(0,csRound1(csLineMtrs(l,r.lot)-goneM))};
+  }).filter(function(x){return x.sku&&(x.pcs>0||x.mtrs>0)});
+  if(!csApplyClearSlip(csId))return false;
+  var lk=(r.lot&&r.lot.key)||"";
+  left.forEach(function(x){csClearedAdd(r.order,lk,x.sku,x.pcs,x.mtrs)});
+  r.slip.csLotCleared=left;
+  r.slip.csLotClearedKey=lk;
+  r.order._ts=_bumpTs(r.order);
+  /* Order me ab kuchh bhi baaki nahi bacha to use poora ho gaya maan lo --
+     Clear Lot bhi yahi karta hai. */
+  try{
+    if(r.order.type!=="open"&&r.order.status!=="cancelled"
+       &&calcFixedOrderPending(r.order).totalRemaining<=0){
+      r.order.status="fulfilled";r.order._ts=_bumpTs(r.order);
+    }
+  }catch(e){}
   return true;
 }
 // Pcs per sku sitting on slips that have reached packing -- what is genuinely
@@ -12778,6 +12950,25 @@ function csClearedAdd(order,lotKey,sku,pcs,mtrs){
   if(mtrs>0){
     order.clearedMtrs[sku]=csRound1((order.clearedMtrs[sku]||0)+mtrs);
     if(lotKey)order.clearedMtrsByLot[lotKey][sku]=csRound1((order.clearedMtrsByLot[lotKey][sku]||0)+mtrs);
+  }
+}
+/* csClearedAdd ka ulta -- clear wapas lene par likha hua hisaab hatana
+   padta hai, warna maal do baar kat jaata hai. */
+function csClearedSub(order,lotKey,sku,pcs,mtrs){
+  if(!order||!sku)return;
+  var cut=function(obj,k,v,round){
+    if(!obj||!(k in obj))return;
+    var n=(Number(obj[k])||0)-v;
+    if(round)n=csRound1(n);
+    if(n>0)obj[k]=n;else delete obj[k];
+  };
+  if(pcs>0){
+    cut(order.clearedItems,sku,pcs,false);
+    if(lotKey&&order.clearedByLot)cut(order.clearedByLot[lotKey],sku,pcs,false);
+  }
+  if(mtrs>0){
+    cut(order.clearedMtrs,sku,mtrs,true);
+    if(lotKey&&order.clearedMtrsByLot)cut(order.clearedMtrsByLot[lotKey],sku,mtrs,true);
   }
 }
 function csGetCustName(o){
