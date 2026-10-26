@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.378-->
+<!DOCTYPE html><!--ALTV:1.45.382-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.378";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.382";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -2104,7 +2104,332 @@ async function bkRestore(key){
 }
 function downloadBackup(){const backup={_version:APP_VERSION,_exportedAt:(new Date).toISOString(),settings:STATE.settings||{}};
 DELTA_COLLECTIONS.forEach(function(k){backup[k]=STATE[k]||[]});
-["notifications","deviceReqs","sampleSets","holidays"].forEach(function(k){if(STATE[k])backup[k]=STATE[k]});const json=JSON.stringify(backup,null,2);const blob=new Blob([json],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="ALT-backup-"+today()+".json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1e3);toast("Backup file downloaded!","ok")}function restoreBackup(){const inp=document.createElement("input");inp.type="file";inp.accept=".json";inp.onchange=async function(ev){const file=ev.target.files[0];if(!file)return;try{const text=await file.text();const d=JSON.parse(text);if(!d.items&&!d.entries){toast("Invalid backup file — not an ALT backup","er");return}if(!confirm('Restore from "'+file.name+'"?\n\nThis will replace ALL current data in Google Sheets with the backup. This cannot be undone.\n\nAre you sure?'))return;toast("Restoring...","info");applyCloudData(d,true);persist();await hybridSaveAll(false);toast("Restore complete! All data is back.","ok")}catch(e){toast("Error reading file: "+e.message,"er")}};inp.click()}function setNav(tab){window._currentNav=tab;setTimeout(function(){var nb=document.getElementById('nb-'+tab);if(nb)nb.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})},80);document.body.style.overflow="";document.querySelectorAll(".nb").forEach(b=>b.classList.remove("on"));document.querySelectorAll(".scr").forEach(s=>s.classList.remove("on"));const nb=el("nb-"+tab);if(nb)nb.classList.add("on");const sc=el("s-"+tab);if(sc){sc.classList.add("on");sc.scrollTop=0}if(tab==="dash")renderDash();if(tab==="masters"){requestAnimationFrame(()=>{renderItems();renderCusts();renderBrks();renderSups();renderPrds();renderCustGroups()})}if(tab==="sales"){applySalesTabVisibility();requestAnimationFrame(()=>{renderOrders();renderBills()})}if(tab==="jw")renderJWLists();if(tab==="inward")renderInRec();requestAnimationFrame(renderExchangeList);if(tab==="admin"){if(STATE.user?.role!=="admin"){toast("Admin access restricted","er");return}renderUsers();renderDevices();renderLedger();renderSettingsForm()}if(tab==="tasks"){initTasksScreen()}if(tab==="cutting"){if(!csCanSeeCutTab()){toast("No permission to view cutting slips","er");return}renderCuttingTab()}if(tab==="floor"){if(!csCan("floor_view")){toast("No permission to view the floor tab","er");return}renderFloorTab()}if(tab==="reports"){if(!hasPerm("reports")&&STATE.user?.role!=="admin"){toast("No permission to view reports","er");return}renderReport("stock");setTimeout(applyReportTabVisibility,100);const rscr=el("s-reports");if(rscr){const firstTbb=rscr.querySelector(".tbb");const firstTp=rscr.querySelector(".tp");rscr.querySelectorAll(".tbb").forEach(b=>b.classList.remove("on"));rscr.querySelectorAll(".tp").forEach(p=>p.classList.remove("on"));if(firstTbb)firstTbb.classList.add("on");if(firstTp)firstTp.classList.add("on")}}if(tab==="leads"){if(!hasPerm("leads_view")&&STATE.user?.role!=="admin"){toast("No permission to view leads","er");return}renderLeads("all");renderLeads("mine");renderLeads("today");renderLeads("won");renderLeads("won2");renderLeads("lost");setLeadTabsForRole()}if(tab==="research")renderResearch();try{pullLatestAndRefresh()}catch(e){}}let _hindi=false;const FULL_HINDI_MAP={Dashboard:"डैशबोर्ड",Sales:"बिक्री",Inward:"आवक","Job Work":"जॉब वर्क",Masters:"मास्टर",Reports:"रिपोर्ट",Leads:"लीड",Tasks:"कार्य",Admin:"एडमिन",Research:"रिसर्च",Dash:"डैश",Orders:"ऑर्डर",Bills:"बिल",Pending:"लंबित",Payments:"भुगतान","Price List":"मूल्य सूची","+ Invoice":"+ चालान","+ Order":"+ ऑर्डर",Completed:"पूर्ण",Cancelled:"रद्द",All:"सभी",Mine:"मेरे",Won:"जीता",Lost:"हारा",Recurring:"नियमित","My Tasks":"मेरे कार्य","All Tasks":"सभी कार्य",Templates:"टेम्पलेट",Leave:"छुट्टी",Stock:"स्टॉक","vs Orders":"बनाम ऑर्डर","Daily Sales":"दैनिक बिक्री","Top SKUs":"शीर्ष SKU",Trends:"रुझान","Day Wrap":"दिन का सारांश","Star Follow-up":"स्टार फॉलो-अप","Top Customers":"शीर्ष ग्राहक",Items:"आइटम",Customers:"ग्राहक",Brokers:"दलाल",Suppliers:"आपूर्तिकर्ता",Products:"उत्पाद","Party Groups":"पार्टी ग्रुप","All SKUs":"सभी SKU",Settings:"सेटिंग्स",Users:"उपयोगकर्ता",Devices:"डिवाइस",Ledger:"खाता",Database:"डेटाबेस","Fin Year":"वित्त वर्ष",Flags:"फ्लैग",Received:"प्राप्त","Follow Up":"फॉलो अप","Won/Lost":"जीते/हारे",Samples:"सैंपल",Report:"रिपोर्ट",Save:"सेव करें",Cancel:"रद्द करें",Delete:"हटाएं",Edit:"संपादित करें",Add:"जोड़ें",Close:"बंद करें",Back:"वापस",Next:"आगे",Submit:"जमा करें",Confirm:"पुष्टि करें",Yes:"हाँ",No:"नहीं",OK:"ठीक है",Update:"अपडेट करें",Create:"बनाएं",View:"देखें",Print:"प्रिंट",Share:"शेयर",Download:"डाउनलोड",Search:"खोजें",Filter:"फिल्टर",Clear:"साफ करें","Clear Filters":"फिल्टर साफ करें","More Filters":"अधिक फिल्टर",Apply:"लागू करें",Refresh:"रीफ्रेश",Export:"एक्सपोर्ट",Go:"जाएं",Generate:"बनाएं","View Details":"विवरण देखें","View Bill":"बिल देखें","Bill ALL Lots":"सभी लॉट बिल करें","Add Programme":"प्रोग्राम जोड़ें",Logout:"लॉगआउट",Login:"लॉगिन","New Order":"नया ऑर्डर","New Bill":"नया बिल","New Invoice":"नया चालान","New Customer":"नया ग्राहक","New Item":"नया आइटम","New Lead":"नई लीड","New Task":"नया कार्य","New User":"नया उपयोगकर्ता","Create Order":"ऑर्डर बनाएं","Create Bill":"बिल बनाएं","+ Lead":"+ लीड","+ Task":"+ कार्य","+ Template":"+ टेम्पलेट","Shop → Job Work":"दुकान → जॉब वर्क","Mill → Job Work":"मिल → जॉब वर्क","+ Generate Receive Challan":"+ रिसीव चालान बनाएं","Order No":"ऑर्डर नंबर","Order Date":"ऑर्डर तारीख","Delivery Date":"डिलीवरी तारीख",Customer:"ग्राहक",Item:"आइटम",Colour:"रंग",Range:"रेंज",Lot:"लॉट",Programme:"प्रोग्राम",Qty:"मात्रा",Rate:"दर",Amount:"राशि",Pieces:"पीस",Pcs:"पीस",Meters:"मीटर","Lot No":"लॉट नंबर","Programme Lot":"प्रोग्राम लॉट","Bill Lot":"लॉट बिल करें","No Programme":"कोई प्रोग्राम नहीं","No bill raised yet":"अभी तक कोई बिल नहीं","PENDING COLOURS":"लंबित रंग","Pending Colours":"लंबित रंग","PENDING ORDERS":"लंबित ऑर्डर","Pending Orders":"लंबित ऑर्डर","pcs dispatched":"पीस भेजे गए",orders:"ऑर्डर",total:"कुल",VALUE:"मूल्य",PENDING:"लंबित","Bill No":"बिल नंबर","Bill Date":"बिल तारीख","Invoice No":"चालान नंबर","Due Date":"देय तारीख","Grand Total":"कुल योग","Sub Total":"उप योग",Total:"कुल",Tax:"कर",GST:"जीएसटी",Discount:"छूट","Amount Paid":"भुगतान राशि",Balance:"बकाया",Outstanding:"बकाया","New Tax Invoice":"नया कर चालान","Tax Invoice":"कर चालान","Bill Items":"बिल आइटम","Add Item":"आइटम जोड़ें","Create Bill":"बिल बनाएं","Save Bill":"बिल सेव करें",Billed:"बिल हो गया",Dispatched:"भेजा गया",Processing:"प्रोसेसिंग",Active:"सक्रिय",Inactive:"निष्क्रिय",Open:"खुला",Closed:"बंद",Paid:"भुगतान हो गया",Unpaid:"बकाया",Partial:"आंशिक",Cash:"नकद",Cheque:"चेक",UPI:"यूपीआई","NEFT/RTGS":"एनईएफटी/आरटीजीएस","Bank Transfer":"बैंक ट्रांसफर","Payment Mode":"भुगतान मोड","Record Payment":"भुगतान दर्ज करें","Payment Date":"भुगतान तारीख","Mill G.P":"मिल गेट पास","Gate Pass":"गेट पास","Challan No":"चालान नंबर",Exchange:"एक्सचेंज","Transfer In":"ट्रांसफर","JW Inward":"जेडब्ल्यू आवक","Job Work Challan":"जॉब वर्क चालान","Exchange Sarees":"एक्सचेंज साड़ियाँ","Stock Overview":"स्टॉक सारांश","Opening Stock":"शुरुआती स्टॉक","Stock Adjustment":"स्टॉक सुधार","Manual Entry":"मैनुअल एंट्री",Available:"उपलब्ध",Ordered:"ऑर्डर में","In Stock":"स्टॉक में","Out of Stock":"स्टॉक खत्म","Low Stock":"कम स्टॉक","Inward Stock":"आवक स्टॉक","Stock Report":"स्टॉक रिपोर्ट","Item Name":"आइटम नाम","Item Code":"आइटम कोड","HSN Code":"HSN कोड","Colour Name":"रंग का नाम","Colour Code":"रंग कोड","Customer Name":"ग्राहक का नाम",Phone:"फोन",Mobile:"मोबाइल",Address:"पता",City:"शहर",State:"राज्य",Market:"मंडी/बाजार",Commission:"कमीशन",GSTIN:"जीएसटीआईएन",PAN:"पैन","Opening Balance":"शुरुआती बकाया","Credit Limit":"क्रेडिट सीमा","From Date":"से तारीख","To Date":"तक तारीख",From:"से",To:"तक","Total Sales":"कुल बिक्री","Total Bills":"कुल बिल","Pending Amount":"लंबित राशि","Day End Report":"दिन अंत रिपोर्ट","Sales Report":"बिक्री रिपोर्ट",Welcome:"स्वागत","Recent Activity":"हालिया गतिविधि","Quick Actions":"त्वरित कार्य",Today:"आज","This Week":"इस सप्ताह","This Month":"इस महीने","Company Name":"कंपनी का नाम","Financial Year":"वित्त वर्ष",Language:"भाषा",Theme:"थीम","Dark Mode":"डार्क मोड","Select Customer":"ग्राहक चुनें","Select Item":"आइटम चुनें","All Items":"सभी आइटम","All Ranges":"सभी रेंज","All Parties":"सभी पार्टियां","All Customers":"सभी ग्राहक","All Brokers":"सभी दलाल","All Markets":"सभी मंडियां","All Status":"सभी स्थिति","All Types":"सभी प्रकार","All Staff":"सभी स्टाफ",Date:"तारीख",Note:"नोट",Remarks:"टिप्पणी",Description:"विवरण","No records found":"कोई रिकॉर्ड नहीं मिला","No orders found":"कोई ऑर्डर नहीं मिला","No bills found":"कोई बिल नहीं मिला","No items found":"कोई आइटम नहीं मिला","No customers found":"कोई ग्राहक नहीं मिला","No data available":"कोई डेटा नहीं","Loading...":"लोड हो रहा है...","Saving...":"सेव हो रहा है...","Saved!":"सेव हो गया!",Error:"त्रुटि",Success:"सफल",Lead:"लीड",Salesman:"सेल्समैन",Status:"स्थिति",Priority:"प्राथमिकता",Overdue:"समय सीमा पार","Due Today":"आज देय","Follow-up":"फॉलो अप",Password:"पासवर्ड",Username:"उपयोगकर्ता नाम",Role:"भूमिका","New Sale Order":"नया बिक्री ऑर्डर","Record stock in":"स्टॉक दर्ज करें","Create order":"ऑर्डर बनाएं","Set initial balance":"प्रारंभिक शेष","Correct variances":"फर्क सुधारें","Send to processing":"प्रोसेसिंग के लिए भेजें","Send from stock":"स्टॉक से भेजें","Mark challan received":"चालान प्राप्त दर्ज करें","Receive Job Work":"जॉब वर्क प्राप्त","New Supplier":"नया आपूर्तिकर्ता","New Broker":"नया दलाल","Add fabric type":"कपड़े का प्रकार जोड़ें","Add buyer":"खरीदार जोड़ें","Add mill / JW party":"मिल / जेडब्ल्यू जोड़ें","Add commission agent":"दलाल जोड़ें","✕ Cancel":"✕ रद्द करें","→ View Details":"→ विवरण देखें","📋 Programme Lot":"📋 प्रोग्राम लॉट","👁 View Details":"👁 विवरण देखें","🧾 Bill ALL Lots":"🧾 सभी लॉट बिल करें","📋 Add Programme":"📋 प्रोग्राम जोड़ें","❌ Cancel":"❌ रद्द करें","✎ Edit":"✎ बदलें",Pay:"भुगतान","🗑 Delete":"🗑 हटाएं","🔗 Link Order":"🔗 ऑर्डर जोड़ें","🧾 View Bills":"🧾 बिल देखें","📋 Programme Lot":"📋 प्रोग्राम लॉट","🧾 Bill":"🧾 बिल",pending:"लंबित",billed:"बिल हो गया",fulfilled:"पूर्ण",cancelled:"रद्द",processing:"प्रोसेसिंग",open:"खुला",unpaid:"बकाया",partial:"आंशिक",CANCELLED:"रद्द",OVERDUE:"बकाया","OPEN ORDER":"खुला ऑर्डर","BULK ORDER":"बल्क ऑर्डर","⚠ NO PROGRAMME":"⚠ प्रोग्राम नहीं","NO PROGRAMME":"प्रोग्राम नहीं",Value:"मूल्य","No Prog":"प्रोग्राम नहीं","bulk orders":"बल्क ऑर्डर","Pending colours":"लंबित रंग","✔ All dispatched":"✔ सब भेजा गया","No pending colours":"लंबित रंग नहीं","All Clear!":"सब ठीक है!","No pending orders. Check the Payments tab for outstanding bills.":"कोई लंबित ऑर्डर नहीं। बकाया बिलों के लिए भुगतान टैब देखें।","No Bills":"कोई बिल नहीं","Create bills from orders":"ऑर्डर से बिल बनाएं","No Orders":"कोई ऑर्डर नहीं","Tap + Order to create one":"+ ऑर्डर दबाएं बनाने के लिए","No Payments":"कोई भुगतान नहीं","Record payments against bills":"बिलों के खिलाफ भुगतान दर्ज करें","Payment Due":"भुगतान देय","Pending Payments":"लंबित भुगतान","Payment History":"भुगतान इतिहास","Paid:":"भुगतान:",Edit:"बदलें",Clear:"साफ",Bill:"बिल",Fulfilled:"पूर्ण","No Completed Orders":"कोई पूर्ण ऑर्डर नहीं","Fulfilled and cancelled orders will appear here":"पूर्ण और रद्द ऑर्डर यहाँ दिखेंगे","Prog Pending":"प्रोग्राम बाकी","Dispatched Sarees":"भेजे गए",Remaining:"बाकी","item(s)":"आइटम"};const FULL_ENGLISH_MAP=Object.fromEntries(Object.entries(FULL_HINDI_MAP).map(([k,v])=>[v,k]));const HI={dash:"डैशबोर्ड",sales:"बिक्री",inward:"आवक",jw:"जॉब वर्क",masters:"मास्टर",admin:"एडमिन",cutting:"कटिंग",floor:"फ्लोर",mill_gp:"मिल जी.पी",new_order:"नया बिक्री ऑर्डर",opening:"शुरुआती स्टॉक",adjustment:"स्टॉक सुधार",record_stk:"स्टॉक दर्ज करें",create_ord:"ऑर्डर बनाएं",set_init:"प्रारंभिक शेष",correct:"फर्क सुधारें",stock_ov:"स्टॉक सारांश",recent:"हालिया गतिविधि",quick:"त्वरित कार्य",items:"आइटम",customers:"ग्राहक",brokers:"दलाल",suppliers:"आपूर्तिकर्ता",products:"उत्पाद",settings:"सेटिंग्स",users:"उपयोगकर्ता",devices:"डिवाइस",ledger:"खाता",database:"डेटाबेस",orders:"ऑर्डर",bills:"बिल",payments:"भुगतान",outstanding:"बकाया",pending:"लंबित",received:"प्राप्त",all:"सभी",save:"सेव करें",cancel:"रद्द करें",logout:"लॉगआउट",jwin:"जेडब्ल्यू आवक",exch:"एक्सचेंज",xfer:"ट्रांसफर",new_bill:"नया बिल",rec_pay:"भुगतान दर्ज",outstanding_v:"बकाया",mill_jw:"मिल → जॉब वर्क",shop_jw:"दुकान → जॉब वर्क",recv_jw:"जॉब वर्क प्राप्त",new_item:"नया आइटम",new_cust:"नया ग्राहक",new_sup:"नया आपूर्तिकर्ता",new_brk:"नया दलाल",stk_adj:"स्टॉक सुधार",opening_stk:"शुरुआती स्टॉक",send_proc:"प्रोसेसिंग के लिए भेजें",from_stk:"स्टॉक से भेजें",mark_recv:"चालान प्राप्त दर्ज करें",corr_var:"फर्क सुधारें",add_fabric:"कपड़े का प्रकार जोड़ें",add_buyer:"खरीदार जोड़ें",add_mill:"मिल / जेडब्ल्यू जोड़ें",add_agent:"दलाल जोड़ें",inward_stk:"आवक स्टॉक"};const EN={dash:"Dashboard",sales:"Sales",inward:"Inward",jw:"Job Work",masters:"Masters",admin:"Admin",cutting:"Cutting",floor:"Floor",mill_gp:"Mill G.P",new_order:"New Sale Order",opening:"Opening Stock",adjustment:"Stock Adjustment",record_stk:"Record stock in",create_ord:"Create order",set_init:"Set initial balance",correct:"Correct variances",stock_ov:"Stock Overview",recent:"Recent Activity",quick:"Quick Actions",items:"Items",customers:"Customers",brokers:"Brokers",suppliers:"Suppliers",products:"Products",settings:"Settings",users:"Users",devices:"Devices",ledger:"Ledger",database:"Database",orders:"Orders",bills:"Bills",payments:"Payments",outstanding:"Outstanding",pending:"Pending",received:"Received",all:"All",save:"Save",cancel:"Cancel",logout:"Logout",jwin:"JW Inward",exch:"Exchange",xfer:"Transfer In",new_bill:"New Bill",rec_pay:"Record Payment",outstanding_v:"Outstanding",mill_jw:"Mill → Job Work",shop_jw:"Shop → Job Work",recv_jw:"Receive Job Work",new_item:"New Item",new_cust:"New Customer",new_sup:"New Supplier",new_brk:"New Broker",stk_adj:"Stock Adjustment",opening_stk:"Opening Stock",send_proc:"Send to processing",from_stk:"Send from stock",mark_recv:"Mark challan received",corr_var:"Correct variances",add_fabric:"Add fabric type",add_buyer:"Add buyer",add_mill:"Add mill / JW party",add_agent:"Add commission agent",inward_stk:"Inward Stock"};function tr(k){return(_hindi?HI:EN)[k]||k}function tl(s){return _hindi?FULL_HINDI_MAP[s]||s:s}function _walkTranslate(root,map){try{const skip=new Set(["SCRIPT","STYLE","INPUT","TEXTAREA","OPTION","SELECT"]);const walker=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT,{acceptNode:function(n){const p=n.parentElement;if(!p||skip.has(p.tagName))return NodeFilter.FILTER_REJECT;if(p.closest("[data-notr]"))return NodeFilter.FILTER_REJECT;return n.textContent.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);nodes.forEach(function(n){const raw=n.textContent;const t=raw.trim();if(map[t])n.textContent=raw.replace(t,map[t])});(root||document).querySelectorAll("[placeholder]").forEach(function(inp){const ph=inp.getAttribute("placeholder");if(map[ph])inp.setAttribute("placeholder",map[ph])})}catch(e){}try{const PARTIALS=map===FULL_HINDI_MAP?[[" pcs dispatched"," पीस भेजे गए"],[" / Range "," / रेंज "],[" — Lot "," — लॉट "],[" bill(s) raised"," बिल बनाए गए"],["Prog Pending:","प्रोग्राम बाकी:"],["Dispatched Sarees:","भेजे गए:"],["Remaining:","बाकी:"],[" item(s)"," आइटम"],["d ago","दिन पहले"],["Total:","कुल:"],["Bill No.","बिल नंबर"],["Amount Due","देय राशि"],["Paid So Far","अब तक भुगतान"],["Days Since Bill","बिल के बाद दिन"],["Grand Total","कुल योग"],["Bill overdue by ","बिल बकाया "],[" days!"," दिन!"],["% discount available! Pay within ","% छूट उपलब्ध! "],[" more days. Save "," और दिनों में भुगतान करें। बचत "],["Order:","ऑर्डर:"],["Bill:","बिल:"]]:map===FULL_ENGLISH_MAP?[[" पीस भेजे गए"," pcs dispatched"],[" / रेंज "," / Range "],[" — लॉट "," — Lot "],[" बिल बनाए गए"," bill(s) raised"]]:[];if(PARTIALS.length){const walker2=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT,{acceptNode:function(n){const p=n.parentElement;if(!p||new Set(["SCRIPT","STYLE","INPUT","TEXTAREA","OPTION","SELECT"]).has(p.tagName))return NodeFilter.FILTER_REJECT;if(p.closest("[data-notr]"))return NodeFilter.FILTER_REJECT;return n.textContent.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});const nodes2=[];while(walker2.nextNode())nodes2.push(walker2.currentNode);nodes2.forEach(function(n){let txt=n.textContent;let changed=false;PARTIALS.forEach(function(pair){if(txt.includes(pair[0])){txt=txt.split(pair[0]).join(pair[1]);changed=true}});if(changed)n.textContent=txt})}}catch(e){}}let _trObs=null,_trTimer=null;function _startTrObs(){if(_trObs)return;_trObs=new MutationObserver(function(){if(!_hindi)return;clearTimeout(_trTimer);_trTimer=setTimeout(function(){_walkTranslate(document.body,FULL_HINDI_MAP)},80)});_trObs.observe(document.body,{childList:true,subtree:true})}function _stopTrObs(){if(_trObs){_trObs.disconnect();_trObs=null}clearTimeout(_trTimer)}function _reRenderAll(){const fns=[function(){try{renderOrders()}catch(e){}},function(){try{renderBills()}catch(e){}},function(){try{renderPendingOrders()}catch(e){}},function(){try{renderPayments()}catch(e){}},function(){try{renderInRec()}catch(e){}},function(){try{renderItems()}catch(e){}},function(){try{renderCusts()}catch(e){}},function(){try{renderLeads("all")}catch(e){}},function(){try{renderMyTasks()}catch(e){}},function(){try{renderDash()}catch(e){}},function(){try{if(el("s-cutting"))renderCuttingTab()}catch(e){}},function(){try{if(el("s-floor"))renderFloorTab()}catch(e){}}];const an=document.querySelector(".scr.on")||document.querySelector(".scr");const sid=an?an.id.replace("s-",""):"";const priority={dash:9,sales:8,inward:7,masters:6,leads:5,tasks:4,jw:3};fns.forEach(function(fn,i){setTimeout(fn,20+i*30)})}function applyLang(){document.body.classList.toggle("hindi",_hindi);if(el("ll"))el("ll").textContent=_hindi?"🔤 English":"🔤 हिंदी";if(_hindi){_walkTranslate(document.body,FULL_HINDI_MAP);_startTrObs();setTimeout(_reRenderAll,50)}else{_stopTrObs();_walkTranslate(document.body,FULL_ENGLISH_MAP);setTimeout(_reRenderAll,50)}["dash","sales","inward","jw","masters","admin","cutting","floor"].forEach(function(k){const b=el("nb-"+k);if(!b)return;const hasDot=b.querySelector(".ndot");const icoMap={dash:"📊",sales:"🧾",inward:"📥",jw:"⚙️",masters:"🗂️",admin:"👑",cutting:"✂️",floor:"🏭"};b.innerHTML='<span class="ni">'+icoMap[k]+"</span>"+tr(k);if(hasDot)b.appendChild(hasDot)});document.querySelectorAll("[data-i18n]").forEach(function(e){e.textContent=tr(e.dataset.i18n)});document.querySelectorAll("#s-sales .tbb").forEach(function(b,i){b.textContent=[tr("orders"),tr("bills"),tr("pending"),"+ "+tr("new_bill")][i]||b.textContent});document.querySelectorAll("#s-jw .tbb").forEach(function(b,i){b.textContent=tr(["pending","received","all"][i]||"")});document.querySelectorAll("#s-masters .tbb").forEach(function(b,i){b.textContent=tr(["items","customers","brokers","suppliers","products"][i]||"")});document.querySelectorAll("#s-admin .tbb").forEach(function(b,i){b.textContent=tr(["settings","users","devices","ledger","database"][i]||"")});renderShortcuts()}function toggleLang(){_hindi=!_hindi;try{localStorage.setItem("_alt_lang",_hindi?"hi":"en")}catch(e){}applyLang();toast(_hindi?"हिंदी में बदला गया ✓":"Switched to English ✓","ok")}(function(){try{if(localStorage.getItem("_alt_lang")==="hi"){_hindi=true}}catch(e){}})();function switchTab(scr,tab,btn){const ctx=btn.closest(".scr")||btn.closest(".sh")||document;ctx.querySelectorAll(".tbb").forEach(b=>b.classList.remove("on"));ctx.querySelectorAll(".tp").forEach(p=>p.classList.remove("on"));btn.classList.add("on");const tp=el("tp-"+tab);if(tp)tp.classList.add("on")}function salesTab(t,b){if(t==="bil"){t="newinv";const nb=document.querySelector('.tb button[onclick*="newinv"]');if(nb)b=nb}switchTab("sales",t,b);if(t==="pend"){renderPendingOrders();renderCompletedOrders()}if(t==="newinv"){renderNewInvTab();renderBills()}if(t==="pricelist")renderPriceListTab()}function pendSubTab(t){const pb=el("pend-sub-pend"),db=el("pend-sub-done"),pl=el("pendlst"),dl=el("donelst");if(!pb||!db||!pl||!dl)return;pb.classList.toggle("on",t==="pend");db.classList.toggle("on",t==="done");pl.style.display=t==="pend"?"":"none";dl.style.display=t==="done"?"":"none"}function jwTab(t,b){switchTab("jw",t,b)}function mTab(t,b){switchTab("masters",t,b);if(t==="sku")renderAllSKUs()}function aTab(t,b){switchTab("admin",t,b);if(t==="hin")renderHiNames();if(t==="usr")renderUsers();if(t==="led")renderLedger();if(t==="set")renderSettingsForm();if(t==="fy")renderFYTab();if(t==="flags")renderFlaggedTab();if(t==="db")renderDbTab()}function renderShortcuts(){const c=el("dash-shortcuts");if(!c)return;const isAdmin=STATE.user?.role==="admin";const groups=[...isAdmin||hasPerm("inward")||hasPerm("inward_view")?[{title:"📥 "+tr("inward_stk"),btns:[{ico:"🏭",lbl:tr("mill_gp"),sub:tr("record_stk"),cl:"c-g",fn:"showInward('mill')"},{ico:"🔄",lbl:tr("exch"),sub:tr("exch"),cl:"c-a",fn:"openExchange()"}],cols:2}]:[],...isAdmin||hasPerm("sales_view")||hasPerm("sales_order")?[{title:"🧾 "+tr("sales"),btns:[{ico:"🧾",lbl:tr("new_order"),sub:tr("create_ord"),cl:"c-p",fn:"openNewOrder()"},{ico:"📋",lbl:"New Invoice",sub:"Create Tax Invoice",cl:"c-p",fn:"newBill()"},{ico:"📋",lbl:"Pending Report",sub:"Open orders & payments due",cl:"c-r",fn:"setNav('sales');setTimeout(()=>salesTab('pend',document.querySelector('#s-sales .tbb:nth-child(3)')),100)"}],cols:2}]:[],...isAdmin||hasPerm("jw")?[{title:"⚙️ Job Work",btns:[{ico:"🏪",lbl:tr("shop_jw"),sub:tr("from_stk"),cl:"c-a",fn:"showJWForm('s2j')"},{ico:"✅",lbl:tr("recv_jw"),sub:tr("mark_recv"),cl:"c-g",fn:"setNav('jw')"}],cols:2}]:[],...isAdmin?[{title:"📦 "+tr("stat_stock"),btns:[{ico:"📦",lbl:tr("opening_stk"),sub:tr("set_init"),cl:"c-t",fn:"openOpening()"},{ico:"📊",lbl:tr("stk_adj"),sub:tr("corr_var"),cl:"c-t",fn:"openAdjust()"},{ico:"🔀",lbl:"Transfer Stock",sub:"Convert / Move takas",cl:"c-a",fn:"openTransferHub()"}],cols:2}]:[],...isAdmin||hasPerm("masters_edit")?[{title:"🗂️ "+tr("masters"),btns:[{ico:"🧵",lbl:tr("new_item"),sub:"Add item type",cl:"c-x",fn:"openItem()"},{ico:"🎨",lbl:"New Range",sub:"Add range to item",cl:"c-p",fn:"openQuickRange()"},{ico:"🖌️",lbl:"New Colour",sub:"Add colour to range",cl:"c-p",fn:"openQuickColour()"},{ico:"👥",lbl:tr("new_cust"),sub:tr("add_buyer"),cl:"c-x",fn:"openCust()"},{ico:"🏭",lbl:tr("new_sup"),sub:tr("add_mill"),cl:"c-x",fn:"showMod('m-sup')"},{ico:"🤝",lbl:tr("new_brk"),sub:tr("add_agent"),cl:"c-x",fn:"showMod('m-brk')"}],cols:2}]:[]];c.innerHTML=groups.map(g=>{const btnsHtml=g.btns.map(b=>'<button class="sc-btn '+b.cl+'" onclick="'+b.fn+'"><div class="sc-ico">'+b.ico+'</div><div class="sc-txt"><div class="sc-lbl">'+b.lbl+'</div><div class="sc-sub">'+b.sub+"</div></div></button>").join("");return'<div class="sc-grp"><div class="sc-grp-title">'+g.title+'</div><div class="sc-row col'+g.cols+'">'+btnsHtml+"</div></div>"}).join("")}const DASH_WIDGETS=[{id:"stats",perm:"masters_view",label:"Stats Cards",icon:"📊",desc:"Items, Stock, Meters, Pending"},{id:"alerts",perm:"masters_view",label:"Alerts",icon:"🔔",desc:"Low stock & system alerts"},{id:"tasks",label:"My Tasks",icon:"📋",desc:"Today's task summary"},{id:"leadspipeline",perm:"leads_view",label:"Leads Pipeline",icon:"🎯",desc:"Lead stats, overdue & today's follow-ups"},{id:"daywrap",perm:"rep_dayend",label:"Day Wrap",icon:"🌙",desc:"Today's completed tasks & leads at a glance (admin/supervisor only)"},{id:"followups",perm:"leads_view",label:"Lead Follow-ups",icon:"📞",desc:"Due follow-up reminders"},{id:"recurring",perm:"leads_view",label:"Recurring Visits",icon:"🔁",desc:"Scheduled visit reminders"},{id:"shortcuts",label:"Quick Actions",icon:"⚡",desc:"Shortcut buttons"},{id:"stock",perm:"masters_view",label:"Stock Overview",icon:"📦",desc:"Current stock levels"},{id:"mixedsarees",perm:"masters_view",label:"Mixed Sarees",icon:"🎨",desc:"Mixed saree batches in stock"},{id:"exchanges",perm:"inward_view",label:"Exchange Slips",icon:"🔄",desc:"Ready exchange slips awaiting collection, with WhatsApp action"},{id:"recent",perm:"ledger_view",label:"Recent Activity",icon:"🕐",desc:"Latest ledger entries"},{id:"pricelist",label:"Price List",icon:"💰",desc:"Current item rates — shareable via WhatsApp",perm:"pricelist_view"},{id:"starfollow",perm:"leads_view",label:"Aaj ka kaam",icon:"🔥",desc:"Aaj kitne follow-up baaki hain -- dabao to Leads khul jaata hai"},{id:"floorstatus",label:"Shop Floor",icon:"🏭",desc:"Under Process, Shop Delivery aur Khatawala ki ginti",perm:"floor_widget"},{id:"smtarget",label:"Mahine ka target",icon:"🎯",desc:"Apne mahine ke target ki patti — kitna maal gaya, kitne order aaye, kitna baaki"}];
+["notifications","deviceReqs","sampleSets","holidays"].forEach(function(k){if(STATE[k])backup[k]=STATE[k]});const json=JSON.stringify(backup,null,2);const blob=new Blob([json],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="ALT-backup-"+today()+".json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1e3);toast("Backup file downloaded!","ok")}function restoreBackup(){const inp=document.createElement("input");inp.type="file";inp.accept=".json";inp.onchange=async function(ev){const file=ev.target.files[0];if(!file)return;try{const text=await file.text();const d=JSON.parse(text);if(!d.items&&!d.entries){toast("Invalid backup file — not an ALT backup","er");return}if(!confirm('Restore from "'+file.name+'"?\n\nThis will replace ALL current data in Google Sheets with the backup. This cannot be undone.\n\nAre you sure?'))return;toast("Restoring...","info");applyCloudData(d,true);persist();await hybridSaveAll(false);toast("Restore complete! All data is back.","ok")}catch(e){toast("Error reading file: "+e.message,"er")}};inp.click()}function setNav(tab){window._currentNav=tab;setTimeout(function(){var nb=document.getElementById('nb-'+tab);if(nb)nb.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})},80);document.body.style.overflow="";document.querySelectorAll(".nb").forEach(b=>b.classList.remove("on"));document.querySelectorAll(".scr").forEach(s=>s.classList.remove("on"));const nb=el("nb-"+tab);if(nb)nb.classList.add("on");const sc=el("s-"+tab);if(sc){sc.classList.add("on");sc.scrollTop=0}if(tab==="dash")renderDash();if(tab==="masters"){requestAnimationFrame(()=>{renderItems();renderCusts();renderBrks();renderSups();renderPrds();renderCustGroups()})}if(tab==="sales"){applySalesTabVisibility();requestAnimationFrame(()=>{renderOrders();renderBills()})}if(tab==="jw")renderJWLists();if(tab==="inward")renderInRec();requestAnimationFrame(renderExchangeList);if(tab==="admin"){if(STATE.user?.role!=="admin"){toast("Admin access restricted","er");return}renderUsers();renderDevices();renderLedger();renderSettingsForm()}if(tab==="tasks"){initTasksScreen()}if(tab==="cutting"){if(!csCanSeeCutTab()){toast("No permission to view cutting slips","er");return}renderCuttingTab()}if(tab==="floor"){if(!csCan("floor_view")){toast("No permission to view the floor tab","er");return}renderFloorTab()}if(tab==="reports"){if(!hasPerm("reports")&&STATE.user?.role!=="admin"){toast("No permission to view reports","er");return}renderReport("stock");setTimeout(applyReportTabVisibility,100);const rscr=el("s-reports");if(rscr){const firstTbb=rscr.querySelector(".tbb");const firstTp=rscr.querySelector(".tp");rscr.querySelectorAll(".tbb").forEach(b=>b.classList.remove("on"));rscr.querySelectorAll(".tp").forEach(p=>p.classList.remove("on"));if(firstTbb)firstTbb.classList.add("on");if(firstTp)firstTp.classList.add("on")}}if(tab==="leads"){if(!hasPerm("leads_view")&&STATE.user?.role!=="admin"){toast("No permission to view leads","er");return}renderLeads("all");renderLeads("mine");renderLeads("today");renderLeads("won");renderLeads("won2");renderLeads("lost");setLeadTabsForRole()}if(tab==="research")renderResearch();try{pullLatestAndRefresh()}catch(e){}}let _hindi=false;const FULL_HINDI_MAP={Dashboard:"डैशबोर्ड",Sales:"बिक्री",Inward:"आवक","Job Work":"जॉब वर्क",Masters:"मास्टर",Reports:"रिपोर्ट",Leads:"लीड",Tasks:"कार्य",Admin:"एडमिन",Research:"रिसर्च",Dash:"डैश",Orders:"ऑर्डर",Bills:"बिल",Pending:"लंबित",Payments:"भुगतान","Price List":"मूल्य सूची","+ Invoice":"+ चालान","+ Order":"+ ऑर्डर",Completed:"पूर्ण",Cancelled:"रद्द",All:"सभी",Mine:"मेरे",Won:"जीता",Lost:"हारा",Recurring:"नियमित","My Tasks":"मेरे कार्य","All Tasks":"सभी कार्य",Templates:"टेम्पलेट",Leave:"छुट्टी",Stock:"स्टॉक","vs Orders":"बनाम ऑर्डर","Daily Sales":"दैनिक बिक्री","Top SKUs":"शीर्ष SKU",Trends:"रुझान","Day Wrap":"दिन का सारांश","Star Follow-up":"स्टार फॉलो-अप","Top Customers":"शीर्ष ग्राहक",Items:"आइटम",Customers:"ग्राहक",Brokers:"दलाल",Suppliers:"आपूर्तिकर्ता",Products:"उत्पाद","Party Groups":"पार्टी ग्रुप","All SKUs":"सभी SKU",Settings:"सेटिंग्स",Users:"उपयोगकर्ता",Devices:"डिवाइस",Ledger:"खाता",Database:"डेटाबेस","Fin Year":"वित्त वर्ष",Flags:"फ्लैग",Received:"प्राप्त","Follow Up":"फॉलो अप","Won/Lost":"जीते/हारे",Samples:"सैंपल",Report:"रिपोर्ट",Save:"सेव करें",Cancel:"रद्द करें",Delete:"हटाएं",Edit:"संपादित करें",Add:"जोड़ें",Close:"बंद करें",Back:"वापस",Next:"आगे",Submit:"जमा करें",Confirm:"पुष्टि करें",Yes:"हाँ",No:"नहीं",OK:"ठीक है",Update:"अपडेट करें",Create:"बनाएं",View:"देखें",Print:"प्रिंट",Share:"शेयर",Download:"डाउनलोड",Search:"खोजें",Filter:"फिल्टर",Clear:"साफ करें","Clear Filters":"फिल्टर साफ करें","More Filters":"अधिक फिल्टर",Apply:"लागू करें",Refresh:"रीफ्रेश",Export:"एक्सपोर्ट",Go:"जाएं",Generate:"बनाएं","View Details":"विवरण देखें","View Bill":"बिल देखें","Bill ALL Lots":"सभी लॉट बिल करें","Add Programme":"प्रोग्राम जोड़ें",Logout:"लॉगआउट",Login:"लॉगिन","New Order":"नया ऑर्डर","New Bill":"नया बिल","New Invoice":"नया चालान","New Customer":"नया ग्राहक","New Item":"नया आइटम","New Lead":"नई लीड","New Task":"नया कार्य","New User":"नया उपयोगकर्ता","Create Order":"ऑर्डर बनाएं","Create Bill":"बिल बनाएं","+ Lead":"+ लीड","+ Task":"+ कार्य","+ Template":"+ टेम्पलेट","Shop → Job Work":"दुकान → जॉब वर्क","Mill → Job Work":"मिल → जॉब वर्क","+ Generate Receive Challan":"+ रिसीव चालान बनाएं","Order No":"ऑर्डर नंबर","Order Date":"ऑर्डर तारीख","Delivery Date":"डिलीवरी तारीख",Customer:"ग्राहक",Item:"आइटम",Colour:"रंग",Range:"रेंज",Lot:"लॉट",Programme:"प्रोग्राम",Qty:"मात्रा",Rate:"दर",Amount:"राशि",Pieces:"पीस",Pcs:"पीस",Meters:"मीटर","Lot No":"लॉट नंबर","Programme Lot":"प्रोग्राम लॉट","Bill Lot":"लॉट बिल करें","No Programme":"कोई प्रोग्राम नहीं","No bill raised yet":"अभी तक कोई बिल नहीं","PENDING COLOURS":"लंबित रंग","Pending Colours":"लंबित रंग","PENDING ORDERS":"लंबित ऑर्डर","Pending Orders":"लंबित ऑर्डर","pcs dispatched":"पीस भेजे गए",orders:"ऑर्डर",total:"कुल",VALUE:"मूल्य",PENDING:"लंबित","Bill No":"बिल नंबर","Bill Date":"बिल तारीख","Invoice No":"चालान नंबर","Due Date":"देय तारीख","Grand Total":"कुल योग","Sub Total":"उप योग",Total:"कुल",Tax:"कर",GST:"जीएसटी",Discount:"छूट","Amount Paid":"भुगतान राशि",Balance:"बकाया",Outstanding:"बकाया","New Tax Invoice":"नया कर चालान","Tax Invoice":"कर चालान","Bill Items":"बिल आइटम","Add Item":"आइटम जोड़ें","Create Bill":"बिल बनाएं","Save Bill":"बिल सेव करें",Billed:"बिल हो गया",Dispatched:"भेजा गया",Processing:"प्रोसेसिंग",Active:"सक्रिय",Inactive:"निष्क्रिय",Open:"खुला",Closed:"बंद",Paid:"भुगतान हो गया",Unpaid:"बकाया",Partial:"आंशिक",Cash:"नकद",Cheque:"चेक",UPI:"यूपीआई","NEFT/RTGS":"एनईएफटी/आरटीजीएस","Bank Transfer":"बैंक ट्रांसफर","Payment Mode":"भुगतान मोड","Record Payment":"भुगतान दर्ज करें","Payment Date":"भुगतान तारीख","Mill G.P":"मिल गेट पास","Gate Pass":"गेट पास","Challan No":"चालान नंबर",Exchange:"एक्सचेंज","Transfer In":"ट्रांसफर","JW Inward":"जेडब्ल्यू आवक","Job Work Challan":"जॉब वर्क चालान","Exchange Sarees":"एक्सचेंज साड़ियाँ","Stock Overview":"स्टॉक सारांश","Opening Stock":"शुरुआती स्टॉक","Stock Adjustment":"स्टॉक सुधार","Manual Entry":"मैनुअल एंट्री",Available:"उपलब्ध",Ordered:"ऑर्डर में","In Stock":"स्टॉक में","Out of Stock":"स्टॉक खत्म","Low Stock":"कम स्टॉक","Inward Stock":"आवक स्टॉक","Stock Report":"स्टॉक रिपोर्ट","Item Name":"आइटम नाम","Item Code":"आइटम कोड","HSN Code":"HSN कोड","Colour Name":"रंग का नाम","Colour Code":"रंग कोड","Customer Name":"ग्राहक का नाम",Phone:"फोन",Mobile:"मोबाइल",Address:"पता",City:"शहर",State:"राज्य",Market:"मंडी/बाजार",Commission:"कमीशन",GSTIN:"जीएसटीआईएन",PAN:"पैन","Opening Balance":"शुरुआती बकाया","Credit Limit":"क्रेडिट सीमा","From Date":"से तारीख","To Date":"तक तारीख",From:"से",To:"तक","Total Sales":"कुल बिक्री","Total Bills":"कुल बिल","Pending Amount":"लंबित राशि","Day End Report":"दिन अंत रिपोर्ट","Sales Report":"बिक्री रिपोर्ट",Welcome:"स्वागत","Recent Activity":"हालिया गतिविधि","Quick Actions":"त्वरित कार्य",Today:"आज","This Week":"इस सप्ताह","This Month":"इस महीने","Company Name":"कंपनी का नाम","Financial Year":"वित्त वर्ष",Language:"भाषा",Theme:"थीम","Dark Mode":"डार्क मोड","Select Customer":"ग्राहक चुनें","Select Item":"आइटम चुनें","All Items":"सभी आइटम","All Ranges":"सभी रेंज","All Parties":"सभी पार्टियां","All Customers":"सभी ग्राहक","All Brokers":"सभी दलाल","All Markets":"सभी मंडियां","All Status":"सभी स्थिति","All Types":"सभी प्रकार","All Staff":"सभी स्टाफ",Date:"तारीख",Note:"नोट",Remarks:"टिप्पणी",Description:"विवरण","No records found":"कोई रिकॉर्ड नहीं मिला","No orders found":"कोई ऑर्डर नहीं मिला","No bills found":"कोई बिल नहीं मिला","No items found":"कोई आइटम नहीं मिला","No customers found":"कोई ग्राहक नहीं मिला","No data available":"कोई डेटा नहीं","Loading...":"लोड हो रहा है...","Saving...":"सेव हो रहा है...","Saved!":"सेव हो गया!",Error:"त्रुटि",Success:"सफल",Lead:"लीड",Salesman:"सेल्समैन",Status:"स्थिति",Priority:"प्राथमिकता",Overdue:"समय सीमा पार","Due Today":"आज देय","Follow-up":"फॉलो अप",Password:"पासवर्ड",Username:"उपयोगकर्ता नाम",Role:"भूमिका","New Sale Order":"नया बिक्री ऑर्डर","Record stock in":"स्टॉक दर्ज करें","Create order":"ऑर्डर बनाएं","Set initial balance":"प्रारंभिक शेष","Correct variances":"फर्क सुधारें","Send to processing":"प्रोसेसिंग के लिए भेजें","Send from stock":"स्टॉक से भेजें","Mark challan received":"चालान प्राप्त दर्ज करें","Receive Job Work":"जॉब वर्क प्राप्त","New Supplier":"नया आपूर्तिकर्ता","New Broker":"नया दलाल","Add fabric type":"कपड़े का प्रकार जोड़ें","Add buyer":"खरीदार जोड़ें","Add mill / JW party":"मिल / जेडब्ल्यू जोड़ें","Add commission agent":"दलाल जोड़ें","✕ Cancel":"✕ रद्द करें","→ View Details":"→ विवरण देखें","📋 Programme Lot":"📋 प्रोग्राम लॉट","👁 View Details":"👁 विवरण देखें","🧾 Bill ALL Lots":"🧾 सभी लॉट बिल करें","📋 Add Programme":"📋 प्रोग्राम जोड़ें","❌ Cancel":"❌ रद्द करें","✎ Edit":"✎ बदलें",Pay:"भुगतान","🗑 Delete":"🗑 हटाएं","🔗 Link Order":"🔗 ऑर्डर जोड़ें","🧾 View Bills":"🧾 बिल देखें","📋 Programme Lot":"📋 प्रोग्राम लॉट","🧾 Bill":"🧾 बिल",pending:"लंबित",billed:"बिल हो गया",fulfilled:"पूर्ण",cancelled:"रद्द",processing:"प्रोसेसिंग",open:"खुला",unpaid:"बकाया",partial:"आंशिक",CANCELLED:"रद्द",OVERDUE:"बकाया","OPEN ORDER":"खुला ऑर्डर","BULK ORDER":"बल्क ऑर्डर","⚠ NO PROGRAMME":"⚠ प्रोग्राम नहीं","NO PROGRAMME":"प्रोग्राम नहीं",Value:"मूल्य","No Prog":"प्रोग्राम नहीं","bulk orders":"बल्क ऑर्डर","Pending colours":"लंबित रंग","✔ All dispatched":"✔ सब भेजा गया","No pending colours":"लंबित रंग नहीं","All Clear!":"सब ठीक है!","No pending orders. Check the Payments tab for outstanding bills.":"कोई लंबित ऑर्डर नहीं। बकाया बिलों के लिए भुगतान टैब देखें।","No Bills":"कोई बिल नहीं","Create bills from orders":"ऑर्डर से बिल बनाएं","No Orders":"कोई ऑर्डर नहीं","Tap + Order to create one":"+ ऑर्डर दबाएं बनाने के लिए","No Payments":"कोई भुगतान नहीं","Record payments against bills":"बिलों के खिलाफ भुगतान दर्ज करें","Payment Due":"भुगतान देय","Pending Payments":"लंबित भुगतान","Payment History":"भुगतान इतिहास","Paid:":"भुगतान:",Edit:"बदलें",Clear:"साफ",Bill:"बिल",Fulfilled:"पूर्ण","No Completed Orders":"कोई पूर्ण ऑर्डर नहीं","Fulfilled and cancelled orders will appear here":"पूर्ण और रद्द ऑर्डर यहाँ दिखेंगे","Prog Pending":"प्रोग्राम बाकी","Dispatched Sarees":"भेजे गए",Remaining:"बाकी","item(s)":"आइटम"};const FULL_ENGLISH_MAP=Object.fromEntries(Object.entries(FULL_HINDI_MAP).map(([k,v])=>[v,k]));const HI={dash:"डैशबोर्ड",sales:"बिक्री",inward:"आवक",jw:"जॉब वर्क",masters:"मास्टर",admin:"एडमिन",cutting:"कटिंग",floor:"फ्लोर",mill_gp:"मिल जी.पी",new_order:"नया बिक्री ऑर्डर",opening:"शुरुआती स्टॉक",adjustment:"स्टॉक सुधार",record_stk:"स्टॉक दर्ज करें",create_ord:"ऑर्डर बनाएं",set_init:"प्रारंभिक शेष",correct:"फर्क सुधारें",stock_ov:"स्टॉक सारांश",recent:"हालिया गतिविधि",quick:"त्वरित कार्य",items:"आइटम",customers:"ग्राहक",brokers:"दलाल",suppliers:"आपूर्तिकर्ता",products:"उत्पाद",settings:"सेटिंग्स",users:"उपयोगकर्ता",devices:"डिवाइस",ledger:"खाता",database:"डेटाबेस",orders:"ऑर्डर",bills:"बिल",payments:"भुगतान",outstanding:"बकाया",pending:"लंबित",received:"प्राप्त",all:"सभी",save:"सेव करें",cancel:"रद्द करें",logout:"लॉगआउट",jwin:"जेडब्ल्यू आवक",exch:"एक्सचेंज",xfer:"ट्रांसफर",new_bill:"नया बिल",rec_pay:"भुगतान दर्ज",outstanding_v:"बकाया",mill_jw:"मिल → जॉब वर्क",shop_jw:"दुकान → जॉब वर्क",recv_jw:"जॉब वर्क प्राप्त",new_item:"नया आइटम",new_cust:"नया ग्राहक",new_sup:"नया आपूर्तिकर्ता",new_brk:"नया दलाल",stk_adj:"स्टॉक सुधार",opening_stk:"शुरुआती स्टॉक",send_proc:"प्रोसेसिंग के लिए भेजें",from_stk:"स्टॉक से भेजें",mark_recv:"चालान प्राप्त दर्ज करें",corr_var:"फर्क सुधारें",add_fabric:"कपड़े का प्रकार जोड़ें",add_buyer:"खरीदार जोड़ें",add_mill:"मिल / जेडब्ल्यू जोड़ें",add_agent:"दलाल जोड़ें",inward_stk:"आवक स्टॉक"};const EN={dash:"Dashboard",sales:"Sales",inward:"Inward",jw:"Job Work",masters:"Masters",admin:"Admin",cutting:"Cutting",floor:"Floor",mill_gp:"Mill G.P",new_order:"New Sale Order",opening:"Opening Stock",adjustment:"Stock Adjustment",record_stk:"Record stock in",create_ord:"Create order",set_init:"Set initial balance",correct:"Correct variances",stock_ov:"Stock Overview",recent:"Recent Activity",quick:"Quick Actions",items:"Items",customers:"Customers",brokers:"Brokers",suppliers:"Suppliers",products:"Products",settings:"Settings",users:"Users",devices:"Devices",ledger:"Ledger",database:"Database",orders:"Orders",bills:"Bills",payments:"Payments",outstanding:"Outstanding",pending:"Pending",received:"Received",all:"All",save:"Save",cancel:"Cancel",logout:"Logout",jwin:"JW Inward",exch:"Exchange",xfer:"Transfer In",new_bill:"New Bill",rec_pay:"Record Payment",outstanding_v:"Outstanding",mill_jw:"Mill → Job Work",shop_jw:"Shop → Job Work",recv_jw:"Receive Job Work",new_item:"New Item",new_cust:"New Customer",new_sup:"New Supplier",new_brk:"New Broker",stk_adj:"Stock Adjustment",opening_stk:"Opening Stock",send_proc:"Send to processing",from_stk:"Send from stock",mark_recv:"Mark challan received",corr_var:"Correct variances",add_fabric:"Add fabric type",add_buyer:"Add buyer",add_mill:"Add mill / JW party",add_agent:"Add commission agent",inward_stk:"Inward Stock"};function tr(k){return(_hindi?HI:EN)[k]||k}function tl(s){return _hindi?FULL_HINDI_MAP[s]||s:s}function _walkTranslate(root,map){try{const skip=new Set(["SCRIPT","STYLE","INPUT","TEXTAREA","OPTION","SELECT"]);const walker=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT,{acceptNode:function(n){const p=n.parentElement;if(!p||skip.has(p.tagName))return NodeFilter.FILTER_REJECT;if(p.closest("[data-notr]"))return NodeFilter.FILTER_REJECT;return n.textContent.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);nodes.forEach(function(n){const raw=n.textContent;const t=raw.trim();if(map[t])n.textContent=raw.replace(t,map[t])});(root||document).querySelectorAll("[placeholder]").forEach(function(inp){const ph=inp.getAttribute("placeholder");if(map[ph])inp.setAttribute("placeholder",map[ph])})}catch(e){}try{const PARTIALS=map===FULL_HINDI_MAP?[[" pcs dispatched"," पीस भेजे गए"],[" / Range "," / रेंज "],[" — Lot "," — लॉट "],[" bill(s) raised"," बिल बनाए गए"],["Prog Pending:","प्रोग्राम बाकी:"],["Dispatched Sarees:","भेजे गए:"],["Remaining:","बाकी:"],[" item(s)"," आइटम"],["d ago","दिन पहले"],["Total:","कुल:"],["Bill No.","बिल नंबर"],["Amount Due","देय राशि"],["Paid So Far","अब तक भुगतान"],["Days Since Bill","बिल के बाद दिन"],["Grand Total","कुल योग"],["Bill overdue by ","बिल बकाया "],[" days!"," दिन!"],["% discount available! Pay within ","% छूट उपलब्ध! "],[" more days. Save "," और दिनों में भुगतान करें। बचत "],["Order:","ऑर्डर:"],["Bill:","बिल:"]]:map===FULL_ENGLISH_MAP?[[" पीस भेजे गए"," pcs dispatched"],[" / रेंज "," / Range "],[" — लॉट "," — Lot "],[" बिल बनाए गए"," bill(s) raised"]]:[];if(PARTIALS.length){const walker2=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT,{acceptNode:function(n){const p=n.parentElement;if(!p||new Set(["SCRIPT","STYLE","INPUT","TEXTAREA","OPTION","SELECT"]).has(p.tagName))return NodeFilter.FILTER_REJECT;if(p.closest("[data-notr]"))return NodeFilter.FILTER_REJECT;return n.textContent.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});const nodes2=[];while(walker2.nextNode())nodes2.push(walker2.currentNode);nodes2.forEach(function(n){let txt=n.textContent;let changed=false;PARTIALS.forEach(function(pair){if(txt.includes(pair[0])){txt=txt.split(pair[0]).join(pair[1]);changed=true}});if(changed)n.textContent=txt})}}catch(e){}}let _trObs=null,_trTimer=null;function _startTrObs(){if(_trObs)return;_trObs=new MutationObserver(function(){if(!_hindi)return;clearTimeout(_trTimer);_trTimer=setTimeout(function(){_walkTranslate(document.body,FULL_HINDI_MAP)},80)});_trObs.observe(document.body,{childList:true,subtree:true})}function _stopTrObs(){if(_trObs){_trObs.disconnect();_trObs=null}clearTimeout(_trTimer)}function _reRenderAll(){const fns=[function(){try{renderOrders()}catch(e){}},function(){try{renderBills()}catch(e){}},function(){try{renderPendingOrders()}catch(e){}},function(){try{renderPayments()}catch(e){}},function(){try{renderInRec()}catch(e){}},function(){try{renderItems()}catch(e){}},function(){try{renderCusts()}catch(e){}},function(){try{renderLeads("all")}catch(e){}},function(){try{renderMyTasks()}catch(e){}},function(){try{renderDash()}catch(e){}},function(){try{if(el("s-cutting"))renderCuttingTab()}catch(e){}},function(){try{if(el("s-floor"))renderFloorTab()}catch(e){}}];const an=document.querySelector(".scr.on")||document.querySelector(".scr");const sid=an?an.id.replace("s-",""):"";const priority={dash:9,sales:8,inward:7,masters:6,leads:5,tasks:4,jw:3};fns.forEach(function(fn,i){setTimeout(fn,20+i*30)})}function applyLang(){document.body.classList.toggle("hindi",_hindi);if(el("ll"))el("ll").textContent=_hindi?"🔤 English":"🔤 हिंदी";if(_hindi){_walkTranslate(document.body,FULL_HINDI_MAP);_startTrObs();setTimeout(_reRenderAll,50)}else{_stopTrObs();_walkTranslate(document.body,FULL_ENGLISH_MAP);setTimeout(_reRenderAll,50)}["dash","sales","inward","jw","masters","admin","cutting","floor"].forEach(function(k){const b=el("nb-"+k);if(!b)return;const hasDot=b.querySelector(".ndot");const icoMap={dash:"📊",sales:"🧾",inward:"📥",jw:"⚙️",masters:"🗂️",admin:"👑",cutting:"✂️",floor:"🏭"};b.innerHTML='<span class="ni">'+icoMap[k]+"</span>"+tr(k);if(hasDot)b.appendChild(hasDot)});document.querySelectorAll("[data-i18n]").forEach(function(e){e.textContent=tr(e.dataset.i18n)});document.querySelectorAll("#s-sales .tbb").forEach(function(b,i){b.textContent=[tr("orders"),tr("bills"),tr("pending"),"+ "+tr("new_bill")][i]||b.textContent});document.querySelectorAll("#s-jw .tbb").forEach(function(b,i){b.textContent=tr(["pending","received","all"][i]||"")});document.querySelectorAll("#s-masters .tbb").forEach(function(b,i){b.textContent=tr(["items","customers","brokers","suppliers","products"][i]||"")});document.querySelectorAll("#s-admin .tbb").forEach(function(b,i){b.textContent=tr(["settings","users","devices","ledger","database"][i]||"")});renderShortcuts()}function toggleLang(){_hindi=!_hindi;try{localStorage.setItem("_alt_lang",_hindi?"hi":"en")}catch(e){}applyLang();toast(_hindi?"हिंदी में बदला गया ✓":"Switched to English ✓","ok")}(function(){try{if(localStorage.getItem("_alt_lang")==="hi"){_hindi=true}}catch(e){}})();function switchTab(scr,tab,btn){const ctx=btn.closest(".scr")||btn.closest(".sh")||document;ctx.querySelectorAll(".tbb").forEach(b=>b.classList.remove("on"));ctx.querySelectorAll(".tp").forEach(p=>p.classList.remove("on"));btn.classList.add("on");const tp=el("tp-"+tab);if(tp)tp.classList.add("on")}function salesTab(t,b){if(t==="bil"){t="newinv";const nb=document.querySelector('.tb button[onclick*="newinv"]');if(nb)b=nb}switchTab("sales",t,b);if(t==="pend"){renderPendingOrders();renderCompletedOrders()}if(t==="newinv"){renderNewInvTab();renderBills()}if(t==="pricelist")renderPriceListTab()}function pendSubTab(t){const pb=el("pend-sub-pend"),db=el("pend-sub-done"),pl=el("pendlst"),dl=el("donelst");if(!pb||!db||!pl||!dl)return;pb.classList.toggle("on",t==="pend");db.classList.toggle("on",t==="done");pl.style.display=t==="pend"?"":"none";dl.style.display=t==="done"?"":"none"}function jwTab(t,b){switchTab("jw",t,b)}function mTab(t,b){switchTab("masters",t,b);if(t==="sku")renderAllSKUs()}function aTab(t,b){switchTab("admin",t,b);if(t==="hin")renderHiNames();if(t==="usr")renderUsers();if(t==="led")renderLedger();if(t==="set")renderSettingsForm();if(t==="fy")renderFYTab();if(t==="flags")renderFlaggedTab();if(t==="db")renderDbTab()}/* ── COSTING ────────────────────────────────────────────────────────────
+   Neer ki sheet ka hisaab, jaisa ka taisa. Yahan har percentage JODTA
+   nahi, BAANTTA hai -- "mujhe itna bachna chahiye", na ki "itna upar laga
+   do". Isiliye 22 par 12% shortage se 24.64 nahi, 25.00 aata hai.
+     grey   = COG / (1 - shortage%)
+     seedha = grey + har per-meter kharcha
+     selling= seedha / ((1-dalal%)(1-discount%)(1-profit%))                */
+var COST_KINDS=[
+  {k:"shortage",lbl:"% shortage (grey \u00f7)"},
+  {k:"greypct", lbl:"% grey rate par"},
+  {k:"mtr",     lbl:"\u20b9 / meter"},
+  {k:"saree",   lbl:"\u20b9 / saree"},
+  {k:"taka",    lbl:"\u20b9 / taka"},
+  {k:"shopexp", lbl:"\u20b9 shop exp (apne aap)"},
+  {k:"pricepct",lbl:"% keemat par (\u00f7)"}
+];
+function costKindLbl(k){
+  var r=COST_KINDS.filter(function(x){return x.k===k})[0];
+  return r?r.lbl:k;
+}
+function costDefaultRows(){
+  return[{name:"Shortage",kind:"shortage",val:12},
+         {name:"Grey dalali",kind:"greypct",val:0.5},
+         {name:"Dying charge",kind:"mtr",val:5},
+         {name:"Cutting",kind:"saree",val:1.5},
+         {name:"Border cutting",kind:"saree",val:0.8,on:false},
+         {name:"Shop exp",kind:"shopexp",val:0},
+         {name:"Dalal",kind:"pricepct",val:2},
+         {name:"Discount",kind:"pricepct",val:5},
+         {name:"Profit",kind:"pricepct",val:5}];
+}
+/* Shop expense andaze se nahi nikalta. Mahine ki saari pagaar, bijli aur
+   baaki kharche jod kar, usi mahine bane meter se baant do -- tab ek meter
+   par kitna kharcha baitha, wo sach me pata chalta hai. Pagaar badhegi to
+   costing khud badh jayegi, kisi ko yaad rakhna nahi padega. */
+function shopExp(){
+  if(!STATE.settings)STATE.settings={};
+  var x=STATE.settings.shopExp;
+  if(!x||typeof x!=="object"){
+    x=STATE.settings.shopExp={rows:[{name:"Staff salary",amt:0},{name:"Bijli",amt:0}],mtrs:0};
+  }
+  if(!Array.isArray(x.rows))x.rows=[];
+  return x;
+}
+function shopExpTotal(){
+  return shopExp().rows.reduce(function(a,r){return a+(Number(r&&r.amt)||0)},0);
+}
+function shopExpPerMtr(){
+  var x=shopExp(),m=Number(x.mtrs)||0;
+  if(m<=0)return 0;
+  return shopExpTotal()/m;
+}
+function shopExpSetMtrs(v){
+  shopExp().mtrs=parseFloat(v)||0;costSave();costRender();
+}
+function shopExpSetRow(i,f,v){
+  var rows=shopExp().rows;if(!rows[i])return;
+  rows[i][f]=(f==="amt")?(parseFloat(v)||0):v;
+  costSave();costRender();
+}
+function shopExpAddRow(){
+  shopExp().rows.push({name:"Naya kharcha",amt:0});costSave();costRender();
+}
+async function shopExpDelRow(i){
+  var rows=shopExp().rows;if(!rows[i])return;
+  var ok=await appConfirm("Hatayein?",(rows[i].name||"")+" hisaab se nikal dein?","\uD83D\uDDD1","Haan, hatao","dr");
+  if(!ok)return;
+  rows.splice(i,1);costSave();costRender();
+}
+function costRows(){
+  if(!STATE.settings)STATE.settings={};
+  if(!Array.isArray(STATE.settings.costRows)||!STATE.settings.costRows.length)
+    STATE.settings.costRows=costDefaultRows();
+  return STATE.settings.costRows;
+}
+function costInputs(){
+  var c=STATE.settings&&STATE.settings.costInp||{};
+  return{cog:Number(c.cog)||0,
+         cut:Number(c.cut)||6,
+         taka:Number(c.taka)||Number(STATE.settings&&STATE.settings.avgMtrPerTaka)||125};
+}
+function costCalc(inp,rows){
+  inp=inp||{};rows=rows||[];
+  var cog=Number(inp.cog)||0,cut=Number(inp.cut)||0,taka=Number(inp.taka)||0;
+  var out={cog:cog,lines:[],pct:[],off:[],err:""};
+  var shortPct=0;
+  /* Tick hata diya = ye kharcha is maal par lagta hi nahi (jaise power
+     loom par border cutting). Hisaab se bahar, par list me rehta hai. */
+  var on=function(r){return r&&r.on!==false};
+  rows.forEach(function(r){if(on(r)&&r.kind==="shortage")shortPct+=Number(r.val)||0});
+  if(shortPct>=100){out.err="Shortage 100% se kam hona chahiye";return out}
+  out.shortPct=shortPct;
+  out.grey=cog/(1-shortPct/100);
+  var direct=out.grey,div=1;
+  rows.forEach(function(r){
+    if(!r||r.kind==="shortage")return;
+    if(!on(r)){out.off.push({name:r.name||"",kind:r.kind,val:Number(r.val)||0});return}
+    var v=Number(r.val)||0;
+    if(r.kind==="pricepct"){div*=(1-v/100);out.pct.push({name:r.name||"",val:v});return}
+    var per=0,note="";
+    if(r.kind==="greypct"){per=cog*v/100;note=v+"% \u00d7 "+cog.toFixed(2)}
+    else if(r.kind==="mtr")per=v;
+    else if(r.kind==="saree"){per=cut>0?v/cut:0;note="\u20b9"+v+" \u00f7 "+cut+"m"}
+    else if(r.kind==="taka"){per=taka>0?v/taka:0;note="\u20b9"+v+" \u00f7 "+taka+"m"}
+    else if(r.kind==="shopexp"){
+      per=shopExpPerMtr();
+      var _m=Number(shopExp().mtrs)||0;
+      note=_m>0?(fmtN(Math.round(shopExpTotal()))+" \u00f7 "+fmtN(_m)+"m"):"hisaab bharna baaki";
+    }
+    direct+=per;
+    out.lines.push({name:r.name||"",kind:r.kind,val:v,per:per,note:note});
+  });
+  out.direct=direct;out.div=div;
+  if(div<=0.0001){out.err="Dalal, discount aur profit milakar 100% se kam hone chahiye";return out}
+  out.selling=direct/div;
+  return out;
+}
+function costCan(){
+  try{return csIsAdmin()||hasPerm("costing")}catch(e){return false}
+}
+function openCosting(){
+  if(!costCan())return csDeny("Costing dekhne ki permission nahi hai");
+  var d=document.getElementById("m-costing");if(d)d.remove();
+  d=document.createElement("div");d.className="ov";d.id="m-costing";
+  d.innerHTML='<div class="sh" style="max-height:92vh;display:flex;flex-direction:column">'
+    +'<div class="shh"><div class="hr"><div><h3>\uD83D\uDCB0 Costing</h3>'
+    +'<p class="sub">Grey se selling price tak</p></div>'
+    +'<button class="btn bgh bsm" onclick="document.getElementById(\'m-costing\').remove()">\u2715</button>'
+    +'</div></div>'
+    +'<div style="flex:1;overflow:auto" id="cost-body"></div></div>';
+  _ovOpen(d);
+  costRender();
+}
+function costSave(){
+  try{lsSave("vs_settings",STATE.settings)}catch(e){}
+  try{persist()}catch(e){}
+}
+function costSetInp(f,v){
+  if(!STATE.settings.costInp)STATE.settings.costInp={};
+  STATE.settings.costInp[f]=parseFloat(v)||0;
+  costSave();costRender();
+}
+function costSetRow(i,f,v){
+  var rows=costRows();if(!rows[i])return;
+  rows[i][f]=(f==="val")?(parseFloat(v)||0):v;
+  costSave();costRender();
+}
+function costToggleRow(i){
+  var rows=costRows();if(!rows[i])return;
+  rows[i].on=(rows[i].on===false);
+  costSave();costRender();
+}
+function costAddRow(){
+  costRows().push({name:"Naya kharcha",kind:"mtr",val:0});
+  costSave();costRender();
+}
+async function costDelRow(i){
+  var rows=costRows();if(!rows[i])return;
+  var ok=await appConfirm("Hatayein?",(rows[i].name||"")+" hisaab se nikal dein?","\uD83D\uDDD1","Haan, hatao","dr");
+  if(!ok)return;
+  rows.splice(i,1);costSave();costRender();
+}
+function costMoveRow(i,dir){
+  var rows=costRows(),j=i+dir;
+  if(!rows[i]||!rows[j])return;
+  var t=rows[i];rows[i]=rows[j];rows[j]=t;
+  costSave();costRender();
+}
+async function costReset(){
+  var ok=await appConfirm("Wapas purane par?","Saare kharche hata kar shuruaati list laga dein?","\u21BA","Haan","dr");
+  if(!ok)return;
+  STATE.settings.costRows=costDefaultRows();costSave();costRender();
+}
+function _costN(n){return(Math.round((Number(n)||0)*100)/100).toFixed(2)}
+/* Pagaar kisi ko nahi dikhni chahiye -- isliye ye khaana sirf admin ko,
+   chahe kisi staff ke paas costing ki permission ho. Usko sirf ek meter
+   ka number dikhega, kiski kitni pagaar hai wo nahi. */
+function _shopExpBox(){
+  var admin=false;try{admin=csIsAdmin()}catch(e){admin=false}
+  if(!admin)return "";
+  var x=shopExp(),tot=shopExpTotal(),m=Number(x.mtrs)||0,per=shopExpPerMtr();
+  var h='<div style="margin-top:18px;background:#FFFBEB;border:1.5px solid #FDE68A;'
+    +'border-radius:12px;padding:12px 13px">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">'
+    +'<span style="font-size:10px;font-weight:900;color:#92400E;letter-spacing:.6px;'
+    +'text-transform:uppercase">\uD83C\uDFED Shop exp ka hisaab</span>'
+    +'<span style="font-size:9.5px;font-weight:800;background:#FDE68A;color:#78350F;'
+    +'padding:2px 7px;border-radius:5px">sirf admin</span></div>';
+  x.rows.forEach(function(r,i){
+    h+='<div style="display:flex;align-items:center;gap:6px;padding:5px 0">'
+      +'<input value="'+escHtml(r.name||"")+'" onchange="shopExpSetRow('+i+',\'name\',this.value)" '
+      +'style="flex:1;min-width:90px;padding:6px 8px;border:1.5px solid #FDE68A;border-radius:7px;'
+      +'font-weight:700;font-size:12.5px;font-family:inherit;background:#fff">'
+      +'<input type="number" step="1" value="'+(r.amt||"")+'" placeholder="mahine ka" '
+      +'onchange="shopExpSetRow('+i+',\'amt\',this.value)" style="width:104px;padding:6px;'
+      +'border:1.5px solid #FDE68A;border-radius:7px;font-weight:800;font-size:12.5px;'
+      +'font-family:inherit;text-align:center;background:#fff">'
+      +'<button onclick="shopExpDelRow('+i+')" style="background:none;border:none;color:#B91C1C;'
+      +'font-size:14px;cursor:pointer;padding:0 3px;font-family:inherit">\u2715</button></div>';
+  });
+  h+='<button onclick="shopExpAddRow()" style="margin-top:4px;background:#D97706;color:#fff;'
+    +'border:none;padding:5px 11px;border-radius:7px;font-size:11.5px;font-weight:800;'
+    +'cursor:pointer;font-family:inherit">+ Kharcha</button>';
+  h+='<div style="display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:9px;'
+    +'border-top:1px solid #FDE68A">'
+    +'<span style="flex:1;font-size:11.5px;font-weight:800;color:#78350F">Mahine me bane meter</span>'
+    +'<input type="number" step="1" value="'+(m||"")+'" placeholder="meter" '
+    +'onchange="shopExpSetMtrs(this.value)" style="width:104px;padding:6px;border:1.5px solid #FDE68A;'
+    +'border-radius:7px;font-weight:800;font-size:12.5px;font-family:inherit;text-align:center;background:#fff"></div>';
+  h+='<div style="margin-top:9px;padding-top:9px;border-top:1px solid #FDE68A;'
+    +'display:flex;align-items:flex-end;justify-content:space-between;gap:8px">'
+    +'<span style="font-size:11.5px;font-weight:800;color:#78350F">'
+    +(m>0?('\u20b9'+fmtN(Math.round(tot))+' \u00f7 '+fmtN(m)+'m'):'Meter bharo tab hisaab banega')+'</span>'
+    +'<span style="font-size:22px;font-weight:900;color:#92400E;line-height:1;'
+    +'font-variant-numeric:tabular-nums">\u20b9'+_costN(per)
+    +'<span style="font-size:11px;font-weight:800;color:#B45309"> /meter</span></span></div>';
+  h+='<div style="font-size:10px;color:#92400E;font-weight:700;margin-top:7px;line-height:1.5">'
+    +"Upar ki list me \u0022Shop exp\u0022 ki kism \u0022\u20b9 shop exp (apne aap)\u0022 rakho \u2014 "
+    +"phir pagaar badhte hi costing khud badh jayegi."
+    +'</div></div>';
+  return h;
+}
+function costRender(){
+  var box=document.getElementById("cost-body");if(!box)return;
+  var inp=costInputs(),rows=costRows(),R=costCalc(inp,rows);
+  var fld=function(lbl,id,val,f,step){
+    return'<div style="flex:1;min-width:92px"><label style="font-size:9.5px;font-weight:800;'
+      +'color:var(--t3);letter-spacing:.4px;text-transform:uppercase">'+lbl+'</label>'
+      +'<input id="'+id+'" type="number" step="'+(step||"0.01")+'" value="'+(val||"")+'" '
+      +'onchange="costSetInp(\''+f+'\',this.value)" style="width:100%;margin-top:3px;padding:8px;'
+      +'border:1.5px solid var(--br);border-radius:8px;font-weight:800;font-size:14px;'
+      +'font-family:inherit;text-align:center">';
+  };
+  var h='<div style="padding:12px 14px 16px">'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'
+    +fld("Grey rate \u20b9/m","cost-cog",inp.cog,"cog")
+    +fld("Cut m/saree","cost-cut",inp.cut,"cut","0.1")
+    +fld("Taka ke meter","cost-taka",inp.taka,"taka","1")
+    +'</div>';
+  if(R.err){
+    h+='<div style="background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:10px;'
+      +'padding:10px 12px;font-size:12px;font-weight:800;color:#B91C1C">\u26A0\uFE0F '+escHtml(R.err)+'</div>';
+  }else{
+    var row=function(a,b,bold,col){
+      return'<div style="display:flex;justify-content:space-between;gap:10px;padding:4px 0;'
+        +'font-size:'+(bold?"13":"12.5")+'px;font-weight:'+(bold?"900":"700")+';'
+        +'color:'+(col||"var(--tx)")+'"><span>'+a+'</span><span style="font-variant-numeric:tabular-nums">'+b+'</span></div>';
+    };
+    var hr='<div style="border-top:1px solid var(--br);margin:6px 0"></div>';
+    h+='<div style="background:var(--cd);border:1.5px solid var(--br);border-radius:12px;padding:12px 14px">';
+    h+=row("Grey rate",_costN(R.cog));
+    if(R.shortPct>0)h+=row("Shortage "+R.shortPct+"%","\u00f7 "+_costN(1-R.shortPct/100),false,"var(--t3)");
+    h+=row("Grey + shortage",_costN(R.grey),true);
+    h+=hr;
+    R.lines.forEach(function(l){
+      h+=row(escHtml(l.name)+(l.note?' <span style="font-size:10px;color:var(--t3);font-weight:700">'+escHtml(l.note)+'</span>':""),
+             "+ "+_costN(l.per));
+    });
+    (R.off||[]).forEach(function(o){
+      h+=row('<span style="text-decoration:line-through">'+escHtml(o.name)+'</span>'
+        +' <span style="font-size:10px;font-weight:700">band</span>',"\u2014",false,"var(--t3)");
+    });
+    h+=hr+row("Seedha kharcha",_costN(R.direct),true);
+    R.pct.forEach(function(p){
+      h+=row(escHtml(p.name)+" "+p.val+"%","\u00f7 "+_costN(1-p.val/100),false,"var(--t3)");
+    });
+    h+='<div style="border-top:2px solid var(--br);margin:8px 0 10px"></div>'
+      +'<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px">'
+      +'<span style="font-size:10px;font-weight:900;color:var(--t3);letter-spacing:.6px;'
+      +'text-transform:uppercase">Selling price</span>'
+      +'<span style="font-size:30px;font-weight:900;color:var(--P);line-height:1;'
+      +'letter-spacing:-1px;font-variant-numeric:tabular-nums">\u20b9'+_costN(R.selling)
+      +'<span style="font-size:12px;font-weight:800;color:var(--t3)"> /meter</span></span></div>';
+    h+='</div>';
+  }
+  // ── kharche ki list, jisme naya header jod sakte ho
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 7px">'
+    +'<span style="font-size:10px;font-weight:900;color:var(--t3);letter-spacing:.6px;'
+    +'text-transform:uppercase">Kharche</span>'
+    +'<div style="display:flex;gap:6px">'
+    +'<button onclick="costReset()" style="background:none;border:none;font-size:11px;font-weight:800;'
+    +'color:var(--t3);cursor:pointer;font-family:inherit">\u21BA Purana</button>'
+    +'<button onclick="costAddRow()" style="background:var(--P);color:#fff;border:none;padding:5px 11px;'
+    +'border-radius:7px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">+ Kharcha</button>'
+    +'</div></div>';
+  rows.forEach(function(r,i){
+    var _on=r.on!==false;
+    h+='<div style="display:flex;align-items:center;gap:6px;padding:7px 0;border-top:1px solid var(--br);'
+      +'flex-wrap:wrap;opacity:'+(_on?"1":".5")+'">'
+      +'<input type="checkbox" onchange="costToggleRow('+i+')"'+(_on?" checked":"")
+      +' title="is maal par ye kharcha lagta hai?" style="width:17px;height:17px;flex-shrink:0;accent-color:var(--P)">'
+      +'<input value="'+escHtml(r.name||"")+'" onchange="costSetRow('+i+',\'name\',this.value)" '
+      +'style="flex:1;min-width:110px;padding:6px 8px;border:1.5px solid var(--br);border-radius:7px;'
+      +'font-weight:700;font-size:12.5px;font-family:inherit">'
+      +'<select onchange="costSetRow('+i+',\'kind\',this.value)" style="padding:6px;border:1.5px solid var(--br);'
+      +'border-radius:7px;font-size:11.5px;font-weight:700;font-family:inherit">'
+      +COST_KINDS.map(function(k){
+        return'<option value="'+k.k+'"'+(r.kind===k.k?" selected":"")+'>'+k.lbl+'</option>';
+      }).join("")+'</select>'
+      +(r.kind==="shopexp"
+        ?'<span title="niche ke hisaab se apne aap" style="width:72px;padding:6px;'
+          +'border:1.5px dashed var(--br);border-radius:7px;font-weight:800;font-size:12.5px;'
+          +'text-align:center;color:var(--t3)">'+_costN(shopExpPerMtr())+'</span>'
+        :'<input type="number" step="0.01" value="'+(r.val!=null?r.val:"")+'" '
+          +'onchange="costSetRow('+i+',\'val\',this.value)" style="width:72px;padding:6px;'
+          +'border:1.5px solid var(--br);border-radius:7px;font-weight:800;font-size:12.5px;'
+          +'font-family:inherit;text-align:center">')
+      +'<button onclick="costMoveRow('+i+',-1)" style="background:none;border:none;color:var(--t3);'
+      +'font-size:13px;cursor:pointer;padding:0 2px;font-family:inherit">\u25B2</button>'
+      +'<button onclick="costMoveRow('+i+',1)" style="background:none;border:none;color:var(--t3);'
+      +'font-size:13px;cursor:pointer;padding:0 2px;font-family:inherit">\u25BC</button>'
+      +'<button onclick="costDelRow('+i+')" style="background:none;border:none;color:#B91C1C;'
+      +'font-size:14px;cursor:pointer;padding:0 3px;font-family:inherit">\u2715</button>'
+      +'</div>';
+  });
+  h+=_shopExpBox();
+  h+='<div style="font-size:10.5px;color:var(--t3);font-weight:700;line-height:1.6;margin-top:10px">'
+    +"Tick hata do to wo kharcha is hisaab me nahi aayega \u2014 jaise power loom ke "
+    +"maal par border cutting. Kharcha list me pada rahega, mitega nahi.<br><br>"
+    +"\u0025 keemat par wale (dalal, discount, profit) aakhir me keemat ko baantte hain \u2014 "
+    +"isliye 5% profit ka matlab hai keemat ka 5%, lagat ka nahi."
+    +'</div>';
+  h+='</div>';
+  box.innerHTML=h;
+}
+function renderShortcuts(){const c=el("dash-shortcuts");if(!c)return;const isAdmin=STATE.user?.role==="admin";const groups=[...isAdmin||hasPerm("inward")||hasPerm("inward_view")?[{title:"📥 "+tr("inward_stk"),btns:[{ico:"🏭",lbl:tr("mill_gp"),sub:tr("record_stk"),cl:"c-g",fn:"showInward('mill')"},{ico:"🔄",lbl:tr("exch"),sub:tr("exch"),cl:"c-a",fn:"openExchange()"}],cols:2}]:[],...isAdmin||hasPerm("sales_view")||hasPerm("sales_order")?[{title:"🧾 "+tr("sales"),btns:[{ico:"🧾",lbl:tr("new_order"),sub:tr("create_ord"),cl:"c-p",fn:"openNewOrder()"},{ico:"📋",lbl:"New Invoice",sub:"Create Tax Invoice",cl:"c-p",fn:"newBill()"},{ico:"📋",lbl:"Pending Report",sub:"Open orders & payments due",cl:"c-r",fn:"setNav('sales');setTimeout(()=>salesTab('pend',document.querySelector('#s-sales .tbb:nth-child(3)')),100)"}],cols:2}]:[],...isAdmin||hasPerm("jw")?[{title:"⚙️ Job Work",btns:[{ico:"🏪",lbl:tr("shop_jw"),sub:tr("from_stk"),cl:"c-a",fn:"showJWForm('s2j')"},{ico:"✅",lbl:tr("recv_jw"),sub:tr("mark_recv"),cl:"c-g",fn:"setNav('jw')"}],cols:2}]:[],...isAdmin?[{title:"📦 "+tr("stat_stock"),btns:[{ico:"📦",lbl:tr("opening_stk"),sub:tr("set_init"),cl:"c-t",fn:"openOpening()"},{ico:"📊",lbl:tr("stk_adj"),sub:tr("corr_var"),cl:"c-t",fn:"openAdjust()"},{ico:"🔀",lbl:"Transfer Stock",sub:"Convert / Move takas",cl:"c-a",fn:"openTransferHub()"}],cols:2}]:[],...isAdmin||hasPerm("masters_edit")?[{title:"🗂️ "+tr("masters"),btns:[{ico:"🧵",lbl:tr("new_item"),sub:"Add item type",cl:"c-x",fn:"openItem()"},{ico:"🎨",lbl:"New Range",sub:"Add range to item",cl:"c-p",fn:"openQuickRange()"},{ico:"🖌️",lbl:"New Colour",sub:"Add colour to range",cl:"c-p",fn:"openQuickColour()"},{ico:"👥",lbl:tr("new_cust"),sub:tr("add_buyer"),cl:"c-x",fn:"openCust()"},{ico:"🏭",lbl:tr("new_sup"),sub:tr("add_mill"),cl:"c-x",fn:"showMod('m-sup')"},{ico:"🤝",lbl:tr("new_brk"),sub:tr("add_agent"),cl:"c-x",fn:"showMod('m-brk')"}],cols:2}]:[],...costCan()?[{title:"\uD83D\uDCB0 Costing",btns:[{ico:"\uD83D\uDCB0",lbl:"Costing",sub:"Grey se selling price",cl:"c-g",fn:"openCosting()"}],cols:2}]:[]];c.innerHTML=groups.map(g=>{const btnsHtml=g.btns.map(b=>'<button class="sc-btn '+b.cl+'" onclick="'+b.fn+'"><div class="sc-ico">'+b.ico+'</div><div class="sc-txt"><div class="sc-lbl">'+b.lbl+'</div><div class="sc-sub">'+b.sub+"</div></div></button>").join("");return'<div class="sc-grp"><div class="sc-grp-title">'+g.title+'</div><div class="sc-row col'+g.cols+'">'+btnsHtml+"</div></div>"}).join("")}const DASH_WIDGETS=[{id:"stats",perm:"masters_view",label:"Stats Cards",icon:"📊",desc:"Items, Stock, Meters, Pending"},{id:"alerts",perm:"masters_view",label:"Alerts",icon:"🔔",desc:"Low stock & system alerts"},{id:"tasks",label:"My Tasks",icon:"📋",desc:"Today's task summary"},{id:"leadspipeline",perm:"leads_view",label:"Leads Pipeline",icon:"🎯",desc:"Lead stats, overdue & today's follow-ups"},{id:"daywrap",perm:"rep_dayend",label:"Day Wrap",icon:"🌙",desc:"Today's completed tasks & leads at a glance (admin/supervisor only)"},{id:"followups",perm:"leads_view",label:"Lead Follow-ups",icon:"📞",desc:"Due follow-up reminders"},{id:"recurring",perm:"leads_view",label:"Recurring Visits",icon:"🔁",desc:"Scheduled visit reminders"},{id:"shortcuts",label:"Quick Actions",icon:"⚡",desc:"Shortcut buttons"},{id:"stock",perm:"masters_view",label:"Stock Overview",icon:"📦",desc:"Current stock levels"},{id:"mixedsarees",perm:"masters_view",label:"Mixed Sarees",icon:"🎨",desc:"Mixed saree batches in stock"},{id:"exchanges",perm:"inward_view",label:"Exchange Slips",icon:"🔄",desc:"Ready exchange slips awaiting collection, with WhatsApp action"},{id:"recent",perm:"ledger_view",label:"Recent Activity",icon:"🕐",desc:"Latest ledger entries"},{id:"pricelist",label:"Price List",icon:"💰",desc:"Current item rates — shareable via WhatsApp",perm:"pricelist_view"},{id:"starfollow",perm:"leads_view",label:"Aaj ka kaam",icon:"🔥",desc:"Aaj kitne follow-up baaki hain -- dabao to Leads khul jaata hai"},{id:"floorstatus",label:"Shop Floor",icon:"🏭",desc:"Under Process, Shop Delivery aur Khatawala ki ginti",perm:"floor_widget"},{id:"smtarget",label:"Mahine ka target",icon:"🎯",desc:"Apne mahine ke target ki patti — kitna maal gaya, kitne order aaye, kitna baaki"}];
 // Widget tabhi dikhega jab uski permission ho. Admin ko sab dikhta hai.
 // Kisi ke naam par star party likhi hai? (Halka check -- koi task nahi banata.)
 function _ownsStarParty(uid){
@@ -6125,7 +6450,31 @@ async function cancelOrder(id){
   try{renderOrders()}catch(e){}try{renderPendingOrders()}catch(e){}try{renderDash()}catch(e){}
   toast("Order "+(o.orderNo||"")+" wapas Pending","ok");
 }
-async function clearOrder(id){if(!csCan("cs_clear_lot"))return csDeny("Order clear karne ki permission nahi hai");const ok=await appConfirm("Clear Order?","Mark this order as cleared/fulfilled without creating a bill? Any pending sarees still left in this order (across all lots) will be marked as not to be billed or dispatched.","?","Clear","ok");if(!ok)return;const o=STATE.orders.find(x=>x.id===id);if(!o)return;if(o.type!=="open"){const fp=calcFixedOrderPending(o);if(fp.totalRemaining>0||fp.totalRemainingMtrs>0.5){if(!o.clearedItems)o.clearedItems={};if(!o.clearedMtrs)o.clearedMtrs={};Object.values(fp.bySku).forEach(x=>{if(x.remaining>0)o.clearedItems[x.sku]=(o.clearedItems[x.sku]||0)+x.remaining;if(x.remainingMtrs>0)o.clearedMtrs[x.sku]=csRound1((o.clearedMtrs[x.sku]||0)+x.remainingMtrs)})}}o.status="fulfilled";o._ts=_bumpTs(o);persist();renderOrders();renderPendingOrders();toast("Order marked as fulfilled","ok")}function editOrder(id){const o=STATE.orders.find(x=>x.id===id);if(!o)return;_ordId=id;_ordRows=[{}];window._editOrdTs=o._ts||0;_ordType=o.type==="open"?"open":"fixed";if(_ordType==="open"){_openItems=(o.openItems||[{id:0}]).map((oi,i)=>({...oi,id:i}));_openItemId=_openItems.length}window._ordPfx=(o.orderNo||"").replace(/[0-9]+$/,"");window._editOrdNo=o.orderNo;el("ordno").textContent=o.orderNo;el("ordtit").textContent="Edit Order";const lotGroups={};const hasLotIndex=(o.items||[]).some(it=>it.lotIndex!=null);(o.items||[]).forEach(it=>{const key=it.lotUid||(hasLotIndex?String(it.lotIndex):it.itemId+"|"+it.range);if(!lotGroups[key])lotGroups[key]={itemId:it.itemId,range:it.range,uid:it.lotUid||"",items:[]};lotGroups[key].items.push(it)});const groups=Object.entries(lotGroups).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).map(e=>e[1]);_ordLots=[];_lotId=0;if(groups.length){groups.forEach(g=>{_ordLots.push({id:_lotId,uid:g.uid||uid()});_lotId++})}else{_ordLots=[{id:0,uid:uid()}];_lotId=1}window._editLotData=groups.map((grp,gi)=>({lid:_ordLots[gi].id,grp:grp}));buildOrdBody();setTimeout(()=>{if(o.salesmanId&&el("od-sm"))el("od-sm").value=o.salesmanId;if(o.custId&&el("od-c")){el("od-c").value=o.custId;onOrderCustChange();syncSearchable(el("od-c"))}if(o.brkId&&el("od-b")){el("od-b").value=o.brkId;syncSearchable(el("od-b"))}if(o.date&&el("od-d"))el("od-d").value=o.date;if(o.notes&&el("od-nt"))el("od-nt").value=o.notes||"";try{fillBillFirmOptions(o.custId||"",o.billingFirm||"")}catch(e){}el("od-bfirm").value=o.billingFirm||"";el("od-bterms").value=o.billingTerms||"";if(el("od-dphone"))el("od-dphone").value=o.receiverPhone||"";el("od-ddate").value=o.deliveryDate||"";el("od-ddays").value=o.deliveryDays||"";el("od-dtype").value=o.deliveryType||el("od-dtype").value||"";el("od-dperson").value=o.deliveryPerson||"";if(el("od-ordno-edit"))el("od-ordno-edit").value=o.orderNo||"";if(_ordType==="open"){(o.openItems||[]).forEach((oi,i)=>{const iSel=el("od-oi-"+i+"-itm");if(iSel)iSel.value=oi.itemId||"";const pFld=el("od-oi-"+i+"-pcs");if(pFld)pFld.value=oi.totalPcs||"";const rFld=el("od-oi-"+i+"-rate");if(rFld)rFld.value=oi.rate||""})}_restoreEditLots(window._editLotData||[])},80);showMod("m-ord")}function duplicateOrder(id){const o=STATE.orders.find(x=>x.id===id);if(!o)return;_ordId=null;_ordRows=[{}];window._editOrdTs=0;_ordType=o.type==="open"?"open":"fixed";if(_ordType==="open"){_openItems=(o.openItems||[{id:0}]).map((oi,i)=>({...oi,id:i}));_openItemId=_openItems.length}const smUser=STATE.users.find(u=>u.id===o.salesmanId);window._ordPfx=smUser?.orderPrefix||STATE.user?.orderPrefix||STATE.settings.orderPrefix||"B/";window._editOrdNo=null;el("ordno").textContent=nextOrdNo(window._ordPfx);if(el("ordtit"))el("ordtit").textContent=(_hindi?"ऑर्डर डुप्लीकेट":"Duplicate Order");const lotGroups={};const hasLotIndex=(o.items||[]).some(it=>it.lotIndex!=null);(o.items||[]).forEach(it=>{const key=it.lotUid||(hasLotIndex?String(it.lotIndex):it.itemId+"|"+it.range);if(!lotGroups[key])lotGroups[key]={itemId:it.itemId,range:it.range,items:[]};lotGroups[key].items.push(it)});const groups=Object.entries(lotGroups).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).map(e=>e[1]);_ordLots=[];_lotId=0;if(groups.length){groups.forEach(()=>{_ordLots.push({id:_lotId,uid:uid()});_lotId++})}else{_ordLots=[{id:0}];_lotId=1}window._editLotData=groups.map((grp,gi)=>({lid:_ordLots[gi].id,grp:grp}));buildOrdBody();setTimeout(()=>{if(o.salesmanId&&el("od-sm"))el("od-sm").value=o.salesmanId;if(o.custId&&el("od-c")){el("od-c").value=o.custId;onOrderCustChange()}if(o.brkId&&el("od-b"))el("od-b").value=o.brkId;if(el("od-d"))el("od-d").value=new Date().toISOString().slice(0,10);if(o.notes&&el("od-nt"))el("od-nt").value=o.notes||"";try{fillBillFirmOptions(o.custId||"",o.billingFirm||"")}catch(e){}if(el("od-dphone"))el("od-dphone").value=o.receiverPhone||"";if(el("od-bfirm"))el("od-bfirm").value=o.billingFirm||"";if(el("od-bterms"))el("od-bterms").value=o.billingTerms||"";if(el("od-ddate"))el("od-ddate").value="";if(el("od-ddays"))el("od-ddays").value=o.deliveryDays||"";if(el("od-dtype"))el("od-dtype").value=o.deliveryType||el("od-dtype").value||"";if(el("od-dperson"))el("od-dperson").value=o.deliveryPerson||"";if(el("od-ordno-edit"))el("od-ordno-edit").value="";if(_ordType==="open"){(o.openItems||[]).forEach((oi,i)=>{const iSel=el("od-oi-"+i+"-itm");if(iSel)iSel.value=oi.itemId||"";const pFld=el("od-oi-"+i+"-pcs");if(pFld)pFld.value=oi.totalPcs||"";const rFld=el("od-oi-"+i+"-rate");if(rFld)rFld.value=oi.rate||""})}_restoreEditLots(window._editLotData||[])},80);showMod("m-ord");toast(_hindi?"ऑर्डर डुप्लीकेट हो गया — check karke Save karo":"Order duplicated — review and Save","ok")}/* Edit khulte hi bata do ki is lot ki parchi ban chuki hai. Parchi ban
+async function clearOrder(id){if(!csCan("cs_clear_lot"))return csDeny("Order clear karne ki permission nahi hai");const o=STATE.orders.find(x=>x.id===id);if(!o)return;
+/* Order clear karne ka matlab hai ki ab ye maal nahi jayega -- to uski
+   khuli parchi bhi band honi chahiye, warna wo parchi zinda padi rehti hai
+   aur lot pending me kabhi wapas nahi aata. */
+var _oHeld={qty:0,nos:[],canQty:0,canNos:[],lots:[]};
+try{
+  csOrderLots(o).forEach(function(L){
+    var h=csLotHeldBySlips(o,L);
+    if(!h||!(h.qty>0))return;
+    _oHeld.qty+=h.qty;_oHeld.canQty+=h.canQty;_oHeld.lots.push(L);
+    _oHeld.nos=_oHeld.nos.concat(h.nos);_oHeld.canNos=_oHeld.canNos.concat(h.canNos);
+  });
+}catch(e){}
+const ok=await appConfirm("Clear Order?","Mark this order as cleared/fulfilled without creating a bill? Any pending sarees still left in this order (across all lots) will be marked as not to be billed or dispatched."
+  +(_oHeld.qty>0?("\n\nIs order par "+_oHeld.nos.join(", ")+" khuli padi hai ("+fmtN(_oHeld.qty)+" saree)."):""),"?","Clear","ok");if(!ok)return;
+if(_oHeld.canQty>0){
+  var _okSl=await appConfirm("Khuli parchi bhi cancel karein?",
+    _oHeld.canNos.join(", ")+" par "+fmtN(_oHeld.canQty)+" saree likhi hai.\n\n"
+    +"Cancel na karein to wo maal parchi par hi pada rahega aur lot pending\n"
+    +"me wapas nahi aayega.\n\n"
+    +"Bill aur stock par koi asar nahi padega.",
+    "\u2702\uFE0F","Haan, cancel karo","dr","Rehne do");
+  if(_okSl)_oHeld.lots.forEach(function(L){csCancelOpenSlipsOfLot(o,L,"order clear")});
+}
+if(o.type!=="open"){const fp=calcFixedOrderPending(o);if(fp.totalRemaining>0||fp.totalRemainingMtrs>0.5){if(!o.clearedItems)o.clearedItems={};if(!o.clearedMtrs)o.clearedMtrs={};Object.values(fp.bySku).forEach(x=>{if(x.remaining>0)o.clearedItems[x.sku]=(o.clearedItems[x.sku]||0)+x.remaining;if(x.remainingMtrs>0)o.clearedMtrs[x.sku]=csRound1((o.clearedMtrs[x.sku]||0)+x.remainingMtrs)})}}o.status="fulfilled";o._ts=_bumpTs(o);persist();renderOrders();renderPendingOrders();toast("Order marked as fulfilled","ok")}function editOrder(id){const o=STATE.orders.find(x=>x.id===id);if(!o)return;_ordId=id;_ordRows=[{}];window._editOrdTs=o._ts||0;_ordType=o.type==="open"?"open":"fixed";if(_ordType==="open"){_openItems=(o.openItems||[{id:0}]).map((oi,i)=>({...oi,id:i}));_openItemId=_openItems.length}window._ordPfx=(o.orderNo||"").replace(/[0-9]+$/,"");window._editOrdNo=o.orderNo;el("ordno").textContent=o.orderNo;el("ordtit").textContent="Edit Order";const lotGroups={};const hasLotIndex=(o.items||[]).some(it=>it.lotIndex!=null);(o.items||[]).forEach(it=>{const key=it.lotUid||(hasLotIndex?String(it.lotIndex):it.itemId+"|"+it.range);if(!lotGroups[key])lotGroups[key]={itemId:it.itemId,range:it.range,uid:it.lotUid||"",items:[]};lotGroups[key].items.push(it)});const groups=Object.entries(lotGroups).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).map(e=>e[1]);_ordLots=[];_lotId=0;if(groups.length){groups.forEach(g=>{_ordLots.push({id:_lotId,uid:g.uid||uid()});_lotId++})}else{_ordLots=[{id:0,uid:uid()}];_lotId=1}window._editLotData=groups.map((grp,gi)=>({lid:_ordLots[gi].id,grp:grp}));buildOrdBody();setTimeout(()=>{if(o.salesmanId&&el("od-sm"))el("od-sm").value=o.salesmanId;if(o.custId&&el("od-c")){el("od-c").value=o.custId;onOrderCustChange();syncSearchable(el("od-c"))}if(o.brkId&&el("od-b")){el("od-b").value=o.brkId;syncSearchable(el("od-b"))}if(o.date&&el("od-d"))el("od-d").value=o.date;if(o.notes&&el("od-nt"))el("od-nt").value=o.notes||"";try{fillBillFirmOptions(o.custId||"",o.billingFirm||"")}catch(e){}el("od-bfirm").value=o.billingFirm||"";el("od-bterms").value=o.billingTerms||"";if(el("od-dphone"))el("od-dphone").value=o.receiverPhone||"";el("od-ddate").value=o.deliveryDate||"";el("od-ddays").value=o.deliveryDays||"";el("od-dtype").value=o.deliveryType||el("od-dtype").value||"";el("od-dperson").value=o.deliveryPerson||"";if(el("od-ordno-edit"))el("od-ordno-edit").value=o.orderNo||"";if(_ordType==="open"){(o.openItems||[]).forEach((oi,i)=>{const iSel=el("od-oi-"+i+"-itm");if(iSel)iSel.value=oi.itemId||"";const pFld=el("od-oi-"+i+"-pcs");if(pFld)pFld.value=oi.totalPcs||"";const rFld=el("od-oi-"+i+"-rate");if(rFld)rFld.value=oi.rate||""})}_restoreEditLots(window._editLotData||[])},80);showMod("m-ord")}function duplicateOrder(id){const o=STATE.orders.find(x=>x.id===id);if(!o)return;_ordId=null;_ordRows=[{}];window._editOrdTs=0;_ordType=o.type==="open"?"open":"fixed";if(_ordType==="open"){_openItems=(o.openItems||[{id:0}]).map((oi,i)=>({...oi,id:i}));_openItemId=_openItems.length}const smUser=STATE.users.find(u=>u.id===o.salesmanId);window._ordPfx=smUser?.orderPrefix||STATE.user?.orderPrefix||STATE.settings.orderPrefix||"B/";window._editOrdNo=null;el("ordno").textContent=nextOrdNo(window._ordPfx);if(el("ordtit"))el("ordtit").textContent=(_hindi?"ऑर्डर डुप्लीकेट":"Duplicate Order");const lotGroups={};const hasLotIndex=(o.items||[]).some(it=>it.lotIndex!=null);(o.items||[]).forEach(it=>{const key=it.lotUid||(hasLotIndex?String(it.lotIndex):it.itemId+"|"+it.range);if(!lotGroups[key])lotGroups[key]={itemId:it.itemId,range:it.range,items:[]};lotGroups[key].items.push(it)});const groups=Object.entries(lotGroups).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).map(e=>e[1]);_ordLots=[];_lotId=0;if(groups.length){groups.forEach(()=>{_ordLots.push({id:_lotId,uid:uid()});_lotId++})}else{_ordLots=[{id:0}];_lotId=1}window._editLotData=groups.map((grp,gi)=>({lid:_ordLots[gi].id,grp:grp}));buildOrdBody();setTimeout(()=>{if(o.salesmanId&&el("od-sm"))el("od-sm").value=o.salesmanId;if(o.custId&&el("od-c")){el("od-c").value=o.custId;onOrderCustChange()}if(o.brkId&&el("od-b"))el("od-b").value=o.brkId;if(el("od-d"))el("od-d").value=new Date().toISOString().slice(0,10);if(o.notes&&el("od-nt"))el("od-nt").value=o.notes||"";try{fillBillFirmOptions(o.custId||"",o.billingFirm||"")}catch(e){}if(el("od-dphone"))el("od-dphone").value=o.receiverPhone||"";if(el("od-bfirm"))el("od-bfirm").value=o.billingFirm||"";if(el("od-bterms"))el("od-bterms").value=o.billingTerms||"";if(el("od-ddate"))el("od-ddate").value="";if(el("od-ddays"))el("od-ddays").value=o.deliveryDays||"";if(el("od-dtype"))el("od-dtype").value=o.deliveryType||el("od-dtype").value||"";if(el("od-dperson"))el("od-dperson").value=o.deliveryPerson||"";if(el("od-ordno-edit"))el("od-ordno-edit").value="";if(_ordType==="open"){(o.openItems||[]).forEach((oi,i)=>{const iSel=el("od-oi-"+i+"-itm");if(iSel)iSel.value=oi.itemId||"";const pFld=el("od-oi-"+i+"-pcs");if(pFld)pFld.value=oi.totalPcs||"";const rFld=el("od-oi-"+i+"-rate");if(rFld)rFld.value=oi.rate||""})}_restoreEditLots(window._editLotData||[])},80);showMod("m-ord");toast(_hindi?"ऑर्डर डुप्लीकेट हो गया — check karke Save karo":"Order duplicated — review and Save","ok")}/* Edit khulte hi bata do ki is lot ki parchi ban chuki hai. Parchi ban
    jaane ke baad number badla to kata hua maal aur kagaz alag ho jaate
    hain -- isliye number dikhana kaafi nahi, chetavni bhi zaroori hai. */
 function _ordLotSlipNote(lid,grp){
@@ -6160,7 +6509,7 @@ if(_remFld){var _rm="";grp.items.some(function(it){if(it&&it.remark){_rm=it.rema
    ginna shuru ho jaata. */
 var _exFld=el("od-lot-"+lid+"-extra");
 if(_exFld)_exFld.checked=grp.items.some(function(it){return it&&it.isExtra});
-const lotItem=STATE.items.find(x=>x.id===grp.itemId);grp.items.forEach(it=>{let actualIdx=it.colIdx;if(lotItem&&it.sku){const matched=lotItem.colours.findIndex(c=>c.sku===it.sku);if(matched>=0)actualIdx=matched}const chk=el("od-lot-"+lid+"-ck-"+actualIdx);if(chk){chk.checked=true;const pcsFld=el("od-lot-"+lid+"-p-"+actualIdx);const rateFld=el("od-lot-"+lid+"-rt-"+actualIdx);const row=el("od-lot-"+lid+"-row-"+actualIdx);if(pcsFld){pcsFld.disabled=false;pcsFld.style.background="#FFFBEB";pcsFld.style.color="#92400E";pcsFld.style.border="2px solid #F59E0B"}if(rateFld){rateFld.disabled=false;rateFld.style.background="#EFF6FF";rateFld.style.color="#1E40AF";rateFld.style.border="2px solid #3B82F6"}if(row)row.style.background="#FEFCE8"}const pcsFld=el("od-lot-"+lid+"-p-"+actualIdx);if(pcsFld)pcsFld.value=it.pcs||"";const rateFld=el("od-lot-"+lid+"-rt-"+actualIdx);if(rateFld)rateFld.value=it.rate||""});try{_qfSync("od-lot-",lid,"-rt-")}catch(e){}try{_ordLotSlipNote(lid,grp)}catch(e){}calcOrdLot(lid);resolve()},80)},80)}))})}const PERM_DEFS=[{id:"dash",grp:"Dashboard",lbl:"View Dashboard",desc:"See dashboard, stats, alerts, shortcuts"},{id:"pricelist_view",grp:"Dashboard",lbl:"View Price List",desc:"Dashboard par rate list aur uske alert dekhna"},{id:"floor_widget",grp:"Dashboard",lbl:"Shop Floor Widget",desc:"Dashboard par Packing / Cutting / Shop Delivery / Khatawala ki parchi. Kiski parchi dikhe ye \"View ALL Slips\" (Cutting) se tay hota hai"},{id:"star_followup",grp:"Leads",lbl:"View Star Follow-up",desc:"Star grade wali party ke follow-up dekhna"},{id:"sales_view",grp:"Sales",lbl:"View Orders & Bills",desc:"See orders, bills list"},{id:"orders_view_all",grp:"Sales",lbl:"View ALL Orders & Bills",desc:"See every salesman's orders and bills. Off = only the ones raised under his own name"},{id:"order_for_others",grp:"Sales",lbl:"Order in Someone Else's Name",desc:"Choose another salesman on the order form. Off = orders can only be raised under his own name. For office/CRE staff who enter orders for the salesmen"},{id:"sales_order",grp:"Sales",lbl:"Create Orders",desc:"Create & edit sale orders"},{id:"sales_edit",grp:"Sales",lbl:"Edit Orders",desc:"Edit existing sale orders"},{id:"sales_bill",grp:"Sales",lbl:"Create Invoices",desc:"Create dispatch bills / tax invoices"},{id:"edit_bill",grp:"Sales",lbl:"Edit Invoices",desc:"Edit existing sales bills / tax invoices"},{id:"sales_delete",grp:"Sales",lbl:"Delete Orders",desc:"Permanently delete orders"},{id:"sales_cancel",grp:"Sales",lbl:"Cancel Bills",desc:"Cancel dispatched bills"},{id:"sales_wa",grp:"Sales",lbl:"WhatsApp Share",desc:"Share orders/bills via WhatsApp"},{id:"inward_view",grp:"Inward",lbl:"View Inward",desc:"View inward stock entries"},{id:"inward",grp:"Inward",lbl:"Add Inward",desc:"Add Mill GP, Job Work inward, Exchange, Transfer"},{id:"inward_delete",grp:"Inward",lbl:"Delete Inward",desc:"Delete inward stock entries"},{id:"manual_stock",grp:"Inward",lbl:"Manual Stock Entry",desc:"Add or deduct stock balance manually (balance corrections)"},{id:"jw",grp:"Job Work",lbl:"Job Work",desc:"Create & receive JW challans"},{id:"jw_delete",grp:"Job Work",lbl:"Delete JW",desc:"Delete job work challans"},{id:"masters_view",grp:"Masters",lbl:"View Masters",desc:"View items, customers, suppliers, brokers"},{id:"masters_edit",grp:"Masters",lbl:"Edit Masters",desc:"Add/edit items, customers, suppliers"},{id:"masters_delete",grp:"Masters",lbl:"Delete Masters",desc:"Delete items, customers, suppliers"},{id:"reports",grp:"Reports",lbl:"View Reports Tab",desc:"Access the Reports section"},{id:"rep_stock",grp:"Reports",lbl:"Current Stock Report",desc:"See current taka & meters per SKU"},{id:"rep_vsorder",grp:"Reports",lbl:"Stock vs Orders",desc:"See stock shortage vs pending orders"},{id:"rep_daily",grp:"Reports",lbl:"Daily Sales Report",desc:"See daily bill totals by date"},{id:"rep_topsku",grp:"Reports",lbl:"Top SKU Report",desc:"See highest selling colours & SKUs"},{id:"rep_dayend",grp:"Reports",lbl:"Day Wrap Report",desc:"See today's completed tasks & leads by staff — admin-only by default, grant to a supervisor if needed"},{id:"reports_wa",grp:"Reports",lbl:"Share Reports via WA",desc:"WhatsApp share any report"},{id:"orders_wa",grp:"Orders",lbl:"Share Orders via WA",desc:"WhatsApp share individual order details"},{id:"bills_wa",grp:"Orders",lbl:"Share Bills via WA",desc:"WhatsApp share individual invoices/bills"},{id:"cs_view",grp:"Cutting",lbl:"View Cutting Tab",desc:"See the Cutting Slips tab — Pending Lots & All Slips"},{id:"cs_generate",grp:"Cutting",lbl:"Generate Slips",desc:"Create cutting slips from pending lots, batch generate, and add standalone slips"},{id:"cs_edit",grp:"Cutting",lbl:"Edit Slips",desc:"Edit slip number / slip details"},{id:"cs_delete",grp:"Cutting",lbl:"Delete Slips",desc:"Delete cutting slips (single or bulk)"},{id:"cs_print",grp:"Cutting",lbl:"Print / Reprint Slips",desc:"Print slips, thermal print and A4 sheet printing"},{id:"cs_clear_lot",grp:"Cutting",lbl:"Clear Lot / Clear Order",desc:"Write off a lot's remaining pending sarees, and clear a whole order from pending"},{id:"cs_view_all",grp:"Cutting",lbl:"View ALL Slips",desc:"Sabki parchi dikhegi -- Cutting tab, Floor tab aur dashboard ke Shop Floor widget me. Off = sirf uske apne order ki parchi"},{id:"cs_rates",grp:"Cutting",lbl:"See Rates & Amounts",desc:"Show rate, amount and order value on slip screens. Off = floor staff sees only item, colour, pcs & cut"},{id:"cs_undo",grp:"Cutting",lbl:"Undo Slip Status",desc:"Send a slip back one step if a wrong button was pressed (In Cutting / Shop / Khatawala / In Packing)"},{id:"cs_underproc",grp:"Floor",lbl:"View Under Process Tab",desc:"Godown supervisor's tab — generated slips waiting to be cut"},{id:"cs_mark_cutting",grp:"Floor",lbl:"Mark 'In Cutting'",desc:"Press the In Cutting button when a slip is given for cutting"},{id:"floor_view",grp:"Floor",lbl:"View Floor Tab",desc:"See the Shop Floor tab"},{id:"floor_slips",grp:"Floor",lbl:"See Slips on Floor",desc:"See slip cards inside the Floor tab. Off = tab opens but slips stay hidden"},{id:"floor_route",grp:"Floor",lbl:"Shop / Khatawala Buttons",desc:"Send a cut slip to Shop Delivery pending or Khatawala pending"},{id:"floor_packing",grp:"Floor",lbl:"Mark 'In Packing'",desc:"Press In Packing on Shop Delivery / Khatawala pending slips"},{id:"cs_short_close",grp:"Floor",lbl:"Clear Slip on Partial Bill",desc:"Jab bill slip se kam pcs ka bane, tab 'Slip clear karo' ka option milta hai — bacha hua maal wapas pending order form mein jaata hai taaki nayi slip ban sake"},{id:"cs_history",grp:"Cutting",lbl:"See Slip History",desc:"Slip ki poori timeline — kab bani, kab cutting mein gayi, kab Shop/Khatawala hui, kab packing aur dispatch hui, aur kisne kiya"},{id:"inv_show_all",grp:"Cutting",lbl:"Bill Without Packing Slip",desc:"Billing screen ka 'sab dekhne ke liye tick karo' checkbox. Off = staff sirf packing wale slips ka hi bill bana sakta hai"},{id:"tasks_wa",grp:"Tasks",lbl:"Share Tasks via WA",desc:"WhatsApp send task reminders"},{id:"leads_view",grp:"Leads",lbl:"View Leads",desc:"View lead list"},{id:"leads_edit",grp:"Leads",lbl:"Edit Leads",desc:"Add & update leads"},{id:"leads_view_all",grp:"Leads",lbl:"View ALL Leads",desc:"See every salesman's leads (CRE-level access). Enables All Leads tab and full pipeline view."},{id:"leads_assign",grp:"Leads",lbl:"Assign Leads",desc:"Assign leads to other salesmen"},{id:"ledger_view",grp:"Ledger",lbl:"View Ledger",desc:"View ledger/activity history"},{id:"delete_entry",grp:"Ledger",lbl:"Delete Entries",desc:"Delete ledger entries"},{id:"cancel_bill",grp:"Ledger",lbl:"Cancel Bills",desc:"Cancel dispatched bills (stock reversal)"},{id:"flag_entry",grp:"Ledger",lbl:"Flag Wrong Entries",desc:"Flag entries for admin review"},{id:"activity_view",grp:"Admin",lbl:"Kaun ne kya kiya",desc:"Poore staff ka kaam ka hisaab dekho \u2014 kisne kya banaya, badla, delete kiya"},{id:"bulk_delete",grp:"Admin",lbl:"Bulk Delete / Clear All",desc:"Delete task templates, clear stale tasks, bulk-wipe data, clear ledger (dangerous — admin only by default)"}];const DEFAULT_PERMS={dash:0,sales_view:0,sales_order:0,sales_edit:0,sales_bill:0,sales_delete:0,sales_cancel:0,sales_wa:0,inward_view:0,inward:0,inward_delete:0,manual_stock:0,jw:0,jw_delete:0,masters_view:0,masters_edit:0,masters_delete:0,reports:0,rep_stock:0,rep_vsorder:0,rep_daily:0,rep_topsku:0,rep_dayend:0,reports_wa:0,orders_view_all:0,order_for_others:0,orders_wa:0,bills_wa:0,cs_view:0,cs_generate:0,cs_edit:0,cs_delete:0,cs_print:0,cs_clear_lot:0,cs_view_all:0,cs_rates:0,cs_undo:0,cs_underproc:0,cs_mark_cutting:0,floor_view:0,floor_slips:0,floor_route:0,floor_packing:0,cs_short_close:0,cs_history:0,inv_show_all:0,tasks_wa:0,leads_view:0,leads_edit:0,leads_view_all:0,leads_assign:0,ledger_view:0,delete_entry:0,cancel_bill:0,edit_bill:0,flag_entry:0,bulk_delete:0,activity_view:0};function getStaffTypes(){return[...(STATE.settings||{}).staffTypes||[],{id:"admin",name:"Admin",color:"#E11D48"}]}// Staff type badla -- us type ki permissions laga do. Ye function HTML me
+const lotItem=STATE.items.find(x=>x.id===grp.itemId);grp.items.forEach(it=>{let actualIdx=it.colIdx;if(lotItem&&it.sku){const matched=lotItem.colours.findIndex(c=>c.sku===it.sku);if(matched>=0)actualIdx=matched}const chk=el("od-lot-"+lid+"-ck-"+actualIdx);if(chk){chk.checked=true;const pcsFld=el("od-lot-"+lid+"-p-"+actualIdx);const rateFld=el("od-lot-"+lid+"-rt-"+actualIdx);const row=el("od-lot-"+lid+"-row-"+actualIdx);if(pcsFld){pcsFld.disabled=false;pcsFld.style.background="#FFFBEB";pcsFld.style.color="#92400E";pcsFld.style.border="2px solid #F59E0B"}if(rateFld){rateFld.disabled=false;rateFld.style.background="#EFF6FF";rateFld.style.color="#1E40AF";rateFld.style.border="2px solid #3B82F6"}if(row)row.style.background="#FEFCE8"}const pcsFld=el("od-lot-"+lid+"-p-"+actualIdx);if(pcsFld)pcsFld.value=it.pcs||"";const rateFld=el("od-lot-"+lid+"-rt-"+actualIdx);if(rateFld)rateFld.value=it.rate||""});try{_qfSync("od-lot-",lid,"-rt-")}catch(e){}try{_ordLotSlipNote(lid,grp)}catch(e){}calcOrdLot(lid);resolve()},80)},80)}))})}const PERM_DEFS=[{id:"dash",grp:"Dashboard",lbl:"View Dashboard",desc:"See dashboard, stats, alerts, shortcuts"},{id:"pricelist_view",grp:"Dashboard",lbl:"View Price List",desc:"Dashboard par rate list aur uske alert dekhna"},{id:"floor_widget",grp:"Dashboard",lbl:"Shop Floor Widget",desc:"Dashboard par Packing / Cutting / Shop Delivery / Khatawala ki parchi. Kiski parchi dikhe ye \"View ALL Slips\" (Cutting) se tay hota hai"},{id:"star_followup",grp:"Leads",lbl:"View Star Follow-up",desc:"Star grade wali party ke follow-up dekhna"},{id:"sales_view",grp:"Sales",lbl:"View Orders & Bills",desc:"See orders, bills list"},{id:"orders_view_all",grp:"Sales",lbl:"View ALL Orders & Bills",desc:"See every salesman's orders and bills. Off = only the ones raised under his own name"},{id:"order_for_others",grp:"Sales",lbl:"Order in Someone Else's Name",desc:"Choose another salesman on the order form. Off = orders can only be raised under his own name. For office/CRE staff who enter orders for the salesmen"},{id:"sales_order",grp:"Sales",lbl:"Create Orders",desc:"Create & edit sale orders"},{id:"sales_edit",grp:"Sales",lbl:"Edit Orders",desc:"Edit existing sale orders"},{id:"sales_bill",grp:"Sales",lbl:"Create Invoices",desc:"Create dispatch bills / tax invoices"},{id:"edit_bill",grp:"Sales",lbl:"Edit Invoices",desc:"Edit existing sales bills / tax invoices"},{id:"sales_delete",grp:"Sales",lbl:"Delete Orders",desc:"Permanently delete orders"},{id:"sales_cancel",grp:"Sales",lbl:"Cancel Bills",desc:"Cancel dispatched bills"},{id:"sales_wa",grp:"Sales",lbl:"WhatsApp Share",desc:"Share orders/bills via WhatsApp"},{id:"inward_view",grp:"Inward",lbl:"View Inward",desc:"View inward stock entries"},{id:"inward",grp:"Inward",lbl:"Add Inward",desc:"Add Mill GP, Job Work inward, Exchange, Transfer"},{id:"inward_delete",grp:"Inward",lbl:"Delete Inward",desc:"Delete inward stock entries"},{id:"manual_stock",grp:"Inward",lbl:"Manual Stock Entry",desc:"Add or deduct stock balance manually (balance corrections)"},{id:"jw",grp:"Job Work",lbl:"Job Work",desc:"Create & receive JW challans"},{id:"jw_delete",grp:"Job Work",lbl:"Delete JW",desc:"Delete job work challans"},{id:"masters_view",grp:"Masters",lbl:"View Masters",desc:"View items, customers, suppliers, brokers"},{id:"masters_edit",grp:"Masters",lbl:"Edit Masters",desc:"Add/edit items, customers, suppliers"},{id:"masters_delete",grp:"Masters",lbl:"Delete Masters",desc:"Delete items, customers, suppliers"},{id:"costing",grp:"Masters",lbl:"Costing Calculator",desc:"Grey se selling price tak ka hisaab \u2014 lagat, shortage, dalali, discount aur profit. Admin ko hamesha dikhta hai."},{id:"reports",grp:"Reports",lbl:"View Reports Tab",desc:"Access the Reports section"},{id:"rep_stock",grp:"Reports",lbl:"Current Stock Report",desc:"See current taka & meters per SKU"},{id:"rep_vsorder",grp:"Reports",lbl:"Stock vs Orders",desc:"See stock shortage vs pending orders"},{id:"rep_daily",grp:"Reports",lbl:"Daily Sales Report",desc:"See daily bill totals by date"},{id:"rep_topsku",grp:"Reports",lbl:"Top SKU Report",desc:"See highest selling colours & SKUs"},{id:"rep_dayend",grp:"Reports",lbl:"Day Wrap Report",desc:"See today's completed tasks & leads by staff — admin-only by default, grant to a supervisor if needed"},{id:"reports_wa",grp:"Reports",lbl:"Share Reports via WA",desc:"WhatsApp share any report"},{id:"orders_wa",grp:"Orders",lbl:"Share Orders via WA",desc:"WhatsApp share individual order details"},{id:"bills_wa",grp:"Orders",lbl:"Share Bills via WA",desc:"WhatsApp share individual invoices/bills"},{id:"cs_view",grp:"Cutting",lbl:"View Cutting Tab",desc:"See the Cutting Slips tab — Pending Lots & All Slips"},{id:"cs_generate",grp:"Cutting",lbl:"Generate Slips",desc:"Create cutting slips from pending lots, batch generate, and add standalone slips"},{id:"cs_edit",grp:"Cutting",lbl:"Edit Slips",desc:"Edit slip number / slip details"},{id:"cs_delete",grp:"Cutting",lbl:"Delete Slips",desc:"Delete cutting slips (single or bulk)"},{id:"cs_print",grp:"Cutting",lbl:"Print / Reprint Slips",desc:"Print slips, thermal print and A4 sheet printing"},{id:"cs_clear_lot",grp:"Cutting",lbl:"Clear Lot / Clear Order",desc:"Write off a lot's remaining pending sarees, and clear a whole order from pending"},{id:"cs_view_all",grp:"Cutting",lbl:"View ALL Slips",desc:"Sabki parchi dikhegi -- Cutting tab, Floor tab aur dashboard ke Shop Floor widget me. Off = sirf uske apne order ki parchi"},{id:"cs_rates",grp:"Cutting",lbl:"See Rates & Amounts",desc:"Show rate, amount and order value on slip screens. Off = floor staff sees only item, colour, pcs & cut"},{id:"cs_undo",grp:"Cutting",lbl:"Undo Slip Status",desc:"Send a slip back one step if a wrong button was pressed (In Cutting / Shop / Khatawala / In Packing)"},{id:"cs_underproc",grp:"Floor",lbl:"View Under Process Tab",desc:"Godown supervisor's tab — generated slips waiting to be cut"},{id:"cs_mark_cutting",grp:"Floor",lbl:"Mark 'In Cutting'",desc:"Press the In Cutting button when a slip is given for cutting"},{id:"floor_view",grp:"Floor",lbl:"View Floor Tab",desc:"See the Shop Floor tab"},{id:"floor_slips",grp:"Floor",lbl:"See Slips on Floor",desc:"See slip cards inside the Floor tab. Off = tab opens but slips stay hidden"},{id:"floor_route",grp:"Floor",lbl:"Shop / Khatawala Buttons",desc:"Send a cut slip to Shop Delivery pending or Khatawala pending"},{id:"floor_packing",grp:"Floor",lbl:"Mark 'In Packing'",desc:"Press In Packing on Shop Delivery / Khatawala pending slips"},{id:"cs_short_close",grp:"Floor",lbl:"Clear Slip on Partial Bill",desc:"Jab bill slip se kam pcs ka bane, tab 'Slip clear karo' ka option milta hai — bacha hua maal wapas pending order form mein jaata hai taaki nayi slip ban sake"},{id:"cs_history",grp:"Cutting",lbl:"See Slip History",desc:"Slip ki poori timeline — kab bani, kab cutting mein gayi, kab Shop/Khatawala hui, kab packing aur dispatch hui, aur kisne kiya"},{id:"inv_show_all",grp:"Cutting",lbl:"Bill Without Packing Slip",desc:"Billing screen ka 'sab dekhne ke liye tick karo' checkbox. Off = staff sirf packing wale slips ka hi bill bana sakta hai"},{id:"tasks_wa",grp:"Tasks",lbl:"Share Tasks via WA",desc:"WhatsApp send task reminders"},{id:"leads_view",grp:"Leads",lbl:"View Leads",desc:"View lead list"},{id:"leads_edit",grp:"Leads",lbl:"Edit Leads",desc:"Add & update leads"},{id:"leads_view_all",grp:"Leads",lbl:"View ALL Leads",desc:"See every salesman's leads (CRE-level access). Enables All Leads tab and full pipeline view."},{id:"leads_assign",grp:"Leads",lbl:"Assign Leads",desc:"Assign leads to other salesmen"},{id:"ledger_view",grp:"Ledger",lbl:"View Ledger",desc:"View ledger/activity history"},{id:"delete_entry",grp:"Ledger",lbl:"Delete Entries",desc:"Delete ledger entries"},{id:"cancel_bill",grp:"Ledger",lbl:"Cancel Bills",desc:"Cancel dispatched bills (stock reversal)"},{id:"flag_entry",grp:"Ledger",lbl:"Flag Wrong Entries",desc:"Flag entries for admin review"},{id:"activity_view",grp:"Admin",lbl:"Kaun ne kya kiya",desc:"Poore staff ka kaam ka hisaab dekho \u2014 kisne kya banaya, badla, delete kiya"},{id:"bulk_delete",grp:"Admin",lbl:"Bulk Delete / Clear All",desc:"Delete task templates, clear stale tasks, bulk-wipe data, clear ledger (dangerous — admin only by default)"}];const DEFAULT_PERMS={dash:0,sales_view:0,sales_order:0,sales_edit:0,sales_bill:0,sales_delete:0,sales_cancel:0,sales_wa:0,inward_view:0,inward:0,inward_delete:0,manual_stock:0,jw:0,jw_delete:0,masters_view:0,masters_edit:0,masters_delete:0,reports:0,rep_stock:0,rep_vsorder:0,rep_daily:0,rep_topsku:0,rep_dayend:0,reports_wa:0,orders_view_all:0,order_for_others:0,orders_wa:0,bills_wa:0,costing:0,cs_view:0,cs_generate:0,cs_edit:0,cs_delete:0,cs_print:0,cs_clear_lot:0,cs_view_all:0,cs_rates:0,cs_undo:0,cs_underproc:0,cs_mark_cutting:0,floor_view:0,floor_slips:0,floor_route:0,floor_packing:0,cs_short_close:0,cs_history:0,inv_show_all:0,tasks_wa:0,leads_view:0,leads_edit:0,leads_view_all:0,leads_assign:0,ledger_view:0,delete_entry:0,cancel_bill:0,edit_bill:0,flag_entry:0,bulk_delete:0,activity_view:0};function getStaffTypes(){return[...(STATE.settings||{}).staffTypes||[],{id:"admin",name:"Admin",color:"#E11D48"}]}// Staff type badla -- us type ki permissions laga do. Ye function HTML me
 // pehle se bulaya jaata tha par kahin likha hi nahi tha.
 async function onStaffTypeChange(){
   var sel=el("usr-stype");if(!sel)return;
@@ -13093,9 +13442,68 @@ function csGetCustName(o){
   return c?c.name:(o.custName||"");
 }
 
+/* Lot ki pending 0 ho par order me maal baaki ho -- iska matlab wo maal
+   kisi khuli parchi par likha hua hai. Pehle aisa lot Pending Cutting se
+   chup-chaap gayab ho jata tha aur kisi ko pata nahi chalta tha ki kyun.
+   nos  = jin parchi par maal roka hua hai
+   canNos = unme se jo abhi cancel ho sakti hain */
+/* "N lot ka baaki maal parchi par likha hai" -- ye patti dono jagah
+   chalti hai: khaali screen par bhi aur list ke upar bhi. */
+function _csOnSlipNote(box){
+  if(_csPendingFilter.showOnSlip){
+    if(!box)return "";
+    return '<div style="margin:0 12px 8px;padding:8px 11px;background:#EEF2FF;'
+      +'border:1px solid #C7D2FE;border-radius:10px;font-size:11.5px;font-weight:700;'
+      +'color:#3730A3;line-height:1.5">\uD83D\uDCC4 '
+      +(_hindi?"पर्ची पर रुके लॉट भी दिख रहे हैं":"Parchi par ruke lot bhi dikh rahe hain")
+      +' <a href="javascript:void(0)" onclick="csPFOnSlip(0)" style="color:#3730A3;font-weight:800">'
+      +(_hindi?"छुपाओ":"chhupao")+'</a></div>';
+  }
+  if(!_csPendOnSlip)return "";
+  return '<div style="margin:'+(box?"0 12px 8px":"14px 0 0")+';padding:8px 11px;background:#EEF2FF;'
+    +'border:1px solid #C7D2FE;border-radius:10px;font-size:11.5px;font-weight:700;'
+    +'color:#3730A3;line-height:1.5">\uD83D\uDCC4 '+_csPendOnSlip
+    +(_hindi?" लॉट का बाकी माल पर्ची पर लिखा है — ":" lot ka baaki maal parchi par likha hai \u2014 ")
+    +'<a href="javascript:void(0)" onclick="csPFOnSlip(1)" style="color:#3730A3;font-weight:800">'
+    +(_hindi?"दिखाओ":"dikhao")+'</a></div>';
+}
+function csLotHeldBySlips(o,lot){
+  var out={qty:0,nos:[],canQty:0,canNos:[]};
+  if(!o||!lot)return out;
+  var slips=[];try{slips=csGetLotSlips(o,lot.key)||[]}catch(e){slips=[]}
+  slips.forEach(function(sl){
+    if(!sl||sl.csCancelled||sl.csShortClosed)return;
+    var rem=0;
+    try{rem=Math.max(0,csSlipEffQty(sl)-csSlipDoneQty({order:o,lot:lot,slip:sl}))}catch(e){rem=0}
+    if(rem<=0)return;
+    out.qty+=rem;
+    if(sl.csNo)out.nos.push(sl.csNo);
+    var st=null;try{st=csSlipCancelState(o,lot.key,sl)}catch(e){st=null}
+    if(st&&st.can){out.canQty+=rem;if(sl.csNo)out.canNos.push(sl.csNo)}
+  });
+  return out;
+}
+/* Lot clear karte waqt uski khuli parchi bhi band kar do -- sirf wahi jo
+   cancel ho sakti hain. Ginti yahan nahi chhedte: clear karne wala hissa
+   khud hi poora maal cleared me likh dega. */
+function csCancelOpenSlipsOfLot(o,lot,why){
+  if(!o||!lot)return 0;
+  var n=0,slips=[];
+  try{slips=csGetLotSlips(o,lot.key)||[]}catch(e){slips=[]}
+  slips.forEach(function(sl){
+    var st=null;try{st=csSlipCancelState(o,lot.key,sl)}catch(e){st=null}
+    if(!st||!st.can)return;
+    if(_csMarkSlipCancelled(sl,why||"lot clear")){
+      n++;
+      try{csMirrorPut(o,lot.key,sl,false)}catch(e){}
+    }
+  });
+  if(n)o._ts=_bumpTs(o);
+  return n;
+}
 var _csSkipLog=[];
 function csGetAllPendingLots(filter){
-  filter=filter||{};var result=[];_csSkipLog=[];_csPendHiddenOld=0;
+  filter=filter||{};var result=[];_csSkipLog=[];_csPendHiddenOld=0;_csPendOnSlip=0;
   var _days=Number(filter.days)||0;
   var _ageCut="";
   if(_days>0){
@@ -13111,7 +13519,15 @@ function csGetAllPendingLots(filter){
     lots.forEach(function(lot,_li){
       var pend;try{pend=csGetLotPendingQty(o,lot)}catch(e){console.error("csGetAllPendingLots: csGetLotPendingQty failed for order "+(o.orderNo||o.id)+" lot "+lot.key,e);_csSkipLog.push({orderNo:o.orderNo||o.id,reason:"csGetLotPendingQty ("+lot.key+"): "+String(e&&e.message||e)});return}
       var shortM=0;try{shortM=csGetLotShortMtrs(o,lot)}catch(e){}
-      if(pend<=0&&shortM<=0)return;
+      /* Kuchh pending nahi dikhta -- par kya sach me kuchh bacha hi nahi,
+         ya wo baaki maal kisi khuli parchi par likha hai? */
+      var held=null;
+      if(pend<=0&&shortM<=0){
+        try{held=csLotHeldBySlips(o,lot)}catch(e){held=null}
+        if(!held||!(held.qty>0))return;
+        _csPendOnSlip++;
+        if(!filter.showOnSlip)return;
+      }
       // Older than the age being looked through: counted, not shown.
       if(_ageCut&&String(o.date||"").slice(0,10)<_ageCut){_csPendHiddenOld++;return}
       var custName=csGetCustName(o);
@@ -13127,7 +13543,7 @@ function csGetAllPendingLots(filter){
         if(hay.indexOf(q)<0)return;
       }
       result.push({order:o,lot:lot,lotNum:lot.lotNum||(_li+1),remark:lot.remark||"",
-        pendingQty:pend,shortMtrs:shortM,custName:custName,salesmanName:smName});
+        pendingQty:pend,shortMtrs:shortM,heldBy:held,custName:custName,salesmanName:smName});
     });
    }catch(e){console.error("csGetAllPendingLots: unexpected error on order "+(o&&(o.orderNo||o.id)),e);_csSkipLog.push({orderNo:(o&&(o.orderNo||o.id))||"?",reason:"unexpected: "+String(e&&e.message||e)})}
   });
@@ -13755,6 +14171,12 @@ var _csPendingFilter={item:"",range:"",colour:"",party:"",salesman:"",q:"",
   days:(function(){try{var v=localStorage.getItem("vs_cs_pend_days");return v==null?90:(parseInt(v)||0)}catch(e){return 90}})()};
 // How many lots the age is hiding, so the screen can say so.
 var _csPendHiddenOld=0;
+// Kitne lot ka baaki maal khuli parchi par likha hai.
+var _csPendOnSlip=0;
+function csPFOnSlip(v){
+  _csPendingFilter.showOnSlip=!!v;
+  try{csRenderView()}catch(e){}
+}
 var _csCurTab="pending";
 
 var _csUpQ="";
@@ -14052,15 +14474,17 @@ function csRenderPendingList(){
     listEl.innerHTML=skipBanner+'<div style="text-align:center;padding:48px 24px;color:var(--t3)"><div style="font-size:48px">&#9989;</div><div style="font-weight:800;font-size:16px;margin-top:12px;color:var(--tx)">'+(_hindi?"कोई पेंडिंग लॉट नहीं":"No pending lots")+'</div><div style="margin-top:6px;font-size:13px">'+(_hindi?"सभी स्लिप बन चुकी हैं!":"All slips generated!")+'</div>'
       +(_csPendHiddenOld?'<div style="margin-top:14px;font-size:12px;font-weight:700;color:var(--Ad)">&#128337; '+_csPendHiddenOld+(_hindi?" पुराने लॉट छुपे हैं \u2014 ":" purane lot chhupe hain \u2014 ")
         +'<a href="javascript:void(0)" onclick="csPFDays(0)" style="color:var(--Ad);font-weight:800">'+(_hindi?"सब दिखाओ":"sab dikhao")+'</a></div>':"")
+      +_csOnSlipNote()
       +'</div>';
     return;
   }
   var oldBanner=_csPendHiddenOld?('<div style="margin:0 12px 8px;padding:8px 11px;background:var(--Al);border:1px solid var(--A);border-radius:10px;font-size:11.5px;font-weight:700;color:var(--Ad);line-height:1.5">'
     +'&#128337; '+_csPendHiddenOld+(_hindi?" पुराने लॉट छुपे हैं":" purane lot chhupe hain")
     +' <a href="javascript:void(0)" onclick="csPFDays(0)" style="color:var(--Ad);font-weight:800">'+(_hindi?"सब दिखाओ":"sab dikhao")+'</a></div>'):"";
+  var onSlipBanner=_csOnSlipNote(true);
   var cnt=pending.filter(function(r){return _csChecked[r.order.id+"__"+r.lot.key]}).length;
   var allChk=pending.every(function(r){return _csChecked[r.order.id+"__"+r.lot.key]});
-  var html=oldBanner+'<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--Pl);margin:0 12px 8px;border-radius:10px">'
+  var html=oldBanner+onSlipBanner+'<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--Pl);margin:0 12px 8px;border-radius:10px">'
     +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;font-size:13px">'
     +'<input type="checkbox" id="cs-selall" onchange="csToggleAll(this.checked)" style="width:16px;height:16px;accent-color:var(--P)"'+(allChk?" checked":"")+'> '+(_hindi?"सभी चुनें":"Select All")+' ('+pending.length+')</label>'
     +'<div style="display:flex;gap:6px">'
@@ -14078,6 +14502,7 @@ function csRenderPendingList(){
     // Every piece accounted for and metres still owed: the cut was shortened on
     // the way out, so there is nothing left to cut -- only cloth to settle.
     var _mtrOnly=row.pendingQty<=0&&row.shortMtrs>0;
+    var _held=row.heldBy&&row.heldBy.qty>0?row.heldBy:null;
     var _ordMtr=csRound1(_skAll.reduce(function(s,x){return s+(x.orderedMtrs||0)},0));
     var sk=_skAll.filter(function(s){return s.pending>0});
     var colStr=sk.map(function(s){return esc(liveColourName(s.item&&s.item.itemId,s.item?s.item.colIdx:null,s.colourName,s.sku))+(s.code?"-"+s.code:"")+" <b>"+s.pending+"</b>"}).join(", ");
@@ -14092,25 +14517,33 @@ function csRenderPendingList(){
       +(row.order.salesmanName?'<span style="font-size:10px;color:'+pc.hdr+';font-weight:600">&#128119; '+esc(row.order.salesmanName)+'</span>':"")
       +'</div>'
       +'<div style="padding:12px;display:flex;align-items:flex-start;gap:10px">'
-      +'<input type="checkbox" data-uid="'+uid+'" onchange="csChk(this)"'+(isChk?" checked":"")+' style="width:18px;height:18px;margin-top:3px;flex-shrink:0;accent-color:var(--P)">'
+      +(_held?'<span style="width:18px;flex-shrink:0"></span>'
+        :'<input type="checkbox" data-uid="'+uid+'" onchange="csChk(this)"'+(isChk?" checked":"")+' style="width:18px;height:18px;margin-top:3px;flex-shrink:0;accent-color:var(--P)">')
       +'<div style="flex:1;min-width:0">'
       +'<div style="font-weight:800;font-size:14px">'+esc(row.lot.itemName)+'</div>'
       +(row.lot.range?'<div style="font-size:11px;font-weight:700;color:'+pc.hdr+';margin-top:2px">'+esc(row.lot.range)+'</div>':"")
       +(row.remark?'<div style="font-size:11px;font-weight:800;color:#B45309;margin-top:2px">&#128172; '+esc(row.remark)+'</div>':"")
+      +(_held?'<div style="margin-top:6px;background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:800;color:#3730A3;line-height:1.5">\u23F3 '
+        +(_hindi?("बाकी "+fmtN(_held.qty)+" साड़ी "+esc(_held.nos.join(", "))+" पर लिखी है — पहले वो पर्ची निपटाओ")
+               :("Baaki "+fmtN(_held.qty)+" saree "+esc(_held.nos.join(", "))+" par likhi hai \u2014 pehle wo parchi nipta do"))
+        +'</div>':"")
       +'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+(_hindi?"कट: ":"Cut: ")+csFormatCut(row.lot.cut)+'</div>'
       +'<div style="font-size:11px;color:var(--t3);margin-top:3px;line-height:1.6">'+colStr+'</div>'
       +(row.order.date?'<div style="font-size:10px;color:var(--t3);margin-top:4px;font-weight:700">'+(_hindi?"\u0911\u0930\u094d\u0921\u0930 ":"Order ")+esc(fmtDate(row.order.date))+(row.order.status?' \u00b7 '+esc(String(row.order.status).toUpperCase()):"")+'</div>':"")
       +(slips.length?'<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">'+slips.map(function(sl){
         return'<span style="background:#fff;color:'+pc.hdr+';border:1px solid '+pc.border+';font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px">'+esc(sl.csNo)+" ("+csSlipQty(sl)+")</span>"}).join("")+'</div>':"")
       +'</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">'
-      +'<div style="text-align:right"><div style="font-size:9px;color:var(--R);font-weight:700;letter-spacing:.5px">'+(_hindi?"पेंडिंग":"PENDING")+'</div>'
-      +(_mtrOnly
+      +'<div style="text-align:right"><div style="font-size:9px;color:'+(_held?"#3730A3":"var(--R)")+';font-weight:700;letter-spacing:.5px">'
+        +(_held?(_hindi?"पर्ची पर रुका":"PARCHI PAR"):(_hindi?"पेंडिंग":"PENDING"))+'</div>'
+      +(_held
+        ?'<div style="font-size:26px;font-weight:900;color:#3730A3;line-height:1">'+fmtN(_held.qty)+'</div><div style="font-size:10px;color:var(--t3)">'+(_hindi?"पर्ची पर":"parchi par")+'</div>'
+      :_mtrOnly
         ?'<div style="font-size:24px;font-weight:900;color:var(--Ad);line-height:1">'+csRound1(row.shortMtrs)+'m</div><div style="font-size:10px;color:var(--t3)">'+(_hindi?("पूरे "+_ordMtr+"m में से"):("of "+_ordMtr+"m"))+'</div>'
         :'<div style="font-size:26px;font-weight:900;color:var(--R);line-height:1">'+row.pendingQty+'</div><div style="font-size:10px;color:var(--t3)">'+(_hindi?ordQty+" पीस में से":"of "+ordQty+" pcs")+'</div>')
       +(row.shortMtrs>0?'<div style="margin-top:5px;background:var(--Al);border:1px solid var(--A);border-radius:7px;padding:4px 7px;font-size:10px;font-weight:800;color:var(--Ad);line-height:1.35;width:128px;text-align:left">&#9888;&#65039; '
         +(_hindi?("कट छोटा गया — "+csRound1(row.shortMtrs)+"m कम, पीस पूरे"):("Cut chhota gaya &mdash; "+csRound1(row.shortMtrs)+"m kam, pcs poore"))+'</div>':"")
       +'</div>'
-      +(csCan("cs_generate")&&!_mtrOnly?'<button onclick="csOpenGenModal(\''+row.order.id+'\',\''+esc(row.lot.key)+'\')" style="background:'+pc.border+';color:#fff;border:none;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">&#9986;&#65039; '+(_hindi?"स्लिप":"Slip")+'</button>':"")
+      +(csCan("cs_generate")&&!_mtrOnly&&!_held?'<button onclick="csOpenGenModal(\''+row.order.id+'\',\''+esc(row.lot.key)+'\')" style="background:'+pc.border+';color:#fff;border:none;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">&#9986;&#65039; '+(_hindi?"स्लिप":"Slip")+'</button>':"")
       +(csCan("cs_clear_lot")?'<button onclick="csClearLot(\''+row.order.id+'\',\''+esc(row.lot.key)+'\')" style="background:#fff;color:'+pc.hdr+';border:1.5px solid '+pc.border+';padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">&#128683; '+(_hindi?"लॉट साफ करें":"Clear Lot")+'</button>':"")
       +'</div></div></div>';
   });
@@ -15246,6 +15679,24 @@ async function csClearLot(ordId,lotKey){
   if(!order){toast("Order not found","warn");return}
   var lot=csOrderLots(order).filter(function(l){return l.key===lotKey})[0];
   if(!lot){toast("Lot not found","warn");return}
+  /* Lot ka baaki maal khuli parchi par pada ho to clear karne ka matlab
+     nahi -- wo maal parchi par hi raha jayega. Isliye pehle wahi poochh
+     lete hain. */
+  var _held=null;try{_held=csLotHeldBySlips(order,lot)}catch(e){}
+  if(_held&&_held.qty>0){
+    if(!_held.canQty){
+      toast(_held.nos.join(", ")+" par "+fmtN(_held.qty)+" saree likhi hai aur wo abhi cancel nahi ho sakti \u2014 pehle use nipta do","warn");
+      return;
+    }
+    var okSl=await appConfirm("Is lot par parchi khuli hai",
+      _held.canNos.join(", ")+" par "+fmtN(_held.canQty)+" saree likhi hai.\n\n"
+      +"Lot clear karna hai to pehle ye parchi cancel karni padegi, warna wo\n"
+      +"maal parchi par hi pada rahega.\n\n"
+      +"Parchi cancel karke aage badhein?",
+      "\u2702\uFE0F","Haan, parchi cancel karo","dr","Rehne do");
+    if(!okSl)return;
+    csCancelOpenSlipsOfLot(order,lot,"lot clear");
+  }
   var rows=csLotSkuPending(order,lot).filter(function(s){return s.pending>0||s.mtrShort});
   if(!rows.length){toast("Is lot mein kuch bhi pending nahi hai","warn");return}
   var total=rows.reduce(function(s,r){return s+r.pending},0);
