@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.386-->
+<!DOCTYPE html><!--ALTV:1.45.392-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.386";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.392";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -2636,22 +2636,71 @@ function smUsers(){
     return u&&!u._deleted&&u.active!==false&&smTargetOf(u)>0;
   });
 }
+/* Order par discount ka khaana hota hi nahi -- wo bill par hai. Aur
+   bill par wo do jagah se aata hai: party ka apna discount, warna
+   Settings ka. Target ki ginti taxable par hoti hai, isliye order ko
+   bhi usi tarazu par tolna padega -- warna order ki rakam hamesha badi
+   dikhegi aur dono number kabhi mel nahi khayenge. */
+function _ordDiscPct(o){
+  if(!o)return 0;
+  var c=null;
+  try{c=(STATE.customers||[]).filter(function(x){return x&&x.id===o.custId})[0]||null}
+  catch(e){c=null}
+  var d=(c&&c.discount!=null)?Number(c.discount)
+        :Number(STATE.settings&&STATE.settings.discount);
+  if(!isFinite(d)||d<=0||d>=100)return 0;
+  return d;
+}
+function _ordAfterDisc(amt,o){
+  var a=Number(amt)||0,d=_ordDiscPct(o);
+  if(!(d>0))return Math.round(a);
+  return Math.round(a*(100-d)/100);
+}
 /* Is mahine kis salesman ke kitne ke order aaye. Cancel order nahi
-   ginta, aur o.total me cancel kiye hue lot bhi nahi hote. */
-function smMonthOrder(uid,mk){
-  mk=mk||npMonthKey();var t=0,u=smUserById(uid);
+   ginta, aur o.total me cancel kiye hue lot bhi nahi hote. Discount
+   alag se bhi lauta dete hain, taaki card par likha ja sake ki itna
+   kat chuka hai. */
+function smMonthOrderParts(uid,mk){
+  mk=mk||npMonthKey();var g=0,n=0,u=smUserById(uid);
   (STATE.orders||[]).forEach(function(o){
     if(!o||o._deleted||o.status==="cancelled"||o.status==="deleted")return;
     if(String(o.date||"").slice(0,7)!==mk)return;
     if(uid&&o.salesmanId!==uid)return;
     if(!smJoinOk(u,o.date))return;
-    t+=Number(o.total)||0;
+    var a=Number(o.total)||0;
+    g+=a;n+=_ordAfterDisc(a,o);
   });
-  return t;
+  return{gross:Math.round(g),net:Math.round(n),disc:Math.round(g-n)};
 }
+function smMonthOrder(uid,mk){return smMonthOrderParts(uid,mk).net}
 /* Target ki asli ginti -- jo maal bill/dispatch ho gaya. Join se pehle
    ka bill nahi ginta: wahi prefix pehle kisi aur ke paas tha ya kaam
    transfer hua ho, to bhi naye aadmi ke naam wo sale nahi chadhegi. */
+/* Bill ki taxable rakam -- GST ke bina.
+     maal ki keemat \u2212 discount (+ dalali) = taxable
+     taxable + GST                            = net bill
+   Target ka hisaab taxable par hi hona chahiye: order me GST hota hi
+   nahi, to bill me bhi nahi gina jana chahiye. Purane bill par koi
+   khaana khaali ho to aage wale se kaam chala lete hain. */
+function _billTaxable(b){
+  if(!b)return 0;
+  /* Neer ka likha hisaab: maal ki keemat \u2212 discount \u2212+ adjustment
+     (Add ya Less) = taxable. App me wahi khaana "Adjustment (after
+     discount, before GST)" hai -- label Neer khud likhta hai (Brokerage
+     / Freight / Rounding), aur netTaxable usi ke baad ki rakam hai.
+     GST isme kahin nahi aata. Khaana khaali ho to peeche wale se kaam
+     chala lete hain. */
+  var bk=Number(b.brokerageAmt)||0;
+  var n=Number(b.netTaxable);
+  if(isFinite(n)&&n>0)return n;
+  var ad=Number(b.afterDiscount);
+  if(isFinite(ad)&&ad>0)return Math.max(0,ad+bk);
+  var sub=Number(b.subtotal)||0;
+  if(sub>0)return Math.max(0,sub-(Number(b.discountAmt)||0)+bk);
+  var g=Number(b.grandTotal)||0,t=Number(b.gstAmt)||0;
+  if(g>0)return Math.max(0,g-t);
+  return 0;
+}
 function smMonthBill(uid,mk){
   mk=mk||npMonthKey();var t=0,u=smUserById(uid),map=_ordSmMap();
   (STATE.bills||[]).forEach(function(b){
@@ -2659,7 +2708,7 @@ function smMonthBill(uid,mk){
     if(String(b.date||"").slice(0,7)!==mk)return;
     if(uid&&billSalesman(b,map).id!==uid)return;
     if(!smJoinOk(u,b.date))return;
-    t+=Number(b.grandTotal)||0;
+    t+=_billTaxable(b);
   });
   return t;
 }
@@ -2671,20 +2720,19 @@ function smMonthOrphan(mk){
     if(!b||b._deleted||b.status==="cancelled")return;
     if(String(b.date||"").slice(0,7)!==mk)return;
     if(billSalesman(b,map).id)return;
-    t+=Number(b.grandTotal)||0;n++;
+    t+=_billTaxable(b);n++;
   });
   return{amt:t,n:n};
 }
-/* Jo ginti target ke saamne rakhi jaati hai: gaya hua maal, aur uspar
-   cancel ke kaaranon ka asar -- jo kaaran "minus" par set hai wo ghatta
-   hai, jo "add" par hai wo jodta hai. Kaun kis par hai, ye Settings me
-   Neer tay karta hai. */
-function smMonthDone(uid,mk){
-  var base=smMonthBill(uid,mk),c=null;
-  try{c=smMonthCancel(uid,mk)}catch(e){c=null}
-  if(!c)return base;
-  return Math.max(0,Math.round(base-(c.minus||0)+(c.add||0)));
-}
+/* Maal gaya = us mahine ke bill ka jod \u2212 GST. Neer ka milaan ka
+   niyam yahi hai, aur isi ne ek purani galti pakdi:
+   pehle yahan se cancel ki rakam DOBARA ghataai jaati thi. Par cancel
+   hua order smMonthOrder me pehle se nahi ginta, aur cancel hua bill
+   smMonthBill me pehle se nahi ginta -- to ghatane ko bacha hi kuchh
+   nahi tha. Jitna cancel hua, utna maal gaya kam dikh raha tha.
+   Cancel ab alag khane me dikhta hai -- jaankari ke liye, ginti badalne
+   ke liye nahi. */
+function smMonthDone(uid,mk){return Math.round(smMonthBill(uid,mk))}
 function smMkAdd(mk,n){
   var y=parseInt(String(mk).slice(0,4),10),m=parseInt(String(mk).slice(5,7),10);
   if(!isFinite(y)||!isFinite(m))return mk;
@@ -2761,6 +2809,23 @@ function smMonthCancel(uid,mk){
 }
 /* Kya-kya cancel hua -- poora order, ek lot, ya bill. Mahina cancel ki
    tareekh se (jo likhi ho), warna banne ki tareekh se. */
+/* Cancel hue order ki rakam. Pehle wahi jo cancel ke waqt likhi thi; na
+   ho to order ka total; wo bhi 0 ho (purane cancel) to uski apni line
+   se jod lo -- line par rakam aaj bhi padi hai. */
+function _ordGrossForCancel(o){
+  if(!o)return 0;
+  var a=Number(o.cancelAmt)||0;if(a>0)return a;
+  a=Number(o.total)||0;if(a>0)return a;
+  if(o.type==="open"){
+    return(o.programmes||[]).reduce(function(x,p){return x+(Number(p&&p.amount)||0)},0);
+  }
+  return(o.items||[]).reduce(function(x,i){return x+(Number(i&&i.amount)||0)},0);
+}
+/* Cancel bhi usi tarazu par: order ki rakam me se discount kaat kar,
+   GST ke bina. o.cancelAmt me hamesha discount se PEHLE ki rakam likhi
+   jaati hai, taaki party ka discount baad me badle to purani ginti na
+   bigde -- aur discount yahan, dikhane ke waqt, kata jaata hai. */
+function _ordAmtForCancel(o){return _ordAfterDisc(_ordGrossForCancel(o),o)}
 function smCancelList(uid,mk){
   mk=mk||npMonthKey();
   var u=smUserById(uid);
@@ -2772,7 +2837,7 @@ function smCancelList(uid,mk){
       if(mkOf(x.cancelAt,x.date)!==mk)return;
       if(!smJoinOk(u,x.cancelAt||x.date))return;
       out.push({kind:"order",no:x.orderNo||"",what:"Poora order cancel",
-        party:x.custName||"",amt:Math.round(Number(x.total)||0),
+        party:x.custName||"",amt:Math.round(_ordAmtForCancel(x)),
         at:String(x.cancelAt||x.date||"").slice(0,10),
         by:x.cancelBy||"",why:x.cancelReason||"",
         eff:x.cancelEff||crEffOf(x.cancelReason),id:x.id});
@@ -2787,6 +2852,8 @@ function smCancelList(uid,mk){
       if(!smJoinOk(u,c.at||x.date))return;
       var amt=Number(c.amt)||0;
       if(!amt){try{amt=smLotAmount(x,Lt)}catch(e){amt=0}}
+      /* Lot ki rakam bhi discount se pehle ki likhi jaati hai. */
+      amt=_ordAfterDisc(amt,x);
       out.push({kind:"lot",lotKey:Lt.key,no:x.orderNo||"",
         what:"LOT "+_ordLotNo(x,Lt)+" cancel"
           +(Lt.itemName?(" \u00b7 "+Lt.itemName):"")
@@ -2802,7 +2869,7 @@ function smCancelList(uid,mk){
     if(mkOf(x.cancelAt,x.date)!==mk)return;
     if(!smJoinOk(u,x.cancelAt||x.date))return;
     out.push({kind:"bill",no:x.billNo||"",what:"Bill cancel",
-      party:x.custName||"",amt:Math.round(Number(x.grandTotal)||0),
+      party:x.custName||"",amt:Math.round(_billTaxable(x)),
       at:String(x.cancelAt||x.date||"").slice(0,10),
       by:x.cancelBy||"",why:x.cancelReason||"",
       eff:x.cancelEff||crEffOf(x.cancelReason),id:x.id});
@@ -2836,6 +2903,161 @@ async function smCancelWhy(kind,id,lotKey){
   toast(w.why?"Kaaran likh diya":"Kaaran hata diya","ok");
 }
 /* Laal number par click -- poori detail, reason ke saath. */
+/* Milaan ki list. Dono list theek wahi order/bill chunti hain jo patti
+   ka number banate hain -- ek hi chhanni, do jagah nahi. Isliye list ka
+   TOTAL patti se hamesha mel khayega. */
+function smMonthOrderList(uid,mk){
+  mk=mk||npMonthKey();var u=smUserById(uid),out=[];
+  (STATE.orders||[]).forEach(function(o){
+    if(!o||o._deleted||o.status==="cancelled"||o.status==="deleted")return;
+    if(String(o.date||"").slice(0,7)!==mk)return;
+    if(uid&&o.salesmanId!==uid)return;
+    if(!smJoinOk(u,o.date))return;
+    var g=Math.round(Number(o.total)||0),n=_ordAfterDisc(g,o),q=_ordLivePcsMtrs(o);
+    out.push({id:o.id,no:o.orderNo||"",party:o.custName||"",
+      date:String(o.date||"").slice(0,10),pcs:q.pcs,mtrs:q.mtrs,
+      gross:g,disc:g-n,net:n,pct:_ordDiscPct(o)});
+  });
+  return out.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:
+    (a.no<b.no?-1:a.no>b.no?1:0)});
+}
+function smMonthBillList(uid,mk){
+  mk=mk||npMonthKey();var u=smUserById(uid),map=_ordSmMap(),out=[];
+  /* Bill par order ka pata do tarah se mil sakta hai -- id se ya number
+     se. Standalone bill (jo kisi order form se nahi bana) par dono nahi
+     hote; wahan order ki ginti 0 rehti hai aur list me nishan aata hai. */
+  var oById={},oByNo={};
+  (STATE.orders||[]).forEach(function(o){
+    if(!o||o._deleted)return;
+    oById[o.id]=o;if(o.orderNo)oByNo[o.orderNo]=o;
+  });
+  (STATE.bills||[]).forEach(function(b){
+    if(!b||b._deleted||b.status==="cancelled")return;
+    if(String(b.date||"").slice(0,7)!==mk)return;
+    if(uid&&billSalesman(b,map).id!==uid)return;
+    if(!smJoinOk(u,b.date))return;
+    var tx=Math.round(_billTaxable(b)),gst=Math.round(Number(b.gstAmt)||0);
+    var gt=Math.round(Number(b.grandTotal)||0);if(!gt)gt=tx+gst;
+    var o=oById[b.ordId]||(b.ordNo?oByNo[b.ordNo]:null);
+    var op=0;if(o){try{op=_ordLivePcsMtrs(o).pcs}catch(e){op=0}}
+    /* Is bill me kitni saree gayi. dispQty wahi ginti hai jo dispatch
+       hui; purane bill par wo likhi nahi hoti, tab pcs se kaam chalta
+       hai. Sample ki line bhi saree hi hai, isliye wo bhi ginti me. */
+    var dp=(b.items||[]).reduce(function(a,i){
+      return a+(Number(i&&(i.dispQty||i.pcs))||0);
+    },0);
+    out.push({id:b.id,no:b.billNo||"",party:b.custName||"",
+      date:String(b.date||"").slice(0,10),total:gt,gst:gst,taxable:tx,
+      ordId:(o&&o.id)||"",ordNo:(o&&o.orderNo)||b.ordNo||"",
+      ordPcs:op,dispPcs:dp});
+  });
+  return out.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:
+    (a.no<b.no?-1:a.no>b.no?1:0)});
+}
+/* Milaan ki table. Niche ki TOTAL line hi asli kaam ki cheez hai --
+   wahi patti ke number se mel khana chahiye. */
+function _smTblHtml(head,rows,tot){
+  var cell=function(c,ci,st){
+    return'<td style="text-align:'+(head[ci]&&head[ci].r?"right":"left")+';'+st+'">'
+      +c+'</td>';
+  };
+  var th=head.map(function(c){
+    return'<th style="text-align:'+(c.r?"right":"left")+';padding:7px 8px;font-size:9.5px;'
+      +'font-weight:900;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;'
+      +'white-space:nowrap;border-bottom:1.5px solid var(--br);background:var(--cd);'
+      +'position:sticky;top:0">'+c.t+'</th>';
+  }).join("");
+  var tr=rows.map(function(r,i){
+    return'<tr style="background:'+(i%2?"var(--bg)":"transparent")+'">'
+      +r.map(function(c,ci){return cell(c,ci,"padding:7px 8px;font-size:11.5px;"
+        +"font-weight:600;white-space:nowrap;border-bottom:1px solid var(--br)")}).join("")
+      +'</tr>';
+  }).join("");
+  var tf=tot?('<tr>'+tot.map(function(c,ci){
+    return cell(c,ci,"padding:10px 8px;font-size:12.5px;font-weight:900;white-space:nowrap;"
+      +"background:var(--Pl);color:var(--Pd);border-top:2px solid var(--P)")}).join("")
+    +'</tr>'):"";
+  return'<div style="overflow:auto;max-height:100%;border:1px solid var(--br);border-radius:10px">'
+    +'<table style="width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums">'
+    +'<thead><tr>'+th+'</tr></thead><tbody>'+tr+tf+'</tbody></table></div>';
+}
+function _smDrillSheet(id,title,sub,note,body){
+  var d=document.getElementById(id);if(d)d.remove();
+  d=document.createElement("div");d.className="ov";d.id=id;
+  d.innerHTML='<div class="sh" style="max-height:90vh;display:flex;flex-direction:column">'
+    +'<div class="shh"><div class="hr"><div><h3>'+title+'</h3>'
+    +'<p class="sub">'+sub+'</p></div>'
+    +'<button class="btn bgh bsm" onclick="document.getElementById(\''+id+'\').remove()">\u2715</button>'
+    +'</div></div><div style="flex:1;overflow:auto;padding:12px 14px">'
+    +(note?('<div style="background:var(--Pl);border-radius:9px;padding:8px 11px;margin-bottom:10px;'
+      +'font-size:11.5px;font-weight:700;color:var(--Pd);line-height:1.5">'+note+'</div>'):"")
+    +body+'</div></div>';
+  _ovOpen(d);
+}
+/* "Order aaya" ka poora hisaab -- orderform ek-ek, aur niche jod. */
+function smOrderDrill(uid,mk){
+  mk=mk||npMonthKey();
+  var L=smMonthOrderList(uid,mk),u=smUserById(uid);
+  var tp=0,tm=0,tg=0,td=0,tn=0;
+  L.forEach(function(x){tp+=x.pcs;tm+=x.mtrs;tg+=x.gross;td+=x.disc;tn+=x.net});
+  var head=[{t:"Orderform"},{t:"Party"},{t:"Saree",r:1},{t:"Mtr",r:1},
+            {t:"Value",r:1},{t:"Disc",r:1},{t:"Taxable",r:1}];
+  var rows=L.map(function(x){return[
+    '<b>'+escHtml(x.no)+'</b><div style="font-size:9.5px;color:var(--t3);font-weight:700">'
+      +fmtDate(x.date)+'</div>',
+    escHtml(x.party),fmtN(x.pcs),fmtN(x.mtrs),fmtN(x.gross),
+    (x.disc>0?('\u2212'+fmtN(x.disc)
+      +'<div style="font-size:9px;color:var(--t3);font-weight:700">'+x.pct+'%</div>'):"\u2014"),
+    '<b style="color:var(--P)">'+fmtN(x.net)+'</b>']});
+  var tot=["TOTAL",L.length+" orderform",fmtN(tp),fmtN(tm),fmtN(tg),
+    (td>0?("\u2212"+fmtN(td)):"\u2014"),fmtN(tn)];
+  _smDrillSheet("m-sm-ord-drill","\uD83D\uDCCB Order aaya \u2014 \u20b9"+fmtN(tn),
+    escHtml((u&&u.name)||"Sab")+" \u00b7 "+escHtml(smMkLabel(mk)),
+    "Niche TAXABLE ka jod <b>\u20b9"+fmtN(tn)+"</b> \u2014 patti par yahi number hai. "
+      +"Value me se discount kat kar taxable banta hai; GST isme kahin nahi.",
+    L.length?_smTblHtml(head,rows,tot)
+      :'<div class="emp"><div class="emj">\uD83D\uDCCB</div><h3>Is mahine koi order nahi</h3></div>');
+}
+/* "Maal gaya" ka poora hisaab -- bill ek-ek, aur niche jod.
+   Niyam: maal gaya = bill ka jod \u2212 GST. */
+function smBillDrill(uid,mk){
+  mk=mk||npMonthKey();
+  var L=smMonthBillList(uid,mk),u=smUserById(uid);
+  var tt=0,tgs=0,tx=0,tdp=0,top=0,ton=0,_seen={};
+  L.forEach(function(x){
+    tt+=x.total;tgs+=x.gst;tx+=x.taxable;tdp+=x.dispPcs;
+    /* Ek hi order ke do bill ho sakte hain -- order ki ginti ek hi baar
+       jodni hai, warna neeche ka jod jhooth bol dega. */
+    if(x.ordId&&!_seen[x.ordId]){_seen[x.ordId]=1;top+=x.ordPcs;ton++}
+  });
+  var head=[{t:"Bill"},{t:"Party"},{t:"Orderform"},{t:"Order saree",r:1},
+            {t:"Gaya saree",r:1},{t:"Bill total",r:1},{t:"GST",r:1},{t:"Taxable",r:1}];
+  var rows=L.map(function(x){return[
+    '<b>'+escHtml(x.no)+'</b><div style="font-size:9.5px;color:var(--t3);font-weight:700">'
+      +fmtDate(x.date)+'</div>',
+    escHtml(x.party),
+    (x.ordNo?('<b style="color:var(--P)">'+escHtml(x.ordNo)+'</b>')
+      :'<span style="color:#B45309;font-weight:800">\u2014 direct bill</span>'),
+    (x.ordPcs?fmtN(x.ordPcs):"\u2014"),
+    '<b>'+fmtN(x.dispPcs)+'</b>'
+      +(x.ordPcs>x.dispPcs?('<div style="font-size:9px;color:var(--t3);font-weight:700">'
+        +fmtN(x.ordPcs-x.dispPcs)+' baaki</div>'):""),
+    fmtN(x.total),
+    (x.gst>0?("\u2212"+fmtN(x.gst)):"\u2014"),
+    '<b style="color:#047857">'+fmtN(x.taxable)+'</b>']});
+  var tot=["TOTAL",L.length+" bill",(ton?(ton+" order"):"\u2014"),
+    (top?fmtN(top):"\u2014"),fmtN(tdp),fmtN(tt),
+    (tgs>0?("\u2212"+fmtN(tgs)):"\u2014"),fmtN(tx)];
+  _smDrillSheet("m-sm-bill-drill","\uD83E\uDDFE Maal gaya \u2014 \u20b9"+fmtN(tx),
+    escHtml((u&&u.name)||"Sab")+" \u00b7 "+escHtml(smMkLabel(mk)),
+    "Bill ka jod <b>\u20b9"+fmtN(tt)+"</b> \u2212 GST <b>\u20b9"+fmtN(tgs)
+      +"</b> = <b>\u20b9"+fmtN(tx)+"</b>, aur patti par yahi number hai.<br>"
+      +"<b>Order saree</b> = us orderform ka poora maal \u00b7 <b>Gaya saree</b> = is bill me "
+      +"kitni gayi. Ek order ke do bill ho to order ki ginti neeche ek hi baar judi hai. "
+      +"Cancel hue bill isme nahi \u2014 wo cancel ke khane me alag hain.",
+    L.length?_smTblHtml(head,rows,tot)
+      :'<div class="emp"><div class="emj">\uD83E\uDDFE</div><h3>Is mahine koi bill nahi</h3></div>');
+}
 function smCancelDetail(uid,mk){
   mk=mk||npMonthKey();
   window._cancDetUid=uid||"";window._cancDetMk=mk;
@@ -2892,6 +3114,10 @@ function smGapWhere(uid,mk){
     if(String(o.date||"").slice(0,7)!==mk)return;
     if(uid&&o.salesmanId!==uid)return;
     if(!smJoinOk(u,o.date))return;
+    /* Ye do number "order aaya \u2212 maal gaya" wale farak ko todte hain,
+       aur wo farak taxable par nikalta hai -- to ye bhi discount kaat
+       kar, warna tod jod se bada ho jata hai. */
+    var ow=0,of=0;
     var lots=[];try{lots=csOrderLots(o)||[]}catch(e){lots=[]}
     lots.forEach(function(L){
       if(L.cancelled)return;
@@ -2901,10 +3127,11 @@ function smGapWhere(uid,mk){
         var per=pcs>0?((Number(it.amount)||0)/pcs)
           :((Number(it.rate)||0)*(Number(it.cut)||0));
         if(!per)return;
-        wait+=(Number(r.pending)||0)*per;
-        floor+=Math.max(0,(Number(r.slipped)||0)-(Number(r.billed)||0))*per;
+        ow+=(Number(r.pending)||0)*per;
+        of+=Math.max(0,(Number(r.slipped)||0)-(Number(r.billed)||0))*per;
       });
     });
+    wait+=_ordAfterDisc(ow,o);floor+=_ordAfterDisc(of,o);
   });
   return{wait:Math.round(wait),floor:Math.round(floor)};
 }
@@ -2929,7 +3156,7 @@ function smCarry(uid,mk){
     var v=om[b.ordId]||(b.ordNo?om["#"+b.ordNo]:null);
     if(!v||!v.d)return;
     if(v.d.slice(0,7)>=mk)return;
-    old+=Number(b.grandTotal)||0;oldN++;
+    old+=_billTaxable(b);oldN++;
   });
   /* Is mahine ke order ka kitna maal abhi gaya hi nahi -- wo jis mahine
      jayega usi me ginega. */
@@ -2939,6 +3166,9 @@ function smCarry(uid,mk){
     if(String(o.date||"").slice(0,7)!==mk)return;
     if(uid&&o.salesmanId!==uid)return;
     if(!smJoinOk(u,o.date))return;
+    /* Ye rakam "maal gaya" ke saath rakhi jaati hai, isliye ye bhi
+       discount kaat kar -- warna ek hi patti me do tarah ke number. */
+    var oa=0;
     try{
       (csOrderLots(o)||[]).forEach(function(L){
         if(L.cancelled)return;
@@ -2947,20 +3177,23 @@ function smCarry(uid,mk){
           var per=pcs>0?((Number(it.amount)||0)/pcs)
             :((Number(it.rate)||0)*(Number(it.cut)||0));
           if(!per)return;
-          ahead+=Math.max(0,(Number(r.ordered)||0)-(Number(r.billed)||0)
+          oa+=Math.max(0,(Number(r.ordered)||0)-(Number(r.billed)||0)
             -(Number(r.cleared)||0))*per;
         });
       });
     }catch(e){}
+    ahead+=_ordAfterDisc(oa,o);
   });
   return{old:Math.round(old),oldN:oldN,ahead:Math.round(ahead)};
 }
 function smRows(mk){
   mk=mk||npMonthKey();
   return smUsers().map(function(u){
-    var tg=smTargetOf(u),bl=smMonthDone(u.id,mk),od=smMonthOrder(u.id,mk);
+    var tg=smTargetOf(u),bl=smMonthDone(u.id,mk);
+    var op=smMonthOrderParts(u.id,mk),od=op.net;
     var rec=smRecord(u,12),cn=smMonthCancel(u.id,mk);
     return{id:u.id,name:u.name||"",user:u,target:tg,bill:bl,order:od,
+      ordGross:op.gross,ordDisc:op.disc,
       mk:mk,joinMk:String(u.joinedAt||"").slice(0,7),canc:cn,gap:Math.max(0,od-bl),
       /* Target order se naapa jaata hai -- order laana salesman ke haath
          me hai, maal bhejna nahi. Maal ka hisaab alag rakha hai, sirf
@@ -3015,7 +3248,7 @@ function smBarHtml(r,big){
   /* Ek patti: sar par naam ka chhota chip aur % ka gol nishan, phir
      moti patti, phir neeche kaam ki line. Dono patti ek jaisi dikhti
      hain taaki aankh seedha dono number mila sake. */
-  var band=function(lbl,val,pct,ca,cb,vSize,sub){
+  var band=function(lbl,val,pct,ca,cb,vSize,sub,click){
     var w=Math.max(pct,pct>0?4:0);
     return'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">'
       +'<div style="display:flex;align-items:center;gap:6px;min-width:0">'
@@ -3026,9 +3259,13 @@ function smBarHtml(r,big){
       +'<span style="background:'+cb+';color:#fff;font-size:'+(big?"11.5":"10.5")+'px;'
       +'font-weight:900;padding:'+(big?"2px 10px":"2px 8px")+';border-radius:99px;'
       +'white-space:nowrap;letter-spacing:-.2px">'+pct+'%</span></div>'
-      +'<div style="font-size:'+vSize+'px;font-weight:900;line-height:1.02;color:'+cb+';'
+      /* Number par click -- poora hisaab ek-ek line me khul jaata hai,
+         niche jod ke saath. Milaan isi se hota hai. */
+      +'<div'+(click?(' onclick="'+click+'" style="cursor:pointer;'):' style="')
+      +'font-size:'+vSize+'px;font-weight:900;line-height:1.02;color:'+cb+';'
       +'letter-spacing:-1.2px;margin-top:'+(big?"4":"3")+'px;font-variant-numeric:tabular-nums">'
-      +val+'</div>'
+      +val+(click?('<span style="font-size:'+Math.round(vSize*.5)+'px;opacity:.5;'
+        +'margin-left:5px;font-weight:900">\u203A</span>'):"")+'</div>'
       +'<div style="position:relative;height:'+BH+'px;background:var(--bg);border-radius:99px;'
       +'overflow:hidden;margin:'+(big?"8":"6")+'px 0 0;box-shadow:inset 0 1px 3px rgba(0,0,0,.10)">'
       +'<div style="position:absolute;left:0;top:0;bottom:0;width:'+w+'%;border-radius:99px;'
@@ -3046,7 +3283,11 @@ function smBarHtml(r,big){
       +(r.days>0?('<span style="color:var(--t3)"> \u00b7 '+r.days+' din \u00b7 roz '
         +_wiRs(Math.ceil(oLeft/r.days))+'</span>'):""))
     :('<span style="color:#047857">\u2705 '+_wiRs(tgt)+' ka order aa gaya</span>');
-  h+=band("order aaya",_wiRs(r.order),po,o1,o2,(big?34:24),oSub);
+  h+=band("order aaya",_wiRs(r.order),po,o1,o2,(big?34:24),oSub,
+    "smOrderDrill('"+r.id+"','"+(r.mk||"")+"')");
+  /* Yahan "itna discount kata, GST nahi juda" likha hua tha. Neer:
+     "ye batana zaroori nahi, samajh me aata hai." Poora hisaab ab
+     patti par click karne par list me khulta hai. */
   /* 2. MAAL GAYA -- target isi se poora hota hai */
   if(seeBill){
     var bSub=(Number(r.billLeft)||0)>0
@@ -3054,7 +3295,8 @@ function smBarHtml(r,big){
       :'<span style="color:#047857">\u2714 target jitna maal ja chuka</span>';
     h+='<div style="margin-top:'+(big?"14":"11")+'px;padding-top:'+(big?"13":"11")+'px;'
       +'border-top:1px solid var(--br)">'
-      +band("maal gaya",_wiRs(r.bill),pb,c1,c2,(big?26:19),bSub)
+      +band("maal gaya",_wiRs(r.bill),pb,c1,c2,(big?26:19),bSub,
+        "smBillDrill('"+r.id+"','"+(r.mk||"")+"')")
       +'</div>';
   }
   /* Neer: "35 L ka order to laya hoon already, aur 20 L hi gaya hai --
@@ -3099,10 +3341,11 @@ function smBarHtml(r,big){
          -X  = itna ginti me se kat gaya
          +X  = itna ginti me jud gaya
           X  = cancel to hua, par ginti waisi ki waisi */
-    var cAmt,cSign;
-    if(r.canc.minus>0){cSign="\u2212";cAmt=r.canc.minus}
-    else if(r.canc.add>0){cSign="+";cAmt=r.canc.add}
-    else{cSign="";cAmt=r.canc.total}
+    /* Pehle yahan \u2212/+ ka nishan lagta tha, kyunki cancel ki rakam
+       maal gaye me se ghataai jaati thi. Ab maal gaya saaf bill \u2212 GST
+       hai, to nishan jhooth ho jata. Rakam jaisi hai waisi. Kaaran aur
+       uska asar cancel ki list me khulta hai. */
+    var cAmt=r.canc.total,cSign="";
     h+='<div style="margin-top:'+(big?"11":"9")+'px;background:#FEF2F2;border-radius:10px;'
       +'padding:'+(big?"9px 12px":"8px 10px")+'">'
       +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
@@ -3191,9 +3434,11 @@ function smReportMsg(r,mk){
       +(r.days>0?("  \u00b7 "+r.days+" din \u00b7 roz "+_wiRs(Math.ceil(r.left/r.days))):"")+"\n";
   }
   if(r.canc&&r.canc.total>0){
-    m+="Cancel hua  : \u2212"+_wiRs(r.canc.total)+"  ("
+    /* Minus ka nishan hata diya -- cancel hui rakam kisi ginti me aayi
+       hi nahi thi, to "minus" likhna jhooth tha. */
+    m+="Cancel hua  : "+_wiRs(r.canc.total)+"  ("
       +[r.canc.orderN?(r.canc.orderN+" order"):"",r.canc.billN?(r.canc.billN+" bill"):""]
-        .filter(Boolean).join(", ")+") \u2014 ginti se bahar\n";
+        .filter(Boolean).join(", ")+") \u2014 ginti me nahi\n";
   }
   /* Maal kahan atka hai ye salesman ka kaam nahi -- wo admin ki screen
      par hi rehta hai. */
@@ -3340,7 +3585,7 @@ function smReportPrint(){
     +'<td class="tr"><strong>'+(tT>0?Math.round(tO/tT*100):0)+'%</strong></td>'
     +'<td class="tr"><strong>'+rs(tB)+'</strong></td><td></td><td></td><td></td><td></td></tr></table>';
   html+='<div class="footer">'+escHtml((STATE.settings&&STATE.settings.companyName)||"ALT Stock")
-    +' &nbsp;\u2022&nbsp; Target ki ginti bill/dispatch ke amount ki hai'
+    +' &nbsp;\u2022&nbsp; Target order ke TAXABLE amount par (value \u2212 discount, GST ke bina)'
     +' &nbsp;\u2022&nbsp; Printed: '+(new Date).toLocaleDateString("en-IN")+'</div></body></html>';
   _printWin(html,"Salesman Target "+smMkLabel(mk));
 }
@@ -6433,6 +6678,11 @@ async function cancelOrder(id){
       _fr=_fr.concat(w.freed);_lf=_lf.concat(w.left);_bs=_bs.concat(w.busy);
     });
   }catch(e){}
+  /* Cancel hote hi o.total zinda lot ke hisaab se dobara likha jata hai,
+     aur poore order me koi lot zinda bachta hi nahi -- to wo 0 ho jata
+     hai. Isliye cancel hone se PEHLE ki rakam alag likh lete hain, warna
+     "kitna cancel hua" ka jawab hamesha ke liye kho jata hai. */
+  if(o.cancelAmt==null)o.cancelAmt=Math.round(_ordGrossForCancel(o));
   o.total=_ordLiveTotal(o);
   try{setTimeout(function(){ordCancelBrokerOffer(o,_bparts,true)},300)}catch(e){}
   o.status="cancelled";o._ts=_bumpTs(o);
@@ -8121,15 +8371,18 @@ function npHist(id){
   _ovOpen(d);
 }
 // Is mahine kis salesman ne kitni sale ki (bill ke hisaab se).
+/* Yahan grandTotal ginta tha -- yaani GST bhi juda hua. Target wali
+   patti taxable par chalti hai, to ek hi aadmi ki "sale" do jagah do
+   number dikhati thi. Ab dono ek hi tarazu par. */
 function wiMonthSale(uid,mk){
   mk=mk||npMonthKey();var t=0;
   (STATE.bills||[]).forEach(function(b){
     if(!b||b._deleted||b.status==="cancelled")return;
     if(String(b.date||"").slice(0,7)!==mk)return;
     if(uid&&b.salesmanId!==uid)return;
-    t+=Number(b.grandTotal)||0;
+    t+=_billTaxable(b);
   });
-  return t;
+  return Math.round(t);
 }
 // Aaj kitne kaam nipte -- thandi party, nayi party aur star, teeno milakar.
 /* Jin jawaabon me party se SACH ME baat hui. Baaki (jawab nahi,
@@ -14905,6 +15158,29 @@ function _csMarkSlipCancelled(sl,why){
   if(Array.isArray(sl.csHist))sl.csHist.push({st:"cancelled",
     by:sl.csCancelledBy,ts:sl.csStatusTs});
   return true;
+}
+/* Ek order me kitni saree aur kitna meter -- cancel kiye hue lot chhod
+   kar, theek waise jaise _ordLiveTotal rakam ginta hai. Dono ek hi
+   niyam par chalein, warna list ka jod patti se mel nahi khayega. */
+function _ordLivePcsMtrs(o){
+  var cl=(o&&o.cancelledLots)||{},p=0,m=0;
+  if(o&&o.type==="open"){
+    (o.programmes||[]).forEach(function(pg){
+      if(!pg||cl["pg_"+progGid(pg)])return;
+      var q=Number(pg.pcs)||0;
+      p+=q;m+=Number(pg.mtrs)||(q*(Number(pg.cut)||0));
+    });
+    return{pcs:p,mtrs:Math.round(m)};
+  }
+  var lots=[];try{lots=buildLotsFromOrder(o)}catch(e){lots=[]}
+  lots.forEach(function(l){
+    if(cl[l.key])return;
+    (l.items||[]).forEach(function(it){
+      var q=Number(it.pcs)||0;
+      p+=q;m+=Number(it.mtrs)||(q*(Number(it.cut)||0));
+    });
+  });
+  return{pcs:p,mtrs:Math.round(m)};
 }
 /* Order ka chalu total -- cancel kiye hue lot chhod kar. */
 function _ordLiveTotal(o){
