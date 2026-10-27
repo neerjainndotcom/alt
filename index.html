@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.392-->
+<!DOCTYPE html><!--ALTV:1.45.394-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.392";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.394";const APP_BUILD_DATE="2026-10-05";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -2660,17 +2660,14 @@ function _ordAfterDisc(amt,o){
    ginta, aur o.total me cancel kiye hue lot bhi nahi hote. Discount
    alag se bhi lauta dete hain, taaki card par likha ja sake ki itna
    kat chuka hai. */
+/* Patti ka number aur list ka jod -- dono ab EK hi jagah se bante hain.
+   Pehle yahan apni alag ginti chalti thi; do jagah ek hi niyam likhne se
+   hi aage chal kar farak padta hai. */
 function smMonthOrderParts(uid,mk){
-  mk=mk||npMonthKey();var g=0,n=0,u=smUserById(uid);
-  (STATE.orders||[]).forEach(function(o){
-    if(!o||o._deleted||o.status==="cancelled"||o.status==="deleted")return;
-    if(String(o.date||"").slice(0,7)!==mk)return;
-    if(uid&&o.salesmanId!==uid)return;
-    if(!smJoinOk(u,o.date))return;
-    var a=Number(o.total)||0;
-    g+=a;n+=_ordAfterDisc(a,o);
-  });
-  return{gross:Math.round(g),net:Math.round(n),disc:Math.round(g-n)};
+  var L=smMonthOrderList(uid,mk),g=0,n=0,c=0;
+  L.forEach(function(x){g+=x.gross;n+=x.net;c+=Number(x.creditNet)||0});
+  return{gross:Math.round(g),net:Math.round(n),disc:Math.round(g-n),
+    credit:Math.round(c),n:L.length};
 }
 function smMonthOrder(uid,mk){return smMonthOrderParts(uid,mk).net}
 /* Target ki asli ginti -- jo maal bill/dispatch ho gaya. Join se pehle
@@ -2814,8 +2811,19 @@ function smMonthCancel(uid,mk){
    se jod lo -- line par rakam aaj bhi padi hai. */
 function _ordGrossForCancel(o){
   if(!o)return 0;
+  /* 1. jo cancel ke waqt likh li thi */
   var a=Number(o.cancelAmt)||0;if(a>0)return a;
+  /* 2. order ka total -- poore cancel par ye 0 ho chuka hota hai */
   a=Number(o.total)||0;if(a>0)return a;
+  /* 3. har lot par cancel karte waqt uski asli rakam likhi gayi thi.
+     Ye sabse bharosemand jagah hai -- purane cancel order par bhi padi
+     rehti hai. Isi par na jaane ki wajah se "\u2212\u20b90" dikh raha tha. */
+  var cl=o.cancelledLots||{},k=Object.keys(cl);
+  if(k.length){
+    a=k.reduce(function(x,key){return x+(Number(cl[key]&&cl[key].amt)||0)},0);
+    if(a>0)return a;
+  }
+  /* 4. aakhir me khud ki line se jod lo */
   if(o.type==="open"){
     return(o.programmes||[]).reduce(function(x,p){return x+(Number(p&&p.amount)||0)},0);
   }
@@ -2909,14 +2917,33 @@ async function smCancelWhy(kind,id,lotKey){
 function smMonthOrderList(uid,mk){
   mk=mk||npMonthKey();var u=smUserById(uid),out=[];
   (STATE.orders||[]).forEach(function(o){
-    if(!o||o._deleted||o.status==="cancelled"||o.status==="deleted")return;
+    if(!o||o._deleted||o.status==="deleted")return;
+    /* Cancel hua order sirf tab ginti me aata hai jab uska kaaran
+       "Ginti me jod do" par ho. Baaki cancel pehle ki tarah bahar. */
+    var whole=false;
+    if(o.status==="cancelled"){
+      whole=_ordCreditOnCancel(o);
+      if(!whole)return;
+    }
     if(String(o.date||"").slice(0,7)!==mk)return;
     if(uid&&o.salesmanId!==uid)return;
     if(!smJoinOk(u,o.date))return;
-    var g=Math.round(Number(o.total)||0),n=_ordAfterDisc(g,o),q=_ordLivePcsMtrs(o);
+    /* Poora order juda ho to uski cancel se pehle wali rakam; warna
+       chalu total + wo lot jo "jod do" wale kaaran se cancel hue. */
+    var lotCr=whole?0:_ordLotCredit(o);
+    var g=whole?Math.round(_ordGrossForCancel(o))
+               :(Math.round(Number(o.total)||0)+lotCr);
+    var n=_ordAfterDisc(g,o);
+    var q=_ordLivePcsMtrs(o,whole?"all":(lotCr>0?"credit":null));
     out.push({id:o.id,no:o.orderNo||"",party:o.custName||"",
       date:String(o.date||"").slice(0,10),pcs:q.pcs,mtrs:q.mtrs,
-      gross:g,disc:g-n,net:n,pct:_ordDiscPct(o)});
+      gross:g,disc:g-n,net:n,pct:_ordDiscPct(o),
+      credited:whole,lotCredit:lotCr,
+      /* Is line me se kitna "cancel hokar bhi juda hua" hai -- usi party
+         ke discount ke saath, warna ye ek number baaki sab se alag tarazu
+         par ho jata. */
+      creditNet:(whole?n:_ordAfterDisc(lotCr,o)),
+      why:(whole?(o.cancelReason||""):"")});
   });
   return out.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:
     (a.no<b.no?-1:a.no>b.no?1:0)});
@@ -2998,13 +3025,22 @@ function _smDrillSheet(id,title,sub,note,body){
 function smOrderDrill(uid,mk){
   mk=mk||npMonthKey();
   var L=smMonthOrderList(uid,mk),u=smUserById(uid);
-  var tp=0,tm=0,tg=0,td=0,tn=0;
-  L.forEach(function(x){tp+=x.pcs;tm+=x.mtrs;tg+=x.gross;td+=x.disc;tn+=x.net});
+  var tp=0,tm=0,tg=0,td=0,tn=0,_cr=0;
+  L.forEach(function(x){
+    tp+=x.pcs;tm+=x.mtrs;tg+=x.gross;td+=x.disc;tn+=x.net;
+    _cr+=Number(x.creditNet)||0;
+  });
   var head=[{t:"Orderform"},{t:"Party"},{t:"Saree",r:1},{t:"Mtr",r:1},
             {t:"Value",r:1},{t:"Disc",r:1},{t:"Taxable",r:1}];
   var rows=L.map(function(x){return[
     '<b>'+escHtml(x.no)+'</b><div style="font-size:9.5px;color:var(--t3);font-weight:700">'
-      +fmtDate(x.date)+'</div>',
+      +fmtDate(x.date)+'</div>'
+      +(x.credited?('<div style="margin-top:3px;display:inline-block;background:#FEF3C7;'
+        +'color:#92400E;border-radius:5px;padding:1px 6px;font-size:9px;font-weight:900">'
+        +'CANCEL \u00b7 GINTI ME JUDA</div>'):"")
+      +(!x.credited&&x.lotCredit>0?('<div style="margin-top:3px;display:inline-block;'
+        +'background:#FEF3C7;color:#92400E;border-radius:5px;padding:1px 6px;font-size:9px;'
+        +'font-weight:900">LOT CANCEL \u00b7 \u20b9'+fmtN(x.lotCredit)+' JUDA</div>'):""),
     escHtml(x.party),fmtN(x.pcs),fmtN(x.mtrs),fmtN(x.gross),
     (x.disc>0?('\u2212'+fmtN(x.disc)
       +'<div style="font-size:9px;color:var(--t3);font-weight:700">'+x.pct+'%</div>'):"\u2014"),
@@ -3014,7 +3050,9 @@ function smOrderDrill(uid,mk){
   _smDrillSheet("m-sm-ord-drill","\uD83D\uDCCB Order aaya \u2014 \u20b9"+fmtN(tn),
     escHtml((u&&u.name)||"Sab")+" \u00b7 "+escHtml(smMkLabel(mk)),
     "Niche TAXABLE ka jod <b>\u20b9"+fmtN(tn)+"</b> \u2014 patti par yahi number hai. "
-      +"Value me se discount kat kar taxable banta hai; GST isme kahin nahi.",
+      +"Value me se discount kat kar taxable banta hai; GST isme kahin nahi."
+      +(_cr>0?("<br>Isme <b>\u20b9"+fmtN(_cr)+"</b> aisa cancel hua maal bhi juda hai jiska "
+        +"kaaran \u201cGinti me jod do\u201d par set hai \u2014 niche peele nishan wali line."):""),
     L.length?_smTblHtml(head,rows,tot)
       :'<div class="emp"><div class="emj">\uD83D\uDCCB</div><h3>Is mahine koi order nahi</h3></div>');
 }
@@ -3078,7 +3116,9 @@ function smCancelDetail(uid,mk){
         +'padding:10px 12px;margin-bottom:8px">'
         +'<div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">'
         +'<div style="font-weight:900;font-size:13px">'+(ico[x.kind]||"")+' '+escHtml(x.no)+'</div>'
-        +'<div style="font-weight:900;font-size:13px;color:#DC2626">\u2212'+_wiRs(x.amt)+'</div></div>'
+        /* Minus ka nishan hata diya -- 1.45.391 se cancel kisi ginti ko
+           ghatata nahi. Card par ye pehle hi hat chuka tha. */
+        +'<div style="font-weight:900;font-size:13px;color:#DC2626">'+_wiRs(x.amt)+'</div></div>'
         +'<div class="xs ct3" style="font-weight:700;margin-top:2px">'+escHtml(x.what)+'</div>'
         +'<div class="xs ct3" style="margin-top:2px">'+escHtml(x.party)
         +(x.at?(" \u00b7 "+fmtDate(x.at)):"")+(x.by?(" \u00b7 "+escHtml(x.by)):"")+'</div>'
@@ -3193,8 +3233,11 @@ function smRows(mk){
     var op=smMonthOrderParts(u.id,mk),od=op.net;
     var rec=smRecord(u,12),cn=smMonthCancel(u.id,mk);
     return{id:u.id,name:u.name||"",user:u,target:tg,bill:bl,order:od,
-      ordGross:op.gross,ordDisc:op.disc,
-      mk:mk,joinMk:String(u.joinedAt||"").slice(0,7),canc:cn,gap:Math.max(0,od-bl),
+      ordGross:op.gross,ordDisc:op.disc,ordCredit:op.credit,
+      /* Jo order cancel hokar bhi ginti me juda hai, uska maal kabhi
+         jayega hi nahi -- use "bhejna baaki" me rakhna jhooth hoga. */
+      mk:mk,joinMk:String(u.joinedAt||"").slice(0,7),canc:cn,
+      gap:Math.max(0,od-(op.credit||0)-bl),
       /* Target order se naapa jaata hai -- order laana salesman ke haath
          me hai, maal bhejna nahi. Maal ka hisaab alag rakha hai, sirf
          admin ke liye. */
@@ -15162,11 +15205,43 @@ function _csMarkSlipCancelled(sl,why){
 /* Ek order me kitni saree aur kitna meter -- cancel kiye hue lot chhod
    kar, theek waise jaise _ordLiveTotal rakam ginta hai. Dono ek hi
    niyam par chalein, warna list ka jod patti se mel nahi khayega. */
-function _ordLivePcsMtrs(o){
+/* Cancel ka kaaran "Ginti me jod do" par set ho to wo cancel salesman ke
+   khilaaf nahi jaata -- maal hamari taraf se nahi gaya, order to wo laaya
+   hi tha. Kaun sa kaaran kis asar par hai, ye Settings me Neer tay karta
+   hai; purani line par asar likha na ho to kaaran ke naam se dhoondh
+   lete hain. */
+function _lotCreditEff(c){
+  if(!c)return false;
+  var e=c.eff;if(!e){try{e=crEffOf(c.why)}catch(x){e="none"}}
+  return e==="add";
+}
+function _ordCreditOnCancel(o){
+  if(!o||o.status!=="cancelled")return false;
+  var e=o.cancelEff;if(!e){try{e=crEffOf(o.cancelReason)}catch(x){e="none"}}
+  return e==="add";
+}
+/* Zinda order par jo lot "jod do" wale kaaran se cancel hue -- unki rakam. */
+function _ordLotCredit(o){
+  var cl=(o&&o.cancelledLots)||{},t=0;
+  Object.keys(cl).forEach(function(k){
+    if(_lotCreditEff(cl[k]))t+=Number(cl[k].amt)||0;
+  });
+  return Math.round(t);
+}
+/* mode: khaali = sirf zinda lot \u00b7 "credit" = zinda + jude hue lot
+   \u00b7 "all" = sab (poora order jab jod diya gaya ho). */
+function _ordLivePcsMtrs(o,mode){
   var cl=(o&&o.cancelledLots)||{},p=0,m=0;
+  var take=function(key){
+    var c=cl[key];
+    if(!c)return true;
+    if(mode==="all")return true;
+    if(mode==="credit")return _lotCreditEff(c);
+    return false;
+  };
   if(o&&o.type==="open"){
     (o.programmes||[]).forEach(function(pg){
-      if(!pg||cl["pg_"+progGid(pg)])return;
+      if(!pg||!take("pg_"+progGid(pg)))return;
       var q=Number(pg.pcs)||0;
       p+=q;m+=Number(pg.mtrs)||(q*(Number(pg.cut)||0));
     });
@@ -15174,7 +15249,7 @@ function _ordLivePcsMtrs(o){
   }
   var lots=[];try{lots=buildLotsFromOrder(o)}catch(e){lots=[]}
   lots.forEach(function(l){
-    if(cl[l.key])return;
+    if(!take(l.key))return;
     (l.items||[]).forEach(function(it){
       var q=Number(it.pcs)||0;
       p+=q;m+=Number(it.mtrs)||(q*(Number(it.cut)||0));
