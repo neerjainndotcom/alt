@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.397-->
+<!DOCTYPE html><!--ALTV:1.45.398-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.397";const APP_BUILD_DATE="2026-10-28";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.398";const APP_BUILD_DATE="2026-10-28";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -2115,12 +2115,15 @@ function _costBtnShow(){
     if(b)b.style.display=ok?(id==="cost-fab"?"flex":""):"none";
   });
 }function aTab(t,b){switchTab("admin",t,b);if(t==="hin")renderHiNames();if(t==="usr")renderUsers();if(t==="led")renderLedger();if(t==="set")renderSettingsForm();if(t==="fy")renderFYTab();if(t==="flags")renderFlaggedTab();if(t==="db")renderDbTab()}/* ── COSTING ────────────────────────────────────────────────────────────
-   Neer ki sheet ka hisaab, jaisa ka taisa. Yahan har percentage JODTA
-   nahi, BAANTTA hai -- "mujhe itna bachna chahiye", na ki "itna upar laga
-   do". Isiliye 22 par 12% shortage se 24.64 nahi, 25.00 aata hai.
+   Neer ki sheet ka hisaab, jaisa ka taisa. Shortage BAANTTA hai: 22 par
+   12% shortage se 24.64 nahi, 25.00 aata hai.
      grey   = COG / (1 - shortage%)
      seedha = grey + har per-meter kharcha   (saree/taka wala bhi /meter me)
-     selling= seedha / ((1-dalal%)(1-discount%)(1-profit%))
+   Shop exp ke baad ke saare % MU (markup) hain -- pichhle total par % UPAR
+   JUDTA hai, ek ke baad ek: pehle Discount, phir Dalali (discount jod kar
+   bani keemat par -- dalali bina discount wali rakam par nahi dete), phir
+   Profit.
+     selling= seedha x (1+discount%) x (1+dalal%) x (1+profit%)
    Quotation hamesha /meter me hoti hai -- isliye /saree wala kharcha cut
    se aur /taka wala taka ke meter se baant kar hi joda jaata hai.
 
@@ -2135,7 +2138,7 @@ var COST_KINDS=[
   {k:"saree",   lbl:"₹ / saree"},
   {k:"taka",    lbl:"₹ / taka"},
   {k:"shopexp", lbl:"₹ shop exp (apne aap)"},
-  {k:"pricepct",lbl:"% keemat par (÷)"}
+  {k:"pricepct",lbl:"% MU (upar judta)"}
 ];
 var COST_UNIT={shortage:"%",greypct:"%",mtr:"₹/m",saree:"₹/saree",taka:"₹/taka",shopexp:"₹/m",pricepct:"%"};
 function costKindLbl(k){
@@ -2149,8 +2152,8 @@ function costDefaultRows(){
          {name:"Cutting",kind:"saree",val:1.5},
          {name:"Border cutting",kind:"saree",val:0.8,on:false},
          {name:"Shop exp",kind:"shopexp",val:0},
-         {name:"Dalal",kind:"pricepct",val:2},
          {name:"Discount",kind:"pricepct",val:5},
+         {name:"Dalal",kind:"pricepct",val:2},
          {name:"Profit",kind:"pricepct",val:5}];
 }
 function _costIsAdmin(){try{return csIsAdmin()}catch(e){return false}}
@@ -2205,8 +2208,20 @@ function costRows(){
   if(!STATE.settings)STATE.settings={};
   if(!Array.isArray(STATE.settings.costRows)||!STATE.settings.costRows.length)
     STATE.settings.costRows=costDefaultRows();
+  /* MU wale hisaab me kram maayne rakhta hai: Discount -> Dalali -> Profit.
+     Purani list (Dalal, Discount, Profit) ek baar apne aap sahi kram me. */
+  if(!STATE.settings.costMuOrder){
+    var R=STATE.settings.costRows,slots=[],sub=[];
+    R.forEach(function(r,i){if(r&&r.kind==="pricepct"){slots.push(i);sub.push(r)}});
+    sub=sub.map(function(r,k){return{r:r,k:k,o:_costIsDisc(r.name)?0:(_costIsProf(r.name)?2:1)}})
+       .sort(function(a,b){return a.o-b.o||a.k-b.k});
+    slots.forEach(function(i,k){R[i]=sub[k].r});
+    STATE.settings.costMuOrder=1;
+  }
   return STATE.settings.costRows;
 }
+function _costIsDisc(n){return/disc|chhoot|chhut|chut/i.test(n||"")}
+function _costIsProf(n){return/profit|munafa|nafa|margin/i.test(n||"")}
 function costInputs(){
   var c=STATE.settings&&STATE.settings.costInp||{};
   return{cog:Number(c.cog)||0,
@@ -2245,11 +2260,7 @@ function costCalc(inp,rows){
       o.per=on(r)&&v<100?(cog/(1-v/100)-cog):0;
       return;
     }
-    if(r.kind==="pricepct"){
-      o.note="selling price ka "+v+"%";
-      if(on(r))div*=(1-v/100);
-      return;
-    }
+    if(r.kind==="pricepct")return;   // MU -- niche, seedha kharcha ke baad
     var per=0;
     if(r.kind==="greypct"){per=cog*v/100;o.note=v+"% × ₹"+_costN(cog)}
     else if(r.kind==="mtr"){per=v;o.note="seedha /meter"}
@@ -2265,18 +2276,25 @@ function costCalc(inp,rows){
     o.per=per;
     if(on(r))direct+=per;
   });
-  out.direct=direct;out.div=div;
-  if(div<=0.0001){out.err="Dalal, discount aur profit milakar 100% se kam hone chahiye";return out}
-  out.selling=direct/div;
-  /* % keemat par wale ka rupaya: pehle wala poori keemat se, agla bache
-     hue se -- sab jodo to theek selling - seedha kharcha aata hai. */
-  var run=out.selling;
+  out.direct=direct;
+  /* MU: har % pichhle total par judta hai, list ke kram se. Saath me
+     teen beech ke rate bhi:
+       before discount = seedha + dalali (aur baaki MU, discount/profit chhod kar)
+       after discount  = seedha + discount + dalali
+       selling         = after discount + profit                         */
+  var run=direct,disc=0,prof=0,oth=0;
   rows.forEach(function(r,i){
     if(!r||r.kind!=="pricepct")return;
-    var v=Number(r.val)||0;
-    if(!on(r)){out.res[i].per=0;return}
-    var a=run*v/100;out.res[i].per=a;run-=a;
+    var v=Number(r.val)||0,o=out.res[i];
+    o.note="\u20b9"+_costN(run)+" \u00d7 "+v+"%";
+    if(!on(r)){o.per=0;return}
+    var a=run*v/100;o.per=a;run+=a;
+    if(_costIsDisc(r.name))disc+=a;else if(_costIsProf(r.name))prof+=a;else oth+=a;
   });
+  out.disc=disc;out.prof=prof;out.brk=oth;
+  out.beforeDisc=direct+oth;
+  out.afterDisc=direct+oth+disc;
+  out.selling=run;
   return out;
 }
 function costCan(){
@@ -2356,6 +2374,15 @@ function _costCss(){
   +".cst-res{background:linear-gradient(135deg,#064E3B 0%,#059669 100%);color:#fff;padding:14px 14px 13px;position:relative;overflow:hidden}"
   +".cst-res:after{content:'\\20B9';position:absolute;right:10px;top:-18px;font-size:110px;font-weight:900;opacity:.08;line-height:1}"
   +".cst-res .l{font-size:10px;font-weight:900;letter-spacing:1.4px;opacity:.85}"
+  +".cst-rates{position:relative;z-index:1;background:rgba(0,0,0,.14);border-radius:12px;padding:3px 11px;margin-bottom:11px}"
+  +".cst-rl{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0}"
+  +".cst-rl+.cst-rl{border-top:1px solid rgba(255,255,255,.14)}"
+  +".cst-rl span{font-size:13px;font-weight:800;line-height:1.2}"
+  +".cst-rl i{display:block;font-style:normal;font-size:10.5px;font-weight:700;opacity:.72}"
+  +".cst-rl b{font-size:15.5px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}"
+  +".cst-rl b small{font-size:10px;font-weight:800;opacity:.75}"
+  +".cst-sl{position:relative;z-index:1;font-size:10px;font-weight:900;letter-spacing:1.3px;opacity:.9}"
+  +".cst-sl span{font-weight:700;letter-spacing:.2px;opacity:.75;text-transform:none}"
   +".cst-res .v{font-size:42px;font-weight:900;letter-spacing:-1.5px;line-height:1.05;font-variant-numeric:tabular-nums;margin-top:2px}"
   +".cst-res .v small{font-size:13px;font-weight:800;opacity:.8;letter-spacing:0}"
   +".cst-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;position:relative;z-index:1}"
@@ -2448,15 +2475,17 @@ function costRender(){
     +'<div class="cst-card" id="cost-card">';
   if(gShort){
     h+='<div class="cst-sec">'+sh("1","#6366F1","Grey + shortage")+gShort+'</div>'
-      +'<div class="cst-sub s1"><span>Grey, shortage ke baad</span><b id="cost-o-grey">—</b></div>';
+      +'<div class="cst-sub s1"><span>Cost before expenses</span><b id="cost-o-grey">—</b></div>';
   }
   h+='<div class="cst-sec">'+sh("2","#D97706","Seedha kharcha","sab /meter me")
     +(gDirect||'<div class="cst-note" style="padding:8px 0">Koi kharcha nahi</div>')+'</div>'
-    +'<div class="cst-sub s2"><span>Lagat / meter</span><b id="cost-o-direct">—</b></div>';
+    +'<div class="cst-sub s2"><span>Cost after expenses</span><b id="cost-o-direct">—</b></div>';
   if(gPrice){
-    h+='<div class="cst-sec">'+sh("3","#059669","Keemat par (÷)","selling price ka %")+gPrice+'</div>';
+    h+='<div class="cst-sec">'+sh("3","#059669","MU \u2014 upar judta %","pichhle total par")+gPrice+'</div>';
   }
-  h+='<div class="cst-res"><div class="l">SELLING PRICE</div>'
+  h+='<div class="cst-res">'
+    +'<div class="cst-rates" id="cost-o-rates"></div>'
+    +'<div class="cst-sl">SELLING PRICE <span>= cost after discount + profit</span></div>'
     +'<div class="v" id="cost-o-sell">—</div>'
     +'<div class="cst-chips" id="cost-o-chips"></div></div>'
     +'</div>'
@@ -2468,8 +2497,8 @@ function costRender(){
     +'</div>'
     +'<div class="cst-tip">Tick hatao to wo kharcha is hisaab me nahi judega. Box me value badlo to sirf '
     +'abhi ke hisaab ke liye badlegi — Settings wala default wahi rahega.<br>'
-    +'% keemat par wale (dalal, discount, profit) aakhir me keemat ko baantte hain — isliye 5% profit '
-    +'ka matlab keemat ka 5%, lagat ka nahi.</div>'
+    +'MU wale % (discount, dalali, profit) pichhle total par upar judte hain, isi kram me \u2014 '
+    +'dalali discount jod kar bani rakam par lagti hai, profit sab jod kar. Kram Settings me badal sakte hain.</div>'
     +'</div>';
   box.innerHTML=h;
   costUpdate();
@@ -2503,11 +2532,16 @@ function costUpdate(){
   if(!R.err){
     var cut=Number(inp.cut)||0;
     if(cut>0)chips+='<span>1 saree ('+cut+'m) = ₹'+_costN(R.selling*cut)+'</span>';
-    var prof=0;rows.forEach(function(r,i){if(r.kind==="pricepct"&&r.on&&/profit|munafa|nafa/i.test(r.name))prof+=R.res[i].per});
-    if(prof>0)chips+='<span>Profit ₹'+_costN(prof)+'/m</span>';
-    chips+='<span>Lagat ₹'+_costN(R.direct)+'/m</span>';
+    if(R.prof>0)chips+='<span>Profit ₹'+_costN(R.prof)+'/m</span>';
   }
   set("cost-o-chips",chips);
+  var rl=function(a,sub,v){
+    return'<div class="cst-rl"><span>'+a+'<i>'+sub+'</i></span><b>'+(R.err?"\u2014":"\u20b9"+_costN(v))+'<small>/m</small></b></div>';
+  };
+  set("cost-o-rates",
+     rl("Cost before expenses","grey + shortage",R.grey)
+    +rl("Cost before discount","+ expenses + brokerage",R.beforeDisc)
+    +rl("Cost after discount","+ discount",R.afterDisc));
   var n=rows.filter(function(r){return r.chg}).length;
   var c=document.getElementById("cost-chg");
   if(c){
