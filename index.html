@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.403-->
+<!DOCTYPE html><!--ALTV:1.45.409-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.403";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.409";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -145,8 +145,8 @@ var _rs=params.get("reset")==="1";
 try{if(_np)sessionStorage.setItem("vs_nopull","1")}catch(e){}
 const stored=localStorage.getItem("vs_app_version");if(params.has("_cb")){localStorage.setItem("vs_app_version",APP_VERSION);return}if(stored!==APP_VERSION){localStorage.setItem("vs_app_version",APP_VERSION);window.location.replace(window.location.href.split("?")[0]+"?_cb="+Date.now()+(_np?"&nopull=1":"")+(_rs?"&reset=1":""));return}}catch(e){}})();let GAS_URL="";const DEFAULT_FIREBASE_URL="https://amrit-laxmi-textiles-do-default-rtdb.firebaseio.com";let FIREBASE_URL=DEFAULT_FIREBASE_URL;/* Firebase ka login. Jab tak FB_AUTH_ON=false hai, ye poora hissa so
    raha hai aur app purane tareeke se chalta hai. */
-let FIREBASE_API_KEY="";
-let FB_AUTH_ON=false;
+let FIREBASE_API_KEY="AIzaSyAw3tKu6WBy-7YSIop2bnH1oOnUB_HNua4";
+let FB_AUTH_ON=true;
 const FB_AUTH_DOMAIN="alt.local";   /* username@alt.local -- Firebase ko
                                        email chahiye, humein username */
 const OWNER_SETUP_HASH="479a1808c325c26f483c1ae55a1a549bba9d6435bc02f6449029db086ba07a2b";const el=id=>document.getElementById(id);
@@ -1385,32 +1385,85 @@ async function doLogin(){const user=el("lu").value.trim(),pass=el("lp").value;el
   /* Firebase wala login -- users ki list maangne se PEHLE. Token mil
      jaane par hi aage ki request kaam karegi, kyunki rules ke baad
      users.json bina token ke nahi khulega. */
-  var _fbIn=false;
+  var _fbIn=false,_fbErr="",_fbNet=false;
   if(FB_AUTH_ON){
     var _sfb=el("ls-sync-status");
     if(_sfb)_sfb.innerHTML='<span style="color:#FCD34D">\uD83D\uDD10 Login ho raha hai\u2026</span>';
-    var _si=await _fbSignIn(user,pass);
+    /* Jo password abhi type hua hai, usi se pehchaan nikal aati hai --
+       ek hi koshish, kahin se kuchh poochhna nahi padta. */
+    var _h=await sha256(pass);
+    var _c=await _fbCred(user,_h);
+    var _si=_c?(await _fbSignInEmail(_c.email,_c.pw))
+              :{ok:false,err:"pehchaan nahi bani"};
     if(_sfb)_sfb.innerHTML="";
-    if(!_si.ok){
-      /* Firebase ke apne shabd aam aadmi ke kaam ke nahi hain. */
-      var _e=String(_si.err||"");
-      el("le").textContent=
-        /INVALID_LOGIN|INVALID_PASSWORD|EMAIL_NOT_FOUND|INVALID_EMAIL/.test(_e)
-          ?"Username ya password galat hai."
-        :/USER_DISABLED/.test(_e)?"Ye account band kar diya gaya hai. Admin se kahiye."
-        :/TOO_MANY_ATTEMPTS/.test(_e)?"Bahut baar galat hua \u2014 thodi der baad koshish kijiye."
-        :/API key/i.test(_e)?"App ki setting adhoori hai \u2014 admin se kahiye."
-        :"Login nahi hua. Net check kijiye, phir koshish kijiye.";
-      return;
+    if(_si.ok)_fbIn=true;
+    else{
+      _fbErr=String(_si.err||"");_fbNet=!!_si.net;
+      /* Ye do haalat me aage badhne ka koi matlab nahi. */
+      if(/USER_DISABLED/.test(_fbErr)){
+        el("le").textContent="Ye account band kar diya gaya hai. Admin se kahiye.";return;
+      }
+      if(/TOO_MANY_ATTEMPTS/.test(_fbErr)){
+        el("le").textContent="Bahut baar galat hua \u2014 thodi der baad koshish kijiye.";return;
+      }
+      /* Baaki har haal me neeche purane tareeke se jaanch hogi: password
+         sahi nikla to account hai hi nahi -- bana denge. */
     }
-    _fbIn=true;
-  }const s=el("ls-sync-status");let cloudReached=false;if(FIREBASE_URL){if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading accounts…</span>';const _tryFbUsers=async url=>{const ctrl=new AbortController;const t=setTimeout(()=>ctrl.abort(),1e4);try{const fr=await fetch(url+"/altstock/users.json?nocache="+Date.now(),{cache:"no-store",signal:ctrl.signal});clearTimeout(t);return fr.ok?await fr.json():null}catch(e){clearTimeout(t);return null}};let usersRaw=await _tryFbUsers(FIREBASE_URL);if(usersRaw){cloudReached=true}else if(FIREBASE_URL!==DEFAULT_FIREBASE_URL){usersRaw=await _tryFbUsers(DEFAULT_FIREBASE_URL);if(usersRaw){cloudReached=true;FIREBASE_URL=DEFAULT_FIREBASE_URL;delete STATE.settings.firebaseUrl;lsSave("vs_settings",STATE.settings)}}if(usersRaw){const users=Array.isArray(usersRaw)?usersRaw:Object.values(usersRaw||{});if(users.length>0){STATE.users=users;lsSave("vs_users",STATE.users)}}if(s)s.innerHTML=""}let found=findUser();if(!found&&GAS_URL){try{const gd=await api("getAll");if(gd&&gd.users){STATE.users=gd.users;lsSave("vs_users",STATE.users);found=findUser();cloudReached=true}}catch(e){}}if(!cloudReached&&FIREBASE_URL){if(!found){el("le").innerHTML='⚠️ Can\'t reach the cloud server.<br><span style="font-size:11px">Turn off any ad/content blocker for this site, or check your internet, then try again.</span>';return}if(s)s.innerHTML='<span style="color:#FCD34D">&#x26A0;&#xFE0F; Offline — signed in with last saved account</span>'}if(!found){el("le").textContent="Username not found. Check spelling or contact admin.";return}if(found.active===false){el("le").textContent="Account is disabled. Contact admin.";return}/* Firebase se login ho chuka ho to password wahan jaanchaa ja chuka
+  }const s=el("ls-sync-status");let cloudReached=false;if(FIREBASE_URL){if(s)s.innerHTML='<span style="color:#FCD34D">&#x1F504; Loading accounts…</span>';const _tryFbUsers=async url=>{const ctrl=new AbortController;const t=setTimeout(()=>ctrl.abort(),1e4);try{const fr=await fetch(url+"/altstock/users.json?nocache="+Date.now(),{cache:"no-store",signal:ctrl.signal});clearTimeout(t);return fr.ok?await fr.json():null}catch(e){clearTimeout(t);return null}};let usersRaw=await _tryFbUsers(FIREBASE_URL);if(usersRaw){cloudReached=true}else if(FIREBASE_URL!==DEFAULT_FIREBASE_URL){usersRaw=await _tryFbUsers(DEFAULT_FIREBASE_URL);if(usersRaw){cloudReached=true;FIREBASE_URL=DEFAULT_FIREBASE_URL;delete STATE.settings.firebaseUrl;lsSave("vs_settings",STATE.settings)}}if(usersRaw){const users=Array.isArray(usersRaw)?usersRaw:Object.values(usersRaw||{});if(users.length>0){STATE.users=users;lsSave("vs_users",STATE.users)}}if(s)s.innerHTML=""}let found=findUser();if(!found&&GAS_URL){try{const gd=await api("getAll");if(gd&&gd.users){STATE.users=gd.users;lsSave("vs_users",STATE.users);found=findUser();cloudReached=true}}catch(e){}}if(!cloudReached&&FIREBASE_URL&&FB_AUTH_ON&&_fbErr&&!found){
+  /* Taala lag chuka hai: bina sahi login ke user ki list milti hi nahi.
+     To "cloud nahi mila" likhna gumraah karega -- baat sirf itni hai ki
+     username ya password galat hai. */
+  el("le").textContent=_fbNet
+    ?"Net nahi mil raha \u2014 internet check kijiye, phir koshish kijiye."
+    :"Username ya password galat hai.";return;
+}
+if(!cloudReached&&FIREBASE_URL){if(!found){el("le").innerHTML='⚠️ Can\'t reach the cloud server.<br><span style="font-size:11px">Turn off any ad/content blocker for this site, or check your internet, then try again.</span>';return}if(s)s.innerHTML='<span style="color:#FCD34D">&#x26A0;&#xFE0F; Offline — signed in with last saved account</span>'}if(!found){el("le").textContent="Username not found. Check spelling or contact admin.";return}if(found.active===false){el("le").textContent="Account is disabled. Contact admin.";return}/* Firebase se login ho chuka ho to password wahan jaanchaa ja chuka
      hai -- yahan dobara milaana bekaar bhi hai aur nuksaan bhi: tab app
      ko apne paas hash rakhna padta hai, aur wahi hash chori hota hai. */
   if(!_fbIn){
     const h=await sha256(pass);
     if(found.password!==pass&&found.password!==h){
-      el("le").textContent='Wrong password for "'+found.username+'".';return;
+      el("le").textContent=FB_AUTH_ON?"Username ya password galat hai."
+        :('Wrong password for "'+found.username+'".');return;
+    }
+    /* Password sahi hai par Firebase ne nahi maana. Khud account bana
+       lena aasan lagta hai, par wahi sabse bada chhed hota: API key
+       page me likhi hai, to bahar wala bhi wahi karke andar aa jata.
+       Isliye account sirf admin ke device par banta hai. */
+    if(FB_AUTH_ON&&_fbErr&&!_fbNet&&found.role==="admin"){
+      /* Chaabi wala haath. Yahan tak aane ke liye users ki list padhni
+         padi hai, jo taale ke baad bina haq milti hi nahi -- isliye ye
+         raasta bahar wale ke kaam ka nahi. */
+      var _sb=el("ls-sync-status");
+      if(_sb)_sb.innerHTML='<span style="color:#FCD34D">\uD83D\uDD10 Cloud login '
+        +'taiyaar ho raha hai\u2026</span>';
+      var _pb=await _fbProvision(found);
+      if(_sb)_sb.innerHTML="";
+      if(_pb&&_pb.ok){
+        if(_pb.tok)_fbTokSave(_pb.tok);
+        _fbIn=true;_fbErr="";
+        try{persist()}catch(e){}
+      }
+    }
+    /* Rules abhi khule hain -- iska saboot: users ki list bina token
+       ke mil gayi. Aise waqt rokna galat hai; app bilkul pehle jaisi
+       chale aur admin ko bas yaad dila do. */
+    if(FB_AUTH_ON&&_fbErr&&cloudReached){
+      _fbErr="";
+      try{toast("Cloud login abhi taiyaar nahi hai \u2014 admin ko Staff me "
+        +"\u201CAb taiyaar karo\u201D dabana hai","warn")}catch(e){}
+    }
+    if(FB_AUTH_ON&&_fbErr){
+      /* Net na mila ho to admin ko bulane ka koi matlab nahi. */
+      el("le").innerHTML=_fbNet
+        ?"Net nahi mil raha \u2014 internet check kijiye, phir koshish kijiye."
+        :(found.role==="admin"
+          ?("Cloud login taiyaar nahi ho paaya."
+            +"<br><span style=\"font-size:11px\">Firebase me Email/Password chalu "
+            +"hai? Aur rules abhi khule hain?</span>")
+          :("Password sahi hai, par aapka cloud login abhi taiyaar nahi hai."
+            +"<br><span style=\"font-size:11px\">Admin se kahiye \u2014 "
+            +"Staff me ek button se ban jata hai.</span>"));return;
     }
   }
   loginOK(found)}async function loginOK(user){
@@ -1479,9 +1532,28 @@ function _sessEnforce(){
   setTimeout(function(){try{location.reload()}catch(e){}},1500);
   return true;
 }
+/* Session chalu hai par token nahi -- matlab ye session taale se pehle
+   ki hai. Aise session se app chalti dikhegi par kuchh save nahi hoga,
+   isliye use aage badhne hi nahi dete. */
+function _fbSessNeedsLogin(){
+  if(!FB_AUTH_ON)return false;
+  var t=null;try{t=_fbTokLoad()}catch(e){t=null}
+  return!(t&&(t.id||t.refresh));
+}
 function checkSess(){
   const s=lsGet("vs_session");
   if(s&&s.exp>Date.now()){
+    if(_fbSessNeedsLogin()){
+      try{lsSave("vs_session",null)}catch(e){}
+      /* Login screen abhi ban rahi hai, isliye ek pal ruk kar likho --
+         warna ye baat bani hui screen ke neeche dab jati hai. */
+      setTimeout(function(){try{
+        el("le").innerHTML='Ek baar phir login kijiye.'
+          +'<br><span style="font-size:11px">Ab login cloud se hota hai \u2014 '
+          +'password wahi hai, aur ye sirf ek baar poochha jayega.</span>';
+      }catch(e){}},300);
+      return false;
+    }
     /* Admin ne is aadmi ko sab device se nikal diya hai, ya account
        band kar diya hai -- to mohlat baaki hone par bhi andar nahi. */
     if(_sessKilled(s)){try{lsSave("vs_session",null)}catch(e){}return false}
@@ -6593,6 +6665,10 @@ async function usrRejoin(uid){
   if(taken)u.orderPrefix="";
   u.sessEpoch=Date.now();
   u._ts=_bumpTs(u);
+  /* Jaate waqt uska naam list se nikal gaya tha -- wapas aaya hai to
+     phir se daal do, warna login hoga par database nahi khulega.
+     Purana password wahi chalta hai. */
+  if(FB_AUTH_ON&&u.fbUid)try{await _fbUidAllow(u.fbUid,true)}catch(e){}
   try{actPush({act:"user_rejoin",col:"users",rec:u.id,
     label:(u.name||"")+" wapas",note:"naya daur "+d})}catch(e){}
   persist();
@@ -6601,7 +6677,43 @@ async function usrRejoin(uid){
   toast((u.name||"")+" wapas chalu"
     +(taken?(" \u2014 prefix khali kiya, naya de dena"):""),"ok");
 }
-function renderUsers(){const c=el("usrlst");if(!c)return;if(!active(STATE.users).length){c.innerHTML='<div class="emp"><div class="emj">&#x1F464;</div><h3>No Users</h3><p>Add team members</p></div>';return}const pfxCount={};active(STATE.users).forEach(u=>{const p=(u.orderPrefix||"").trim();if(p){pfxCount[p]=pfxCount[p]||[];pfxCount[p].push(u.name)}});const dupPfx=Object.entries(pfxCount).filter(([,names])=>names.length>1);c.innerHTML="";if(dupPfx.length){const warn=document.createElement("div");warn.style.cssText="background:#FEF2F2;border:2px solid #DC2626;border-radius:10px;padding:10px 14px;margin-bottom:12px";warn.innerHTML='<div style="font-size:13px;font-weight:900;color:#DC2626">⚠️ Duplicate Order Prefix</div>'+'<div style="font-size:12px;color:#991B1B;margin-top:4px">'+dupPfx.map(([pfx,names])=>'"'+pfx+'" is shared by: '+names.join(", ")).join("<br/>")+'</div><div style="font-size:11px;color:#B91C1C;margin-top:4px">Each salesman must have a unique prefix — fix this in their user settings.</div>';c.appendChild(warn)}/* Band account ab neeche "Chhod gaye" me apne hisse me dikhta hai, to
+/* "Kiska cloud login taiyaar hai?" -- ye yaad rakhne ki cheez nahi honi
+   chahiye, isliye Staff ki list ke sirhane hi likh dete hain. Jiska
+   baaki hai uska kaam rukta nahi: uske PEHLE login par app khud bana
+   deti hai. Isliye ye chetavni nahi, bas hisaab hai. */
+function _fbReadyLine(){
+  if(!FB_AUTH_ON)return"";
+  if(!(STATE.user&&STATE.user.role==="admin"))return"";
+  var L=[];
+  try{
+    L=(STATE.users||[]).filter(function(u){
+      return u&&!u._deleted&&u.active!==false;
+    });
+  }catch(e){return""}
+  if(!L.length)return"";
+  var no=L.filter(function(u){return!u.fbUid});
+  var rd=L.length-no.length;
+  if(!no.length){
+    return '<div style="background:var(--Sl,#ECFDF5);border:1px solid var(--S,#10B981);'
+      +'border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;'
+      +'font-weight:800;color:var(--Sd,#065F46)">\uD83D\uDD12 Cloud login: sabka taiyaar '
+      +'('+L.length+'/'+L.length+')</div>';
+  }
+  var nm=no.slice(0,6).map(function(u){return u.name||u.username||""}).join(", ")
+    +(no.length>6?(" +"+(no.length-6)+" aur"):"");
+  return '<div style="background:var(--Al,#FFFBEB);border:1px solid var(--A,#F59E0B);'
+    +'border-radius:10px;padding:8px 12px;margin-bottom:12px">'
+    +'<div style="font-size:12px;font-weight:900;color:var(--Ad,#92400E)">'
+    +'\uD83D\uDD12 Cloud login taiyaar: '+rd+'/'+L.length+'</div>'
+    +'<div style="font-size:11px;color:var(--Ad,#92400E);margin-top:3px;line-height:1.5">'
+    +'Baaki: '+nm+'</div>'
+    +'<button onclick="fbReadyAll()" style="margin-top:7px;background:var(--A,#F59E0B);'
+    +'color:#fff;border:0;border-radius:8px;padding:6px 14px;font-size:12px;'
+    +'font-weight:800">Ab taiyaar karo</button></div>';
+}
+function renderUsers(){const c=el("usrlst");if(!c)return;if(!active(STATE.users).length){c.innerHTML='<div class="emp"><div class="emj">&#x1F464;</div><h3>No Users</h3><p>Add team members</p></div>';return}const pfxCount={};active(STATE.users).forEach(u=>{const p=(u.orderPrefix||"").trim();if(p){pfxCount[p]=pfxCount[p]||[];pfxCount[p].push(u.name)}});const dupPfx=Object.entries(pfxCount).filter(([,names])=>names.length>1);c.innerHTML="";
+try{var _rl=_fbReadyLine();if(_rl){var _rd=document.createElement("div");_rd.innerHTML=_rl;c.appendChild(_rd.firstChild)}}catch(e){}
+if(dupPfx.length){const warn=document.createElement("div");warn.style.cssText="background:#FEF2F2;border:2px solid #DC2626;border-radius:10px;padding:10px 14px;margin-bottom:12px";warn.innerHTML='<div style="font-size:13px;font-weight:900;color:#DC2626">⚠️ Duplicate Order Prefix</div>'+'<div style="font-size:12px;color:#991B1B;margin-top:4px">'+dupPfx.map(([pfx,names])=>'"'+pfx+'" is shared by: '+names.join(", ")).join("<br/>")+'</div><div style="font-size:11px;color:#B91C1C;margin-top:4px">Each salesman must have a unique prefix — fix this in their user settings.</div>';c.appendChild(warn)}/* Band account ab neeche "Chhod gaye" me apne hisse me dikhta hai, to
    upar wali list me dobara nahi aana chahiye. */
 _usrGroups(active(STATE.users).filter(function(u){return u&&u.active!==false})).forEach(g=>{c.appendChild(_usrGroupHead(g));g.users.forEach(u=>{const _isAdm=u.role==="admin";const _own=!!u.permissions;const perms=u.permissions||{};const permLabels=_isAdm?[]:PERM_DEFS.filter(p=>perms[p.id]).map(p=>p.lbl);const row=document.createElement("div");row.className="ur";const av=document.createElement("div");av.className="uav";av.style.background=u.staffTypeColor||"var(--gradient)";av.textContent=u.name.charAt(0).toUpperCase();const body=document.createElement("div");body.style.flex="1";body.innerHTML='<div class="fw7">'+u.name+"</div>"+'<div class="xs ct3">@'+u.username+(u.orderPrefix?" - "+u.orderPrefix:"")+"</div>"+(u.staffTypeName?'<div class="mt4"><span style="background:'+(u.staffTypeColor||"var(--P)")+';color:#fff;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700">'+u.staffTypeName+"</span></div>":"")+(_isAdm?'<div class="xs mt4" style="line-height:1.5;color:var(--Gd);font-weight:700">Sab kuchh (Admin)</div>'
    :permLabels.length?'<div class="xs ct3 mt4" style="line-height:1.5">'+permLabels.join(" - ")+"</div>"
@@ -6652,7 +6764,10 @@ function editUsr(id){if(!_usrAdminOnly())return;const u=STATE.users.find(x=>x.id
         +'<div style="margin-top:2px">Beech ka samay kisi ginti me nahi aata</div>')
       :"";
     _sb.style.display=_st.length>1?"":"none";
-  }el("usr-id").value=id;el("usr-name").value=u.name||"";el("usr-un").value=u.username||"";el("usr-pw").value="";el("usr-role").value=u.role||"staff";el("usr-wa").value=u.whatsapp||"";el("usr-pfx").value=u.orderPrefix||"";el("usr-act").value=u.active!==false?"1":"0";if(el("usr-show-in-lead-assign"))el("usr-show-in-lead-assign").checked=u.showInLeadAssign!==false;if(el("usr-show-invoices"))el("usr-show-invoices").checked=u.showInvoices!==false;el("usr-title").textContent="Edit User";refreshStaffTypeDropdown();if(u.staffTypeId&&el("usr-stype"))el("usr-stype").value=u.staffTypeId;window._usrPerms=u.permissions?{...u.permissions}:getPermPreset(u.staffTypeId||u.role||"staff");el("usr-sub").textContent=u.staffTypeName||"";buildPermUI("usr-perms",window._usrPerms,_usrPermsChanged);_renderPermTools();showMod("m-usr")}async function saveUsr(){if(!_usrAdminOnly())return;const name=(el("usr-name").value||"").trim(),uname=(el("usr-un").value||"").trim();if(!name||!uname){toast("Enter name and username","er");return}const id=el("usr-id").value;const oldUsrName=id?STATE.users.find(u=>u.id===id)?.name||"":"";if(isDuplicate(STATE.users,"username",uname,id)){toast('Username "'+uname+'" already exists',"er");return}const newPfx=(el("usr-pfx").value||"").trim();if(newPfx){const conflict=(STATE.users||[]).find(u=>!u._deleted&&u.active!==false&&u.id!==id&&(u.orderPrefix||"").trim()===newPfx);if(conflict){toast('⚠️ Order prefix "'+newPfx+'" is already used by '+conflict.name+". Each salesman must have a unique prefix.","er");return}}let pw=el("usr-pw").value;if(pw)pw=await sha256(pw);const staffTypeId=el("usr-stype")?.value||"";const staffTypes=getStaffTypes();const staffType=staffTypes.find(t=>t.id===staffTypeId);const obj={name:name,username:uname,role:el("usr-role").value,whatsapp:el("usr-wa").value.trim(),orderPrefix:el("usr-pfx").value.trim(),active:el("usr-act").value==="1",salesTarget:Math.max(0,Number(el("usr-target")?.value||0)||0),salary:Math.max(0,Number(el("usr-salary")?.value||0)||0),joinedAt:(el("usr-joined")?.value||""),staffTypeId:staffTypeId,staffTypeName:staffType?.name||"",showInLeadAssign:el("usr-show-in-lead-assign")?.checked!==false,showInvoices:el("usr-show-invoices")?.checked!==false,permissions:{...window._usrPerms}};
+  }el("usr-id").value=id;el("usr-name").value=u.name||"";el("usr-un").value=u.username||"";el("usr-pw").value="";el("usr-role").value=u.role||"staff";el("usr-wa").value=u.whatsapp||"";el("usr-pfx").value=u.orderPrefix||"";el("usr-act").value=u.active!==false?"1":"0";if(el("usr-show-in-lead-assign"))el("usr-show-in-lead-assign").checked=u.showInLeadAssign!==false;if(el("usr-show-invoices"))el("usr-show-invoices").checked=u.showInvoices!==false;el("usr-title").textContent="Edit User";refreshStaffTypeDropdown();if(u.staffTypeId&&el("usr-stype"))el("usr-stype").value=u.staffTypeId;window._usrPerms=u.permissions?{...u.permissions}:getPermPreset(u.staffTypeId||u.role||"staff");el("usr-sub").textContent=u.staffTypeName||"";buildPermUI("usr-perms",window._usrPerms,_usrPermsChanged);_renderPermTools();showMod("m-usr")}async function saveUsr(){if(!_usrAdminOnly())return;const name=(el("usr-name").value||"").trim(),uname=(el("usr-un").value||"").trim();if(!name||!uname){toast("Enter name and username","er");return}const id=el("usr-id").value;const oldUsrName=id?STATE.users.find(u=>u.id===id)?.name||"":"";if(isDuplicate(STATE.users,"username",uname,id)){toast('Username "'+uname+'" already exists',"er");return}const newPfx=(el("usr-pfx").value||"").trim();if(newPfx){const conflict=(STATE.users||[]).find(u=>!u._deleted&&u.active!==false&&u.id!==id&&(u.orderPrefix||"").trim()===newPfx);if(conflict){toast('⚠️ Order prefix "'+newPfx+'" is already used by '+conflict.name+". Each salesman must have a unique prefix.","er");return}}/* Firebase ko asli password chahiye, uska taala-band roop nahi --
+   isliye hash karne se pehle use alag rakh lete hain. */
+const _rawPw=el("usr-pw").value;
+let pw=_rawPw;if(pw)pw=await sha256(pw);const staffTypeId=el("usr-stype")?.value||"";const staffTypes=getStaffTypes();const staffType=staffTypes.find(t=>t.id===staffTypeId);const obj={name:name,username:uname,role:el("usr-role").value,whatsapp:el("usr-wa").value.trim(),orderPrefix:el("usr-pfx").value.trim(),active:el("usr-act").value==="1",salesTarget:Math.max(0,Number(el("usr-target")?.value||0)||0),salary:Math.max(0,Number(el("usr-salary")?.value||0)||0),joinedAt:(el("usr-joined")?.value||""),staffTypeId:staffTypeId,staffTypeName:staffType?.name||"",showInLeadAssign:el("usr-show-in-lead-assign")?.checked!==false,showInvoices:el("usr-show-invoices")?.checked!==false,permissions:{...window._usrPerms}};
 // Ek bhi tick na ho to ye aadmi login to karega par use kuchh dikhega hi
 // nahi -- ye aksar bhool hoti hai, isliye ek baar poochh lo.
 if(obj.role!=="admin"&&_permCount(window._usrPerms)===0){
@@ -6667,7 +6782,39 @@ if(pw)obj.password=pw;
  /* Password badalna ya account band karna purane phone par ab tak bekaar
     tha -- wahan app chalti rehti thi. Ab dono se session bhi marte hain. */
  if(id&&(pw||obj.active===false))obj.sessEpoch=Date.now();
- if(id){const i=STATE.users.findIndex(u=>u.id===id);if(i>=0){STATE.users[i]={...STATE.users[i],...obj};STATE.users[i]._ts=_bumpTs(STATE.users[i])}}else{if(!pw){toast("Enter password for new user","er");return}STATE.users.push(stamp({id:uid(),...obj}))}if(id&&oldUsrName&&oldUsrName!==name)_propagateNameChange("user",id,name);persist();hideMod("m-usr");renderUsers();toast("User saved","ok")}async function deleteUser(id){const u=STATE.users.find(x=>x.id===id);if(!u)return;if(u.id===STATE.user?.id){toast("You cannot delete yourself","er");return}const admins=active(STATE.users).filter(x=>x.role==="admin"&&x.active!==false);if(u.role==="admin"&&admins.length<=1){toast("Cannot delete the last admin account","er");return}/* Pehle uska chalu kaam kisi ko de do. Warna wo market, party aur lead
+ if(id){const i=STATE.users.findIndex(u=>u.id===id);if(i>=0){STATE.users[i]={...STATE.users[i],...obj};STATE.users[i]._ts=_bumpTs(STATE.users[i])}}else{if(!pw){toast("Enter password for new user","er");return}STATE.users.push(stamp({id:uid(),...obj}))}if(id&&oldUsrName&&oldUsrName!==name)_propagateNameChange("user",id,name);
+/* Firebase ka account yahin, isi waqt. Admin ko console me jaane ki
+   zaroorat kabhi nahi padti. Na bane to kaam rukta nahi -- user app me
+   bana rehta hai aur uske pehle login par dobara koshish hoti hai. */
+if(FB_AUTH_ON){
+  var _rec=STATE.users.filter(function(u){return u&&u.username===uname})[0];
+  /* Password naya ho to purani pehchaan bekaar ho gayi; aur jiska abhi
+     tak bana hi nahi uska bhi yahin bana dete hain. */
+  if(_rec&&(_rawPw||!_rec.fbUid)){
+    var _pr=await _fbProvision(_rec);
+    if(!_pr.ok){
+      /* Na bana to use "baaki" dikhao, warna wo list me se gayab ho jata
+         hai aur "Ab taiyaar karo" use kabhi uthata hi nahi. */
+      if(_rawPw)_rec.fbUid="";
+      toast("User save ho gaya, par cloud login nahi bana \u2014 "
+        +"Staff me \u201CAb taiyaar karo\u201D dabaa dena","warn");
+    }
+    /* Apna hi password badla ho to naya token bhi le lo, warna isi waqt
+       apna hi darwaza band ho jata hai. */
+    else if(_pr.tok&&STATE.user&&_rec.id===STATE.user.id)_fbTokSave(_pr.tok);
+  }
+}
+/* Active band karne ka matlab hai "ab ye andar na aaye". Pehle ye sirf
+   app ke andar ki baat thi -- uska token database par chalta rehta tha.
+   Ab uska naam "hamara banaya hua" list se bhi nikal jaata hai, to
+   database ka darwaza usi waqt band ho jaata hai. */
+if(FB_AUTH_ON){
+  var _rec2=STATE.users.filter(function(u){return u&&u.username===uname})[0];
+  if(_rec2&&_rec2.fbUid)
+    try{await _fbUidAllow(_rec2.fbUid,
+      _rec2.active===false?0:(_rec2.role==="admin"?"admin":true))}catch(e){}
+}
+persist();hideMod("m-usr");renderUsers();toast("User saved","ok")}async function deleteUser(id){const u=STATE.users.find(x=>x.id===id);if(!u)return;if(u.id===STATE.user?.id){toast("You cannot delete yourself","er");return}const admins=active(STATE.users).filter(x=>x.role==="admin"&&x.active!==false);if(u.role==="admin"&&admins.length<=1){toast("Cannot delete the last admin account","er");return}/* Pehle uska chalu kaam kisi ko de do. Warna wo market, party aur lead
    par chipka reh jata hai, aur delete ke baad usse haath lagana mushkil
    ho jata hai. */
 var _hoN=0;try{_hoN=_hoTotal(id)}catch(e){_hoN=0}
@@ -6681,7 +6828,11 @@ if(_hoN>0){
   if(_first)openHandover(id);
   return;
 }
-const ok=await appConfirm("Delete User?",'User "'+u.name+'" (@'+u.username+") will be permanently removed.\n\nPurane order, bill aur sample set par inka naam waise hi rahega \u2014 wo record hai.","⚠️","Delete","dr");if(!ok)return;softDelete(STATE.users,id);lsSave("vs_users",STATE.users);renderUsers();toast(u.name+" deleted","ok");autoSyncCloud()}/* Aaj ke kaam wale card ka \uD83D\uDCF2 Party / \uD83D\uDCF2 Broker button yahin se
+const ok=await appConfirm("Delete User?",'User "'+u.name+'" (@'+u.username+") will be permanently removed.\n\nPurane order, bill aur sample set par inka naam waise hi rahega \u2014 wo record hai.","⚠️","Delete","dr");if(!ok)return;
+/* Delete se pehle hi list se nikaal dete hain -- uske baad record ke
+   saath uska uid bhi dhundhna mushkil ho jata hai. */
+if(FB_AUTH_ON&&u.fbUid)try{await _fbUidAllow(u.fbUid,false)}catch(e){}
+softDelete(STATE.users,id);lsSave("vs_users",STATE.users);renderUsers();toast(u.name+" deleted","ok");autoSyncCloud()}/* Aaj ke kaam wale card ka \uD83D\uDCF2 Party / \uD83D\uDCF2 Broker button yahin se
    apna message uthata hai. Party wala jaan-boojhkar khali chhoda hai --
    Neer khud likhega. Khali rahe to button WhatsApp kholta hi nahi. */
 var WA_PARTY_VARS="{name} {owner} {company} {salesman} {salesmanPhone} {broker} {phone} {market} {days} {lastOrderDate} {lastOrderPcs} {item} {rate}";
@@ -10834,7 +10985,7 @@ function writeSettings(settings) {
   if(window._fbLastPoll&&Date.now()-window._fbLastPoll<gap)return;
   window._fbLastPoll=Date.now();
   await pullDeltaFromFirebase()
-},3e3);if(!window._fbVisHooked){window._fbVisHooked=true;document.addEventListener("visibilitychange",()=>{if(document.hidden||!FIREBASE_URL)return;if(window._saveLock||window._syncRunning)return;pullDeltaFromFirebase().catch(()=>{})})}initFirebaseSSE();setLiveStatus(FIREBASE_URL?"live":"off")}function initFirebaseSSE(){if(!FIREBASE_URL||typeof EventSource==="undefined")return;if(window._fbSSE){try{window._fbSSE.close()}catch(e){}window._fbSSE=null}try{const es=new EventSource(FIREBASE_URL+"/_meta.json");
+},3e3);if(!window._fbVisHooked){window._fbVisHooked=true;document.addEventListener("visibilitychange",()=>{if(document.hidden||!FIREBASE_URL)return;if(window._saveLock||window._syncRunning)return;pullDeltaFromFirebase().catch(()=>{})})}initFirebaseSSE();setLiveStatus(FIREBASE_URL?"live":"off")}function initFirebaseSSE(){if(!FIREBASE_URL||typeof EventSource==="undefined")return;if(window._fbSSE){try{window._fbSSE.close()}catch(e){}window._fbSSE=null}try{const es=new EventSource(_fbWrapUrl(FIREBASE_URL+"/_meta.json"));
   /* Pehli khabar par turant utaaro -- kaam ruke nahi. Uske baad 3
      second tak aur khabren aayen to unhe ikattha kar ke ek hi baar
      utaaro, har khabar par alag pull nahi. */
@@ -11621,28 +11772,28 @@ function _fbU(url){
   if(!id)return url;
   return url+(url.indexOf("?")<0?"?":"&")+"auth="+encodeURIComponent(id);
 }
-/* username + password se Firebase me login. Firebase email maangta hai,
-   isliye username ke peeche @alt.local chipka dete hain -- ye sirf naam
-   hai, koi chitthi wahan nahi jaati. */
-function _fbEmail(username){
-  return String(username||"").trim().toLowerCase()+"@"+FB_AUTH_DOMAIN;
-}
-async function _fbSignIn(username,password){
+/* Firebase email maangta hai, humein username se kaam hai -- isliye
+   peeche @alt.local chipka dete hain. Ye sirf naam hai, koi chitthi
+   wahan nahi jaati. Poori email _fbCred() banata hai. */
+async function _fbSignInEmail(email,password,noSave){
   if(!FIREBASE_API_KEY)return{ok:false,err:"API key nahi hai"};
   try{
     var r=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:"
       +"signInWithPassword?key="+encodeURIComponent(FIREBASE_API_KEY),
       {method:"POST",headers:{"Content-Type":"application/json"},
-       body:JSON.stringify({email:_fbEmail(username),password:password,
+       body:JSON.stringify({email:email,password:password,
          returnSecureToken:true})});
     var d=await r.json();
     if(!r.ok||!d||!d.idToken){
       return{ok:false,err:(d&&d.error&&d.error.message)||"Login nahi hua"};
     }
-    _fbTokSave({id:d.idToken,refresh:d.refreshToken,uid:d.localId,
-      email:d.email||"",exp:Date.now()+(Number(d.expiresIn)||3600)*1000});
-    return{ok:true,uid:d.localId};
-  }catch(e){return{ok:false,err:String(e&&e.message||e)}}
+    var _t={id:d.idToken,refresh:d.refreshToken,uid:d.localId,
+      email:d.email||"",exp:Date.now()+(Number(d.expiresIn)||3600)*1000};
+    /* Apna login ho to token rakhna hai. Admin kisi AUR ka account
+       bana raha ho to nahi -- warna admin apne hi session se bahar. */
+    if(!noSave)_fbTokSave(_t);
+    return{ok:true,uid:d.localId,tok:_t};
+  }catch(e){return{ok:false,net:true,err:String(e&&e.message||e)}}
 }
 async function _fbRefresh(){
   var t=_fbTokLoad();
@@ -11667,6 +11818,108 @@ async function _fbEnsure(){
   return await _fbRefresh();
 }
 function _fbSignOut(){_fbTokSave(null)}
+/* App me password do tareeke se pada mil sakta hai: purane record me
+   seedha, naye me nishan ban kar. Pehchaan banane se pehle dono ko ek
+   hi roop me laana zaroori hai, warna admin aur user alag-alag
+   pehchaan nikalenge aur login kabhi nahi hoga. */
+async function _fbHashOf(stored){
+  var p=String(stored||"");
+  if(!p)return"";
+  if(/^[0-9a-f]{64}$/.test(p))return p;   /* pehle se nishan hai */
+  try{return await sha256(p)}catch(e){return""}
+}
+/* Firebase wali email aur password -- dono password ke nishan se.
+   Kuchh kahin likha nahi jata; jiske paas nishan hai wo khud nikal
+   leta hai. Galat password = doosri email = aisa account hi nahi. */
+async function _fbCred(username,h){
+  var u=String(username||"").trim().toLowerCase();
+  if(!u||!h)return null;
+  var k="";try{k=await sha256("alt.fb.v1:"+u+":"+h)}catch(e){k=""}
+  if(!k||k.length<58)return null;
+  /* Naam saath rakhte hain sirf isliye ki zaroorat pade to Firebase ki
+     list me pehchaan me aa jaye. Baahar ye kahin nahi dikhta. */
+  var nm=u.replace(/[^a-z0-9._-]/g,"")||"user";
+  return{email:nm+"."+k.slice(0,10)+"@"+FB_AUTH_DOMAIN,pw:k.slice(10,58)};
+}
+/* Naya account. Firebase isi ek bulawe se ban jaata hai -- console me
+   jaane ki zaroorat kabhi nahi. */
+async function _fbSignUp(email,password){
+  if(!FIREBASE_API_KEY)return{ok:false,err:"API key nahi hai"};
+  try{
+    var r=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:"
+      +"signUp?key="+encodeURIComponent(FIREBASE_API_KEY),
+      {method:"POST",headers:{"Content-Type":"application/json"},
+       body:JSON.stringify({email:email,password:password,returnSecureToken:true})});
+    var d=await r.json();
+    if(!r.ok||!d||!d.idToken)
+      return{ok:false,err:(d&&d.error&&d.error.message)||"Account nahi bana"};
+    return{ok:true,uid:d.localId,email:d.email||email,
+      tok:{id:d.idToken,refresh:d.refreshToken,uid:d.localId,email:d.email||email,
+        exp:Date.now()+(Number(d.expiresIn)||3600)*1000}};
+  }catch(e){return{ok:false,err:String(e&&e.message||e)}}
+}
+/* "Ye login hamara banaya hua hai?" -- rules isi list ko dekhte hain.
+   Bahar ka koi apna account bana bhi le, is list me nahi hoga. User
+   jodte hi naam jud jaata hai, hatate hi nikal jaata hai -- aapko kuchh
+   nahi karna. */
+async function _fbUidAllow(uid,val){
+  if(!FIREBASE_URL||!uid)return false;
+  try{
+    var r=await fetch(_fbU(FIREBASE_URL+"/uids/"+encodeURIComponent(uid)+".json"),
+      val?{method:"PUT",headers:{"Content-Type":"application/json"},
+           body:JSON.stringify(val)}
+        :{method:"DELETE"});
+    return!!(r&&r.ok);
+  }catch(e){return false}
+}
+/* Ek user ka cloud login taiyaar karna. Ye ADMIN ke device par chalta
+   hai -- raw password ki zaroorat nahi, record me pada nishan kaafi
+   hai. Isi wajah se staff ko kabhi kuchh nahi karna padta. */
+async function _fbProvision(rec){
+  if(!FB_AUTH_ON||!FIREBASE_API_KEY)return{ok:false,err:"band hai"};
+  if(!rec||!rec.username)return{ok:false,err:"user nahi mila"};
+  var h=await _fbHashOf(rec.password);
+  if(!h)return{ok:false,err:"is user ka password set nahi hai"};
+  var c=await _fbCred(rec.username,h);
+  if(!c)return{ok:false,err:"pehchaan nahi bani"};
+  var res=await _fbSignUp(c.email,c.pw);
+  /* Pehle se bana hua ho (dobara chalaya, ya doosre device se) to wahi
+     theek hai -- us par login kar ke uska uid le lete hain. */
+  if(!res.ok&&/EMAIL_EXISTS/.test(String(res.err||"")))
+    res=await _fbSignInEmail(c.email,c.pw,true);
+  if(!res.ok)return res;
+  var oldUid=rec.fbUid;
+  /* Apna hi pehla account ho to token pehle sambhal lo -- list me naam
+     likhna bhi ek database likhai hai, aur bina token wo hoti nahi. */
+  if(!_fbTokNow()&&res.tok)_fbTokSave(res.tok);
+  /* Pehle naam list me, phir purana hatao -- ulta kiya to beech me
+     khud admin ka darwaza band ho jata hai. */
+  var a=await _fbUidAllow(res.uid,rec.role==="admin"?"admin":true);
+  if(!a)return{ok:false,err:"list me naam nahi juda"};
+  rec.fbUid=res.uid;rec._ts=_bumpTs(rec);
+  if(oldUid&&oldUid!==res.uid)await _fbUidAllow(oldUid,false);
+  return{ok:true,uid:res.uid,tok:res.tok,email:c.email};
+}
+/* Jinka cloud login baaki hai, sabka ek saath. Admin ke Staff wale
+   panne par ek button -- isi ke bharose ye cheez yaad rakhne ki nahi
+   rehti. */
+async function fbReadyAll(){
+  if(!_usrAdminOnly())return;
+  if(!FB_AUTH_ON)return toast("Cloud login abhi chalu nahi hai","warn");
+  var L=(STATE.users||[]).filter(function(u){
+    return u&&!u._deleted&&u.active!==false&&!u.fbUid;
+  });
+  if(!L.length)return toast("Sabka taiyaar hai","ok");
+  var ok=0,bad=[];
+  for(var i=0;i<L.length;i++){
+    var r=await _fbProvision(L[i]);
+    if(r&&r.ok)ok++;else bad.push((L[i].name||L[i].username||"")+": "+((r&&r.err)||"nahi bana"));
+  }
+  persist();try{autoSyncCloud()}catch(e){}
+  renderUsers();
+  if(!bad.length)toast(ok+" ka cloud login taiyaar","ok");
+  else toast(ok+" taiyaar \u2014 "+bad.length+" nahi hua: "+bad[0],"warn");
+}
 /* Database ke har bulawe par token apne aap lag jaye -- 13 jagah haath
    se lagane ka matlab hai ek jagah bhool jaana. Ye lapet sirf database
    wale pate par lagti hai, sirf jab login chalu ho, aur sirf tab jab
@@ -11680,9 +11933,24 @@ function _fbWrapUrl(u){
     return _fbU(u);
   }catch(e){return u}
 }
+/* Database wala bulawa ho aur token bas chuka ho to pehle use taaza
+   karo, phir bhejo. Baaki har request bilkul waisi ki waisi -- na ek
+   pal ki der, na koi extra bulawa. */
+function _fbNeedsFresh(u){
+  try{
+    if(!FB_AUTH_ON||typeof u!=="string")return false;
+    if(!/firebasedatabase\.app|firebaseio\.com/.test(u))return false;
+    if(u.indexOf("auth=")>=0)return false;
+    return!_fbTokOk();
+  }catch(e){return false}
+}
 (function(){
   var _of=window.fetch.bind(window);
-  window.fetch=function(u,o){return _of(_fbWrapUrl(u),o)};
+  window.fetch=function(u,o){
+    if(_fbNeedsFresh(u))
+      return _fbEnsure().then(function(){return _of(_fbWrapUrl(u),o)});
+    return _of(_fbWrapUrl(u),o);
+  };
 })();
 function _fbBadKey(id){
   var k=String(id==null?"":id);
