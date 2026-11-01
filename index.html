@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.409-->
+<!DOCTYPE html><!--ALTV:1.45.412-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.409";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.412";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -1443,6 +1443,11 @@ if(!cloudReached&&FIREBASE_URL){if(!found){el("le").innerHTML='⚠️ Can\'t rea
         if(_pb.tok)_fbTokSave(_pb.tok);
         _fbIn=true;_fbErr="";
         try{persist()}catch(e){}
+      }else{
+        /* Wajah yahin pakad lo. Login to ho jayega (rules abhi khule
+           hain), par Staff ke peele box me likha rahega ki atka kyun --
+           warna wahan sirf "0/13" dikhta hai aur kuchh samajh nahi aata. */
+        try{window._fbReadyErr=_fbWhy(_pb&&_pb.err)}catch(e){}
       }
     }
     /* Rules abhi khule hain -- iska saboot: users ki list bina token
@@ -6707,9 +6712,16 @@ function _fbReadyLine(){
     +'\uD83D\uDD12 Cloud login taiyaar: '+rd+'/'+L.length+'</div>'
     +'<div style="font-size:11px;color:var(--Ad,#92400E);margin-top:3px;line-height:1.5">'
     +'Baaki: '+nm+'</div>'
+    +(window._fbReadyErr
+      ?('<div style="margin-top:6px;background:#FEF2F2;border:1px solid #DC2626;'
+        +'border-radius:8px;padding:6px 9px;font-size:11px;font-weight:700;'
+        +'color:#991B1B;line-height:1.5">\u26A0\uFE0F '+window._fbReadyErr+'</div>')
+      :"")
     +'<button onclick="fbReadyAll()" style="margin-top:7px;background:var(--A,#F59E0B);'
     +'color:#fff;border:0;border-radius:8px;padding:6px 14px;font-size:12px;'
-    +'font-weight:800">Ab taiyaar karo</button></div>';
+    +'font-weight:800">Ab taiyaar karo</button>'
+    +'<span id="fb-ready-stat" style="margin-left:9px;font-size:11px;'
+    +'font-weight:700;color:var(--Ad,#92400E)"></span></div>';
 }
 function renderUsers(){const c=el("usrlst");if(!c)return;if(!active(STATE.users).length){c.innerHTML='<div class="emp"><div class="emj">&#x1F464;</div><h3>No Users</h3><p>Add team members</p></div>';return}const pfxCount={};active(STATE.users).forEach(u=>{const p=(u.orderPrefix||"").trim();if(p){pfxCount[p]=pfxCount[p]||[];pfxCount[p].push(u.name)}});const dupPfx=Object.entries(pfxCount).filter(([,names])=>names.length>1);c.innerHTML="";
 try{var _rl=_fbReadyLine();if(_rl){var _rd=document.createElement("div");_rd.innerHTML=_rl;c.appendChild(_rd.firstChild)}}catch(e){}
@@ -11863,14 +11875,25 @@ async function _fbSignUp(email,password){
    jodte hi naam jud jaata hai, hatate hi nikal jaata hai -- aapko kuchh
    nahi karna. */
 async function _fbUidAllow(uid,val){
-  if(!FIREBASE_URL||!uid)return false;
+  if(!FIREBASE_URL||!uid)return{ok:false,err:"database ka pata nahi"};
+  var u=_fbU(FIREBASE_URL+"/uids/"+encodeURIComponent(uid)+".json");
+  var hasTok=u.indexOf("auth=")>=0;
   try{
-    var r=await fetch(_fbU(FIREBASE_URL+"/uids/"+encodeURIComponent(uid)+".json"),
+    var r=await fetch(u,
       val?{method:"PUT",headers:{"Content-Type":"application/json"},
            body:JSON.stringify(val)}
         :{method:"DELETE"});
-    return!!(r&&r.ok);
-  }catch(e){return false}
+    if(r&&r.ok)return{ok:true};
+    /* Firebase galti ki wajah jawab ke andar likhta hai. Use phenk
+       dena hi wo galti thi jisse ye poora din laga. */
+    var t="";try{t=String(await r.text()||"").slice(0,140)}catch(e){}
+    return{ok:false,err:"HTTP "+((r&&r.status)||"?")
+      +(hasTok?" (token laga tha)":" (token NAHI tha)")+(t?(" \u2014 "+t):"")};
+  }catch(e){
+    return{ok:false,err:"bulawa pahuncha hi nahi"
+      +(hasTok?" (token laga tha)":" (token NAHI tha)")
+      +" \u2014 "+String(e&&e.message||e)};
+  }
 }
 /* Ek user ka cloud login taiyaar karna. Ye ADMIN ke device par chalta
    hai -- raw password ki zaroorat nahi, record me pada nishan kaafi
@@ -11882,12 +11905,23 @@ async function _fbProvision(rec){
   if(!h)return{ok:false,err:"is user ka password set nahi hai"};
   var c=await _fbCred(rec.username,h);
   if(!c)return{ok:false,err:"pehchaan nahi bani"};
-  var res=await _fbSignUp(c.email,c.pw);
-  /* Pehle se bana hua ho (dobara chalaya, ya doosre device se) to wahi
-     theek hai -- us par login kar ke uska uid le lete hain. */
-  if(!res.ok&&/EMAIL_EXISTS/.test(String(res.err||"")))
-    res=await _fbSignInEmail(c.email,c.pw,true);
-  if(!res.ok)return res;
+  var res=null;
+  if(rec.fbAcc&&rec.fbAccFor===c.email){
+    /* Is password ka account pichhli koshish me ban chuka tha. Dobara
+       banane ki koshish se kuchh nahi milta aur Firebase ginti rakhta
+       hai -- thodi der me wo sabko rok deta hai. */
+    res={ok:true,uid:rec.fbAcc,tok:null};
+  }else{
+    res=await _fbSignUp(c.email,c.pw);
+    /* Pehle se bana hua ho (doosre device se, ya purani koshish me) to
+       wahi theek hai -- us par login kar ke uska uid le lete hain. */
+    if(!res.ok&&/EMAIL_EXISTS/.test(String(res.err||"")))
+      res=await _fbSignInEmail(c.email,c.pw,true);
+    if(!res.ok)return res;
+    /* Yahi wo line thi jo pehle nahi thi: account ban gaya, ise abhi
+       likh lo -- aage ka kadam atke to bhi ye bacha rahe. */
+    rec.fbAcc=res.uid;rec.fbAccFor=c.email;rec._ts=_bumpTs(rec);
+  }
   var oldUid=rec.fbUid;
   /* Apna hi pehla account ho to token pehle sambhal lo -- list me naam
      likhna bhi ek database likhai hai, aur bina token wo hoti nahi. */
@@ -11895,7 +11929,7 @@ async function _fbProvision(rec){
   /* Pehle naam list me, phir purana hatao -- ulta kiya to beech me
      khud admin ka darwaza band ho jata hai. */
   var a=await _fbUidAllow(res.uid,rec.role==="admin"?"admin":true);
-  if(!a)return{ok:false,err:"list me naam nahi juda"};
+  if(!a.ok)return{ok:false,err:"list me naam nahi juda \u2014 "+a.err};
   rec.fbUid=res.uid;rec._ts=_bumpTs(rec);
   if(oldUid&&oldUid!==res.uid)await _fbUidAllow(oldUid,false);
   return{ok:true,uid:res.uid,tok:res.tok,email:c.email};
@@ -11903,22 +11937,61 @@ async function _fbProvision(rec){
 /* Jinka cloud login baaki hai, sabka ek saath. Admin ke Staff wale
    panne par ek button -- isi ke bharose ye cheez yaad rakhne ki nahi
    rehti. */
+/* Firebase apni galti apne shabdon me batata hai. Wo shabd kaam ke
+   nahi -- aadmi ko ye chahiye ki ab KARNA kya hai. */
+function _fbWhy(e){
+  var t=String(e||"");
+  if(/OPERATION_NOT_ALLOWED|ADMIN_ONLY_OPERATION|PASSWORD_LOGIN_DISABLED/.test(t))
+    return"Firebase me Email/Password abhi chalu nahi hai. "
+      +"Authentication \u2192 Sign-in method \u2192 Email/Password \u2192 Enable.";
+  if(/API key not valid|INVALID_API_KEY|API key nahi hai/i.test(t))
+    return"App ki API key galat hai \u2014 mujhe batao.";
+  if(/Could not parse auth|Invalid.{0,3}token|expired/i.test(t))
+    return"Cloud ka token nahi mana ja raha \u2014 ye screenshot mujhe bhejo. ("+t+")";
+  if(/list me naam nahi juda/.test(t))
+    return"Database likhne nahi de raha. ("+t+")";
+  if(/password set nahi hai/.test(t))
+    return"Is user ka password app me set hi nahi hai. Edit me jaakar "
+      +"ek password do, phir dobara dabao.";
+  if(/WEAK_PASSWORD/.test(t))return"Password bahut chhota hai.";
+  if(/TOO_MANY|QUOTA/.test(t))
+    return"Firebase ne thodi der ke liye rok diya hai (bahut koshish ho gayi). "
+      +"15\u201330 minute baad dobara dabaiye. Jaldi hai to phone ka WiFi band "
+      +"karke mobile data se kijiye \u2014 rok net ke pate par hai. Jo account "
+      +"ban chuke hain wo bache rahenge, dobara nahi banenge.";
+  if(/Failed to fetch|NetworkError|offline|Load failed/i.test(t))
+    return"Net nahi mil raha.";
+  return t||"wajah pata nahi chali";
+}
 async function fbReadyAll(){
   if(!_usrAdminOnly())return;
   if(!FB_AUTH_ON)return toast("Cloud login abhi chalu nahi hai","warn");
+  if(window._fbReadyBusy)return;
   var L=(STATE.users||[]).filter(function(u){
     return u&&!u._deleted&&u.active!==false&&!u.fbUid;
   });
   if(!L.length)return toast("Sabka taiyaar hai","ok");
-  var ok=0,bad=[];
+  window._fbReadyBusy=true;window._fbReadyErr="";
+  var st=el("fb-ready-stat"),ok=0;
+  /* Dabate hi kuchh badalna chahiye -- warna aadmi sochta hai click
+     hua hi nahi aur dabata rehta hai. */
+  if(st)st.textContent="Taiyaar ho raha hai\u2026";
   for(var i=0;i<L.length;i++){
+    if(st)st.textContent="Taiyaar ho raha hai\u2026 "+(i+1)+"/"+L.length;
     var r=await _fbProvision(L[i]);
-    if(r&&r.ok)ok++;else bad.push((L[i].name||L[i].username||"")+": "+((r&&r.err)||"nahi bana"));
+    /* Har ek ke baad likh do. Beech me ruke to jitna hua utna bacha
+       rahe -- warna agli baar phir shuru se, aur phir wahi rok. */
+    try{persist()}catch(e){}
+    if(r&&r.ok){ok++;continue}
+    /* Pehli galti par ruk jao. 13 baar wahi galti dohrane se na kuchh
+       banta hai, na wajah saaf hoti hai. */
+    window._fbReadyErr=_fbWhy(r&&r.err);
+    break;
   }
+  window._fbReadyBusy=false;
   persist();try{autoSyncCloud()}catch(e){}
   renderUsers();
-  if(!bad.length)toast(ok+" ka cloud login taiyaar","ok");
-  else toast(ok+" taiyaar \u2014 "+bad.length+" nahi hua: "+bad[0],"warn");
+  if(!window._fbReadyErr)toast(ok+" ka cloud login taiyaar","ok");
 }
 /* Database ke har bulawe par token apne aap lag jaye -- 13 jagah haath
    se lagane ka matlab hai ek jagah bhool jaana. Ye lapet sirf database
