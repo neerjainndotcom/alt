@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.422-->
+<!DOCTYPE html><!--ALTV:1.45.424-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.422";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.424";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -11110,18 +11110,55 @@ function writeSettings(settings) {
    poora pull hi theek hai. */
 async function _dsRepairCursors(){
   try{
-    var m=_dsPullTsMap();
-    if(m&&Object.keys(m).length)return false;
-    var n=(STATE.orders||[]).length+(STATE.bills||[]).length;
-    if(n<50)return false;
-    return await _dsCursorsToCloud();
+    if(!FIREBASE_URL)return false;
+    var m=_dsPullTsMap()||{};
+    var miss=DELTA_COLLECTIONS.filter(function(c){return!m[c]});
+    if(!miss.length)return false;
+    var r=await fetch(FIREBASE_URL+"/_meta.json?x="+Date.now(),{cache:"no-store"});
+    if(!r||!r.ok)return false;
+    var meta=(await r.json())||{};
+    var cnt=(meta.counts&&meta.counts.n)||null;
+    var mine={};try{mine=_dsMyCounts(false)||{}}catch(e){mine={}}
+    var done=0;
+    miss.forEach(function(c){
+      var ts=meta[c]&&meta[c].ts;if(!ts)return;
+      /* Nishan sirf us khaane ka jiska maal is device par poora hai.
+         Jiska kam hai uska nishan chhua to uska bacha hua maal kabhi
+         nahi utrega -- wo is raftaar se kahin zyada bura hoga. */
+      var want=cnt?Number(cnt[c]):NaN;
+      if(isFinite(want)&&want>0){
+        var have=Number(mine[c]);
+        if(!isFinite(have)||have<want)return;
+      }else if(!Array.isArray(STATE[c])||!STATE[c].length)return;
+      m[c]=ts;done++;
+    });
+    if(!done)return false;
+    if(meta.counters&&meta.counters.ts&&!m.counters)m.counters=meta.counters.ts;
+    if(meta.settings&&meta.settings.ts&&!m.settings)m.settings=meta.settings.ts;
+    _dsSetPullTsMap(m);
+    try{_tlAdd("nishan marammat",0,done+" khaane")}catch(e){}
+    return true;
   }catch(e){return false}
 }
 function initFirebaseListener(){if(!FIREBASE_URL)return;try{_dsRepairCursors()}catch(e){}if(window._fbMetaPoll)clearInterval(window._fbMetaPoll);window._fbMetaPoll=setInterval(async()=>{
   if(document.hidden)return;
   if(window._saveLock||window._syncRunning)return;
   if(window._lastSaveAt&&Date.now()-window._lastSaveAt<8e3)return;
+  /* Judaa hona aur kaam karna do alag baatein hain. Pichhle poore
+     session me taar "zinda" dikh raha tha par sirf 2 khabrein aayi.
+     Isliye ab use uske kaam se parkhte hain. */
   var sseUp=!!(window._fbSSE&&window._fbSSE.readyState===1);
+  if(sseUp&&window._fbSseAt&&Date.now()-window._fbSseAt>9e4)sseUp=false;
+  if(sseUp&&!window._fbSseAt&&window._fbSseStart
+    &&Date.now()-window._fbSseStart>9e4)sseUp=false;
+  /* Mara hua taar pakda gaya -- naya jod do, warna wo chup-chaap
+     baitha rahega aur har baar poll ka intezaar karna padega. */
+  if(!sseUp&&window._fbSSE&&!nmOver()
+    &&(!window._fbSseRetieAt||Date.now()-window._fbSseRetieAt>12e4)){
+    window._fbSseRetieAt=Date.now();
+    try{_tlAdd("taar dobara joda",0)}catch(e){}
+    try{initFirebaseSSE()}catch(e){}
+  }
   /* Mahine ki hadd paar -- app chalti rahegi, bas har badlav par daudna
      band. 5 minute me ek baar dekh lena kaafi hai. */
   var gap=nmOver()?3e5:(sseUp?6e4:15e3);
@@ -11129,6 +11166,7 @@ function initFirebaseListener(){if(!FIREBASE_URL)return;try{_dsRepairCursors()}c
   window._fbLastPoll=Date.now();
   await pullDeltaFromFirebase()
 },3e3);if(!window._fbVisHooked){window._fbVisHooked=true;document.addEventListener("visibilitychange",()=>{if(document.hidden||!FIREBASE_URL)return;if(window._saveLock||window._syncRunning)return;pullDeltaFromFirebase().catch(()=>{})})}initFirebaseSSE();setLiveStatus(FIREBASE_URL?"live":"off")}function initFirebaseSSE(){if(!FIREBASE_URL||typeof EventSource==="undefined")return;if(window._fbSSE){try{window._fbSSE.close()}catch(e){}window._fbSSE=null}try{const es=new EventSource(_fbWrapUrl(FIREBASE_URL+"/_meta.json"));
+    try{window._fbSseStart=Date.now()}catch(e){}
   /* Pehli khabar par turant utaaro -- kaam ruke nahi. Uske baad 3
      second tak aur khabren aayen to unhe ikattha kar ke ek hi baar
      utaaro, har khabar par alag pull nahi. */
@@ -12475,7 +12513,32 @@ function _tlAdd(what,ms,extra){
     if(window._tl.length>12)window._tl.shift();
   }catch(e){}
 }
+/* Ek waqt me ek hi. Pehle chaar jagah se alag-alag pull shuru ho jate
+   the aur aapas me hi qataar bana lete the. */
 async function pullDeltaFromFirebase(){
+  if(window._deltaRunning){
+    /* Girao mat -- jo khabar aayi hai wo sachi hai. Chalu wala poora
+       hote hi ek baar aur chala dete hain. */
+    window._deltaAgain=true;
+    try{_tlAdd("pull chhoda (ek pehle se chal raha)",0)}catch(e){}
+    return false;
+  }
+  window._deltaRunning=true;
+  var _dRes=false;
+  try{_dRes=await _deltaPullInner()}
+  catch(e){_dRes=false}
+  finally{
+    window._deltaRunning=false;
+    if(window._deltaAgain){
+      window._deltaAgain=false;
+      setTimeout(function(){
+        try{pullDeltaFromFirebase().catch(function(){})}catch(e){}
+      },60);
+    }
+  }
+  return _dRes;
+}
+async function _deltaPullInner(){
   if(_noPullMode())return false;if(!FIREBASE_URL)return false;try{var _t0=Date.now();var _tPull=_t0;var _tCols=0,_tN=0,_tBytes=0;
 let metaR=await fetch(FIREBASE_URL+"/_meta.json");
 _tlAdd("nishan padha",Date.now()-_t0);if(!metaR.ok&&FIREBASE_URL!==DEFAULT_FIREBASE_URL){const fallbackR=await fetch(DEFAULT_FIREBASE_URL+"/_meta.json");if(fallbackR.ok){FIREBASE_URL=DEFAULT_FIREBASE_URL;delete STATE.settings.firebaseUrl;lsSave("vs_settings",STATE.settings);metaR=fallbackR}}if(!metaR.ok){window._fbLastPullOk=false;return false}window._fbLastPullOk=true;window._fbLastPullAt=Date.now();
@@ -12489,7 +12552,7 @@ _tlAdd("nishan padha",Date.now()-_t0);if(!metaR.ok&&FIREBASE_URL!==DEFAULT_FIREB
    nowTs() ke baad koi device cloud ke samay se peechhe likh hi nahi
    sakta, isliye 1 minute ka jhaanka kaafi hai -- utna sirf raste me
    chal rahe push ke liye. */
-      const startTs=Math.max(0,Math.min(localTs,cloudTs)-DS_LOOKBACK);const url=FIREBASE_URL+"/altstock/"+col+".json?orderBy="+encodeURIComponent('"_ts"')+"&startAt="+startTs;let r=null;var _tq=Date.now();try{const c=new AbortController,t=setTimeout(()=>c.abort(),25e3);r=await fetch(url,{signal:c.signal});clearTimeout(t)}catch(e){r=null}_tCols+=Date.now()-_tq;_tN++;_tlAdd("utara: "+col,Date.now()-_tq,(r&&r.ok)?"":"(nahi mila)");if(!r||!r.ok)continue;{const obj=await _fbRead(r,"badlav");const arr=obj?Object.values(obj):[];if(arr.length){STATE[col]=col==="items"?mergeItems(STATE[col],arr):col==="taskInstances"?mergeTaskInstances(STATE[col],arr):smartMerge(STATE[col],arr,col==="users"?"username":undefined);STATE[col]=cleanupDeleted(STATE[col]);anyUpdated=true}}pullMap[col]=cloudTs}const ctrCloudTs=meta.counters&&meta.counters.ts||0;
+      const startTs=Math.max(0,Math.min(localTs,cloudTs)-DS_LOOKBACK);const url=FIREBASE_URL+"/altstock/"+col+".json?orderBy="+encodeURIComponent('"_ts"')+"&startAt="+startTs;let r=null;var _tq=Date.now();try{const c=new AbortController,t=setTimeout(()=>c.abort(),12e3);r=await fetch(url,{signal:c.signal});clearTimeout(t)}catch(e){r=null}_tCols+=Date.now()-_tq;_tN++;_tlAdd("utara: "+col,Date.now()-_tq,(r&&r.ok)?"":"(nahi mila)");if(!r||!r.ok)continue;{const obj=await _fbRead(r,"badlav");const arr=obj?Object.values(obj):[];if(arr.length){STATE[col]=col==="items"?mergeItems(STATE[col],arr):col==="taskInstances"?mergeTaskInstances(STATE[col],arr):smartMerge(STATE[col],arr,col==="users"?"username":undefined);STATE[col]=cleanupDeleted(STATE[col]);anyUpdated=true}}pullMap[col]=cloudTs}const ctrCloudTs=meta.counters&&meta.counters.ts||0;
 if(ctrCloudTs>(pullMap.counters||0)){
   const cr=await fetch(FIREBASE_URL+"/altstock/counters.json").catch(()=>null);
   if(cr&&cr.ok){const cd=await cr.json();if(_ctrApply(cd))anyUpdated=true;pullMap.counters=ctrCloudTs}
