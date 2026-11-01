@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.412-->
+<!DOCTYPE html><!--ALTV:1.45.414-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.412";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.414";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -1937,6 +1937,7 @@ function openNetDiag(){
     +'<pre id="net-diag-txt" style="margin:0;padding:12px 15px;overflow:auto;flex:1;font-size:11px;line-height:1.55;white-space:pre-wrap;font-family:ui-monospace,monospace"></pre>'
     +'<div style="padding:10px 15px;border-top:1px solid var(--br);display:flex;gap:8px">'
     +'<button onclick="netDiagFullSync(this)" style="flex:1;padding:9px;border-radius:9px;border:none;background:#059669;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit">&#128260; Cloud se poora milao</button>'
+    +'<button onclick="netDiagProbe(this)" style="flex:1;padding:9px;border-radius:9px;border:none;background:#B45309;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit">&#129658; Cloud jaanch</button>'
     +'<button onclick="netDiagCopy()" style="flex:1;padding:9px;border-radius:9px;border:none;background:#4F46E5;color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit">Copy karo</button>'
     +'</div>'
     +'<div style="padding:0 15px 10px;display:flex;gap:8px">'
@@ -1953,6 +1954,55 @@ function openNetDiag(){
    isliye ye button bina poochhe nahi chalta. */
 function _fullPullMB(){
   try{return Math.max(1,Math.round(JSON.stringify(STATE).length/1048576))}catch(e){return 0}
+}
+async function _probe(nm,url,opt){
+  var t0=Date.now(),hasAuth=String(url).indexOf("auth=")>=0;
+  try{
+    var r=await fetch(url,opt||undefined);
+    var ms=Date.now()-t0;
+    var body="";
+    try{body=String(await r.text()||"")}catch(e){body=""}
+    var line=nm+": HTTP "+r.status+"  "+ms+"ms"+(hasAuth?"":"  [auth NAHI]");
+    if(!r.ok)line+="\n    "+body.slice(0,160);
+    else line+="  ("+body.length+" bytes)";
+    return line;
+  }catch(e){
+    return nm+": pahuncha hi nahi ("+(Date.now()-t0)+"ms) \u2014 "
+      +String(e&&e.message||e).slice(0,120);
+  }
+}
+/* Chhe bulawe, har ek ka asli jawab. Dhyan: ye URL khud banate hain
+   aur token khud lagate hain, taaki ye bhi dikh jaye ki token lag
+   raha hai ya nahi. */
+async function netDiagProbe(btn){
+  var pre=el("net-diag-txt");if(!pre)return;
+  if(btn){btn.disabled=true;btn.textContent="Jaanch chal rahi hai\u2026"}
+  var L=["","\u2500\u2500 CLOUD JAANCH \u2500\u2500"];
+  var t=null;try{t=_fbTokLoad()}catch(e){t=null}
+  L.push("Taala (FB_AUTH_ON): "+(FB_AUTH_ON?"chalu":"band"));
+  L.push("Token: "+(t&&t.id?("hai, uid "+(t.uid||"?")):"NAHI hai")
+    +(t&&t.exp?("  \u2014 "+Math.round((t.exp-Date.now())/60000)+" min baaki"):""));
+  L.push("Token taaza: "+(_fbTokOk()?"haan":"nahi"));
+  L.push("");
+  var B=FIREBASE_URL;
+  var ts=Date.now()-6e5;
+  L.push(await _probe("1. _meta (seedha)",_fbU(B+"/_meta.json")));
+  L.push(await _probe("2. orders (seedha)",
+    _fbU(B+"/altstock/orders.json?shallow=true")));
+  L.push(await _probe("3. orders (SAWAL ke saath)",
+    _fbU(B+"/altstock/orders.json?orderBy="+encodeURIComponent('"_ts"')
+      +"&startAt="+ts+"&limitToFirst=1")));
+  L.push(await _probe("4. settings (seedha)",_fbU(B+"/altstock/settings.json")));
+  L.push(await _probe("5. likhna (_meta/ping)",_fbU(B+"/.json"),
+    {method:"PATCH",headers:{"Content-Type":"application/json"},
+     body:JSON.stringify({"_meta/ping":{ts:Date.now()}})}));
+  L.push(await _probe("6. backup list",_fbU(B+"/altbackup_idx.json?shallow=true")));
+  L.push("");
+  L.push("3 mana ho aur 2 chale \u2014 to sawal wala raasta band hai.");
+  L.push("Sab mana \u2014 to token ya rules.");
+  pre.textContent=pre.textContent+"\n"+L.join("\n");
+  try{pre.scrollTop=pre.scrollHeight}catch(e){}
+  if(btn){btn.disabled=false;btn.textContent="\uD83E\uDE7A Cloud jaanch"}
 }
 async function netDiagFullSync(btn){
   var mb=_fullPullMB();
@@ -12235,9 +12285,7 @@ try{
     const last=_pushRecs[j-1];
     const c1=new AbortController,t1=setTimeout(()=>c1.abort(),45e3);
     let rr=null;
-    try{rr=await fetch(FIREBASE_URL+"/.json",{method:"PATCH",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(part),signal:c1.signal})}catch(e){rr=null}
+    try{rr=await _fbPatch(part,c1.signal)}catch(e){rr=null}
     clearTimeout(t1);
     if(!rr){setLiveStatus("off");try{_renderUnsyncedBar()}catch(e){}return false}
     if(!rr.ok&&rr.status!==400){setLiveStatus("off");try{_renderUnsyncedBar()}catch(e){}return false}
@@ -12251,9 +12299,7 @@ try{
         const c2=new AbortController,t2=setTimeout(()=>c2.abort(),2e4);
         let r2=null;
         try{const b={};b[one.p]=one.r;
-          r2=await fetch(FIREBASE_URL+"/.json",{method:"PATCH",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify(b),signal:c2.signal})}catch(e){r2=null}
+          r2=await _fbPatch(b,c2.signal)}catch(e){r2=null}
         clearTimeout(t2);
         if(r2&&r2.ok){moved++;continue}
         if(!r2||r2.status!==400){setLiveStatus("off");try{_renderUnsyncedBar()}catch(e){}return false}
@@ -12276,7 +12322,7 @@ try{
   /* Aakhri me sirf nishan (meta/settings/counters) -- ye chhote hain.
      Ek hi badlav ho to koi tukda banta hi nahi, aur ye ek hi call
      jaati hai; do call nahi. */
-  const ctrl=new AbortController;const tid=setTimeout(()=>ctrl.abort(),45e3);let r=await fetch(FIREBASE_URL+"/.json",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(updates),signal:ctrl.signal});clearTimeout(tid);
+  const ctrl=new AbortController;const tid=setTimeout(()=>ctrl.abort(),45e3);let r=await _fbPatch(updates,ctrl.signal);clearTimeout(tid);
   if(r&&!r.ok&&r.status===400&&_i>0){
     /* Chhote kaam ke saath bhi koi kharab row ho sakta hai -- use
        alag nikaal kar baaki ka kaam bhej do. */
@@ -12285,9 +12331,7 @@ try{
       const c3=new AbortController,t3=setTimeout(()=>c3.abort(),2e4);
       let r3=null;
       try{const b={};b[one.p]=one.r;
-        r3=await fetch(FIREBASE_URL+"/.json",{method:"PATCH",
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify(b),signal:c3.signal})}catch(e){r3=null}
+        r3=await _fbPatch(b,c3.signal)}catch(e){r3=null}
       clearTimeout(t3);
       if(r3&&r3.ok)continue;
       if(!r3||r3.status!==400){setLiveStatus("off");try{_renderUnsyncedBar()}catch(e){}return false}
@@ -12295,13 +12339,46 @@ try{
     }
     try{window._pushBadList=_pushBad}catch(e){}
     const c4=new AbortController,t4=setTimeout(()=>c4.abort(),45e3);
-    try{r=await fetch(FIREBASE_URL+"/.json",{method:"PATCH",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(updates),signal:c4.signal})}catch(e){r=null}
+    try{r=await _fbPatch(updates,c4.signal)}catch(e){r=null}
     clearTimeout(t4);
   }
   if(r&&r.ok){_dsSetLastPush(pushStartTs);if(_setChanged)_dsSetSettingsSig(_setSig);if(_ctrChanged){const _k2=_ctrCloudGet();Object.keys(_ctrSent).forEach(function(k){// Haath se set ki hui ginti chhoti bhi ho sakti hai -- uspar "bada wala" mat lagao, warna device samajhta rahega ki cloud par abhi bhi badi ginti hai aur aage kuchh bhejega hi nahi.
-if(_ctrSetSent[k]){_k2[k]=_ctrSent[k];return}_k2[k]=Math.max(_k2[k]||0,_ctrSent[k])});_ctrCloudSet(_k2)}STATE.settings.lastSync=nowIso;lsSave("vs_settings",STATE.settings);setLiveStatus("live");return true}setLiveStatus("off");return false}catch(e){setLiveStatus("off");return false}}async function pullDeltaFromFirebase(){
+if(_ctrSetSent[k]){_k2[k]=_ctrSent[k];return}_k2[k]=Math.max(_k2[k]||0,_ctrSent[k])});_ctrCloudSet(_k2)}STATE.settings.lastSync=nowIso;lsSave("vs_settings",STATE.settings);setLiveStatus("live");return true}setLiveStatus("off");return false}catch(e){setLiveStatus("off");return false}}/* Kaam ko uske khaane ke hisaab se baant kar bhejta hai. Jawab wahi
+   shakal ka lautata hai jo fetch lautata tha ({ok,status}), taaki
+   bulane walon ka hisaab waisa ka waisa chale -- 400 wala kharab-row
+   wala intezaam bhi. */
+async function _fbPatch(obj,signal){
+  var keys=Object.keys(obj||{});
+  if(!keys.length)return{ok:true,status:200};
+  var grp={};
+  keys.forEach(function(k){
+    var i=String(k).indexOf("/");
+    var top=i>0?k.slice(0,i):"",rest=i>0?k.slice(i+1):"";
+    /* Jiska koi khaana hi na ho wo jad par hi jayega -- aisa aaj koi
+       nahi hai, par chup-chaap gir jaane se behtar hai ki wo purane
+       raaste se jaye. */
+    if(!top||!rest){(grp[""]=grp[""]||{})[k]=obj[k];return}
+    (grp[top]=grp[top]||{})[rest]=obj[k];
+  });
+  var order=Object.keys(grp).sort(function(a,b){
+    return(a==="_meta"?1:0)-(b==="_meta"?1:0);   /* nishan sabse aakhir */
+  });
+  var bad=null;
+  for(var i=0;i<order.length;i++){
+    var top=order[i];
+    var url=FIREBASE_URL+(top?("/"+top+".json"):"/.json");
+    var r=null;
+    try{r=await fetch(url,{method:"PATCH",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(grp[top]),signal:signal})}catch(e){return null}
+    if(!r)return null;
+    /* Ek hissa atka to baaki bhi bhej dete hain -- par jawab me wahi
+       atka hua haal lautate hain, taaki nishan aage na badhe. */
+    if(!r.ok&&!bad)bad=r;
+  }
+  return bad||{ok:true,status:200};
+}
+async function pullDeltaFromFirebase(){
   if(_noPullMode())return false;if(!FIREBASE_URL)return false;try{let metaR=await fetch(FIREBASE_URL+"/_meta.json");if(!metaR.ok&&FIREBASE_URL!==DEFAULT_FIREBASE_URL){const fallbackR=await fetch(DEFAULT_FIREBASE_URL+"/_meta.json");if(fallbackR.ok){FIREBASE_URL=DEFAULT_FIREBASE_URL;delete STATE.settings.firebaseUrl;lsSave("vs_settings",STATE.settings);metaR=fallbackR}}if(!metaR.ok){window._fbLastPullOk=false;return false}window._fbLastPullOk=true;
     const meta=(await _fbRead(metaR,"jaanch"))||{};
     try{Object.keys(meta||{}).forEach(function(k){_dsNoteCloudTs(meta[k]&&meta[k].ts)})}catch(e){}
