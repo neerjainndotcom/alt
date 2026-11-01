@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.420-->
+<!DOCTYPE html><!--ALTV:1.45.422-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.420";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.422";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -1295,7 +1295,10 @@ if(window._pullRunning){window._needsResync=true;autoSyncCloud();return}window._
      Doosre ka kuchh naya hoga to khabar apne aap aa jayegi. */
   if(!(window._fbLastPullAt&&Date.now()-window._fbLastPullAt<2500))
     await pullDeltaFromFirebase();
-}catch(e){}await pushDeltaToFirebase()}else if(GAS_URL){try{const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],custGroups:STATE.custGroups||[],markets:STATE.markets||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],settings:{...STATE.settings,lastSync:nowTs},_savedAt:nowTs};const ctrl=new AbortController;const tid=setTimeout(()=>ctrl.abort(),15e3);const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"saveAll",...pl}),signal:ctrl.signal});clearTimeout(tid);const j=await r.json().catch(()=>null);if(j&&!j.error){setLiveStatus("live");STATE.settings.lastSync=nowTs;lsSave("vs_settings",STATE.settings)}else{setLiveStatus("off")}}catch(e){setLiveStatus("off")}}}catch(e){console.warn("autoSync error:",e)}window._syncRunning=false;window._saveLock=false;try{_renderUnsyncedBar();if(_unsyncedCount())_syncRetrySoon()}catch(e){}if(window._needsResync){window._needsResync=false;setTimeout(autoSyncCloud,100)}}// Kitna kaam abhi sirf is device par hai.
+}catch(e){}
+var _tp=Date.now();await pushDeltaToFirebase();
+_tlAdd("bheja",Date.now()-_tp);
+}else if(GAS_URL){try{const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],custGroups:STATE.custGroups||[],markets:STATE.markets||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],settings:{...STATE.settings,lastSync:nowTs},_savedAt:nowTs};const ctrl=new AbortController;const tid=setTimeout(()=>ctrl.abort(),15e3);const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"saveAll",...pl}),signal:ctrl.signal});clearTimeout(tid);const j=await r.json().catch(()=>null);if(j&&!j.error){setLiveStatus("live");STATE.settings.lastSync=nowTs;lsSave("vs_settings",STATE.settings)}else{setLiveStatus("off")}}catch(e){setLiveStatus("off")}}}catch(e){console.warn("autoSync error:",e)}window._syncRunning=false;window._saveLock=false;try{_renderUnsyncedBar();if(_unsyncedCount())_syncRetrySoon()}catch(e){}if(window._needsResync){window._needsResync=false;setTimeout(autoSyncCloud,100)}}// Kitna kaam abhi sirf is device par hai.
 function _unsyncedCount(){
   try{
     if(!FIREBASE_URL)return 0;
@@ -1753,8 +1756,9 @@ function _dsCheckCounts(){
     if(window._pullRunning||window._syncRunning)return;
     try{_dsSetPullTsMap({})}catch(e){}
     try{
-      pullAllFromFirebase(true).then(function(ok){
+      pullAllFromFirebase(true).then(async function(ok){
         if(!ok)return;
+        try{await _dsCursorsToCloud()}catch(e){}
         try{_setLastFullPull(nowTs())}catch(e){}
         try{window._dsShort=_dsShortList()}catch(e){}
         try{refreshCurrentView()}catch(e){}
@@ -1762,6 +1766,26 @@ function _dsCheckCounts(){
     }catch(e){}
   },1500);
   return true;
+}
+/* Poora data utar chuka hai -- ab cursor ko cloud ke aaj ke nishan par
+   rakh do. Isse app agli baar sirf usse NAYA maangegi, saara nahi.
+   Ye nahi karne se har nudge poori collection utaarta tha. */
+async function _dsCursorsToCloud(){
+  if(!FIREBASE_URL)return false;
+  try{
+    var r=await fetch(FIREBASE_URL+"/_meta.json?x="+Date.now(),{cache:"no-store"});
+    if(!r||!r.ok)return false;
+    var meta=(await r.json())||{};
+    var m={};
+    DELTA_COLLECTIONS.forEach(function(c){
+      var ts=meta[c]&&meta[c].ts;if(ts)m[c]=ts;
+    });
+    if(meta.counters&&meta.counters.ts)m.counters=meta.counters.ts;
+    if(meta.settings&&meta.settings.ts)m.settings=meta.settings.ts;
+    _dsSetPullTsMap(m);
+    try{_tlAdd("nishan dobara lagaye",0,Object.keys(m).length+" khaane")}catch(e){}
+    return true;
+  }catch(e){return false}
 }
 async function syncFullReconcile(){
   if(!FIREBASE_URL){toast("Cloud juda nahi hai","er");return false}
@@ -1781,6 +1805,10 @@ async function syncFullReconcile(){
        pullAllFromFirebase cursor khali dekh kar poori collection
        seedha maangti hai -- bina chhante. Yahi sach me "poora" hai. */
     ok=await pullAllFromFirebase(true);
+    /* Yahi wo line thi jo chhoot gayi thi. Iske bina har agla nudge
+       poori collection utaarta tha -- aur jitni baar "poora milao"
+       dabta, utni baar halat kharab hoti. */
+    if(ok){try{await _dsCursorsToCloud()}catch(e){}}
     if(ok){try{_setLastFullPull(nowTs())}catch(e){}}
   }catch(e){ok=false}
   window._syncRunning=false;
@@ -2008,6 +2036,19 @@ async function netDiagProbe(btn){
       +Math.round((Date.now()-window._fbSseAt)/1000)+" sec pehle"):"  \u2014 kabhi nahi"));
   L.push("Aakhri badlav utra: "+(window._fbLastPullAt
     ?(Math.round((Date.now()-window._fbLastPullAt)/1000)+" sec pehle"):"kabhi nahi"));
+  /* Asli raasta -- jo sach me hua, jab hua. Ek pal ki tasveer se
+     zyada kaam ki cheez yahi hai. */
+  L.push("AAKHRI KADAM (naya sabse neeche)");
+  try{
+    var tl=window._tl||[];
+    if(!tl.length)L.push("  kuchh nahi hua abhi tak");
+    else tl.forEach(function(e){
+      var d=new Date(e.t);
+      var hh=("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)
+        +":"+("0"+d.getSeconds()).slice(-2);
+      L.push("  "+hh+"  "+e.w+"  "+(e.ms?(e.ms+" ms"):"")+" "+e.x);
+    });
+  }catch(e){L.push("  (hisaab nahi mila)")}
   L.push("");
   var B=FIREBASE_URL;
   var ts=Date.now()-6e5;
@@ -11061,7 +11102,22 @@ function writeSettings(settings) {
     .map(([k,v]) => [k, typeof v === 'object' ? JSON.stringify(v) : String(v)]);
   if (rows.length) sheet.getRange(2, 1, rows.length, 2).setValues(rows);
   autoResize(sheet);
-}`}function copyGASScript(){const s=getGASScript();if(navigator.clipboard){navigator.clipboard.writeText(s).then(()=>toast("Script copied!","ok")).catch(()=>copyFallback(s))}else copyFallback(s)}function copyFallback(s){const ta=document.createElement("textarea");ta.value=s;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);toast("Script copied!","ok")}function initFirebaseListener(){if(!FIREBASE_URL)return;if(window._fbMetaPoll)clearInterval(window._fbMetaPoll);window._fbMetaPoll=setInterval(async()=>{
+}`}function copyGASScript(){const s=getGASScript();if(navigator.clipboard){navigator.clipboard.writeText(s).then(()=>toast("Script copied!","ok")).catch(()=>copyFallback(s))}else copyFallback(s)}function copyFallback(s){const ta=document.createElement("textarea");ta.value=s;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);toast("Script copied!","ok")}/* Jin device par ye pehle ho chuka hai, wahan cursor abhi bhi khali
+   pada hai aur har nudge poora data utaar raha hai. Khali cursor ke
+   saath poora maal maujood hona sirf ek hi matlab rakhta hai: poora
+   pull ho chuka tha aur nishan lagana reh gaya tha. Wahi lagate hain.
+   Jiska maal sach me khali hai uska cursor chhute nahi -- uske liye
+   poora pull hi theek hai. */
+async function _dsRepairCursors(){
+  try{
+    var m=_dsPullTsMap();
+    if(m&&Object.keys(m).length)return false;
+    var n=(STATE.orders||[]).length+(STATE.bills||[]).length;
+    if(n<50)return false;
+    return await _dsCursorsToCloud();
+  }catch(e){return false}
+}
+function initFirebaseListener(){if(!FIREBASE_URL)return;try{_dsRepairCursors()}catch(e){}if(window._fbMetaPoll)clearInterval(window._fbMetaPoll);window._fbMetaPoll=setInterval(async()=>{
   if(document.hidden)return;
   if(window._saveLock||window._syncRunning)return;
   if(window._lastSaveAt&&Date.now()-window._lastSaveAt<8e3)return;
@@ -11079,7 +11135,8 @@ function writeSettings(settings) {
   var _nudge=function(){
     /* Khabar aayi -- ye yaad rakho, chahe hum uspar abhi kuchh karein
        ya nahi. Isi se pata chalta hai ki taar zinda hai. */
-    try{window._fbSseAt=Date.now();window._fbSseN=(window._fbSseN||0)+1}catch(e){}
+    try{window._fbSseAt=Date.now();window._fbSseN=(window._fbSseN||0)+1;
+      _tlAdd("khabar aayi",0)}catch(e){}
     if(window._saveLock||window._syncRunning)return;
     if(window._lastSaveAt&&Date.now()-window._lastSaveAt<2e3)return;
     if(nmOver())return;                 // bachat mode -- poll dekh lega
@@ -12409,8 +12466,19 @@ async function _fbPatch(obj,signal){
   }
   return bad||{ok:true,status:200};
 }
+/* Aakhri 12 kadam. Chhota rakha hai -- ye yaad rakhne ki cheez hai,
+   jamaa karne ki nahi. */
+window._tl=[];
+function _tlAdd(what,ms,extra){
+  try{
+    window._tl.push({t:Date.now(),w:what,ms:Math.round(ms),x:extra||""});
+    if(window._tl.length>12)window._tl.shift();
+  }catch(e){}
+}
 async function pullDeltaFromFirebase(){
-  if(_noPullMode())return false;if(!FIREBASE_URL)return false;try{let metaR=await fetch(FIREBASE_URL+"/_meta.json");if(!metaR.ok&&FIREBASE_URL!==DEFAULT_FIREBASE_URL){const fallbackR=await fetch(DEFAULT_FIREBASE_URL+"/_meta.json");if(fallbackR.ok){FIREBASE_URL=DEFAULT_FIREBASE_URL;delete STATE.settings.firebaseUrl;lsSave("vs_settings",STATE.settings);metaR=fallbackR}}if(!metaR.ok){window._fbLastPullOk=false;return false}window._fbLastPullOk=true;window._fbLastPullAt=Date.now();
+  if(_noPullMode())return false;if(!FIREBASE_URL)return false;try{var _t0=Date.now();var _tPull=_t0;var _tCols=0,_tN=0,_tBytes=0;
+let metaR=await fetch(FIREBASE_URL+"/_meta.json");
+_tlAdd("nishan padha",Date.now()-_t0);if(!metaR.ok&&FIREBASE_URL!==DEFAULT_FIREBASE_URL){const fallbackR=await fetch(DEFAULT_FIREBASE_URL+"/_meta.json");if(fallbackR.ok){FIREBASE_URL=DEFAULT_FIREBASE_URL;delete STATE.settings.firebaseUrl;lsSave("vs_settings",STATE.settings);metaR=fallbackR}}if(!metaR.ok){window._fbLastPullOk=false;return false}window._fbLastPullOk=true;window._fbLastPullAt=Date.now();
     const meta=(await _fbRead(metaR,"jaanch"))||{};
     try{Object.keys(meta||{}).forEach(function(k){_dsNoteCloudTs(meta[k]&&meta[k].ts)})}catch(e){}
     try{window._dsCloudCounts=(meta&&meta.counts)||null}catch(e){}
@@ -12421,7 +12489,7 @@ async function pullDeltaFromFirebase(){
    nowTs() ke baad koi device cloud ke samay se peechhe likh hi nahi
    sakta, isliye 1 minute ka jhaanka kaafi hai -- utna sirf raste me
    chal rahe push ke liye. */
-      const startTs=Math.max(0,Math.min(localTs,cloudTs)-DS_LOOKBACK);const url=FIREBASE_URL+"/altstock/"+col+".json?orderBy="+encodeURIComponent('"_ts"')+"&startAt="+startTs;let r=null;try{const c=new AbortController,t=setTimeout(()=>c.abort(),25e3);r=await fetch(url,{signal:c.signal});clearTimeout(t)}catch(e){r=null}if(!r||!r.ok)continue;{const obj=await _fbRead(r,"badlav");const arr=obj?Object.values(obj):[];if(arr.length){STATE[col]=col==="items"?mergeItems(STATE[col],arr):col==="taskInstances"?mergeTaskInstances(STATE[col],arr):smartMerge(STATE[col],arr,col==="users"?"username":undefined);STATE[col]=cleanupDeleted(STATE[col]);anyUpdated=true}}pullMap[col]=cloudTs}const ctrCloudTs=meta.counters&&meta.counters.ts||0;
+      const startTs=Math.max(0,Math.min(localTs,cloudTs)-DS_LOOKBACK);const url=FIREBASE_URL+"/altstock/"+col+".json?orderBy="+encodeURIComponent('"_ts"')+"&startAt="+startTs;let r=null;var _tq=Date.now();try{const c=new AbortController,t=setTimeout(()=>c.abort(),25e3);r=await fetch(url,{signal:c.signal});clearTimeout(t)}catch(e){r=null}_tCols+=Date.now()-_tq;_tN++;_tlAdd("utara: "+col,Date.now()-_tq,(r&&r.ok)?"":"(nahi mila)");if(!r||!r.ok)continue;{const obj=await _fbRead(r,"badlav");const arr=obj?Object.values(obj):[];if(arr.length){STATE[col]=col==="items"?mergeItems(STATE[col],arr):col==="taskInstances"?mergeTaskInstances(STATE[col],arr):smartMerge(STATE[col],arr,col==="users"?"username":undefined);STATE[col]=cleanupDeleted(STATE[col]);anyUpdated=true}}pullMap[col]=cloudTs}const ctrCloudTs=meta.counters&&meta.counters.ts||0;
 if(ctrCloudTs>(pullMap.counters||0)){
   const cr=await fetch(FIREBASE_URL+"/altstock/counters.json").catch(()=>null);
   if(cr&&cr.ok){const cd=await cr.json();if(_ctrApply(cd))anyUpdated=true;pullMap.counters=ctrCloudTs}
