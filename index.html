@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.424-->
+<!DOCTYPE html><!--ALTV:1.45.425-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.424";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.425";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -12545,14 +12545,55 @@ _tlAdd("nishan padha",Date.now()-_t0);if(!metaR.ok&&FIREBASE_URL!==DEFAULT_FIREB
     const meta=(await _fbRead(metaR,"jaanch"))||{};
     try{Object.keys(meta||{}).forEach(function(k){_dsNoteCloudTs(meta[k]&&meta[k].ts)})}catch(e){}
     try{window._dsCloudCounts=(meta&&meta.counts)||null}catch(e){}
-    const pullMap=_dsPullTsMap();let anyUpdated=false;for(const col of DELTA_COLLECTIONS){const cloudTs=meta[col]&&meta[col].ts||0;const localTs=pullMap[col]||0;if(!cloudTs||cloudTs===localTs)continue;/* Jhaanka: cursor se kitna peechhe se maango.
-   15 minute ka jhaanka bahut mehnga tha -- ek aadmi ek naam badle, aur
-   har doosre phone par pichhle 15 minute ke SAARE badlav dobara utarte
-   the (naap me ek badlav = 28 KB). Din bhar me yahi GB ban jaata tha.
-   nowTs() ke baad koi device cloud ke samay se peechhe likh hi nahi
-   sakta, isliye 1 minute ka jhaanka kaafi hai -- utna sirf raste me
-   chal rahe push ke liye. */
-      const startTs=Math.max(0,Math.min(localTs,cloudTs)-DS_LOOKBACK);const url=FIREBASE_URL+"/altstock/"+col+".json?orderBy="+encodeURIComponent('"_ts"')+"&startAt="+startTs;let r=null;var _tq=Date.now();try{const c=new AbortController,t=setTimeout(()=>c.abort(),12e3);r=await fetch(url,{signal:c.signal});clearTimeout(t)}catch(e){r=null}_tCols+=Date.now()-_tq;_tN++;_tlAdd("utara: "+col,Date.now()-_tq,(r&&r.ok)?"":"(nahi mila)");if(!r||!r.ok)continue;{const obj=await _fbRead(r,"badlav");const arr=obj?Object.values(obj):[];if(arr.length){STATE[col]=col==="items"?mergeItems(STATE[col],arr):col==="taskInstances"?mergeTaskInstances(STATE[col],arr):smartMerge(STATE[col],arr,col==="users"?"username":undefined);STATE[col]=cleanupDeleted(STATE[col]);anyUpdated=true}}pullMap[col]=cloudTs}const ctrCloudTs=meta.counters&&meta.counters.ts||0;
+    const pullMap=_dsPullTsMap();let anyUpdated=false;
+/* 1) kis-kis ka maangna hai -- ye tay karne me koi chakkar nahi lagta.
+   Jhaanka: cursor se zara peechhe se maango. 15 minute ka jhaanka
+   bahut mehnga tha -- ek aadmi ek naam badle, aur har doosre phone par
+   pichhle 15 minute ke SAARE badlav dobara utarte the (naap me ek
+   badlav = 28 KB). Din bhar me yahi GB ban jaata tha. nowTs() ke baad
+   koi device cloud ke samay se peechhe likh hi nahi sakta, isliye 1
+   minute ka jhaanka kaafi hai -- utna sirf raste me chal rahe push ke
+   liye. */
+var _need=[];
+DELTA_COLLECTIONS.forEach(function(col){
+  var cloudTs=(meta[col]&&meta[col].ts)||0;
+  var localTs=pullMap[col]||0;
+  if(!cloudTs||cloudTs===localTs)return;
+  _need.push({col:col,cloudTs:cloudTs,
+    startTs:Math.max(0,Math.min(localTs,cloudTs)-DS_LOOKBACK)});
+});
+/* 2) sabko EK SAATH. Ye chakkar ek doosre par nirbhar nahi hain --
+   order ka jawab aaye bina bill nahi poochh sakte, aisa kuchh nahi.
+   Paanch khaane baari-baari poochhne ka matlab tha paanch chakkar ka
+   intezaar; ab ek jitna. */
+var _tAll=Date.now();
+var _got=await Promise.all(_need.map(async function(x){
+  var url=FIREBASE_URL+"/altstock/"+x.col+".json?orderBy="
+    +encodeURIComponent('"_ts"')+"&startAt="+x.startTs;
+  var r=null,_tq=Date.now();
+  try{var c=new AbortController,t=setTimeout(function(){c.abort()},12e3);
+    r=await fetch(url,{signal:c.signal});clearTimeout(t)}catch(e){r=null}
+  _tCols+=Date.now()-_tq;_tN++;
+  if(!r||!r.ok){_tlAdd("utara: "+x.col,Date.now()-_tq,"(nahi mila)");return null}
+  var obj=null;try{obj=await _fbRead(r,"badlav")}catch(e){obj=null}
+  var arr=obj?Object.values(obj):[];
+  _tlAdd("utara: "+x.col,Date.now()-_tq,arr.length?(arr.length+" badlav"):"");
+  return{col:x.col,cloudTs:x.cloudTs,arr:arr};
+}));
+if(_need.length>1)_tlAdd("sab ek saath",Date.now()-_tAll,_need.length+" khaane");
+/* 3) jodna baari-baari -- isme chakkar nahi lagta, aur maal jodne ka
+   kaam aapas me uljhna nahi chahiye. */
+_got.forEach(function(g){
+  if(!g)return;
+  var col=g.col,arr=g.arr;
+  if(arr.length){
+    STATE[col]=col==="items"?mergeItems(STATE[col],arr):
+      col==="taskInstances"?mergeTaskInstances(STATE[col],arr):
+      smartMerge(STATE[col],arr,col==="users"?"username":undefined);
+    STATE[col]=cleanupDeleted(STATE[col]);anyUpdated=true;
+  }
+  pullMap[col]=g.cloudTs;
+});const ctrCloudTs=meta.counters&&meta.counters.ts||0;
 if(ctrCloudTs>(pullMap.counters||0)){
   const cr=await fetch(FIREBASE_URL+"/altstock/counters.json").catch(()=>null);
   if(cr&&cr.ok){const cd=await cr.json();if(_ctrApply(cd))anyUpdated=true;pullMap.counters=ctrCloudTs}
