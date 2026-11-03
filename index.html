@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.431-->
+<!DOCTYPE html><!--ALTV:1.45.434-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.431";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.434";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -11688,6 +11688,16 @@ function ssStopOpts(sel){
     +'<option value="__other__"'+(sel==="__other__"?" selected":"")
     +">List me nahi \u2014 naam likhta hoon</option>";
 }
+/* Broker ki list, saath me "haath se likhta hoon". */
+function ssBrkOpts(sel){
+  var bo=(STATE.brokers||[]).filter(function(b){return b&&!b._deleted})
+    .sort(function(a,b){return(a.name||"").localeCompare(b.name||"")})
+    .map(function(b){return'<option value="'+b.id+'"'+(b.id===sel?" selected":"")
+      +">"+escHtml(b.name)+"</option>"}).join("");
+  return'<option value="">Broker chuno\u2026</option>'+bo
+    +'<option value="__other__"'+(sel==="__other__"?" selected":"")
+    +">List me nahi \u2014 naam likhta hoon</option>";
+}
 function ssRenderStops(){
   var box=el("ss-stops");if(!box)return;
   if(!_ssStops.length){box.innerHTML="";return}
@@ -11707,6 +11717,18 @@ function ssRenderStops(){
         +escHtml(st.name||"")+'" oninput="ssStopSet('+i+',\'name\',this.value)"/>'
         +'<input class="inp mt8" placeholder="Pata / market" value="'
         +escHtml(st.addr||"")+'" oninput="ssStopSet('+i+',\'addr\',this.value)"/>'):"")
+      /* Broker har jagah ka alag hota hai. Carrier ko iske bina bheja
+         gaya message adhoora hai -- wo pahunchega kaise. */
+      +'<select class="sel mt8" onchange="ssStopBrkChg('+i+',this.value)">'
+      +ssBrkOpts(st.brkId)+"</select>"
+      +(st.brkId==="__other__"
+        ?('<input class="inp mt8" placeholder="Broker ka naam" value="'
+          +escHtml(st.brkName||"")+'" oninput="ssStopSet('+i
+          +',\'brkName\',this.value)"/>'):"")
+      +(st.brkId&&st.brkId!=="__other__"&&st.brkName
+        ?('<div style="font-size:10.5px;font-weight:700;color:#6D28D9;'
+          +'margin-top:5px">\uD83E\uDD1D '+escHtml(st.brkName)
+          +(st.brkPhone?(" \u00b7 "+escHtml(st.brkPhone)):"")+"</div>"):"")
       +"</div>";
   }).join("");
 }
@@ -11719,21 +11741,42 @@ function ssStopChg(i,v){
   if(v&&v!=="__other__"){
     var c=(STATE.customers||[]).filter(function(x){return x&&x.id===v})[0];
     _ssStops[i].name=(c&&c.name)||"";_ssStops[i].addr=(c&&c.address)||"";
+    /* Party ka apna broker master me pada hai -- use yahin utha lo,
+       taaki teen jagah ke teen broker haath se na bharne padein. */
+    var bid=(c&&c.defaultBrokerId)||"";
+    if(bid){
+      var b=(STATE.brokers||[]).filter(function(x){return x&&x.id===bid})[0];
+      if(b){_ssStops[i].brkId=b.id;_ssStops[i].brkName=b.name||"";
+        _ssStops[i].brkPhone=b.phone||""}
+    }
   }
+  ssRenderStops();
+}
+function ssStopBrkChg(i,v){
+  if(!_ssStops[i])return;
+  _ssStops[i].brkId=v;
+  if(v&&v!=="__other__"){
+    var b=(STATE.brokers||[]).filter(function(x){return x&&x.id===v})[0];
+    _ssStops[i].brkName=(b&&b.name)||"";_ssStops[i].brkPhone=(b&&b.phone)||"";
+  }else if(v!=="__other__"){_ssStops[i].brkName="";_ssStops[i].brkPhone=""}
   ssRenderStops();
 }
 /* Save karte waqt: adhoori jagah chup-chaap chhod do. Khaali row par
    rok lagana aadmi ko bina wajah atkata hai. */
 function collectSsStops(){
   return(_ssStops||[]).map(function(st){
+    var bn=(st.brkName||"").trim(),bp=(st.brkPhone||"").trim();
+    var bi=(st.brkId&&st.brkId!=="__other__")?st.brkId:"";
     if(st.custId&&st.custId!=="__other__"){
       var c=(STATE.customers||[]).filter(function(x){return x&&x.id===st.custId})[0];
       if(!c)return null;
-      return{custId:c.id,name:c.name||"",addr:c.address||""};
+      return{custId:c.id,name:c.name||"",addr:c.address||"",
+        brkId:bi,brkName:bn,brkPhone:bp};
     }
     var nm=(st.name||"").trim();
     if(!nm)return null;
-    return{custId:"",name:nm,addr:(st.addr||"").trim()};
+    return{custId:"",name:nm,addr:(st.addr||"").trim(),
+      brkId:bi,brkName:bn,brkPhone:bp};
   }).filter(Boolean);
 }
 /* Set kitni jagah gaya -- pehli + baaki. */
@@ -12004,7 +12047,8 @@ function renderSampleSets(){const c=el("lead-lst-samples");if(!c)return;
      dikhta hai; baaki ki ginti yahan, taaki ek nazar me pata chale. */
   var n=(ss.stops||[]).filter(function(x){return x&&x.name}).length;
   if(!n)return"";
-  return'<span title="'+escHtml((ss.stops||[]).map(function(x){return x.name})
+  return'<span title="'+escHtml((ss.stops||[]).map(function(x){
+      return(x.name||"")+(x.brkName?(" (Brk: "+x.brkName+")"):"")})
     .join(", "))+'" style="font-size:9px;font-weight:800;background:#EDE9FE;'
     +'color:#6D28D9;padding:2px 7px;border-radius:5px;flex-shrink:0">+'+n
     +' aur jagah</span>';
@@ -12034,12 +12078,126 @@ function renderSampleSets(){const c=el("lead-lst-samples");if(!c)return;
      likhte hi asli record badal jata hai, bina Save dabaye. */
   _ssStops=(ss.stops||[]).map(function(st){
     return{custId:st.custId||(st.name?"__other__":""),
-      name:st.name||"",addr:st.addr||""};
-  });const co=[...STATE.customers].filter(c=>!c._deleted).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(c=>'<option value="'+c.id+'"'+(c.id===ss.custId?" selected":"")+">"+c.name+(c.market?" · "+c.market:"")+(c.gstin?" ("+c.gstin.substring(0,2)+")":"")+"</option>").join("");const bo=[...STATE.brokers].filter(b=>!b._deleted).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(b=>'<option value="'+b.id+'"'+(b.id===ss.brokerId?" selected":"")+">"+b.name+"</option>").join("");const so=[...STATE.users].filter(u=>!u._deleted).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(u=>'<option value="'+u.id+'"'+(u.id===ss.salesmanId?" selected":"")+">"+u.name+"</option>").join("");const ttl=el("ss-form-title");if(ttl)ttl.textContent="📦 Edit Sample Set";el("ss-form-body").innerHTML='<div class="fg"><label>Date *</label><input class="inp" type="date" id="ss-date" value="'+(ss.date||today())+'"/></div><div class="fg"><label>Party *</label><select class="sel" id="ss-cust" onchange="ssCustChg()"><option value="">Select...</option>'+co+'</select></div><div id="ss-cust-addr" style="display:none;font-size:12px;font-weight:600;color:#4F46E5;background:#EEF2FF;border-radius:8px;padding:7px 12px;margin-top:-6px;margin-bottom:10px">📍 </div><div id="ss-stops"></div><button class="btn bs bfl" onclick="addSsStop()" style="margin-bottom:10px">+ Aur jagah jodo</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="fg"><label>Broker</label><select class="sel" id="ss-brk"><option value="">None</option>'+bo+'</select></div><div class="fg"><label>Salesman</label><select class="sel" id="ss-sm"><option value="">None</option>'+so+'</select></div></div><div class="fg"><label>Carrier (staff taking the set)</label><select class="sel" id="ss-carrier-uid" onchange="ssCrChg()"><option value="">Select user...</option>'+so+'<option value="__other__">Other / External</option></select></div><div class="fg" id="ss-carrier-txt-wrap" style="display:none"><label>Name</label><input class="inp" type="text" id="ss-carrier" value="'+escHtml(ss.carrier||"")+'"/></div><div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs</div><div style="background:#FFF7ED;border:1.5px solid #FDBA74;border-radius:12px;padding:10px 12px;margin-bottom:12px"><div style="font-size:10px;font-weight:800;color:#C2410C;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px">⚡ Quick Fill Selected</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input class="inp" type="text" id="ss-fill-cut" placeholder="Cut (e.g. 5.5m)" style="flex:1;min-width:90px;font-size:13px;font-weight:700"/><input class="inp" type="number" id="ss-fill-pcs" placeholder="Pcs" style="width:80px;font-size:13px;font-weight:700"/><button onclick="ssFillAll()" style="padding:8px 18px;background:#EA580C;color:white;border:none;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">⚡ Fill All</button></div></div><div id="ss-lots"></div><div id="ss-tot-bar" style="margin-top:8px"></div><button class="btn bs bfl mt8" onclick="addSsLot()">+ Add LOT / Item</button><div class="fg mt8"><label>Notes</label><textarea class="ta" id="ss-note" rows="2">'+escHtml(ss.note||"")+"</textarea></div>";try{ssRenderStops()}catch(e){}try{ssHookTotal()}catch(e){}const ssBtnE=el("ss-save-btn");if(ssBtnE){ssBtnE.textContent="💾 Update"}showMod("m-sample-set");setTimeout(()=>ssCustChg(),80);if(ss.carrierId){const cuid=el("ss-carrier-uid");if(cuid){cuid.value=ss.carrierId;ssCrChg()}}else if(ss.carrier){const cuid=el("ss-carrier-uid");if(cuid){cuid.value="__other__";ssCrChg();const _cn=el("ss-carrier");if(_cn)_cn.value=ss.carrier;const _cp=el("ss-carrier-phone");if(_cp){const _sph=ss.carrierPhone||(STATE.settings?.carrierContacts||[]).find(c=>c.name.toLowerCase()===(ss.carrier||"").toLowerCase())?.phone||"";_cp.value=_sph;}}}if(ss.lots&&ss.lots.length){ss.lots.forEach((_,i)=>{addSsLot()});setTimeout(()=>{ss.lots.forEach((lotData,li)=>{const lid=li+1;const iSel=el("ssl-"+lid+"-i");if(iSel&&lotData.itemId){iSel.value=lotData.itemId;ssLotItemChange(lid);setTimeout(()=>{const rSel=el("ssl-"+lid+"-r");if(rSel&&lotData.range!==undefined){rSel.value=lotData.range===""?"__norange__":lotData.range;ssLotRangeChange(lid);setTimeout(()=>{if(lotData.colours)lotData.colours.forEach(cd=>{const ch=el("ssl-"+lid+"-ck-"+cd.idx);if(ch){ch.checked=true;ssLotClrToggle(lid,cd.idx,true)}const pe=el("ssl-"+lid+"-p-"+cd.idx);if(pe)pe.value=cd.pcs||"";const ce=el("ssl-"+lid+"-c-"+cd.idx);if(ce)ce.value=cd.cut||""})},150)}},100)}})},100)}}function _ssText(lots){return(lots||[]).map(l=>{const hdr="Items/Range: *"+l.itemName+(l.range?" / "+l.range:"")+"*";const clrs=(l.colours||[]).map((c,i,a)=>c.name+(c.cut?" ["+c.cut+"]":"")+(c.pcs?" ("+c.pcs+" pcs)":"")+(i<a.length-1?",":""));return hdr+"\n"+clrs.join("\n")}).join("\n\n")}function waSampleSetSingle(ssId,type){const ss=(STATE.sampleSets||[]).find(s=>s.id===ssId);if(!ss)return;const co=STATE.settings?.companyName||"ALT";let phone="",rn="";if(type==="carrier"){const cr=STATE.users.find(u=>u.id===ss.carrierId);const _crName=cr?cr.name:(ss.carrier||"Carrier");const _fallbackPhone=ss.carrierPhone||(STATE.settings?.carrierContacts||[]).find(c=>c.name.toLowerCase()===(ss.carrier||"").toLowerCase())?.phone||"";if(!cr){if(_fallbackPhone){phone=_fallbackPhone;}else{toast("No carrier phone — open the set and add a WhatsApp number for "+ss.carrier,"er");return;}}else if(!(cr.whatsapp||cr.phone)){if(_fallbackPhone){phone=_fallbackPhone;}else{toast("No phone number on file for "+cr.name+". Add one in Admin → Users.","er");return;}}else{phone=cr.whatsapp||cr.phone;}const _crCust=(STATE.customers||[]).find(c=>c.id===ss.custId);const _crBrk=(STATE.brokers||[]).filter(function(b){return b&&b.id===ss.brokerId})[0];
+      name:st.name||"",addr:st.addr||"",
+      brkId:st.brkId||(st.brkName?"__other__":""),
+      brkName:st.brkName||"",brkPhone:st.brkPhone||""};
+  });const co=[...STATE.customers].filter(c=>!c._deleted).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(c=>'<option value="'+c.id+'"'+(c.id===ss.custId?" selected":"")+">"+c.name+(c.market?" · "+c.market:"")+(c.gstin?" ("+c.gstin.substring(0,2)+")":"")+"</option>").join("");const bo=[...STATE.brokers].filter(b=>!b._deleted).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(b=>'<option value="'+b.id+'"'+(b.id===ss.brokerId?" selected":"")+">"+b.name+"</option>").join("");const so=[...STATE.users].filter(u=>!u._deleted).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(u=>'<option value="'+u.id+'"'+(u.id===ss.salesmanId?" selected":"")+">"+u.name+"</option>").join("");const ttl=el("ss-form-title");if(ttl)ttl.textContent="📦 Edit Sample Set";el("ss-form-body").innerHTML='<div class="fg"><label>Date *</label><input class="inp" type="date" id="ss-date" value="'+(ss.date||today())+'"/></div><div class="fg"><label>Party *</label><select class="sel" id="ss-cust" onchange="ssCustChg()"><option value="">Select...</option>'+co+'</select></div><div id="ss-cust-addr" style="display:none;font-size:12px;font-weight:600;color:#4F46E5;background:#EEF2FF;border-radius:8px;padding:7px 12px;margin-top:-6px;margin-bottom:10px">📍 </div><div id="ss-stops"></div><button class="btn bs bfl" onclick="addSsStop()" style="margin-bottom:10px">+ Aur jagah jodo</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="fg"><label>Broker</label><select class="sel" id="ss-brk"><option value="">None</option>'+bo+'</select></div><div class="fg"><label>Salesman</label><select class="sel" id="ss-sm"><option value="">None</option>'+so+'</select></div></div><div class="fg"><label>Carrier (staff taking the set)</label><select class="sel" id="ss-carrier-uid" onchange="ssCrChg()"><option value="">Select user...</option>'+so+'<option value="__other__">Other / External</option></select></div><div class="fg" id="ss-carrier-txt-wrap" style="display:none"><label>Name</label><input class="inp" type="text" id="ss-carrier" value="'+escHtml(ss.carrier||"")+'"/></div><div class="stl" style="padding:8px 0;font-size:10px">Items / SKUs</div><div style="background:#FFF7ED;border:1.5px solid #FDBA74;border-radius:12px;padding:10px 12px;margin-bottom:12px"><div style="font-size:10px;font-weight:800;color:#C2410C;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px">⚡ Quick Fill Selected</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input class="inp" type="text" id="ss-fill-cut" placeholder="Cut (e.g. 5.5m)" style="flex:1;min-width:90px;font-size:13px;font-weight:700"/><input class="inp" type="number" id="ss-fill-pcs" placeholder="Pcs" style="width:80px;font-size:13px;font-weight:700"/><button onclick="ssFillAll()" style="padding:8px 18px;background:#EA580C;color:white;border:none;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">⚡ Fill All</button></div></div><div id="ss-lots"></div><div id="ss-tot-bar" style="margin-top:8px"></div><button class="btn bs bfl mt8" onclick="addSsLot()">+ Add LOT / Item</button><div class="fg mt8"><label>Notes</label><textarea class="ta" id="ss-note" rows="2">'+escHtml(ss.note||"")+"</textarea></div>";try{ssRenderStops()}catch(e){}try{ssHookTotal()}catch(e){}const ssBtnE=el("ss-save-btn");if(ssBtnE){ssBtnE.textContent="💾 Update"}showMod("m-sample-set");setTimeout(()=>ssCustChg(),80);if(ss.carrierId){const cuid=el("ss-carrier-uid");if(cuid){cuid.value=ss.carrierId;ssCrChg()}}else if(ss.carrier){const cuid=el("ss-carrier-uid");if(cuid){cuid.value="__other__";ssCrChg();const _cn=el("ss-carrier");if(_cn)_cn.value=ss.carrier;const _cp=el("ss-carrier-phone");if(_cp){const _sph=ss.carrierPhone||(STATE.settings?.carrierContacts||[]).find(c=>c.name.toLowerCase()===(ss.carrier||"").toLowerCase())?.phone||"";_cp.value=_sph;}}}if(ss.lots&&ss.lots.length){ss.lots.forEach((_,i)=>{addSsLot()});setTimeout(()=>{ss.lots.forEach((lotData,li)=>{const lid=li+1;const iSel=el("ssl-"+lid+"-i");if(iSel&&lotData.itemId){iSel.value=lotData.itemId;ssLotItemChange(lid);setTimeout(()=>{const rSel=el("ssl-"+lid+"-r");if(rSel&&lotData.range!==undefined){rSel.value=lotData.range===""?"__norange__":lotData.range;ssLotRangeChange(lid);setTimeout(()=>{if(lotData.colours)lotData.colours.forEach(cd=>{const ch=el("ssl-"+lid+"-ck-"+cd.idx);if(ch){ch.checked=true;ssLotClrToggle(lid,cd.idx,true)}const pe=el("ssl-"+lid+"-p-"+cd.idx);if(pe)pe.value=cd.pcs||"";const ce=el("ssl-"+lid+"-c-"+cd.idx);if(ce)ce.value=cd.cut||""})},150)}},100)}})},100)}}function _ssText(lots){return(lots||[]).map(l=>{const hdr="Items/Range: *"+l.itemName+(l.range?" / "+l.range:"")+"*";const clrs=(l.colours||[]).map((c,i,a)=>c.name+(c.cut?" ["+c.cut+"]":"")+(c.pcs?" ("+c.pcs+" pcs)":"")+(i<a.length-1?",":""));return hdr+"\n"+clrs.join("\n")}).join("\n\n")}/* Carrier ko jo message jata hai usme har jagah apne broker ke saath.
+   Bina broker ke wo pahunchega kaise -- yahi Neer ki asli zaroorat thi:
+   "ek saath sab message jaave". */
+/* Set ke saath jitne broker jude hain. Ek hi broker ki do party hon to
+   wo ek hi lakeer me -- use do message bhejna bekaar hai. */
+function ssBrokerTargets(ss){
+  if(!ss)return[];
+  var map={},out=[];
+  function add(id,nm,ph,party){
+    nm=(nm||"").trim();if(!nm)return;
+    var k=(id||("nm:"+nm.toLowerCase()));
+    if(!map[k]){map[k]={brkId:id||"",name:nm,phone:ph||"",parties:[]};out.push(map[k])}
+    if(!map[k].phone&&ph)map[k].phone=ph;
+    if(party&&map[k].parties.indexOf(party)<0)map[k].parties.push(party);
+  }
+  /* Pehli jagah ka broker set par pada hai, baaki apna saath laate hain. */
+  try{
+    var b0=(STATE.brokers||[]).filter(function(x){return x&&x.id===ss.brokerId})[0];
+    if(b0)add(b0.id,b0.name,b0.phone,ss.custName||"");
+    else if(ss.brokerName)add("",ss.brokerName,"",ss.custName||"");
+  }catch(e){}
+  (ss.stops||[]).forEach(function(st){
+    if(!st||!st.name)return;
+    var ph=st.brkPhone||"";
+    if(!ph&&st.brkId){
+      var b=(STATE.brokers||[]).filter(function(x){return x&&x.id===st.brkId})[0];
+      if(b)ph=b.phone||"";
+    }
+    add(st.brkId||"",st.brkName||"",ph,st.name);
+  });
+  return out;
+}
+/* Ek se zyada broker hon to pehle poochho. Chup-chaap pehle wale ko
+   bhej dena wahi galti hai jo abhi tak ho rahi thi. */
+/* Jisne set rakha, uska broker. Isi ke paas set pada hai -- baaki jagah
+   ab hisaab se bahar hain. */
+function ssKeeperBroker(ss){
+  if(!ss||!ss.keptBy||!ss.keptBy.name)return null;
+  var T=ssBrokerTargets(ss),k=ss.keptBy.name;
+  for(var i=0;i<T.length;i++){
+    if(T[i].parties.indexOf(k)>=0){
+      /* Us broker ki doosri party bhi ho sakti hai, par set to isi ke
+         paas ruka hai -- message me sirf isi ka naam jana chahiye. */
+      return{brkId:T[i].brkId,name:T[i].name,phone:T[i].phone,parties:[k]};
+    }
+  }
+  return null;
+}
+function ssPickBroker(ssId){
+  var ss=(STATE.sampleSets||[]).filter(function(x){return x&&x.id===ssId})[0];
+  if(!ss)return;
+  var T=ssBrokerTargets(ss);
+  rmEl("m-ss-brk");
+  var d=document.createElement("div");d.id="m-ss-brk";
+  d.style.cssText="position:fixed;inset:0;background:rgba(15,14,26,.55);z-index:9999;"
+    +"display:flex;align-items:flex-end;justify-content:center";
+  var rows=T.map(function(t,i){
+    var no=!t.phone;
+    return'<button '+(no?'disabled':'onclick="waSampleSetSingle(\''+ssId
+      +'\',\'broker\','+i+')"')+' style="display:block;width:100%;'
+      +'text-align:left;background:'+(no?"#F3F4F6":"#F8F7FF")+';border:1.5px solid '
+      +(no?"#E5E7EB":"#DDD6FE")+';border-radius:10px;padding:11px 13px;margin-bottom:7px;'
+      +'font-family:inherit;font-size:14px;font-weight:800;color:'
+      +(no?"#9CA3AF":"#0F0E1A")+';cursor:'+(no?"not-allowed":"pointer")+'">'
+      +escHtml(t.name)
+      +'<div style="font-size:11px;font-weight:600;color:#6B7280;margin-top:2px">'
+      +escHtml(t.parties.join(", "))
+      +(no?' \u00b7 <b style="color:#B91C1C">phone nahi hai</b>':"")+"</div></button>";
+  }).join("");
+  d.innerHTML='<div style="background:white;border-radius:16px 16px 0 0;padding:16px;'
+    +'width:100%;max-width:520px;max-height:80vh;overflow:auto">'
+    +'<div style="font-size:15px;font-weight:900;color:#0F0E1A;margin-bottom:3px">'
+    +"Kis broker ko bhejna hai?</div>"
+    +'<div style="font-size:11px;color:#6B7280;margin-bottom:12px">'
+    +"Har ek ko sirf uski apni party ka message jayega</div>"+rows
+    +'<button onclick="rmEl(\'m-ss-brk\')" style="display:block;width:100%;'
+    +'background:none;border:none;padding:10px;font-family:inherit;font-size:13px;'
+    +'font-weight:700;color:#6B7280;cursor:pointer">Rehne do</button></div>';
+  document.body.appendChild(d);
+}
+function _ssStopsText(ss){
+  var L=[];try{L=ssStopList(ss)}catch(e){L=[]}
+  if(!L.length)return"";
+  /* Pehli jagah ka broker set par pada hai; baaki apna saath laate hain. */
+  var b0="";
+  try{
+    var b=(STATE.brokers||[]).filter(function(x){return x&&x.id===ss.brokerId})[0];
+    b0=(b&&b.name)||ss.brokerName||"";
+  }catch(e){b0=ss.brokerName||""}
+  return L.map(function(x,i){
+    var bn=i===0?b0:(x.brkName||"");
+    var ph=i===0?"":(x.brkPhone||"");
+    return(i+1)+". "+(x.name||"")
+      +(x.addr?(" \u2014 "+x.addr):"")
+      +(bn?("\n   Broker: "+bn+(ph?(" \u00b7 "+ph):"")):"");
+  }).join("\n");
+}
+function waSampleSetSingle(ssId,type,brkIdx){const ss=(STATE.sampleSets||[]).find(s=>s.id===ssId);if(!ss)return;const co=STATE.settings?.companyName||"ALT";let phone="",rn="",_waParties="";if(type==="carrier"){const cr=STATE.users.find(u=>u.id===ss.carrierId);const _crName=cr?cr.name:(ss.carrier||"Carrier");const _fallbackPhone=ss.carrierPhone||(STATE.settings?.carrierContacts||[]).find(c=>c.name.toLowerCase()===(ss.carrier||"").toLowerCase())?.phone||"";if(!cr){if(_fallbackPhone){phone=_fallbackPhone;}else{toast("No carrier phone — open the set and add a WhatsApp number for "+ss.carrier,"er");return;}}else if(!(cr.whatsapp||cr.phone)){if(_fallbackPhone){phone=_fallbackPhone;}else{toast("No phone number on file for "+cr.name+". Add one in Admin → Users.","er");return;}}else{phone=cr.whatsapp||cr.phone;}const _crCust=(STATE.customers||[]).find(c=>c.id===ss.custId);const _crBrk=(STATE.brokers||[]).filter(function(b){return b&&b.id===ss.brokerId})[0];
 const _crSm=_waSm(ss.salesmanId||"","");
-const _crVars={name:_crName,party:ss.custName,owner:_crCust?.contact||"",address:_crCust?.address||"",partyPhone:_crCust?.phone||"",market:_crCust?.market||"",broker:(_crBrk&&_crBrk.name)||"",salesman:_crSm.name,salesmanPhone:_crSm.phone,date:fmtDate(ss.date),items:_ssText(ss.lots),notes:ss.note||"",company:co,carrier:ss.carrier||""};const cmsg=_ssTpl("waTemplateSsCarrier",_crVars)||"Hi "+_crName+",\n\nYou have a sample set delivery from "+co+".\n\n*Deliver to:* "+ss.custName+"\n*Date:* "+fmtDate(ss.date)+"\n\nItems:\n"+_ssText(ss.lots)+(ss.note?"\nNotes: "+ss.note:"")+"\n\nPlease deliver and confirm.\n\nThank you.";openWA(phone,cmsg);return}else if(type==="salesman"){const sm=STATE.users.find(u=>u.id===ss.salesmanId);if(!sm||!(sm.whatsapp||sm.phone)){toast("No salesman phone","er");return}phone=sm.whatsapp||sm.phone;rn=sm.name}else{const brk=STATE.brokers.find(b=>b.id===ss.brokerId);if(!brk||!brk.phone){toast("No broker phone","er");return}phone=brk.phone;rn=brk.name}const _ssCust=(STATE.customers||[]).find(c=>c.id===ss.custId);const _ssBrk=(STATE.brokers||[]).filter(function(b){return b&&b.id===ss.brokerId})[0];
+const _crVars={name:_crName,party:ss.custName,owner:_crCust?.contact||"",address:_crCust?.address||"",partyPhone:_crCust?.phone||"",market:_crCust?.market||"",broker:(_crBrk&&_crBrk.name)||"",salesman:_crSm.name,salesmanPhone:_crSm.phone,date:fmtDate(ss.date),items:_ssText(ss.lots),notes:ss.note||"",company:co,carrier:ss.carrier||"",stops:_ssStopsText(ss)};const cmsg=_ssTpl("waTemplateSsCarrier",_crVars)||"Hi "+_crName+",\n\nYou have a sample set delivery from "+co+".\n\n*Deliver to:*\n"+_ssStopsText(ss)+"\n*Date:* "+fmtDate(ss.date)+"\n\nItems:\n"+_ssText(ss.lots)+(ss.note?"\nNotes: "+ss.note:"")+"\n\nPlease deliver and confirm.\n\nThank you.";openWA(phone,cmsg);return}else if(type==="salesman"){const sm=STATE.users.find(u=>u.id===ss.salesmanId);if(!sm||!(sm.whatsapp||sm.phone)){toast("No salesman phone","er");return}phone=sm.whatsapp||sm.phone;rn=sm.name}else{
+  /* Set kai jagah gaya ho to kai broker hote hain. Pehle wale ko
+     chup-chaap bhej dena galat tha -- ab poochhte hain, aur har ek ko
+     SIRF uski apni party ka message jata hai. */
+  var _T=ssBrokerTargets(ss);
+  if(!_T.length){toast("Koi broker juda hi nahi hai","er");return}
+  /* Set kisi ne rakh liya hai to sawal ka matlab hi nahi -- jawab tay
+     hai. Baaki jagah ab hisaab se bahar hain. */
+  var _kb=(brkIdx==null)?ssKeeperBroker(ss):null;
+  if(brkIdx==null&&!_kb&&_T.length>1){ssPickBroker(ssId);return}
+  var _t=_kb||_T[brkIdx==null?0:brkIdx];
+  if(!_t){toast("Broker nahi mila","er");return}
+  if(!_t.phone){toast(_t.name+" ka phone number nahi hai","er");return}
+  try{rmEl("m-ss-brk")}catch(e){}
+  phone=_t.phone;rn=_t.name;_waParties=_t.parties.join(", ");
+}const _ssCust=(STATE.customers||[]).find(c=>c.id===ss.custId);const _ssBrk=(STATE.brokers||[]).filter(function(b){return b&&b.id===ss.brokerId})[0];
 const _ssSm=_waSm(ss.salesmanId||"","");
-const _ssVars={name:rn,party:ss.custName,owner:_ssCust?.contact||"",address:_ssCust?.address||"",partyPhone:_ssCust?.phone||"",market:_ssCust?.market||"",broker:(_ssBrk&&_ssBrk.name)||"",salesman:_ssSm.name,salesmanPhone:_ssSm.phone,date:fmtDate(ss.date),items:_ssText(ss.lots),carrier:ss.carrier||"",notes:ss.note||"",company:co};const _ssTplKey=type==="salesman"?"waTemplateSsSmn":"waTemplateSsBrk";const msg=_ssTpl(_ssTplKey,_ssVars)||"Hi "+rn+",\n\nReminder from "+co+" — sample saree set at *"+ss.custName+"*.\n\nDate sent: "+fmtDate(ss.date)+(ss.carrier?"\nCarried by: "+ss.carrier:"")+"\n\nItems:\n"+_ssText(ss.lots)+(ss.note?"\nNotes: "+ss.note:"")+"\n\nPlease follow up and update us.\n\nThank you.";openWA(phone,msg)}function waSampleSetAll(type){const pending=(STATE.sampleSets||[]).filter(s=>!s._deleted&&s.status!=="Returned");if(!pending.length){toast("No pending sample sets","er");return}const grps={};pending.forEach(ss=>{let k,ph,nm;if(type==="salesman"){const sm=STATE.users.find(u=>u.id===ss.salesmanId);if(!sm||!(sm.whatsapp||sm.phone))return;k=ss.salesmanId;ph=sm.whatsapp||sm.phone;nm=sm.name}else{const brk=STATE.brokers.find(b=>b.id===ss.brokerId);if(!brk||!brk.phone)return;k=ss.brokerId;ph=brk.phone;nm=brk.name}if(!grps[k])grps[k]={nm:nm,ph:ph,sets:[]};grps[k].sets.push(ss)});const list=Object.values(grps);if(!list.length){toast("No phone found for pending sets","er");return}const co=STATE.settings?.company||"ALT";const h='<div style="padding:12px 16px;font-size:14px;font-weight:700">&#x1F4F2; WA — '+escHtml(type==="salesman"?"Salesmen":"Brokers")+"</div>"+list.map(g=>{const msg="Hi "+g.nm+",\n\nSummary from "+co+" of pending sample sets:\n\n"+g.sets.map((ss,i)=>"*"+(i+1)+". "+ss.custName+"* (sent "+fmtDate(ss.date)+(ss.carrier?" via "+ss.carrier:"")+")\n"+_ssText(ss.lots)).join("\n\n")+"\n\nKindly follow up with each party.\n\nThank you.";const mk="_waSS_"+g.ph.replace(/\D/g,"");window[mk]=msg;return'<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #E5E7EB"><div><div style="font-size:13px;font-weight:700">'+escHtml(g.nm)+'</div><div style="font-size:11px;color:var(--t3)">'+g.sets.length+" set(s)</div></div><button onclick=\"openWA('"+g.ph+"',window['"+mk+"']);this.innerHTML='&#x2705; Sent';this.disabled=true;this.style.background='#D1FAE5';this.style.color='#059669'\" class=\"btn bsm\" style=\"background:#25D366;color:white;border:none\">&#x1F4F2; Send</button></div>"}).join("");const m=document.createElement("div");m.id="m-wa-ss-all";m.className="ov";m.style.cssText="z-index:3000";m.innerHTML='<div class="mod" style="max-width:460px;padding:0"><div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #E5E7EB"><span style="font-size:15px;font-weight:800">Send WhatsApp</span><button onclick="this.closest(\'.ov\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">&#x2715;</button></div>'+h+"</div></div>";document.body.appendChild(m);setTimeout(()=>m.classList.add("on"),10)}function checkPendingSampleSetsForBill(partyName){const w=el("bl-ss-warn");if(w)w.remove();if(!partyName)return;const pn=partyName.trim().toLowerCase();const pending=(STATE.sampleSets||[]).filter(s=>!s._deleted&&s.status!=="Returned"&&s.status!=="Billed"&&(s.custName||"").toLowerCase()===pn);if(!pending.length)return;const sum=pending.map(ss=>'<div style="margin-bottom:4px">'+escHtml(ss.voucherNo||fmtDate(ss.date))+": "
+const _ssVars={name:rn,party:_waParties||ss.custName,owner:_ssCust?.contact||"",address:_ssCust?.address||"",partyPhone:_ssCust?.phone||"",market:_ssCust?.market||"",broker:(_ssBrk&&_ssBrk.name)||"",salesman:_ssSm.name,salesmanPhone:_ssSm.phone,date:fmtDate(ss.date),items:_ssText(ss.lots),carrier:ss.carrier||"",notes:ss.note||"",company:co};const _ssTplKey=type==="salesman"?"waTemplateSsSmn":"waTemplateSsBrk";const msg=_ssTpl(_ssTplKey,_ssVars)||"Hi "+rn+",\n\nReminder from "+co+" — sample saree set at *"+ss.custName+"*.\n\nDate sent: "+fmtDate(ss.date)+(ss.carrier?"\nCarried by: "+ss.carrier:"")+"\n\nItems:\n"+_ssText(ss.lots)+(ss.note?"\nNotes: "+ss.note:"")+"\n\nPlease follow up and update us.\n\nThank you.";openWA(phone,msg)}function waSampleSetAll(type){const pending=(STATE.sampleSets||[]).filter(s=>!s._deleted&&s.status!=="Returned");if(!pending.length){toast("No pending sample sets","er");return}const grps={};pending.forEach(ss=>{let k,ph,nm;if(type==="salesman"){const sm=STATE.users.find(u=>u.id===ss.salesmanId);if(!sm||!(sm.whatsapp||sm.phone))return;k=ss.salesmanId;ph=sm.whatsapp||sm.phone;nm=sm.name}else{const brk=STATE.brokers.find(b=>b.id===ss.brokerId);if(!brk||!brk.phone)return;k=ss.brokerId;ph=brk.phone;nm=brk.name}if(!grps[k])grps[k]={nm:nm,ph:ph,sets:[]};grps[k].sets.push(ss)});const list=Object.values(grps);if(!list.length){toast("No phone found for pending sets","er");return}const co=STATE.settings?.company||"ALT";const h='<div style="padding:12px 16px;font-size:14px;font-weight:700">&#x1F4F2; WA — '+escHtml(type==="salesman"?"Salesmen":"Brokers")+"</div>"+list.map(g=>{const msg="Hi "+g.nm+",\n\nSummary from "+co+" of pending sample sets:\n\n"+g.sets.map((ss,i)=>"*"+(i+1)+". "+ss.custName+"* (sent "+fmtDate(ss.date)+(ss.carrier?" via "+ss.carrier:"")+")\n"+_ssText(ss.lots)).join("\n\n")+"\n\nKindly follow up with each party.\n\nThank you.";const mk="_waSS_"+g.ph.replace(/\D/g,"");window[mk]=msg;return'<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #E5E7EB"><div><div style="font-size:13px;font-weight:700">'+escHtml(g.nm)+'</div><div style="font-size:11px;color:var(--t3)">'+g.sets.length+" set(s)</div></div><button onclick=\"openWA('"+g.ph+"',window['"+mk+"']);this.innerHTML='&#x2705; Sent';this.disabled=true;this.style.background='#D1FAE5';this.style.color='#059669'\" class=\"btn bsm\" style=\"background:#25D366;color:white;border:none\">&#x1F4F2; Send</button></div>"}).join("");const m=document.createElement("div");m.id="m-wa-ss-all";m.className="ov";m.style.cssText="z-index:3000";m.innerHTML='<div class="mod" style="max-width:460px;padding:0"><div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #E5E7EB"><span style="font-size:15px;font-weight:800">Send WhatsApp</span><button onclick="this.closest(\'.ov\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">&#x2715;</button></div>'+h+"</div></div>";document.body.appendChild(m);setTimeout(()=>m.classList.add("on"),10)}function checkPendingSampleSetsForBill(partyName){const w=el("bl-ss-warn");if(w)w.remove();if(!partyName)return;const pn=partyName.trim().toLowerCase();const pending=(STATE.sampleSets||[]).filter(s=>!s._deleted&&s.status!=="Returned"&&s.status!=="Billed"&&(s.custName||"").toLowerCase()===pn);if(!pending.length)return;const sum=pending.map(ss=>'<div style="margin-bottom:4px">'+escHtml(ss.voucherNo||fmtDate(ss.date))+": "
     +(ss.lots||[]).map(l=>escHtml(l.itemName)+(l.range?" / "+escHtml(l.range):"")).join(", ")
     +' <button onclick="ssAddToOpenBill(\''+ss.id+'\')" style="background:#D97706;color:#fff;border:none;border-radius:6px;padding:3px 9px;font-size:10.5px;font-weight:800;cursor:pointer;font-family:inherit;margin-left:4px">Isi bill me jodo</button></div>').join("");const b=document.createElement("div");b.id="bl-ss-warn";b.style.cssText="background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:10px;padding:10px 12px;margin-bottom:10px";b.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px"><div style="flex:1"><div style="font-size:11px;font-weight:800;color:#92400E;margin-bottom:4px">&#x26A0;&#xFE0F; Pending Sample Set(s) for this party</div><div style="font-size:11px;color:#78350F;line-height:1.5">'+sum+'</div><div style="font-size:10px;color:#92400E;margin-top:6px;font-weight:700">&#x1F4CB; Isi bill me jodoge to alag bill nahi banega &mdash; wahi number, wahi series.</div></div><button onclick="this.closest(\'#bl-ss-warn\').remove()" style="flex-shrink:0;background:none;border:none;font-size:16px;color:#92400E;cursor:pointer;padding:0 2px;line-height:1" title="Dismiss">&#x2715;</button></div>';const bd=el("billbod");if(bd)bd.insertBefore(b,bd.firstChild)}const DELTA_COLLECTIONS=["killed","activity","items","entries","customers","brokers","suppliers","users","orders","bills","payments","jobWork","leads","flaggedEntries","taskTemplates","taskInstances","staffLeave","recurringLeads","mixedSarees","custGroups","markets","products","exchanges","sampleSets","csSlips"];// A record with no date is OLD, not new: it is dated from whatever it
 // carries, so it can never out-rank one somebody actually edited.
