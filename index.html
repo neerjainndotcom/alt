@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.434-->
+<!DOCTYPE html><!--ALTV:1.45.436-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.434";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.436";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -7542,7 +7542,7 @@ async function cancelOrder(id){
     +(_kill.length?("\n\n"+_kill.length+" parchi ("+_kill.join(", ")
       +") bhi cancel ho jayegi."):"")
     +(_busy.length?("\n\n\u26A0\uFE0F "+_busy.join(", ")+" abhi kaam par hai \u2014\n"
-      +"wo wahin rahegi, use floor se wapas lana padega."):"")
+      +"wo parchi bhi cancel ho jayegi, par maal floor se wapas lana padega."):"")
     +"\n\nBill aur stock par koi asar nahi padega.",
     "\u274C","Haan, cancel karo","dr","Rehne do");
   if(!ok)return;const o=STATE.orders.find(x=>x.id===id);if(!o)return;
@@ -7578,7 +7578,8 @@ async function cancelOrder(id){
     +(_lf.length?(" \u2014 "+fmtN(_lf.reduce(function(a,x){return a+x.pcs},0))
       +" saree parchi se hataye"):""),"ok");
   if(_bs.length)setTimeout(function(){
-    toast(_bs.join(", ")+" abhi kaam par hai \u2014 use floor se wapas lana padega","warn");
+    toast(_bs.join(", ")+" cancel ho gayi \u2014 par maal abhi floor par hai, "
+      +"use wapas lana padega","warn");
   },900);
 }async function reopenOrder(id){
   if(!csCan("cs_clear_lot"))return csDeny("Order ko pending karne ki permission nahi hai");
@@ -15019,6 +15020,7 @@ function csSlipIsBilled(row){
 function csSlipIsDone(row){
   if(!row||!row.slip)return false;
   if(row.slip.csCancelled)return true;      // cancel ho chuki -- floor par nahi
+  if(csOrdCancelled(row))return true;       // order hi mar gaya -- floor par nahi
   if(row.slip.csShortClosed)return true;
   if(row.slip.csStatus==="dispatched")return true;
   if(!row.order)return false;
@@ -15108,8 +15110,24 @@ async function csLinkSlipBill(csId,billId){
   try{renderBills()}catch(e){}
   toast((r.slip.csNo||"")+" \u00b7 "+(b.billNo||"")+(_hindi?" \u091C\u0941\u0921\u093C \u0917\u092F\u093E":" jud gaya"),"ok");
 }
+/* Jis parchi ka ORDER (ya uska lot) cancel ho chuka hai, wo zinda nahi
+   hai -- chahe wo abhi floor par kaam me ho. Haal order se seedha
+   padhte hain, parchi par likhte nahi: order wapas pending hua to
+   parchi apne aap zinda ho jayegi, koi safai nahi karni padegi. */
+function csOrdCancelled(row){
+  try{
+    var o=row&&row.order;if(!o)return false;
+    if(o.status==="cancelled")return true;
+    var k=row.lot&&(row.lot.key!=null?row.lot.key:row.lot);
+    if(k!=null&&o.cancelledLots&&o.cancelledLots[k])return true;
+  }catch(e){}
+  return false;
+}
 function csDisplayStatus(row){
   if(row&&row.slip&&row.slip.csCancelled)return "cancelled";
+  /* Pehle yahan sirf parchi ka apna nishan dekha jata tha. Order mar
+     chuka ho to parchi ka apna nishan kuchh nahi kehta. */
+  if(csOrdCancelled(row))return "cancelled";
   return csSlipIsBilled(row)?"billed":(row.slip.csStatus||"generated");
 }
 // Active slips still moving through godown/floor, honouring "own slips only".
@@ -17134,8 +17152,18 @@ function _ordCancelLotWork(o,lot){
     try{s=csSlipCancelState(o,lot.key,sl)}catch(e){}
     return{sl:sl,s:s};
   });
+  /* Pehle yahan sirf ginti hoti thi aur parchi floor par zinda khadi
+     reh jati thi. Order mar chuka ho to wo parchi bhi mari hui hai --
+     uska kagaz ab kisi kaam ka nahi, aur usko zinda rakhne se uski
+     ginti kabhi pending-parchi me wapas nahi aati, yaani us lot par
+     nayi parchi ban hi nahi sakti. Wahin se parchi miss hoti hai.
+     Maal ka wapas aana alag baat hai -- uski chetavni neeche waisi hi
+     rehti hai. */
   st.filter(function(x){return x.s.why==="midwork"}).forEach(function(x){
     out.busy.push((x.sl.csNo||"")+" ("+csSL(x.s.st)+")");
+    if(_csMarkSlipCancelled(x.sl,"order cancel \u2014 floor se wapas lao")){
+      try{csMirrorPut(o,lot.key,x.sl,false)}catch(e){}
+    }
   });
   st.filter(function(x){return x.s.can}).forEach(function(x){
     if(_csMarkSlipCancelled(x.sl,"order cancel")){
