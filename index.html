@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.451-->
+<!DOCTYPE html><!--ALTV:1.45.452-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.451";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.452";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -5243,6 +5243,9 @@ function renderOrdLeadPick(){
   var _admPick=!!(STATE.user&&STATE.user.role==="admin");
   if(!_admPick)list=list.filter(function(x){
     return x.r<=2||_ordLeadIds.indexOf(x.l.id)>=0});
+  /* Order ki tareekh se BAAD bani lead us order se nahi aa sakti. */
+  var _odD=String(((el("od-d")||{}).value)||today()).slice(0,10);
+  list=list.filter(function(x){return String(x.l.createdAt||"").slice(0,10)<=_odD});
   list.sort(function(a,b){
     return a.r-b.r||String(a.l.followupDate||"").localeCompare(String(b.l.followupDate||""));
   });
@@ -5272,7 +5275,7 @@ function renderOrdLeadPick(){
   };
   var h='<div style="background:var(--Al);border:1.5px solid var(--A);border-radius:11px;padding:10px 11px;margin-top:8px">'
     +'<div style="font-size:11.5px;font-weight:900;color:var(--Ad);margin-bottom:2px">\uD83D\uDCAC Ye order kis inquiry se aaya?</div>'
-    +'<div style="font-size:10.5px;font-weight:600;color:var(--t3);margin-bottom:8px;line-height:1.4">Chuno to wo inquiry is order ke saath band hogi. Inquiry sirf yahin se band hoti hai \u2014 baad me nahi.</div>';
+    +'<div style="font-size:10.5px;font-weight:600;color:var(--t3);margin-bottom:8px;line-height:1.4">Ek inquiry chuno \u2014 wo is order ke saath band hogi. Chunna reh jaye to baad me lead ke andar se joda ja sakta hai.</div>';
   h+=picked.map(function(x){return row(x,true)}).join("");
   h+=show.map(function(x){return row(x,false)}).join("");
   if(!picked.length&&!show.length)h+='<div style="font-size:11px;font-weight:700;color:var(--t3);padding:4px 0">Kuchh nahi mila</div>';
@@ -5282,8 +5285,8 @@ function renderOrdLeadPick(){
   box.innerHTML=h+"</div>";
 }
 function ordLeadToggle(id){
-  var i=_ordLeadIds.indexOf(id);
-  if(i>=0)_ordLeadIds.splice(i,1);else _ordLeadIds.push(id);
+  /* Ek order = ek lead. Doosri chuno to pehli hat jati hai. */
+  _ordLeadIds=(_ordLeadIds.indexOf(id)>=0)?[]:[id];
   renderOrdLeadPick();
 }
 function ordLeadQ(v){
@@ -5301,10 +5304,12 @@ function ordLeadsCommit(cId,ordNo,isNew){
   var o=(STATE.orders||[]).filter(function(x){
     return x&&!x._deleted&&x.custId===cId&&x.orderNo===ordNo})[0];
   if(!o)return 0;
-  var n=0;
-  ids.forEach(function(id){
+  var n=0,_od=String(o.date||today()).slice(0,10);
+  /* Ek order = ek lead: pehli hi li jati hai. */
+  ids.slice(0,1).forEach(function(id){
     var l=_leadById(id);
     if(!l||!_leadIsOpen(l))return;
+    if(String(l.createdAt||"").slice(0,10)>_od)return;   // order se baad bani lead
     if(_leadWinByOrder(l,o,"Order "+(ordNo||"")+" banate waqt chuni gayi"))n++;
   });
   /* Nayi party: customer usi lead se bana tha, isliye uska pehla order
@@ -6616,7 +6621,7 @@ function savePay(){const b=STATE.bills.find(x=>x.id===_payBillId);if(!b)return;c
     return;
   }
   const totalDispatched=_fp.totalBilled;
-  const shouldBeFulfilled=_fp.totalRemaining<=0&&_fp.totalRemainingMtrs<=0.5;if(shouldBeFulfilled&&o.status!=="fulfilled"){o.status="fulfilled";o._ts=_quietTs(o);changed=true}else if(!shouldBeFulfilled&&o.status==="fulfilled"){o.status=totalDispatched>0?"billed":"pending";o._ts=_quietTs(o);changed=true}});STATE.orders.filter(o=>!o._deleted&&o.type!=="open").forEach(o=>{try{if(csSweepOrphanSlips(o))changed=true}catch(e){}});STATE.orders.filter(o=>!o._deleted&&o.type==="open").forEach(o=>{try{if(csSweepOrphanSlips(o))changed=true}catch(e){}if(progRecalcBilled(o))changed=true;const stat=calcProgStats(o);const shouldBeFulfilled=stat.remaining<=0&&stat.pending<=0;if(shouldBeFulfilled&&o.status!=="fulfilled"){o.status="fulfilled";o._ts=_quietTs(o);changed=true}else if(!shouldBeFulfilled&&o.status==="fulfilled"){o.status=stat.billed>0?"billed":"pending";o._ts=_quietTs(o);changed=true}});if(changed)persist()}
+  const shouldBeFulfilled=_fp.totalRemaining<=0&&_fp.totalRemainingMtrs<=0.5;if(shouldBeFulfilled&&o.status!=="fulfilled"){o.status="fulfilled";o._ts=_quietTs(o);changed=true}else if(!shouldBeFulfilled&&o.status==="fulfilled"){o.status=totalDispatched>0?"billed":"pending";o._ts=_quietTs(o);changed=true}});STATE.orders.filter(o=>!o._deleted&&o.type!=="open").forEach(o=>{try{if(csSweepOrphanSlips(o))changed=true}catch(e){}});STATE.orders.filter(o=>!o._deleted&&o.type==="open").forEach(o=>{try{if(csSweepOrphanSlips(o))changed=true}catch(e){}if(progRecalcBilled(o))changed=true;const stat=calcProgStats(o);const shouldBeFulfilled=stat.remaining<=0&&stat.pending<=0;if(shouldBeFulfilled&&o.status!=="fulfilled"){o.status="fulfilled";o._ts=_quietTs(o);changed=true}else if(!shouldBeFulfilled&&o.status==="fulfilled"){o.status=stat.billed>0?"billed":"pending";o._ts=_quietTs(o);changed=true}});/* Saare lot cancel hone par order upar khud "cancelled" ho jata hai -- us se judi lead bhi yahin khulti hai. Doosre phone par delete/cancel sync hokar aaye to bhi yahi pakadta hai. */try{leadOrderReconcile()}catch(e){}if(changed)persist()}
 // ── Pending ka hisaab: har number apne screen se ─────────────────────
 // Ye lot/parchi filter me aata hai ya nahi. Item aur range ek hi lot par
 // milne chahiye -- yahi baat poore app me ek jaisi honi chahiye.
@@ -7794,7 +7799,7 @@ async function deleteOrder(id){if(!hasPerm("delete_entry")){toast("No permission
       "\u{1F9FE}","Theek hai","", " ");
     return;
   }
-  const msg="Order: "+o.orderNo+"\nCustomer: "+o.custName+"\n\nIs order par koi bill nahi hai, toh stock par koi asar nahi padega."+"\n\nThis action cannot be undone.";return new Promise(res=>{const cov=el("cov");el("ci").textContent="?";el("ct").textContent="Delete Order?";el("cm").textContent=msg;const ob=el("cy");ob.textContent="Delete Order";ob.className="cyes dr";cov.classList.add("on");const done=async v=>{cov.classList.remove("on");if(!v){res();return}try{_detachOrderSlips(o)}catch(e){}delete _ordChecked[o.id];o._deleted=true;o._ts=_bumpTs(o);o.status="deleted";persist();renderOrders();renderBills();renderDash();try{csRenderView()}catch(e){}toast("Order "+o.orderNo+" deleted","ok");res()};el("cy").onclick=()=>done(true);el("cn").onclick=()=>done(false);el("cn").textContent="Cancel";el("cn").className="cno"})}/* List ke Cancel par -- pehle dekho ki order me kitne lot hain. Ek ho
+  const msg="Order: "+o.orderNo+"\nCustomer: "+o.custName+"\n\nIs order par koi bill nahi hai, toh stock par koi asar nahi padega."+"\n\nThis action cannot be undone.";return new Promise(res=>{const cov=el("cov");el("ci").textContent="?";el("ct").textContent="Delete Order?";el("cm").textContent=msg;const ob=el("cy");ob.textContent="Delete Order";ob.className="cyes dr";cov.classList.add("on");const done=async v=>{cov.classList.remove("on");if(!v){res();return}try{_detachOrderSlips(o)}catch(e){}delete _ordChecked[o.id];o._deleted=true;o._ts=_bumpTs(o);o.status="deleted";try{leadOrderReconcile()}catch(e){}persist();renderOrders();renderBills();renderDash();try{csRenderView()}catch(e){}toast("Order "+o.orderNo+" deleted","ok");res()};el("cy").onclick=()=>done(true);el("cn").onclick=()=>done(false);el("cn").textContent="Cancel";el("cn").className="cno"})}/* List ke Cancel par -- pehle dekho ki order me kitne lot hain. Ek ho
    to poora order; do ya zyada hon to Neer ko chunne do, taaki ek lot ke
    liye andar na jaana pade. */
 function ordCancelAsk(id){
@@ -7904,6 +7909,7 @@ async function cancelOrder(id){
   o.total=_ordLiveTotal(o);
   try{setTimeout(function(){ordCancelBrokerOffer(o,_bparts,true)},300)}catch(e){}
   o.status="cancelled";o._ts=_bumpTs(o);
+  try{leadOrderReconcile()}catch(e){}
   persist();
   try{autoSyncCloud()}catch(e){}
   try{csRefreshFlowViews()}catch(e){}
@@ -7945,6 +7951,7 @@ async function cancelOrder(id){
   if(o.clearedMtrsByLot)delete o.clearedMtrsByLot;
   o.status=o.type==="open"?"open":"pending";
   o._ts=_bumpTs(o);
+  try{leadOrderReconcile()}catch(e){}
   try{csResyncSlips([o.id])}catch(e){}
   persist();
   try{renderOrders()}catch(e){}try{renderPendingOrders()}catch(e){}try{renderDash()}catch(e){}
@@ -10793,10 +10800,19 @@ function _leadIsOpen(l){
 /* ══ DO HI DARWAZE ═══════════════════════════════════════════════════
    Lead "jeeti" tabhi jab order form se judi ho. Pehle "Order Received"
    sirf ek daawa tha -- paanch alag jagah se, bina kisi order ke. */
+function _ordLive(o){
+  return!!o&&!o._deleted&&o.status!=="cancelled"&&o.status!=="deleted";
+}
 function leadIsLinked(l){
   if(!l)return false;
-  if(l.wonOrdId||l.wonOrdNo)return true;
-  /* Is build se pehle order aane par apne aap band hui lead par number
+  if(l.wonOrdId){
+    var o=(STATE.orders||[]).filter(function(x){return x&&x.id===l.wonOrdId})[0];
+    /* Order phone me abhi aaya hi nahi (sync adhoori) -- jeet maano.
+       Aaya hai aur mar chuka hai -- jeet nahi. */
+    return o?_ordLive(o):true;
+  }
+  if(l.wonOrdNo)return true;
+  /* Is niyam se pehle order aane par apne aap band hui lead par number
      sirf note me likha jata tha -- wo bhi asli jeet hai. */
   return /Order\s+\S+\s+aa gaya/.test(String(l.note||""));
 }
@@ -10807,23 +10823,35 @@ function leadOrdersFor(l){
   if(!l)return[];
   var cid=String(l.customerId||l.custId||"");
   var nm=String(l.name||"").trim().toLowerCase();
-  /* Sirf wo order jo inquiry BANNE KE BAAD ke hain, aur jo kisi aur
-     inquiry se pehle se jude nahi. Pehle yahan hafta bhar purane order
-     bhi aate the aur ek hi order kai inquiry par lag sakta tha. */
+  /* Neer ka niyam: "9th ke pehle ka order link ho hi nahi sakta." Order
+     ki tareekh lead ki tareekh se pehle ki nahi ho sakti. */
   var from=String(l.createdAt||"").slice(0,10);
+  /* Ek order = ek lead. Jo order kisi aur lead se pehle se juda hai wo
+     yahan nahi aata. */
   var used={};
   (STATE.leads||[]).forEach(function(x){
-    if(x&&x.id!==l.id&&x.wonOrdId)used[x.wonOrdId]=1;
+    if(x&&!x._deleted&&x.id!==l.id&&x.wonOrdId)used[x.wonOrdId]=1;
   });
+  /* Salesman sirf APNA order jod sakta hai -- Bhavik ka order Aditya ki
+     lead band na kare. Admin ke liye ye rok nahi. */
+  var u=STATE.user||{},adm=u.role==="admin";
   return(STATE.orders||[]).filter(function(o){
-    if(!o||o._deleted||o.status==="cancelled"||o.status==="deleted")return false;
+    if(!_ordLive(o))return false;
     if(used[o.id])return false;
     var hit=cid?(o.custId===cid)
       :(!!nm&&String(o.custName||"").trim().toLowerCase()===nm);
     if(!hit)return false;
     if(from&&String(o.date||"").slice(0,10)<from)return false;
+    if(!adm&&String(o.salesmanId||"")!==String(u.id||""))return false;
     return true;
-  }).sort(function(a,b){return String(b.date||"").localeCompare(String(a.date||""))});
+  }).sort(function(a,b){return String(a.date||"").localeCompare(String(b.date||""))});
+}
+/* Kaun is lead ko order se jod sakta hai: admin, ya jiske naam lead hai. */
+function leadCanLink(l){
+  var u=STATE.user||{};
+  if(!l)return false;
+  if(u.role==="admin")return true;
+  return!!u.id&&String(l.assignedId||"")===String(u.id);
 }
 function _leadById(id){
   return(STATE.leads||[]).filter(function(x){return x&&x.id===id})[0]||null;
@@ -10837,7 +10865,9 @@ function leadWinPick(id){
      Neer: "koi bhi salesman koi bhi orderform ke sath link kar ke lead
      won bata sakta hai." */
   var adm=!!(STATE.user&&STATE.user.role==="admin");
-  var os=adm?leadOrdersFor(l):[];
+  /* Chunna reh gaya ho to jiske naam lead hai wo khud jod sakta hai --
+     par sirf lead ke BAAD ka, apna, khaali order. */
+  var os=leadCanLink(l)?leadOrdersFor(l):[];
   var d=document.getElementById("m-lead-win");if(d)d.remove();
   d=document.createElement("div");d.id="m-lead-win";
   d.style.cssText="position:fixed;inset:0;z-index:720;background:rgba(0,0,0,.5);"
@@ -10851,15 +10881,22 @@ function leadWinPick(id){
     +'color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:800;cursor:pointer;'
     +'font-family:inherit;margin-bottom:8px">🧾 Order form banao</button>';
   if(os.length){
+    var _ld=String(l.createdAt||"").slice(0,10);
     body+='<div style="font-size:10px;font-weight:900;color:#92400E;letter-spacing:.5px;'
-      +'margin:6px 0 6px">SIRF ADMIN — ORDER BAN CHUKA HAI, CHUNNA REH GAYA THA</div>'
+      +'margin:6px 0 2px">ORDER BAN CHUKA HAI, CHUNNA REH GAYA THA?</div>'
+      +'<div style="font-size:10.5px;color:#92400E;margin-bottom:6px;line-height:1.45">'
+      +'Sirf wo order jo is lead ke baad ('+escHtml(_ld?fmtDate(_ld):"")+') bane'
+      +(adm?'':', aapke apne')+', aur kisi aur lead se jude nahi.</div>'
       +os.slice(0,8).map(function(o){
+        var _gap=0;try{_gap=_ld?Math.max(0,Math.round((Date.parse(String(o.date).slice(0,10)+"T00:00:00")
+          -Date.parse(_ld+"T00:00:00"))/864e5)):0}catch(e){_gap=0}
         return'<button onclick="leadWinGo(\''+id+'\',\''+o.id+'\')" style="display:block;width:100%;'
           +'text-align:left;padding:10px 12px;margin-bottom:6px;background:#FFFBEB;'
           +'border:1.5px solid #FDE68A;border-radius:10px;cursor:pointer;font-family:inherit">'
           +'<span style="font-size:13px;font-weight:900;color:#92400E">'+escHtml(o.orderNo||"")+'</span>'
-          +'<span style="font-size:11.5px;font-weight:700;color:#B45309"> · '+escHtml(fmtDate(o.date))
-          +' · ₹'+fmtN(Math.round(Number(o.total)||0))+'</span></button>';
+          +'<span style="font-size:11.5px;font-weight:700;color:#B45309"> \u00b7 '+escHtml(fmtDate(o.date))
+          +' \u00b7 \u20B9'+fmtN(Math.round(Number(o.total)||0))
+          +' \u00b7 lead ke '+_gap+' din baad</span></button>';
       }).join("");
   }
   d.innerHTML='<div style="background:#fff;border-radius:16px 16px 0 0;width:min(500px,100%);'
@@ -10893,14 +10930,14 @@ function _leadWinByOrder(l,o,note){
   return true;
 }
 function leadWinGo(id,ordId){
-  /* Purane order se jodna sirf admin ka bhool-sudhaar hai. */
-  if(!(STATE.user&&STATE.user.role==="admin")){
-    toast("Ye sirf admin kar sakta hai — order form banate waqt inquiry chuno","er");return;
-  }
   var l=_leadById(id);if(!l)return;
+  if(!leadCanLink(l)){toast("Ye lead aapke naam nahi hai","er");return}
+  /* Niyam yahin dobara jaancha jata hai -- button se bhi koi bina niyam
+     ke order na jod sake. */
   var o=leadOrdersFor(l).filter(function(x){return x.id===ordId})[0];
-  if(!o){toast("Ye order is inquiry se nahi jud sakta","er");return}
-  _leadWinByOrder(l,o,"Order "+(o.orderNo||"")+" se judi (admin ne baad me joda)");
+  if(!o){toast("Ye order is inquiry se nahi jud sakta \u2014 lead se pehle ka, kisi aur ka, ya pehle se juda hua","er");return}
+  _leadWinByOrder(l,o,"Order "+(o.orderNo||"")+" se judi \u2014 "
+    +((STATE.user&&STATE.user.name)||"")+" ne baad me joda");
   try{lsSave("vs_leads",STATE.leads)}catch(e){}
   try{autoSyncCloud()}catch(e){}
   ["m-lead-win","m-qstat"].forEach(function(x){var e=document.getElementById(x);if(e)e.remove()});
@@ -10959,6 +10996,52 @@ function npCloseOnOrder(custId,orderNo){
       note:"Order "+(orderNo||"")+" aane par apne aap"})}catch(e){}
   });
   if(n){try{lsSave("vs_leads",STATE.leads)}catch(e){}}
+  return n;
+}
+/* ══ ORDER MARA TO LEAD PHIR KHULI ════════════════════════════════════
+   Delete, cancel, ya saare lot cancel -- teeno me pehle lead "jeeti"
+   padi rehti thi. Ab ek hi jagah faisla: jis order se lead judi hai wo
+   mar gaya to lead wapas khulti hai; wo order wapas chalu hua to lead
+   phir usi se jud jati hai. Sirf tab jab order ka record phone me ho --
+   sync adhoori ho to kuchh nahi chhedta. */
+function leadOrderReconcile(){
+  var byId={},n=0;
+  (STATE.orders||[]).forEach(function(o){if(o&&o.id)byId[o.id]=o});
+  (STATE.leads||[]).forEach(function(l){
+    if(!l||l._deleted)return;
+    /* 1) judi lead, order mar gaya */
+    if(l.wonOrdId){
+      var o=byId[l.wonOrdId];
+      if(!o||_ordLive(o))return;
+      var how=o._deleted||o.status==="deleted"?"delete":"cancel";
+      var from=String(l.status||"");
+      l.reopenedFromOrdId=o.id;
+      delete l.wonOrdId;delete l.wonOrdNo;delete l.wonDate;
+      if(l.kind==="newparty"){l.status="open";l.nextDate=today()}
+      else{l.status="Follow Up";l.followupDate=today();l.stageChangedAt=today()}
+      l.updatedAt=today();
+      _leadStPush(l,from,l.status,"","Order "+(o.orderNo||"")+" "+how
+        +" hua \u2014 inquiry wapas khuli");
+      l._ts=_bumpTs(l);n++;
+      return;
+    }
+    /* 2) jo order ki wajah se khuli thi, wo order phir chalu */
+    if(l.reopenedFromOrdId){
+      var o2=byId[l.reopenedFromOrdId];
+      var open=(l.kind==="newparty")?l.status==="open":_leadIsOpen(l);
+      if(!o2||!_ordLive(o2)||!open)return;
+      var taken=(STATE.leads||[]).some(function(x){
+        return x&&x.id!==l.id&&!x._deleted&&x.wonOrdId===o2.id});
+      if(taken){delete l.reopenedFromOrdId;l._ts=_bumpTs(l);return}
+      delete l.reopenedFromOrdId;
+      _leadWinByOrder(l,o2,"Order "+(o2.orderNo||"")+" wapas chalu \u2014 inquiry phir judi");
+      n++;
+    }
+  });
+  if(n){
+    try{lsSave("vs_leads",STATE.leads)}catch(e){}
+    try{autoSyncCloud()}catch(e){}
+  }
   return n;
 }
 function leadCloseOnOrder(custId,orderNo){
