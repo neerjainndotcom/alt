@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.454-->
+<!DOCTYPE html><!--ALTV:1.45.456-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.454";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.456";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -4778,7 +4778,78 @@ function mktLive(){
 }
 function mktCountOf(uid){
   if(!uid)return 0;
-  return mktLive().filter(function(m){return m.salesmanId===uid}).length;
+  return mktLive().filter(function(m){return m.salesmanId===uid||m.scId===uid}).length;
+}
+/* ══ MARKET KA SC ═══════════════════════════════════════════════════
+   SC wo staff jiske paas "Sab ka Follow-up (SC)" hai. Market par uska
+   naam scId me. Ek market ka ek SC. */
+function isScUser(u){
+  return !!(u&&!u._deleted&&u.active!==false&&u.role!=="admin"
+    &&u.permissions&&u.permissions.wi_all);
+}
+function scUsers(){return(STATE.users||[]).filter(isScUser)}
+function mktLiveSc(m){
+  if(!m||!m.scId)return null;
+  var u=(STATE.users||[]).filter(function(x){return x&&x.id===m.scId})[0];
+  return isScUser(u)?u:null;
+}
+/* Kisi bhi market par SC laga hai? Nahi to SC ko sab dikhe -- shuru me
+   khaali screen na aaye. */
+function scMarketsOn(){return mktLive().some(function(m){return !!mktLiveSc(m)})}
+/* Ek kaam kis SC ka -- pehle party ka market, na ho to party ke salesman
+   ke market ka SC. */
+/* SC aaj chhutti par? Manzoor chhutti (Tasks > Leave) dekho. */
+function scLeaveToday(u,d){
+  if(!u)return null;d=d||today();
+  return(STATE.staffLeave||[]).filter(function(lv){
+    return lv&&!lv._deleted&&lv.userId===u.id&&(lv.status==="approved"||lv.finalSubstituteId)
+      &&String(lv.fromDate||"")<=d&&String(lv.toDate||"")>=d;
+  })[0]||null;
+}
+/* Chhutti wale SC ki jagah kaun. Chhutti me chuna SC; na ho to akela
+   doosra SC; warna koi nahi. */
+function scStandIn(u,d){
+  var lv=scLeaveToday(u,d);if(!lv)return u;
+  var sid=lv.finalSubstituteId||lv.substituteId||"";
+  var sub=sid?(STATE.users||[]).filter(function(q){return q&&q.id===sid})[0]:null;
+  if(isScUser(sub)&&!scLeaveToday(sub,d))return sub;
+  var rest=scUsers().filter(function(q){return q.id!==u.id&&!scLeaveToday(q,d)});
+  return rest.length===1?rest[0]:null;
+}
+function scOfWork(x){
+  var own=_scOwnerOfWork(x);
+  if(x)x._scFor="";
+  if(!own)return null;
+  var who=scStandIn(own);
+  if(x&&(!who||who.id!==own.id))x._scFor=own.name||"";
+  return who;
+}
+function _scOwnerOfWork(x){
+  if(!x)return null;
+  var mk="";
+  try{mk=_wiParty(x.t,x.id).market||""}catch(e){mk=""}
+  if(!mk){
+    var r=x.ref||{},cid=r.customerId||r.custId||(r.cust&&r.cust.id)||"";
+    var c=cid?(STATE.customers||[]).filter(function(q){return q&&q.id===cid})[0]:null;
+    mk=(c&&c.market)||(r.cust&&r.cust.market)||"";
+  }
+  var ms=mktLive();
+  if(mk){
+    var m=ms.filter(function(q){return String(q.name||"")===String(mk)})[0];
+    /* Market mila to faisla wahi -- uska SC nahi to kisi ka nahi (admin
+       laga dega). Salesman ke doosre market ke SC par chup-chaap mat daalo. */
+    if(m)return mktLiveSc(m);
+  }
+  var wid=x.whoId||"";
+  if(!wid&&x.who){
+    var u=(STATE.users||[]).filter(function(q){return q&&!q._deleted&&q.name===x.who})[0];wid=u?u.id:"";
+  }
+  if(wid){
+    var hit=null;
+    ms.forEach(function(q){if(!hit&&q.salesmanId===wid){var s2=mktLiveSc(q);if(s2)hit=s2}});
+    if(hit)return hit;
+  }
+  return null;
 }
 function mktPartyCount(name){
   return(STATE.customers||[]).filter(function(c){
@@ -4849,10 +4920,11 @@ function usrMarketsOpen(uid){
   var u=(STATE.users||[]).filter(function(x){return x&&x.id===uid})[0];
   if(!u){toast("User nahi mila","er");return}
   var ms=mktLive();
+  var asSc=isScUser(u);
   var d=document.getElementById("m-usr-mkt");if(d)d.remove();
   d=document.createElement("div");d.className="ov";d.id="m-usr-mkt";
   var rows=ms.length?ms.map(function(m){
-    var own=mktLiveOwner(m),mine=!!(own&&own.id===uid);
+    var own=asSc?mktLiveSc(m):mktLiveOwner(m),mine=!!(own&&own.id===uid);
     var n=mktPartyCount(m.name);
     return'<label style="display:flex;align-items:center;gap:10px;padding:10px 4px;'
       +'border-bottom:1px solid var(--br);cursor:pointer">'
@@ -4871,7 +4943,7 @@ function usrMarketsOpen(uid){
   }).join(""):'<div class="emp" style="padding:20px"><h3>Koi market nahi bana</h3></div>';
   d.innerHTML='<div class="sh" style="max-height:88vh;display:flex;flex-direction:column">'
     +'<div style="padding:14px 16px 10px;border-bottom:1px solid var(--br)">'
-    +'<div style="font-weight:900;font-size:15.5px">🏙️ '+escHtml(u.name||"")+' ke market</div>'
+    +'<div style="font-weight:900;font-size:15.5px">🏙️ '+escHtml(u.name||"")+(asSc?' (SC)':'')+' ke market</div>'
     +'<div class="xs ct3" style="font-weight:600;margin-top:3px">Jo dene hain un par tick. '
     +'Jo kisi aur ke paas hai uske aage naam likha hai.</div></div>'
     +'<div style="flex:1;overflow:auto;padding:4px 16px">'+rows+'</div>'
@@ -4889,6 +4961,33 @@ async function usrMarketsSave(uid){
   Array.prototype.forEach.call(document.querySelectorAll("#m-usr-mkt .um-ck"),function(c){
     if(c.checked)ticked[c.value]=1;
   });
+  /* SC ke market: sirf naam lagta hai, party kahin nahi jaati. */
+  if(isScUser(u)){
+    var tk=[],dr=[];
+    mktLive().forEach(function(m){
+      var mn=(m.scId===uid);
+      if(ticked[m.id]&&!mn)tk.push(m);
+      if(!ticked[m.id]&&mn)dr.push(m);
+    });
+    if(!tk.length&&!dr.length){var e0=document.getElementById("m-usr-mkt");if(e0)e0.remove();return toast("Kuchh badla nahi","ok")}
+    var other=tk.filter(function(m){var o=mktLiveSc(m);return o&&o.id!==uid});
+    if(other.length){
+      var ok0=await appConfirm("Ye market kisi aur SC ke paas hain",
+        other.map(function(m){return m.name+"  —  abhi "+(mktLiveSc(m)||{}).name}).join("\n")
+        +"\n\n"+(u.name||"")+" ko de dein?","📞","Haan, de do","ok","Rehne do");
+      if(!ok0)return;
+    }
+    tk.forEach(function(m){m.scId=uid;m.scName=u.name||"";m._ts=_bumpTs(m)});
+    dr.forEach(function(m){m.scId="";m.scName="";m._ts=_bumpTs(m)});
+    _mktPersist();
+    try{actPush({act:"mkt_sc",col:"users",rec:uid,label:(u.name||""),
+      note:tk.length+" market diye"+(dr.length?(", "+dr.length+" hataye"):"")})}catch(e){}
+    var e1=document.getElementById("m-usr-mkt");if(e1)e1.remove();
+    toast((u.name||"")+" (SC): "+tk.length+" market diye"+(dr.length?(", "+dr.length+" hataye"):""),"ok");
+    try{renderUsers()}catch(e){}
+    try{renderMarketMgrList()}catch(e){}
+    return;
+  }
   var take=[],drop=[];
   mktLive().forEach(function(m){
     var mine=(m.salesmanId===uid);
@@ -4998,6 +5097,32 @@ function mktFillBlank(id){
   try{renderCusts()}catch(e){}
   toast(rows.length+" party par "+u.name+" chadh gaya","ok");
 }
+function _mktScOptions(m){
+  var cur=String((m&&m.scId)||""),seen={};
+  var out='<option value=""'+(cur?"":" selected")+'>\u2014 Koi nahi \u2014</option>';
+  scUsers().forEach(function(u){
+    seen[u.id]=1;
+    out+='<option value="'+u.id+'"'+(u.id===cur?" selected":"")+'>'+escHtml(u.name||"")+'</option>';
+  });
+  if(cur&&!seen[cur]){
+    var nm=((STATE.users||[]).filter(function(x){return x&&x.id===cur})[0]||{}).name||m.scName||"?";
+    out+='<option value="'+cur+'" selected>'+escHtml(nm)+' (ab SC nahi)</option>';
+  }
+  return out;
+}
+function mktSetSc(id,uid){
+  if(!(STATE.user&&STATE.user.role==="admin")){toast("Admin only","er");return}
+  var m=(STATE.markets||[]).filter(function(x){return x&&x.id===id})[0];
+  if(!m)return;
+  var u=uid?(STATE.users||[]).filter(function(x){return x&&x.id===uid})[0]:null;
+  if(uid&&!isScUser(u)){toast("Ye SC nahi hai \u2014 user me \"Sab ka Follow-up (SC)\" tick karo","er");renderMarketMgrList();return}
+  m.scId=u?u.id:"";m.scName=u?(u.name||""):"";
+  m._ts=_bumpTs(m);
+  _mktPersist();
+  try{actPush({act:"mkt_sc",col:"markets",rec:m.id,label:m.name||"",note:u?("SC: "+u.name):"SC hataya"})}catch(e){}
+  renderMarketMgrList();
+  toast(u?(m.name+" \u2014 SC ab "+u.name):(m.name+" \u2014 SC hata diya"),"ok");
+}
 function _mktSmOptions(m){
   var cur=String((m&&m.salesmanId)||"");
   var list=[];
@@ -5027,6 +5152,10 @@ function renderMarketMgrList(){const c=el("mkt-mgr-list");if(!c)return;const mar
       +'<label for="mkt-sm-'+m.id+'" style="font-size:11.5px;font-weight:700;display:block;margin-bottom:4px">Ye market kaun sambhalega</label>'
       +'<select class="sel" id="mkt-sm-'+m.id+'" onchange="mktSetSalesman(\''+m.id+'\',this.value)">'
       +_mktSmOptions(m)+'</select></div>'
+      +(scUsers().length||m.scId
+        ?('<div style="margin-top:8px"><label for="mkt-sc-'+m.id+'" style="font-size:11.5px;font-weight:700;display:block;margin-bottom:4px">📞 SC (phone se follow-up)</label>'
+          +'<select class="sel" id="mkt-sc-'+m.id+'" onchange="mktSetSc(\''+m.id+'\',this.value)">'+_mktScOptions(m)+'</select></div>')
+        :"")
       +(m.salesmanId&&blank
         ?('<div style="display:flex;align-items:center;justify-content:space-between;gap:9px;'
           +'flex-wrap:wrap;background:var(--Al);border-radius:9px;padding:8px 10px;margin-top:8px">'
@@ -9265,8 +9394,14 @@ function npReopen(id){
 // wo yahan. Isliye dono system ladte nahi -- yahan se party chalkar star
 // me chadhti hai.
 function bdDayCap(){
+  /* SC phone par hai -- uski ginti alag. */
+  try{if(STATE.user&&STATE.user.role!=="admin"&&hasPerm("wi_all"))return scDayCap()}catch(e){}
   var n=parseInt((STATE.settings||{}).bdDayCap,10);
   return isFinite(n)&&n>0?n:18;
+}
+function scDayCap(){
+  var n=parseInt((STATE.settings||{}).scDayCap,10);
+  return isFinite(n)&&n>0?n:40;
 }
 function bdFirstDays(){
   var a=parseInt((STATE.settings||{}).bdCheck1,10),b=parseInt((STATE.settings||{}).bdCheck2,10);
@@ -9573,6 +9708,11 @@ function workItems(kind){
         score:_bdScore(st),ref:st});
     });
   }
+  // SC: sirf apne market ka. Kisi market par SC na ho to sab (pehle jaisa).
+  if(!adm&&uid===""&&STATE.user&&scMarketsOn()){
+    var _me=STATE.user.id;
+    out=out.filter(function(x){var s3=scOfWork(x);return !!(s3&&s3.id===_me)});
+  }
   // Jiska koi maalik nahi, wo asli kaam ke neeche -- par list me rahe
   out.forEach(function(x){if(!x.who)x.score-=30});
   out.sort(function(a,b){return b.score-a.score});
@@ -9667,7 +9807,7 @@ function bdOutcome(t,id,code,taskId){
     var sx=(STATE.sampleSets||[]).filter(function(x){return x&&x.id===id})[0];
     if(!sx)return;
     if(!Array.isArray(sx.ssLog))sx.ssLog=[];
-    sx.ssLog.push({date:today(),by:(STATE.user&&STATE.user.name)||"",out:code,
+    sx.ssLog.push({date:today(),by:(STATE.user&&STATE.user.name)||"",byId:(STATE.user&&STATE.user.id)||"",out:code,
       note:(BD_OUT.filter(function(x){return x[0]===code})[0]||[])[1]||""});
     sx.ssLog=sx.ssLog.slice(-20);
     if(code==="order"){sx.ssNext="";delete sx.ssWapas}
@@ -10196,6 +10336,12 @@ function _wiCard(x){
     +(p.brkName?_wiLine("\uD83E\uDD1D",p.brkName+(p.brkPhone?" \u00b7 "+p.brkPhone:" \u00b7 number nahi")):"")
     +(x.why?'<div class="xs" style="font-weight:700;color:'+m.c+';margin-top:4px">'+esc(x.why)+"</div>":"")
     +(wiSeeTeam()&&x.who?'<div class="xs ct3" style="font-weight:700;margin-top:4px">\uD83D\uDC64 '+esc(x.who)+"</div>":"")
+    +(function(){if(!wiSeeAll())return"";var on=false;try{on=scMarketsOn()}catch(e){}if(!on)return"";
+      var sc=null;try{sc=scOfWork(x)}catch(e){}
+      var why=x._scFor?(sc?(" ("+x._scFor+" ki jagah)"):(" \u2014 "+x._scFor+" chhutti par")):"";
+      return'<div class="xs" style="font-weight:700;margin-top:2px;color:'+(sc?"#9D174D":"#B45309")+'">\uD83D\uDCDE SC: '+esc((sc?sc.name:"koi nahi")+why)+"</div>"})()
+    +(function(){if(wiSeeAll()||!x._scFor)return"";
+      return'<div class="xs" style="font-weight:800;margin-top:3px;color:#7C3AED">\uD83D\uDD01 '+esc(x._scFor)+' ki jagah (chhutti)</div>'})()
     /* Kitni baar WhatsApp ja chuka hai. Bina iske pata hi nahi chalta ki
        is party ko pehle poochha gaya tha ya nahi -- aur yahi ginti aage
        report me "kitne msg gaye" banegi. */
@@ -10432,7 +10578,7 @@ function _attachLeadCustAutoFill(){window._leadAutoFill={custId:null,values:{},p
     const byName=STATE.customers.find(x=>!x._deleted&&(x.name||"").toLowerCase()===nameV);
     if(byName)return byName;
   }const marketV=(el("lead-market")?.value||"").trim().toLowerCase();const addrV=(el("lead-address")?.value||"").trim().toLowerCase();const st=window._leadAutoFill;const addrIsStale=st&&st.custId&&addrV===(st.values.address||"").trim().toLowerCase();const mktIsStale=st&&st.custId&&marketV===(st.values.market||"").trim().toLowerCase();if(marketV&&addrV.length>=2&&!(addrIsStale&&mktIsStale)){const cands=STATE.customers.filter(x=>!x._deleted&&(x.market||"").trim().toLowerCase()===marketV&&x.address&&(x.address.toLowerCase().includes(addrV)||addrV.includes(x.address.toLowerCase())));if(cands.length===1)return cands[0]}return null}function _onLeadAutoFillTrigger(){if(!window._leadAutoFill)window._leadAutoFill={custId:null,values:{}};const st=window._leadAutoFill;const c=_findMasterCustomerMatch();const newCustId=c?c.id:null;if(newCustId===st.custId)return;let changed=false;[["lead-ph","ph",c?.phone||""],["lead-wa","wa",c?.whatsapp||""],["lead-address","address",c?.address||""],["lead-broker","broker",c?.defaultBrokerId||""]].forEach(([id,key,val])=>{const fEl=el(id);if(!fEl)return;const prevAuto=st.values[key]||"";if(fEl.value===prevAuto&&fEl.value!==val){fEl.value=val;changed=true}});const _smVal=c?.defaultSalesmanId||"";const _smEl=el("lead-sm");if(_smEl&&_smEl.value===(st.values.sm||"")&&_smEl.value!==_smVal){refreshLeadSalesmanDropdown(_smVal);changed=true}const mktEl=el("lead-market");if(mktEl){const prevAutoMkt=st.values.market||"";const newMkt=c?.market||"";if(mktEl.value===prevAutoMkt&&mktEl.value!==newMkt){populateLeadMarketSel(newMkt);changed=true}}if(c&&!el("lead-name").value.trim()){el("lead-name").value=c.name;changed=true}st.custId=newCustId;st.values={ph:c?.phone||"",wa:c?.whatsapp||"",address:c?.address||"",market:c?.market||"",broker:c?.defaultBrokerId||"",sm:c?.defaultSalesmanId||""};try{_leadNameHint()}catch(e){}
-  if(changed)toast(c?"Pulled details from Customer Master: "+c.name:"Cleared auto-filled details \u2014 no matching customer","ok")}function openNewLead(){window._isRecurringLead=false;window._recLeadEditId=null;const sec=document.getElementById("lead-rec-schedule");if(sec)sec.remove();el("lead-id").value="";el("lead-name").value="";el("lead-ph").value="";el("lead-wa").value="";populateLeadMarketSel("");el("lead-address").value="";el("lead-rate").value="";el("lead-interest").value="";el("lead-followup").value=today();el("lead-note").value="";el("lead-src").value="WhatsApp";el("lead-title").textContent="New Lead";el("lead-sub").textContent="";el("lead-convert-btn").style.display="none";buildLeadStatusBtns("Enquiry Received");refreshLeadSalesmanDropdown(STATE.user?.role!=="admin"?STATE.user?.id:"");refreshLeadBrokerDropdown();const dl=el("lead-name-list");if(dl)dl.innerHTML=[...STATE.customers].filter(c=>c&&!c._deleted).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(c=>'<option value="'+escHtml(c.name||"")+'" label="'+escHtml(_leadCustLine(c))+'"></option>').join("");_attachLeadCustAutoFill();showMod("m-lead")}function editLead(id){window._isRecurringLead=false;window._recLeadEditId=null;const sec=document.getElementById("lead-rec-schedule");if(sec)sec.remove();if(!id)return;const lead=STATE.leads?.find(l=>l.id===id);if(!lead)return;const isAdmin=STATE.user?.role==="admin";const isMyLead=lead.assignedId===STATE.user?.id;const adminCreated=lead.createdByRole==="admin"&&!isAdmin;if(!isAdmin&&!hasPerm("leads_edit")&&!isMyLead){toast("No permission to edit this lead","er");return}if(adminCreated){toast("This lead was created by Admin — you can only update its status","er");return}el("lead-id").value=id;el("lead-name").value=lead.name||"";el("lead-ph").value=lead.phone||"";el("lead-wa").value=lead.whatsapp||"";populateLeadMarketSel(lead.market||"");if(el("lead-address"))el("lead-address").value=lead.address||"";if(el("lead-rate"))el("lead-rate").value=lead.rateGiven||"";if(el("lead-interest"))el("lead-interest").value=lead.interest||"";el("lead-followup").value=lead.followupDate||"";if(el("lead-followup-time"))el("lead-followup-time").value=lead.followupTime||"";el("lead-note").value="";el("lead-src").value=lead.source||"WhatsApp";el("lead-title").textContent="Edit Lead";el("lead-sub").textContent=lead.status||"";buildLeadStatusBtns(lead.status||"New");let _smSelId=lead.assignedId;if(_smSelId&&!STATE.users.find(u=>u.id===_smSelId&&!u._deleted&&u.active!==false)&&lead.assignedName){const _smByName=STATE.users.find(u=>u.name===lead.assignedName&&!u._deleted&&u.active!==false);if(_smByName)_smSelId=_smByName.id}refreshLeadSalesmanDropdown(_smSelId);refreshLeadBrokerDropdown(lead.brokerId);const dl=el("lead-name-list");if(dl)dl.innerHTML=[...STATE.customers].filter(c=>c&&!c._deleted).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(c=>'<option value="'+escHtml(c.name||"")+'" label="'+escHtml(_leadCustLine(c))+'"></option>').join("");_attachLeadCustAutoFill();if(lead.status==="Order Received"||lead.status==="Won"||lead.status==="Interested"||lead.status==="Negotiation")el("lead-convert-btn").style.display="";showMod("m-lead")}function buildLeadStatusBtns(active){const c=el("lead-status-btns");if(!c)return;c.innerHTML="";LEAD_STAGES.forEach((s,i)=>{const btn=document.createElement("button");const sc=LEAD_STATUS_COLORS[s]||"#6366F1";const isCur=s===active;const stageNum=i+1;btn.innerHTML='<span style="font-size:10px;opacity:0.7">S'+stageNum+"</span><br><span>"+s+"</span>";btn.dataset.status=s;btn.style.cssText="padding:8px 6px;border-radius:10px;font-size:11px;cursor:pointer;transition:.15s;border:2px solid "+(isCur?sc:"#E5E4F0")+";background:"+(isCur?sc+"22":"white")+";color:"+(isCur?sc:"#9897B0")+";font-weight:"+(isCur?"900":"600")+";text-align:center;line-height:1.4";btn.onclick=()=>{document.querySelectorAll("#lead-status-btns button").forEach(b=>{b.style.border="2px solid #E5E4F0";b.style.background="white";b.style.color="#9897B0";b.style.fontWeight="600";delete b.dataset.active});btn.style.border="2px solid "+sc;btn.style.background=sc+"22";btn.style.color=sc;btn.style.fontWeight="900";btn.dataset.active="1"};if(isCur)btn.dataset.active="1";c.appendChild(btn)})}function getLeadStatus(){const active=[...document.querySelectorAll("#lead-status-btns button")].find(b=>b.dataset.active);return active?.dataset.status||"Enquiry Received"}function getAssignableSalesmen(){const stypes=STATE.settings?.staffTypes||[];const admins=STATE.users.filter(u=>u.active!==false&&!u._deleted&&u.role==="admin");const hasExplicitFlag=STATE.users.some(u=>u.active!==false&&!u._deleted&&u.role!=="admin"&&u.showInLeadAssign===true);const staff=STATE.users.filter(u=>{if(u.active===false||u._deleted||u.role==="admin")return false;if(hasExplicitFlag)return u.showInLeadAssign===true;const userSt=stypes.find(t=>t.id===u.staffTypeId);const stName=(userSt?.name||u.staffType||"").toLowerCase();return stName.includes("salesman")||stName.includes("cre")||stName.includes("sales")||stName.includes("market")});/* Pehle yahan har staff khud ko list me jod leta tha. Wo isliye tha
+  if(changed)toast(c?"Pulled details from Customer Master: "+c.name:"Cleared auto-filled details \u2014 no matching customer","ok")}function openNewLead(){window._isRecurringLead=false;window._recLeadEditId=null;const sec=document.getElementById("lead-rec-schedule");if(sec)sec.remove();el("lead-id").value="";el("lead-name").value="";el("lead-ph").value="";el("lead-wa").value="";populateLeadMarketSel("");el("lead-address").value="";el("lead-rate").value="";el("lead-interest").value="";el("lead-followup").value=today();el("lead-note").value="";el("lead-src").value="WhatsApp";el("lead-title").textContent="New Lead";el("lead-sub").textContent="";el("lead-convert-btn").style.display="none";buildLeadStatusBtns("Enquiry Received");refreshLeadSalesmanDropdown(STATE.user?.role!=="admin"?STATE.user?.id:"");refreshLeadBrokerDropdown();const dl=el("lead-name-list");if(dl)dl.innerHTML=[...STATE.customers].filter(c=>c&&!c._deleted).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(c=>'<option value="'+escHtml(c.name||"")+'" label="'+escHtml(_leadCustLine(c))+'"></option>').join("");_attachLeadCustAutoFill();showMod("m-lead")}function editLead(id){window._isRecurringLead=false;window._recLeadEditId=null;const sec=document.getElementById("lead-rec-schedule");if(sec)sec.remove();if(!id)return;const lead=STATE.leads?.find(l=>l.id===id);if(!lead)return;const isAdmin=STATE.user?.role==="admin";const isMyLead=lead.assignedId===STATE.user?.id;const adminCreated=lead.createdByRole==="admin"&&!isAdmin;if(!isAdmin&&!hasPerm("leads_edit")&&!isMyLead){toast("No permission to edit this lead","er");return}if(adminCreated){toast("This lead was created by Admin — you can only update its status","er");return}el("lead-id").value=id;el("lead-name").value=lead.name||"";el("lead-ph").value=lead.phone||"";el("lead-wa").value=lead.whatsapp||"";populateLeadMarketSel(lead.market||"");if(el("lead-address"))el("lead-address").value=lead.address||"";if(el("lead-rate"))el("lead-rate").value=lead.rateGiven||"";if(el("lead-interest"))el("lead-interest").value=lead.interest||"";el("lead-followup").value=lead.followupDate||"";if(el("lead-followup-time"))el("lead-followup-time").value=lead.followupTime||"";el("lead-note").value="";el("lead-src").value=lead.source||"WhatsApp";el("lead-title").textContent="Edit Lead";el("lead-sub").textContent=lead.status||"";buildLeadStatusBtns(lead.status||"New");let _smSelId=lead.assignedId;if(_smSelId&&!STATE.users.find(u=>u.id===_smSelId&&!u._deleted&&u.active!==false)&&lead.assignedName){const _smByName=STATE.users.find(u=>u.name===lead.assignedName&&!u._deleted&&u.active!==false);if(_smByName)_smSelId=_smByName.id}refreshLeadSalesmanDropdown(_smSelId);refreshLeadBrokerDropdown(lead.brokerId);const dl=el("lead-name-list");if(dl)dl.innerHTML=[...STATE.customers].filter(c=>c&&!c._deleted).sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(c=>'<option value="'+escHtml(c.name||"")+'" label="'+escHtml(_leadCustLine(c))+'"></option>').join("");_attachLeadCustAutoFill();if(lead.status==="Order Received"||lead.status==="Won"||lead.status==="Interested"||lead.status==="Negotiation")el("lead-convert-btn").style.display="";showMod("m-lead")}function buildLeadStatusBtns(active){const c=el("lead-status-btns");if(!c)return;c.innerHTML="";LEAD_STAGES.forEach((s,i)=>{const btn=document.createElement("button");const sc=LEAD_STATUS_COLORS[s]||"#6366F1";const isCur=s===active;const stageNum=i+1;btn.innerHTML='<span style="font-size:10px;opacity:0.7">S'+stageNum+"</span><br><span>"+s+"</span>";btn.dataset.status=s;btn.style.cssText="padding:8px 6px;border-radius:10px;font-size:11px;cursor:pointer;transition:.15s;border:2px solid "+(isCur?sc:"#E5E4F0")+";background:"+(isCur?sc+"22":"white")+";color:"+(isCur?sc:"#9897B0")+";font-weight:"+(isCur?"900":"600")+";text-align:center;line-height:1.4";btn.onclick=()=>{document.querySelectorAll("#lead-status-btns button").forEach(b=>{b.style.border="2px solid #E5E4F0";b.style.background="white";b.style.color="#9897B0";b.style.fontWeight="600";delete b.dataset.active});btn.style.border="2px solid "+sc;btn.style.background=sc+"22";btn.style.color=sc;btn.style.fontWeight="900";btn.dataset.active="1"};if(isCur)btn.dataset.active="1";c.appendChild(btn)})}function getLeadStatus(){const active=[...document.querySelectorAll("#lead-status-btns button")].find(b=>b.dataset.active);return active?.dataset.status||"Enquiry Received"}function getAssignableSalesmen(){const stypes=STATE.settings?.staffTypes||[];const admins=STATE.users.filter(u=>u.active!==false&&!u._deleted&&u.role==="admin");const hasExplicitFlag=STATE.users.some(u=>u.active!==false&&!u._deleted&&u.role!=="admin"&&u.showInLeadAssign===true);const staff=STATE.users.filter(u=>{if(u.active===false||u._deleted||u.role==="admin")return false;if(hasExplicitFlag)return u.showInLeadAssign===true;const userSt=stypes.find(t=>t.id===u.staffTypeId);const stName=(userSt?.name||u.staffType||"").toLowerCase();if(isScUser(u)||stName.includes("coordinator"))return false;return stName.includes("salesman")||stName.includes("cre")||stName.includes("sales")||stName.includes("market")});/* Pehle yahan har staff khud ko list me jod leta tha. Wo isliye tha
    ki kisi ki list khaali na reh jaye -- par iska matlab hua ki admin
    ka tick hatana bekaar ho gaya. Ab tick pehle dekha jata hai. */
 if(STATE.user&&STATE.user.role!=="admin"&&!staff.some(u=>u.id===STATE.user.id)&&!admins.some(u=>u.id===STATE.user.id)){
@@ -11352,6 +11498,17 @@ function _starCloseStale(){
   if(n){try{lsSave("vs_task_instances",STATE.taskInstances)}catch(e){}}
   return n;
 }
+/* SC ko star bhi sirf apne market ke (login wali patti me bhi). */
+function _scStarFilter(list){
+  try{
+    if(!(STATE.user&&STATE.user.role!=="admin"&&hasPerm("wi_all")&&scMarketsOn()))return list;
+    var me=STATE.user.id;
+    return list.filter(function(x){
+      var sc=scOfWork({t:"star",id:x.custId,who:x.assignedUserName,whoId:x.assignedUserId});
+      return !!(sc&&sc.id===me);
+    });
+  }catch(e){return list}
+}
 function starPendingItems(forUserId){
   if(!starCanSee())return[];
   try{checkAndCreateStarFollowupTasks()}catch(e){}
@@ -11367,7 +11524,7 @@ function starPendingItems(forUserId){
       ||(!t.assignedUserId&&!!nm&&String(t.assignedUserName||"").trim().toLowerCase()===nm);
     return true;
   });
-  return rows.map(_starItemFromTask).sort(function(a,b){
+  return _scStarFilter(rows.map(_starItemFromTask)).sort(function(a,b){
     // Sabse zyada der se padi hui party pehle, phir grade.
     if(b.waitingDays!==a.waitingDays)return b.waitingDays-a.waitingDays;
     var go={A:0,B:1,C:2};
@@ -20561,7 +20718,9 @@ function _npCardHtml(){
     +'<input class="inp" type="number" min="1" max="60" id="set-ss-days" value="'
     +esc(ssFollowDays())+'" onchange="npSaveSettings()"></div>'
     +'<div class="fg"><label>Roz ke kitne kaam (Aaj wali list)</label>'
-    +'<input class="inp" type="number" min="5" max="60" id="set-bd-cap" value="'+esc(bdDayCap())+'" onchange="npSaveSettings()"></div>'
+    +'<input class="inp" type="number" min="5" max="60" id="set-bd-cap" value="'+esc(parseInt((STATE.settings||{}).bdDayCap,10)||18)+'" onchange="npSaveSettings()"></div>'
+    +'<div class="fg"><label>SC ke roz ke kitne kaam (phone wale)</label>'
+    +'<input class="inp" type="number" min="5" max="150" id="set-sc-cap" value="'+esc(scDayCap())+'" onchange="npSaveSettings()"></div>'
     +'<div class="fg"><label>Pehle order ke baad pehli baar poochho (din)</label>'
     +'<input class="inp" type="number" min="1" max="60" id="set-bd-c1" value="'+esc(bdFirstDays()[0])+'" onchange="npSaveSettings()"></div>'
     +'<div class="fg"><label>Doosri baar poochho (din)</label>'
@@ -20587,6 +20746,7 @@ function npSaveSettings(){
   var n4=parseInt(g("set-reg-max"),10);
   if(isFinite(n4)&&n4>0)S.regMaxOpen=n4;
   var n5=parseInt(g("set-bd-cap"),10);if(isFinite(n5)&&n5>0)S.bdDayCap=n5;
+  var n5s=parseInt(g("set-sc-cap"),10);if(isFinite(n5s)&&n5s>0)S.scDayCap=n5s;
   var n9=parseInt(g("set-ss-days"),10);if(isFinite(n9)&&n9>0)S.ssFollowDays=n9;
   var cbR=el("set-sm-raise");if(cbR)S.smAutoRaise=!!cbR.checked;
   var n6=parseInt(g("set-bd-c1"),10);if(isFinite(n6)&&n6>0)S.bdCheck1=n6;
