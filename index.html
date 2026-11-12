@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.462-->
+<!DOCTYPE html><!--ALTV:1.45.463-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.462";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.463";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -2182,13 +2182,13 @@ function _askPersist(){
     }).catch(function(){});
   }catch(e){}
 }async function doOTP(){toast("OTP verification requires GAS backend","er")}async function logout(){
-  /* Token bhi saath jaana chahiye, warna agla aadmi usi token se
-     database padh sakta hai. */
-  try{_fbSignOut()}catch(e){}
-  try{actPush({act:"logout",col:"auth",rec:(STATE.user&&STATE.user.id)||"",
-    label:(STATE.user&&STATE.user.name)||""})}catch(e){}
+  /* Token yahan nahi mitate -- Cancel dabane par app chalti rehti thi
+     par cloud ka login gayab, aur phir har bhejna 401. Neeche, sach me
+     logout hone par hi. */
   const ok=await appConfirm("Logout karein?","Aaj ka saara kaam cloud par bhej diya jayega. Agli baar login karte hi naya data aa jayega.","\uD83D\uDC4B","Logout","dr");
   if(!ok)return;
+  try{actPush({act:"logout",col:"auth",rec:(STATE.user&&STATE.user.id)||"",
+    label:(STATE.user&&STATE.user.name)||""})}catch(e){}
   toast("Cloud par bhej rahe hain\u2026","ok");
   var sent=false;
   try{await hybridSaveAll(true)}catch(e){}
@@ -2203,6 +2203,9 @@ function _askPersist(){
       +" Logout kar dein? Data is device par safe rahega aur "+(_w==="net"?"net aate hi":"theek hote hi")+" apne aap chala jayega.","\u26A0\uFE0F","Phir bhi logout","dr");
     if(!keep)return;
   }
+  /* Ab sach me ja rahe hain -- token bhi saath jaye, warna agla aadmi
+     usi token se database padh sakta hai. */
+  try{_fbSignOut()}catch(e){}
   lsSave("vs_session",null);
   STATE.user=null;
   clearInterval(window._syncPoll);
