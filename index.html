@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.461-->
+<!DOCTYPE html><!--ALTV:1.45.462-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.461";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.462";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -14588,9 +14588,10 @@ function _pushErrNote(status,msg,where){
 }
 function _pushWhyText(){
   var w=window._pushWhy||"",e=window._pushErr||{};
+  var code=e.status?(" ["+e.status+(e.msg?(" "+e.msg):"")+(e.where?(" \u00b7 "+e.where):"")+"]"):"";
   if(w==="full")return"Is phone me jagah bhar gayi — logout karke dobara login karo";
-  if(w==="login")return"Cloud login khatam ho gaya — logout karke dobara login karo (kaam phone par safe hai)";
-  if(w==="denied")return"Cloud ne mana kiya ("+(e.status||"")+(e.msg?(": "+e.msg):"")+") — admin ko batao";
+  if(w==="login")return"Cloud login khatam ho gaya — logout karke dobara login karo (kaam phone par safe hai)"+code;
+  if(w==="denied")return"Cloud ne mana kiya"+code+" — admin ko batao";
   if(w==="server")return"Cloud ka jawab "+(e.status||"")+(e.msg?(": "+e.msg):"")+" — thodi der me apne aap";
   return"Net nahi mil raha — net aane par apne aap chala jayega";
 }
@@ -14601,11 +14602,15 @@ async function _pushAuthRetry(obj){
   var r=null;
   try{var c=new AbortController,t=setTimeout(function(){c.abort()},2e4);r=await _fbPatch(obj,c.signal);clearTimeout(t)}catch(e){r=null}
   if(!r||r.ok||(r.status!==401&&r.status!==403))return r;
+  /* Login theek hai ya nahi -- PADH kar dekho. Pehle "_meta/ping" par
+     likhte the; rules me uski ijazat na ho to login theek hote hue bhi
+     "login khatam" bol deta tha. */
   var p=null;
   try{var c2=new AbortController,t2=setTimeout(function(){c2.abort()},15e3);
-    p=await _fbPatch({"_meta/ping":{ts:Date.now(),by:(STATE.user&&STATE.user.name)||""}},c2.signal);clearTimeout(t2)}catch(e){p=null}
+    p=await fetch(FIREBASE_URL+"/_meta.json?shallow=true",{signal:c2.signal});clearTimeout(t2)}catch(e){p=null}
   window._pushPingOk=!!(p&&p.ok);
   window._pushWhy=window._pushPingOk?"denied":(p?"login":"net");
+  try{_tlAdd("login jaanch (padh kar): "+(p?p.status:"net"),0)}catch(e){}
   return r;
 }
 /* Row-war mana: login sahi hai (ping chala) par ye row nahi li. */
@@ -14630,6 +14635,7 @@ function syncStuckOpen(){
   var bad=[];try{bad=window._pushBadList||[]}catch(e){}
   var d=document.getElementById("m-sync-stuck");if(d)d.remove();
   d=document.createElement("div");d.className="ov";d.id="m-sync-stuck";
+  d.style.zIndex="650";              /* "Kaam save nahi hua" patti (400) ke upar */
   var fmt=function(t){try{var x=new Date(t);return x.toLocaleDateString("en-IN")+" "+x.toTimeString().slice(0,5)}catch(e){return""}};
   d.innerHTML='<div class="sh" style="max-height:86vh;display:flex;flex-direction:column">'
     +'<div style="padding:13px 15px 9px;border-bottom:1px solid var(--br)">'
