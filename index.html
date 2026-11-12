@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.460-->
+<!DOCTYPE html><!--ALTV:1.45.461-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.460";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.461";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -1309,7 +1309,7 @@ function _unsyncedCount(){
     if(!FIREBASE_URL)return 0;
     var cut=_dsLastPush(),n=0;
     DELTA_COLLECTIONS.forEach(function(col){
-      (STATE[col]||[]).forEach(function(rec){if(rec&&rec.id&&(rec._ts||0)>cut)n++});
+      (STATE[col]||[]).forEach(function(rec){if(rec&&rec.id&&!rec._pushBad&&(rec._ts||0)>cut)n++});
     });
     return n;
   }catch(e){return 0}
@@ -1321,6 +1321,8 @@ function _renderUnsyncedBar(){
   if(!n){if(bar)bar.remove();return}
   if(!bar){
     bar=document.createElement("div");bar.id="_syncbar";
+    bar.addEventListener("click",function(ev){try{if(ev.target&&ev.target.tagName==="BUTTON")return;syncStuckOpen()}catch(e){}});
+    bar.style.cursor="pointer";
     bar.style.cssText="position:fixed;left:0;right:0;bottom:70px;z-index:400;margin:0 12px;"
       +"background:linear-gradient(135deg,#92400E,#B45309);color:#fff;border-radius:12px;"
       +"padding:9px 12px;display:flex;align-items:center;gap:9px;"
@@ -1337,8 +1339,9 @@ function _renderUnsyncedBar(){
     +'<div style="font-size:10px;opacity:.9;font-weight:600">'
     +(window._syncTrying?((window._pushTotal?(_hindi?"भेज रहे हैं… ":"Bhej rahe hain… ")+window._pushSent+"/"+window._pushTotal
                           :(_hindi?"भेज रहे हैं…":"Bhej rahe hain…")))
-                        :(_hindi?"नेट आने पर अपने आप चला जाएगा — ऐप खुली रखें":"Net aane par apne aap chala jayega — app khuli rakho"))+'</div></div>'
-    +'<button onclick="_syncRetryNow(true)" style="flex-shrink:0;background:rgba(255,255,255,.22);color:#fff;border:none;'
+                        :(window._pushWhy?esc(_pushWhyText()):(_hindi?"नेट आने पर अपने आप चला जाएगा — ऐप खुली रखें":"Net aane par apne aap chala jayega — app khuli rakho")))+'</div>'
+    +'<div style="font-size:9.5px;opacity:.8;font-weight:700;margin-top:1px;text-decoration:underline">Dabao — kya atka hai</div></div>'
+    +'<button onclick="event.stopPropagation();_syncRetryNow(true)" style="flex-shrink:0;background:rgba(255,255,255,.22);color:#fff;border:none;'
     +'border-radius:8px;padding:7px 11px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">'
     +(_hindi?"दोबारा कोशिश":"Dobara koshish")+'</button>';
 }
@@ -2193,7 +2196,11 @@ function _askPersist(){
     try{sent=await pushDeltaToFirebase()}catch(e){sent=false}
   }else{sent=true}
   if(!sent){
-    var keep=await appConfirm("Cloud tak nahi pahunch paaye","Internet nahi mil raha, isliye aaj ka kaam abhi is device par hi hai. Logout kar dein? Data is device par safe rahega aur net aate hi apne aap chala jayega.","\u26A0\uFE0F","Phir bhi logout","dr");
+    var _w=window._pushWhy||"net";
+    var keep=await appConfirm(_w==="net"?"Cloud tak nahi pahunch paaye":"Cloud par nahi gaya",
+      (_w==="net"?"Internet nahi mil raha, isliye aaj ka kaam abhi is device par hi hai."
+        :("Wajah: "+_pushWhyText()+"."))
+      +" Logout kar dein? Data is device par safe rahega aur "+(_w==="net"?"net aate hi":"theek hote hi")+" apne aap chala jayega.","\u26A0\uFE0F","Phir bhi logout","dr");
     if(!keep)return;
   }
   lsSave("vs_session",null);
@@ -14315,6 +14322,9 @@ function _bumpTs(o){
      warna ek kharab row poore din ke har badlav ko bhavishya me
      dhakel deta. */
   try{var prev=(o&&Number(o._ts))||0;if(prev>=t)t=prev+1}catch(e){}
+  /* Naya badlav -- cloud ne pehle mana kiya tha to bhi ek nayi koshish
+     banti hai (rules badal gaye hon). Warna wo row hamesha ke liye ruki. */
+  try{if(o&&o._pushBad)delete o._pushBad}catch(e){}
   if(o)o._ts=t;
   return t;
 }
@@ -14404,7 +14414,8 @@ function _settingsSig(o){
 function _dsSettingsSig(){try{return localStorage.getItem("vs_set_sig")||""}catch(e){return""}}
 function _dsSetSettingsSig(v){try{localStorage.setItem("vs_set_sig",v)}catch(e){}}
 async function pushDeltaToFirebase(full){if(!FIREBASE_URL)return false;
-  if(window._lsFull){setLiveStatus("off");return false}   // nothing it holds can be trusted
+  window._pushWhy="";window._pushPingOk=false;
+  if(window._lsFull)return _pushFail("full");   // nothing it holds can be trusted
   ensureAllTimestamps();const pushStartTs=nowTs();_dsNoteCloudTs(pushStartTs);const cutoff=full?0:_dsLastPush();const updates={};
 /* Bhejne wale rows alag se, purane se naye ke kram me. Ek phone pichhe
    reh jaye to 200-300 rows jama ho jaate the, aur poora dher ek hi
@@ -14423,6 +14434,13 @@ DELTA_COLLECTIONS.forEach(col=>{let touched=false;(STATE[col]||[]).forEach(rec=>
 });if(touched)updates["_meta/"+col]={ts:pushStartTs}});
 try{window._pushBadList=_pushBad}catch(e){}
 
+/* Bhavishya ke samay wali row -- kisi aage chalti ghadi ka likha. Wo har
+   baar jaati thi par nishan kabhi uske aage nahi pahunchta tha, isliye
+   "Kaam save nahi hua (1)" kabhi nahi jaata tha. Aaj ke samay par theek
+   karke bhejo -- cloud par bhi theek ho jayegi. */
+{const _lim=Date.now()+_dsClockOff()+6e5;let _fx=0;
+ _pushRecs.forEach(x=>{if(x.ts>_lim){x.r._ts=pushStartTs;x.ts=pushStartTs;_fx++}});
+ if(_fx){try{_tlAdd("aage ke samay wali "+_fx+" row theek ki",0)}catch(e){}}}
 _pushRecs.sort((a,b)=>a.ts-b.ts);
 const nowIso=(new Date).toISOString();
 const _setOut={...STATE.settings,lastSync:nowIso,appVersion:_verMax(STATE.settings.appVersion,APP_VERSION)};
@@ -14488,8 +14506,9 @@ try{
     let rr=null;
     try{rr=await _fbPatch(part,c1.signal)}catch(e){rr=null}
     clearTimeout(t1);
-    if(!rr){setLiveStatus("off");try{_renderUnsyncedBar()}catch(e){}return false}
-    if(!rr.ok&&rr.status!==400){setLiveStatus("off");try{_renderUnsyncedBar()}catch(e){}return false}
+    if(rr&&(rr.status===401||rr.status===403)){rr=await _pushAuthRetry(part);if(rr&&(rr.status===401||rr.status===403)&&window._pushPingOk)rr={ok:false,status:400}}
+    if(!rr)return _pushFail();
+    if(!rr.ok&&rr.status!==400)return _pushFail();
     if(!rr.ok){
       /* Server ne kaha "ye data hi galat hai" (400). Ek kharab row poore
          tukde ko rok deta hai -- to ek-ek karke bhejo, kharab ko alag
@@ -14503,10 +14522,10 @@ try{
           r2=await _fbPatch(b,c2.signal)}catch(e){r2=null}
         clearTimeout(t2);
         if(r2&&r2.ok){moved++;continue}
-        if(!r2||r2.status!==400){setLiveStatus("off");try{_renderUnsyncedBar()}catch(e){}return false}
+        if(!r2||!_rowRefused(r2))return _pushFail();
         /* Yahi row kharab hai. Nishan laga do taaki aage ka kaam
            ruke nahi, aur admin ko dikha do. */
-        try{one.r._pushBad=true;_pushBad.push({col:one.c,id:String(one.r.id)})}catch(e){}
+        try{one.r._pushBad=true;_pushBad.push({col:one.c,id:String(one.r.id),why:String(r2.status)+" "+((window._pushErr||{}).msg||"")})}catch(e){}
       }
       try{window._pushBadList=_pushBad;lsSave("vs_"+"push_bad",_pushBad)}catch(e){}
       _dsSetLastPush(last.ts);_i=j;_sent=j;
@@ -14524,6 +14543,7 @@ try{
      Ek hi badlav ho to koi tukda banta hi nahi, aur ye ek hi call
      jaati hai; do call nahi. */
   const ctrl=new AbortController;const tid=setTimeout(()=>ctrl.abort(),45e3);let r=await _fbPatch(updates,ctrl.signal);clearTimeout(tid);
+  if(r&&(r.status===401||r.status===403)){r=await _pushAuthRetry(updates);if(r&&(r.status===401||r.status===403)&&window._pushPingOk)r={ok:false,status:400}}
   if(r&&!r.ok&&r.status===400&&_i>0){
     /* Chhote kaam ke saath bhi koi kharab row ho sakta hai -- use
        alag nikaal kar baaki ka kaam bhej do. */
@@ -14535,19 +14555,99 @@ try{
         r3=await _fbPatch(b,c3.signal)}catch(e){r3=null}
       clearTimeout(t3);
       if(r3&&r3.ok)continue;
-      if(!r3||r3.status!==400){setLiveStatus("off");try{_renderUnsyncedBar()}catch(e){}return false}
-      try{one.r._pushBad=true;_pushBad.push({col:one.c,id:String(one.r.id)})}catch(e){}
+      if(!r3||!_rowRefused(r3))return _pushFail();
+      try{one.r._pushBad=true;_pushBad.push({col:one.c,id:String(one.r.id),why:String(r3.status)+" "+((window._pushErr||{}).msg||"")})}catch(e){}
     }
     try{window._pushBadList=_pushBad}catch(e){}
     const c4=new AbortController,t4=setTimeout(()=>c4.abort(),45e3);
     try{r=await _fbPatch(updates,c4.signal)}catch(e){r=null}
     clearTimeout(t4);
   }
+  /* Rows chale gaye par nishan (settings/ginti) mana -- staff ka phone
+     settings ka malik nahi. Use chhod kar baaki bhejo, aur settings ko
+     "bheja hua" maan lo taaki baar-baar na atke. */
+  if(r&&!r.ok&&window._pushPingOk&&(r.status===401||r.status===403||r.status===400)){
+    ["altstock/settings","_meta/settings","_meta/counts"].forEach(function(k){delete updates[k]});
+    Object.keys(updates).forEach(function(k){if(k.indexOf("altstock/counters")===0||k==="_meta/counters")delete updates[k]});
+    _pushRecs.forEach(function(x){delete updates[x.p]});
+    const c5=new AbortController,t5=setTimeout(()=>c5.abort(),3e4);
+    try{r=Object.keys(updates).length?await _fbPatch(updates,c5.signal):{ok:true,status:200}}catch(e){r=null}
+    clearTimeout(t5);
+    if(r&&r.ok){_setChanged=false;_ctrChanged=false;try{_dsSetSettingsSig(_setSig)}catch(e){}
+      try{_tlAdd("settings/ginti cloud ne nahi li — chhod di",0)}catch(e){}}
+  }
   if(r&&r.ok){_dsSetLastPush(pushStartTs);if(_setChanged)_dsSetSettingsSig(_setSig);if(_ctrChanged){const _k2=_ctrCloudGet();Object.keys(_ctrSent).forEach(function(k){// Haath se set ki hui ginti chhoti bhi ho sakti hai -- uspar "bada wala" mat lagao, warna device samajhta rahega ki cloud par abhi bhi badi ginti hai aur aage kuchh bhejega hi nahi.
-if(_ctrSetSent[k]){_k2[k]=_ctrSent[k];return}_k2[k]=Math.max(_k2[k]||0,_ctrSent[k])});_ctrCloudSet(_k2)}STATE.settings.lastSync=nowIso;lsSave("vs_settings",STATE.settings);setLiveStatus("live");return true}setLiveStatus("off");return false}catch(e){setLiveStatus("off");return false}}/* Kaam ko uske khaane ke hisaab se baant kar bhejta hai. Jawab wahi
+if(_ctrSetSent[k]){_k2[k]=_ctrSent[k];return}_k2[k]=Math.max(_k2[k]||0,_ctrSent[k])});_ctrCloudSet(_k2)}STATE.settings.lastSync=nowIso;lsSave("vs_settings",STATE.settings);window._pushWhy="";window._pushErr=null;setLiveStatus("live");try{_renderUnsyncedBar()}catch(e){}return true}return _pushFail()}catch(e){return _pushFail()}}/* Kaam ko uske khaane ke hisaab se baant kar bhejta hai. Jawab wahi
    shakal ka lautata hai jo fetch lautata tha ({ok,status}), taaki
    bulane walon ka hisaab waisa ka waisa chale -- 400 wala kharab-row
    wala intezaam bhi. */
+/* ══ BHEJNA KYUN ATKA -- sach yaad rakho ═══════════════════════════ */
+function _pushErrNote(status,msg,where){
+  try{window._pushErr={at:Date.now(),status:Number(status)||0,msg:String(msg||""),where:String(where||"")};
+    _tlAdd("bhejna atka "+(status||"net")+" "+String(msg||"").slice(0,40),0)}catch(e){}
+}
+function _pushWhyText(){
+  var w=window._pushWhy||"",e=window._pushErr||{};
+  if(w==="full")return"Is phone me jagah bhar gayi — logout karke dobara login karo";
+  if(w==="login")return"Cloud login khatam ho gaya — logout karke dobara login karo (kaam phone par safe hai)";
+  if(w==="denied")return"Cloud ne mana kiya ("+(e.status||"")+(e.msg?(": "+e.msg):"")+") — admin ko batao";
+  if(w==="server")return"Cloud ka jawab "+(e.status||"")+(e.msg?(": "+e.msg):"")+" — thodi der me apne aap";
+  return"Net nahi mil raha — net aane par apne aap chala jayega";
+}
+/* 401/403: pehle token taaza karke ek baar aur; phir bhi mana to ping se
+   dekho ki login sahi hai ya sirf kuchh row ki dikkat. */
+async function _pushAuthRetry(obj){
+  try{if(typeof _fbRefresh==="function")await _fbRefresh()}catch(e){}
+  var r=null;
+  try{var c=new AbortController,t=setTimeout(function(){c.abort()},2e4);r=await _fbPatch(obj,c.signal);clearTimeout(t)}catch(e){r=null}
+  if(!r||r.ok||(r.status!==401&&r.status!==403))return r;
+  var p=null;
+  try{var c2=new AbortController,t2=setTimeout(function(){c2.abort()},15e3);
+    p=await _fbPatch({"_meta/ping":{ts:Date.now(),by:(STATE.user&&STATE.user.name)||""}},c2.signal);clearTimeout(t2)}catch(e){p=null}
+  window._pushPingOk=!!(p&&p.ok);
+  window._pushWhy=window._pushPingOk?"denied":(p?"login":"net");
+  return r;
+}
+/* Row-war mana: login sahi hai (ping chala) par ye row nahi li. */
+function _rowRefused(r){
+  return!!r&&(r.status===400||((r.status===401||r.status===403)&&window._pushPingOk));
+}
+function _pushFail(why){
+  if(why)window._pushWhy=why;
+  else if(!window._pushWhy){var e=window._pushErr||{};
+    window._pushWhy=!e.status?"net":(e.status===401||e.status===403)?"denied":"server"}
+  setLiveStatus("off");try{_renderUnsyncedBar()}catch(e){}
+  return false;
+}
+/* Patti dabao -- kya atka hai. */
+function syncStuckOpen(){
+  var cut=_dsLastPush(),rows=[];
+  var nm=function(r){return r.name||r.custName||r.orderNo||r.billNo||r.voucherNo||r.title||r.username||r.id};
+  try{DELTA_COLLECTIONS.forEach(function(col){(STATE[col]||[]).forEach(function(r){
+    if(r&&r.id&&!r._pushBad&&(r._ts||0)>cut)rows.push({c:col,n:nm(r),ts:r._ts||0});
+  })})}catch(e){}
+  rows.sort(function(a,b){return b.ts-a.ts});
+  var bad=[];try{bad=window._pushBadList||[]}catch(e){}
+  var d=document.getElementById("m-sync-stuck");if(d)d.remove();
+  d=document.createElement("div");d.className="ov";d.id="m-sync-stuck";
+  var fmt=function(t){try{var x=new Date(t);return x.toLocaleDateString("en-IN")+" "+x.toTimeString().slice(0,5)}catch(e){return""}};
+  d.innerHTML='<div class="sh" style="max-height:86vh;display:flex;flex-direction:column">'
+    +'<div style="padding:13px 15px 9px;border-bottom:1px solid var(--br)">'
+    +'<div style="font-weight:900;font-size:15px">⚠️ Cloud par nahi gaya — '+rows.length+'</div>'
+    +'<div class="xs" style="font-weight:700;color:#B45309;margin-top:3px">'+esc(_pushWhyText())+'</div></div>'
+    +'<div style="flex:1;overflow-y:auto;padding:8px 15px">'
+    +(rows.length?rows.slice(0,40).map(function(x){
+      return'<div style="padding:8px 0;border-bottom:1px solid var(--br)"><div style="font-size:13px;font-weight:800">'+esc(String(x.n))+'</div>'
+        +'<div class="xs ct3" style="font-weight:600">'+esc(x.c)+' · '+esc(fmt(x.ts))+(x.ts>Date.now()+6e5?' · <b style="color:#B91C1C">samay aage ka</b>':'')+'</div></div>'}).join("")
+      :'<div class="emp" style="padding:16px"><h3>Kuchh atka nahi</h3></div>')
+    +(bad.length?('<div style="margin-top:10px;font-size:11.5px;font-weight:800;color:#B91C1C">Cloud ne mana kiya — '+bad.length+' (admin dekhe)</div>'
+      +bad.slice(0,20).map(function(b){return'<div class="xs ct3">'+esc(b.col+" / "+b.id)+(b.why?(" — "+esc(b.why)):"")+'</div>'}).join("")):"")
+    +'</div><div style="padding:10px 15px;border-top:1px solid var(--br);display:flex;gap:8px">'
+    +'<button class="btn bgh" onclick="document.getElementById(\'m-sync-stuck\').remove()">Band karo</button>'
+    +'<button class="btn bp bfl" style="flex:1" onclick="document.getElementById(\'m-sync-stuck\').remove();_syncRetryNow(true)">Dobara bhejo</button>'
+    +'</div></div>';
+  _ovOpen(d);
+}
 async function _fbPatch(obj,signal){
   var keys=Object.keys(obj||{});
   if(!keys.length)return{ok:true,status:200};
@@ -14571,10 +14671,15 @@ async function _fbPatch(obj,signal){
     var r=null;
     try{r=await fetch(url,{method:"PATCH",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(grp[top]),signal:signal})}catch(e){return null}
-    if(!r)return null;
+      body:JSON.stringify(grp[top]),signal:signal})}catch(e){_pushErrNote(0,"net",top);return null}
+    if(!r){_pushErrNote(0,"net",top);return null}
     /* Ek hissa atka to baaki bhi bhej dete hain -- par jawab me wahi
        atka hua haal lautate hain, taaki nishan aage na badhe. */
+    if(!r.ok){
+      try{var _bt="";try{_bt=await r.clone().text()}catch(e3){_bt=""}
+        var _m="";try{_m=(JSON.parse(_bt)||{}).error||""}catch(e4){_m=String(_bt||"").slice(0,80)}
+        _pushErrNote(r.status,_m,top)}catch(e2){}
+    }
     if(!r.ok&&!bad)bad=r;
   }
   return bad||{ok:true,status:200};
