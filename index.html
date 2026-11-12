@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.463-->
+<!DOCTYPE html><!--ALTV:1.45.464-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.463";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.464";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -9008,9 +9008,26 @@ function setLeadTabsForRole(){
 var _lpFlt="sab";
 var LP_CHIPS=[["sab","Sab"],["meri","Meri"],["di","\uD83D\uDCDE Meri di hui"],["won","Won"],["lost","Lost"],
   ["sample","\uD83D\uDCE6 Sample"]];
+/* Kis aadmi ko kaunse chip. Salesman ke naam lead hoti hai (Meri), SC
+   lead banata hai (Meri di hui), admin sab dekhta hai (Sab). */
+function lpChipsFor(){
+  var k;
+  try{
+    /* SC/CRE = staff jo sab lead dekhta hai (wo lead bana kar deta hai). */
+    if(STATE.user&&STATE.user.role==="admin")k=["sab","won","lost","sample"];
+    else if(_meSc()||_isAdminOrCRE())k=["di","sab","won","lost","sample"];
+    else k=["meri","won","lost","sample"];
+  }catch(e){k=["sab","won","lost","sample"]}
+  return k.map(function(id){return LP_CHIPS.filter(function(c){return c[0]===id})[0]}).filter(Boolean);
+}
+function lpFltFix(){
+  var cs=lpChipsFor();
+  if(!cs.some(function(c){return c[0]===_lpFlt&&c[0]!=="sample"}))_lpFlt=cs[0][0];
+  return _lpFlt;
+}
 function leadChipsHtml(cur){
   return'<div style="display:flex;gap:6px;flex-wrap:wrap">'
-    +LP_CHIPS.map(function(c){
+    +lpChipsFor().map(function(c){
       var on=(c[0]===cur);
       return'<button onclick="leadPartyFlt(\''+c[0]+'\')" style="background:'
         +(on?"var(--P)":"var(--sf)")+';color:'+(on?"#fff":"var(--t2)")
@@ -10760,6 +10777,7 @@ function _wiDot(n){
 function openDeleteLeadsForStaff(){const groups={};(STATE.leads||[]).filter(l=>!l._deleted).forEach(l=>{const key=l.assignedId||"__unassigned__";if(!groups[key])groups[key]={key:key,name:l.assignedName||"(Unassigned)",count:0,userExists:l.assignedId?!!STATE.users.find(u=>u.id===l.assignedId&&!u._deleted):true};groups[key].count++});const list=Object.values(groups).sort((a,b)=>b.count-a.count);if(!list.length){toast("No leads to clean up","ok");return}el("lc-body").innerHTML='<div class="sm ct3" style="margin-bottom:10px">Select a salesman to permanently delete ALL of their leads. Salesmen whose account no longer exists are flagged.</div>'+list.map(g=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--br)"><div><div class="fw7">'+g.name+(g.userExists?"":' <span style="color:var(--Rd);font-size:11px;font-weight:800">· account deleted</span>')+'</div><div class="sm ct3">'+g.count+' lead(s)</div></div><button class="btn bd bxs" onclick="deleteLeadsForStaff(\''+g.key.replace(/'/g,"\\'")+"')\">🗑 Delete All</button></div>").join("");showMod("m-lead-cleanup")}async function deleteLeadsForStaff(key){const target=(STATE.leads||[]).filter(l=>!l._deleted&&(l.assignedId||"__unassigned__")===key);if(!target.length){toast("No leads found","er");return}const name=target[0].assignedName||"(Unassigned)";const ok=await appConfirm("Delete All Leads for "+name+"?","This permanently deletes "+target.length+" lead(s) assigned to "+name+".\n\n⚠️ This CANNOT be undone.","🗑️","Delete "+target.length+" Leads","dr");if(!ok)return;target.forEach(l=>{l._deleted=true;l._ts=_bumpTs(l)});persist();hideMod("m-lead-cleanup");const activeTp=document.querySelector("#s-leads .tp.on");const t=activeTp?activeTp.id.replace("tp-l",""):"all";if(t==="recurring")renderRecurringLeads();else if(t==="report")renderLeadReport();else renderLeads(t||"all");toast(target.length+" lead(s) deleted for "+name,"ok")}function renderLeads(tab,q){let leads=(STATE.leads||[]).filter(l=>!l._deleted&&l.kind!=="newparty");const today_s=today();const isAC=_isAdminOrCRE();const query=(q||el("lead-search")?.value||"").trim().toLowerCase();if(query){leads=leads.filter(l=>(l.name||"").toLowerCase().includes(query)||(l.phone||"").includes(query)||(l.status||"").toLowerCase().includes(query)||(l.assignedName||"").toLowerCase().includes(query)||(l.market||"").toLowerCase().includes(query)||(l.interest||"").toLowerCase().includes(query)||(l.source||"").toLowerCase().includes(query))}const isWon=s=>s==="Order Received"||s==="Won";const isLost=s=>s==="Not Interested"||s==="Lost"||s==="Closed";const isActive=s=>!isWon(s)&&!isLost(s);if(tab==="mine")leads=leads.filter(l=>l.assignedId===STATE.user?.id&&isActive(l.status));else if(tab==="today")leads=leads.filter(l=>isActive(l.status)&&l.status==="Follow Up");else if(tab==="won")leads=leads.filter(l=>isWon(l.status)||isLost(l.status));else if(tab==="won2")leads=leads.filter(l=>isWon(l.status));else if(tab==="lost")leads=leads.filter(l=>isLost(l.status));else if(tab==="all"){
     /* Pehle "Sab Inquiry" sirf khuli inquiry dikhata tha aur Won/Lost ke
        apne tab the. Ab wahi chhanti chip se hoti hai. */
+    try{lpFltFix()}catch(e){}
     if(_lpFlt==="won")leads=leads.filter(l=>isWon(l.status));
     else if(_lpFlt==="lost")leads=leads.filter(l=>isLost(l.status));
     else if(_lpFlt==="meri")leads=leads.filter(l=>isActive(l.status)&&l.assignedId===STATE.user?.id);
