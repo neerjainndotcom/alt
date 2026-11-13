@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.464-->
+<!DOCTYPE html><!--ALTV:1.45.465-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.464";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.465";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -9903,9 +9903,10 @@ function wiLeadOpen(t,id,taskId){
 }
 /* Lead ban gayi -- ab kaam ki jagah par likho aur party ko list se hatao. */
 function _wiLeadMadeEffects(t,id,taskId,lead,lbl){
+  try{_callOutDone(t,id)}catch(e){}
   var u=STATE.user||{},td=today();
   _leadStPush(lead,"",lead.status||"Enquiry Received","",(lbl||"")+" lead bani \u2014 "+(lead.assignedName||""));
-  var who={byId:u.id||"",by:u.name||"",date:td};
+  var who={byId:u.id||"",by:u.name||"",date:td,at:Date.now()};
   var r=_wiRec(t,id);
   if(t==="bd"&&r){if(!Array.isArray(r.bdLog))r.bdLog=[];r.bdLog.push(Object.assign({out:"lead"},who));r.bdLog=r.bdLog.slice(-30);r.bdLast=td;r._ts=_bumpTs(r)}
   else if(t==="ss"&&r){if(!Array.isArray(r.ssLog))r.ssLog=[];r.ssLog.push(Object.assign({out:"lead",note:"Lead bani"},who));r.ssLog=r.ssLog.slice(-20);r._ts=_bumpTs(r)}
@@ -9964,8 +9965,9 @@ function wiLeadGo(t,id,taskId,noteIn,smIn){
 /* Salesman: "Order mila" = form kholo. Kaam khatam nahi -- asli order/bill
    se hi hatega. */
 function wiOrderForm(t,id){
+  try{_callOutDone(t,id)}catch(e){}
   var r=_wiRec(t,id)||{},u=STATE.user||{},td=today(),cid="";
-  var who={byId:u.id||"",by:u.name||"",date:td};
+  var who={byId:u.id||"",by:u.name||"",date:td,at:Date.now()};
   if(t==="bd"){cid=id;if(!Array.isArray(r.bdLog))r.bdLog=[];r.bdLog.push(Object.assign({out:"order_form"},who));r.bdSnooze=_dAdd(td,3);r.bdLast=td;r._ts=_bumpTs(r)}
   else if(t==="ss"){var c=null;try{c=_wiSsParty(r)}catch(e){}cid=c?c.id:(r.custId||"");if(!Array.isArray(r.ssLog))r.ssLog=[];r.ssLog.push(Object.assign({out:"order_form"},who));r.ssNext=_dAdd(td,3);r._ts=_bumpTs(r)}
   else if(t==="rec"){if(!Array.isArray(r.visitLog))r.visitLog=[];r.visitLog.push({id:uid(),date:td,outcome:"order",note:"Order form",smId:r.smId||"",smName:r.smName||"",loggedById:u.id||"",loggedByName:u.name||"",ts:Date.now()});r._ts=_bumpTs(r)}
@@ -9992,16 +9994,17 @@ function ssStaffWA(id){
 }
 function _wiNeverGo(t,id,why){
   var r=_wiRec(t,id);if(!r)return;
+  try{_callOutDone(t,id)}catch(e){}
   var u=STATE.user||{},td=today();
   if(t==="bd"){
     if(!Array.isArray(r.bdLog))r.bdLog=[];
-    r.bdLog.push({byId:u.id||"",by:u.name||"",date:td,out:"never",why:why});r.bdLog=r.bdLog.slice(-30);
+    r.bdLog.push({byId:u.id||"",by:u.name||"",date:td,out:"never",why:why,at:Date.now()});r.bdLog=r.bdLog.slice(-30);
     r.bdDropped=false;r.bdSnooze=_dAdd(td,wapsiNeverDays());r.bdNext=r.bdSnooze;
     r.bdWhy=why;r.bdWhyFor=r.bdSnooze;r.bdLast=td;r._ts=_bumpTs(r);
     toast((r.name||"")+" \u2014 mana kiya ("+why+"). "+wapsiNeverDays()+" din baad phir poochhenge.","ok");
   }else if(t==="ss"){
     if(!Array.isArray(r.ssLog))r.ssLog=[];
-    r.ssLog.push({date:td,by:u.name||"",byId:u.id||"",out:"never",why:why,note:"Mana kiya \u2014 "+why});r.ssLog=r.ssLog.slice(-20);
+    r.ssLog.push({date:td,by:u.name||"",byId:u.id||"",at:Date.now(),out:"never",why:why,note:"Mana kiya \u2014 "+why});r.ssLog=r.ssLog.slice(-20);
     r.ssWapas=true;r.ssWhy=why;r.ssNext=_dAdd(td,1);r._ts=_bumpTs(r);
     var ph="";try{ph=ssFollowPhone(r)}catch(e){}
     var co=((STATE.settings||{}).companyName)||"";
@@ -10047,7 +10050,7 @@ function bdOutcome(t,id,code,taskId){
     if(!c)return;
     if(!Array.isArray(c.bdLog))c.bdLog=[];
     /* byId bhi likho -- warna ginti naam par nirbhar reh jaati hai. */
-    c.bdLog.push({byId:(STATE.user&&STATE.user.id)||"",date:today(),by:(STATE.user&&STATE.user.name)||"",out:code});
+    c.bdLog.push({byId:(STATE.user&&STATE.user.id)||"",date:today(),by:(STATE.user&&STATE.user.name)||"",out:code,at:Date.now()});
     c.bdLog=c.bdLog.slice(-30);
     c.bdLast=today();
     if(code==="never"){c.bdDropped=true;c.bdNext=""}
@@ -10073,7 +10076,7 @@ function bdOutcome(t,id,code,taskId){
     var sx=(STATE.sampleSets||[]).filter(function(x){return x&&x.id===id})[0];
     if(!sx)return;
     if(!Array.isArray(sx.ssLog))sx.ssLog=[];
-    sx.ssLog.push({date:today(),by:(STATE.user&&STATE.user.name)||"",byId:(STATE.user&&STATE.user.id)||"",out:code,
+    sx.ssLog.push({date:today(),by:(STATE.user&&STATE.user.name)||"",byId:(STATE.user&&STATE.user.id)||"",at:Date.now(),out:code,
       note:(BD_OUT.filter(function(x){return x[0]===code})[0]||[])[1]||""});
     sx.ssLog=sx.ssLog.slice(-20);
     if(code==="order"){sx.ssNext="";delete sx.ssWapas}
@@ -10096,6 +10099,7 @@ function bdOutcome(t,id,code,taskId){
     try{return openStarOutcomePicker(id,taskId)}catch(e){}
     return;
   }
+  try{_callOutDone(t,id)}catch(e){}
   persist();
   try{actPush({act:"bd_touch",col:"customers",rec:id,
     label:(workItems().filter(function(x){return x.id===id})[0]||{}).name||id,
@@ -10253,6 +10257,396 @@ function wiDoneSplit(name,uid){
   });
   return out;
 }
+/* ══ KAAM KA HISAAB (1.45.465) ══════════════════════════════════════
+   Har aadmi ne kab kya kiya -- call, WhatsApp, "Kya hua", lead, order.
+   Naya khaana koi nahi: sab usi party ke record se padha jata hai. Bas 📞
+   dabane ka record (callLog) naya hai -- wo bhi usi record par. */
+var CALL_COL={bd:"customers",star:"customers",inq:"leads","new":"leads",ss:"sampleSets",rec:"recurringLeads"};
+function _ph10(p){return String(p||"").replace(/\D/g,"").slice(-10)}
+function _dIso(ms){if(!ms)return"";var d=new Date(ms);return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
+function _tsOf(v){if(!v)return 0;if(typeof v==="number")return v;var t=Date.parse(v);return isFinite(t)?t:0}
+function _hhmm(ms){if(!ms)return"—";var d=new Date(ms);return("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)}
+function _uidOf(id,name){
+  if(id)return String(id);
+  var n=String(name||"").trim().toLowerCase();if(!n)return"";
+  var u=(STATE.users||[]).filter(function(x){return x&&String(x.name||"").trim().toLowerCase()===n})[0];
+  return u?u.id:"~"+n;
+}
+function _userById(id){return(STATE.users||[]).filter(function(x){return x&&x.id===id})[0]||null}
+/* 📞 ka record -- party ke apne record par, aakhri 20. */
+function callLogPush(t,id,ph,br){
+  var r=(t&&id)?_wiRec(t,id):null;if(!r)return null;
+  if(!Array.isArray(r.callLog))r.callLog=[];
+  var u=STATE.user||{};
+  var e={at:new Date().toISOString(),byId:u.id||"",by:u.name||"",ph:_ph10(ph),to:br?"broker":"party",t:t};
+  r.callLog.push(e);if(r.callLog.length>20)r.callLog=r.callLog.slice(-20);
+  r._ts=_bumpTs(r);
+  try{persist()}catch(e2){}try{autoSyncCloud()}catch(e3){}
+  return e;
+}
+/* Party master ya kahin aur se lagi call -- number se party dhoondho. */
+function _phoneMatch(ph){
+  var p=_ph10(ph);if(p.length<10)return null;
+  var m=function(x){return x&&!x._deleted&&(_ph10(x.phone)===p||_ph10(x.whatsapp)===p||_ph10(x.wa)===p)};
+  var l=(STATE.leads||[]).filter(function(x){return m(x)&&(x.kind==="newparty"?x.status==="open":_leadIsOpen(x))})[0];
+  if(l)return{t:l.kind==="newparty"?"new":"inq",id:l.id};
+  var c=(STATE.customers||[]).filter(m)[0];if(c)return{t:c.isStar?"star":"bd",id:c.id};
+  var r=(STATE.recurringLeads||[]).filter(m)[0];if(r)return{t:"rec",id:r.id};
+  return null;
+}
+/* Pichhli call ka "Kya hua" baaki -- phone me yaad, sirf isi aadmi ka. */
+function _callPendRaw(){try{return JSON.parse(localStorage.getItem("vs_call_pend")||"null")}catch(e){return null}}
+function _callPend(){
+  var p=_callPendRaw();
+  if(!p||!STATE.user||p.uid!==STATE.user.id)return null;
+  if(Date.now()-(p.at||0)>864e5)return null;
+  if(!_wiRec(p.t,p.id))return null;
+  return p;
+}
+function _callPendSet(p){try{if(p)localStorage.setItem("vs_call_pend",JSON.stringify(p));else localStorage.removeItem("vs_call_pend")}catch(e){}}
+function _callOutDone(t,id){
+  var p=_callPendRaw();if(!p)return;
+  if((CALL_COL[p.t]||p.t)===(CALL_COL[t]||t)&&p.id===id)_callPendSet(null);
+}
+function _callAsk(p){
+  if(!p)return;
+  try{
+    var tk="";
+    if(p.t==="star"){var it=workItems("star").filter(function(x){return x.id===p.id})[0];tk=(it&&it.taskId)||""}
+    wiActions(p.t,p.id,tk);
+  }catch(e){}
+}
+(function(){
+  if(window._callHooked)return;window._callHooked=true;
+  document.addEventListener("click",function(ev){
+    var a=null;try{a=ev.target&&ev.target.closest?ev.target.closest('a[href^="tel:"]'):null}catch(e){}
+    if(!a||!STATE.user)return;
+    var t=a.getAttribute("data-wt")||"",id=a.getAttribute("data-wid")||"",br=a.getAttribute("data-wb")==="1";
+    var ph=String(a.getAttribute("href")||"").slice(4);
+    /* Compulsory: pichhli call ka "Kya hua" pehle. Usi party ko dobara
+       lagana theek hai. */
+    var p=_callPend();
+    if(p&&!((CALL_COL[p.t]||p.t)===(CALL_COL[t]||t)&&p.id===id)){
+      ev.preventDefault();ev.stopPropagation();
+      toast("Pehle "+(p.name||"pichhli party")+" ka “Kya hua?” likho","warn");
+      _callAsk(p);return;
+    }
+    var work=!!(t&&id);
+    if(!work){var mt=_phoneMatch(ph);if(mt){t=mt.t;id=mt.id}}
+    var e=null;try{e=callLogPush(t,id,ph,br)}catch(e1){e=null}
+    window._callLive={t:t,id:id,at:Date.now(),eAt:e?e.at:"",hid:false,work:work};
+    if(work){var r=_wiRec(t,id)||{};
+      _callPendSet({uid:STATE.user.id,t:t,id:id,name:r.name||r.custName||"",at:Date.now()})}
+  },true);
+  document.addEventListener("visibilitychange",function(){
+    var c=window._callLive;if(!c)return;
+    if(document.hidden){c.hid=true;c.hidAt=Date.now();return}
+    if(!c.hid)return;
+    window._callLive=null;
+    var away=Math.max(0,Math.round((Date.now()-(c.hidAt||c.at))/1000));
+    try{
+      var r=_wiRec(c.t,c.id);
+      if(r&&Array.isArray(r.callLog)){
+        var e=r.callLog.filter(function(x){return x.at===c.eAt})[0];
+        if(e){e.away=away;r._ts=_bumpTs(r);try{persist()}catch(e2){}try{autoSyncCloud()}catch(e3){}}
+      }
+    }catch(e){}
+    if(c.work){var p=_callPend();if(p)setTimeout(function(){_callAsk(p)},350)}
+  });
+})();
+var WL_LBL={no:"Jawab nahi",later:"Baad me bola",rate:"Rate poocha",never:"Mana kiya",lead:"Lead banayi",
+  order_form:"Order form khola",order:"Order mila",order_soon:"Jaldi order dega",callback:"Call back ki tareekh",
+  cant_reach:"Phone nahi utha",escalate:"Admin ko bheja",order_received:"Order mil gaya",lead_made:"Lead banayi"};
+/* Ek aadmi (uid) ya sabka, from..to (YYYY-MM-DD) ka saara kaam. */
+function workLog(from,to,uid){
+  var out=[];
+  var inR=function(d){d=String(d||"").slice(0,10);return!!d&&d>=from&&d<=to};
+  var add=function(e){if(!inR(e.d))return;if(uid&&e.uid!==uid)return;out.push(e)};
+  var nm=function(r){return(r&&(r.name||r.custName))||""};
+  var calls=function(col,t,r){
+    (r.callLog||[]).forEach(function(c){if(!c)return;var at=_tsOf(c.at);
+      add({k:"call",at:at,d:_dIso(at),uid:_uidOf(c.byId,c.by),who:c.by||"",t:t,col:col,rid:r.id,party:nm(r),
+        res:c.to==="broker"?"Broker ko call":"Call",away:c.away==null?null:Number(c.away),to:c.to||"party"})});
+    (r.waLog||[]).forEach(function(w){if(!w)return;var at=_tsOf(w.at);
+      add({k:"wa",at:at,d:_dIso(at),uid:_uidOf(w.byId,w.by),who:w.by||"",t:t,col:col,rid:r.id,party:nm(r),
+        res:"WhatsApp — "+(w.to||"party")})});
+  };
+  var logs=function(col,t,r,arr,map){
+    (arr||[]).forEach(function(l){
+      if(!l)return;var m=map(l);var code=String(m.code||"");
+      if(!code||code==="lead"||code==="lead_lost")return;     /* lead lead ki taraf se gini jaati hai */
+      var at=_tsOf(m.at);
+      add({k:"out",at:at,d:String(m.d||_dIso(at)).slice(0,10),uid:_uidOf(m.id,m.by),who:m.by||"",t:t,col:col,rid:r.id,
+        party:nm(r),code:code,res:(WL_LBL[code]||code)+(m.why?(" — "+m.why):""),talked:!!WI_TALKED[code],why:m.why||""});
+    });
+  };
+  (STATE.customers||[]).forEach(function(c){
+    if(!c||c._deleted)return;var t=c.isStar?"star":"bd";
+    calls("customers",t,c);
+    logs("customers","bd",c,c.bdLog,function(l){return{code:l.out,at:l.at,d:l.date,id:l.byId,by:l.by,why:l.why}});
+    logs("customers","star",c,c.starLog,function(l){return{code:l.out==="lead_made"?"":l.out,at:l.at,d:l.date,id:l.byId,by:l.by}});
+  });
+  (STATE.sampleSets||[]).forEach(function(q){
+    if(!q||q._deleted)return;
+    var r2={id:q.id,name:(function(){try{return ssWhoName(q)}catch(e){return q.custName||""}})()};
+    calls("sampleSets","ss",Object.assign({},q,{name:r2.name}));
+    logs("sampleSets","ss",r2,q.ssLog,function(l){return{code:l.out,at:l.at,d:l.date,id:l.byId,by:l.by,why:l.why}});
+  });
+  (STATE.recurringLeads||[]).forEach(function(r){
+    if(!r||r._deleted)return;
+    calls("recurringLeads","rec",r);
+    logs("recurringLeads","rec",r,r.visitLog,function(v){return{code:v.outcome,at:v.ts,d:v.date,id:v.loggedById,by:v.loggedByName}});
+  });
+  (STATE.leads||[]).forEach(function(l){
+    if(!l||l._deleted)return;
+    var t=l.kind==="newparty"?"new":"inq";
+    calls("leads",t,l);
+    logs("leads",t,l,l.visits,function(v){return{code:v.outcome,at:v.at,d:v.date,by:v.by}});
+    var madeLogged=false;
+    (l.stHist||[]).forEach(function(h){
+      if(!h)return;var at=_tsOf(h.at),u=_uidOf(h.byId,h.by),note=String(h.note||"");
+      var base={at:at,d:_dIso(at),uid:u,who:h.by||"",t:t,col:"leads",rid:l.id,party:l.name||""};
+      if(/lead bani/.test(note)){
+        madeLogged=true;
+        add(Object.assign(base,{k:"lead",talked:true,src:l.srcKind||"",srcCol:CALL_COL[l.srcKind]||"",srcId:l.srcId||"",
+          res:"Lead banayi → "+(l.assignedName||"")+(l.source?(" · "+l.source):"")}));
+      }else if(/^Aaj ka kaam/.test(note)){
+        var lbl=note.replace(/^Aaj ka kaam\s*—\s*/,"");
+        var code=(BD_OUT.filter(function(o){return o[1]===lbl})[0]||[])[0]||"";
+        add(Object.assign(base,{k:"out",code:code,res:lbl,talked:!!WI_TALKED[code]}));
+      }else if(LEAD_CLOSE_ST.indexOf(String(h.to||""))>=0&&LEAD_CLOSE_ST.indexOf(String(h.from||""))<0){
+        add(Object.assign(base,{k:"out",code:"never",res:"Band: "+h.to+(h.why?(" — "+h.why):""),talked:true,why:h.why||""}));
+      }else if((h.to==="Order Received"||h.to==="won")&&h.from!==h.to){
+        add(Object.assign(base,{k:"won",res:"Jeeti — order "+(l.wonOrdNo||"")}));
+      }
+    });
+    if(!madeLogged&&l.createdBy&&l.createdAt){
+      add({k:"lead",at:0,d:String(l.createdAt).slice(0,10),uid:String(l.createdBy),who:"",t:t,col:"leads",rid:l.id,
+        party:l.name||"",talked:true,res:(l.kind==="newparty"?"Nayi party jodi":"Lead banayi → "+(l.assignedName||""))});
+    }
+  });
+  (STATE.taskInstances||[]).forEach(function(k){
+    if(!k||k._deleted||k.type!=="star-followup"||k.status!=="Done")return;
+    var code=String(k.starOutcome||"");if(!code||code==="lead_made")return;
+    var at=_tsOf(k.completedAt);
+    add({k:"out",at:at,d:String(k.completedDate||_dIso(at)).slice(0,10),uid:_uidOf(k.completedById,k.completedBy),
+      who:k.completedBy||"",t:"star",col:"customers",rid:k.starCustId,party:k.starCustName||"",code:code,
+      res:WL_LBL[code]||code,talked:!!WI_TALKED[code]});
+  });
+  (STATE.orders||[]).forEach(function(o){
+    if(!o||o._deleted||o.status==="cancelled"||o.status==="deleted")return;
+    var rs=0;try{rs=(typeof _ordLiveTotal==="function"?_ordLiveTotal(o):0)||Number(o.total)||0}catch(e){rs=Number(o.total)||0}
+    add({k:"order",at:_tsOf(o.createdAt),d:String(o.date||"").slice(0,10),uid:o.salesmanId||_uidOf("",o.salesmanName),
+      who:o.salesmanName||"",t:"",col:"orders",rid:o.id,party:o.custName||"",rs:rs,
+      res:"Order "+(o.orderNo||"")+" · "+_wiRs(rs)});
+  });
+  out.sort(function(a,b){return(a.at||9e15)-(b.at||9e15)});
+  return out;
+}
+/* 🚩 -- Level 1 pehra. Sirf us din se jab us aadmi ka call-record shuru hua. */
+function _wlFlags(list){
+  var byU={};list.forEach(function(e){(byU[e.uid]=byU[e.uid]||[]).push(e)});
+  Object.keys(byU).forEach(function(u){
+    var L=byU[u];
+    var calls=L.filter(function(e){return e.k==="call"&&e.at});
+    var first=calls.length?Math.min.apply(null,calls.map(function(e){return e.at})):0;
+    L.forEach(function(e){
+      if(!(e.k==="out"||e.k==="lead")||!e.at||!e.talked)return;
+      if(e.k==="lead"&&!e.srcId)return;                  /* bahar se aayi inquiry -- call zaroori nahi */
+      if(!first||e.at<first)return;
+      var col=e.k==="lead"?e.srcCol:e.col,rid=e.k==="lead"?e.srcId:e.rid;
+      var c=calls.filter(function(x){return x.col===col&&x.rid===rid&&x.at<=e.at&&e.at-x.at<=36e5})
+        .sort(function(a,b){return b.at-a.at})[0];
+      if(!c)e.flag="Call ka record nahi";
+      else if(c.away!=null&&c.away<15)e.flag="Sirf "+c.away+" sec bahar";
+    });
+    var os=L.filter(function(e){return e.k==="out"&&e.at}).sort(function(a,b){return a.at-b.at});
+    for(var i=0;i+4<os.length;i++){
+      if(os[i+4].at-os[i].at<=18e4){for(var j=i;j<=i+4;j++)if(!os[j].flag)os[j].flag="Jaldi-jaldi likhe (3 min me 5)"}
+    }
+  });
+  return list;
+}
+function wlSum(list){
+  var s={call:0,wa:0,out:0,talked:0,noTalk:0,lead:0,mana:0,won:0,ord:0,ordRs:0,flag:0,flags:{}};
+  (list||[]).forEach(function(e){
+    if(e.k==="call")s.call++;
+    else if(e.k==="wa")s.wa++;
+    else if(e.k==="lead"){s.lead++;s.out++;s.talked++}
+    else if(e.k==="out"){s.out++;if(e.talked)s.talked++;else s.noTalk++;if(e.code==="never")s.mana++}
+    else if(e.k==="won")s.won++;
+    else if(e.k==="order"){s.ord++;s.ordRs+=e.rs||0}
+    if(e.flag){s.flag++;var f=String(e.flag).replace(/\d+ sec/,"kam sec");s.flags[f]=(s.flags[f]||0)+1}
+  });
+  s.dayFlag=(s.call>=20&&s.talked<=s.call*0.1)?(s.call+" call, sirf "+s.talked+" se baat"):"";
+  if(s.dayFlag)s.flag++;
+  return s;
+}
+function _myDayLink(sm){
+  sm=sm||{};
+  return'<div onclick="openMyDay()" style="margin-top:8px;background:#fff;border-radius:9px;padding:7px 10px;'
+    +'font-size:12px;font-weight:800;color:var(--P);cursor:pointer;display:flex;justify-content:space-between">'
+    +'<span>📋 Aaj kya kiya — '+(sm.out||0)+' kaam'+(sm.flag?(' · <span style="color:#B91C1C">🚩 '+sm.flag+'</span>'):'')+'</span><span>›</span></div>';
+}
+var WL_IC={call:"📞",wa:"📲",lead:"🎯",won:"🏆",order:"🧾"};
+function _wlIcon(e){
+  if(e.k==="call")return e.to==="broker"?"🤝":WL_IC.call;
+  if(e.k==="out")return e.code==="never"?"❌":(e.talked?"💬":"📵");
+  return WL_IC[e.k]||"•";
+}
+function _awayTxt(s){if(s==null)return"";s=Number(s)||0;return s>=60?(Math.floor(s/60)+"m "+(s%60)+"s"):(s+"s")}
+function _wlType(e){try{return(WI_M[e.t]||{}).l||""}catch(x){return""}}
+/* ── 📋 Aaj kya kiya ──────────────────────────────────────────────── */
+function openMyDay(uid,d){
+  var me=(STATE.user&&STATE.user.id)||"";
+  uid=uid||me;d=d||today();
+  if(uid!==me&&!(STATE.user&&STATE.user.role==="admin"))uid=me;   /* staff ko sirf apna */
+  var L=_wlFlags(workLog(d,d,uid)),S=wlSum(L),u=_userById(uid)||{name:""};
+  var dd=document.getElementById("m-myday");if(dd)dd.remove();
+  dd=document.createElement("div");dd.className="ov";dd.id="m-myday";dd.style.zIndex="640";
+  var k=function(v,l,c){return'<div style="flex:1;background:#fff;border:1.5px solid var(--br);border-radius:10px;padding:6px 4px;text-align:center">'
+    +'<div style="font-size:16px;font-weight:900;color:'+(c||"var(--P)")+'">'+v+'</div><div style="font-size:9.5px;font-weight:800;color:var(--t3)">'+l+'</div></div>'};
+  var rows=L.length?L.map(function(e){
+    return'<div style="display:flex;gap:8px;padding:8px 0;border-top:1px solid var(--br);align-items:flex-start">'
+      +'<span style="font-size:10.5px;font-weight:800;color:var(--t3);min-width:36px">'+_hhmm(e.at)+'</span>'
+      +'<span style="width:18px">'+_wlIcon(e)+'</span>'
+      +'<span style="flex:1;line-height:1.35;font-size:12.5px"><b>'+esc(e.party||"")+'</b>'
+      +(_wlType(e)?'<span style="color:var(--t3);font-size:10.5px"> · '+esc(_wlType(e))+'</span>':'')
+      +'<br>'+esc(e.res||"")
+      +(e.k==="call"&&e.away!=null?' <span style="background:#ECFDF5;color:#047857;border-radius:5px;padding:1px 6px;font-size:10px;font-weight:900">'+_awayTxt(e.away)+'</span>':'')
+      +(e.flag?' <span style="background:#FEF2F2;color:#B91C1C;border-radius:5px;padding:1px 6px;font-size:10px;font-weight:900">🚩 '+esc(e.flag)+'</span>':'')
+      +'</span></div>'}).join(""):'<div class="emp" style="padding:18px"><h3>Is din koi kaam nahi likha</h3></div>';
+  dd.innerHTML='<div class="sh" style="max-height:90vh;display:flex;flex-direction:column">'
+    +'<div style="padding:12px 15px 8px;border-bottom:1px solid var(--br)">'
+    +'<div style="display:flex;align-items:center;gap:8px">'
+    +'<button class="btn bgh bsm" onclick="openMyDay(\''+uid+'\',\''+_dAdd(d,-1)+'\')">‹</button>'
+    +'<div style="flex:1;text-align:center"><div style="font-weight:900;font-size:15px">📋 '+esc(u.name||"")+'</div>'
+    +'<div class="xs ct3" style="font-weight:700">'+esc(fmtDate(d))+'</div></div>'
+    +'<button class="btn bgh bsm" onclick="openMyDay(\''+uid+'\',\''+_dAdd(d,1)+'\')"'+(d>=today()?' disabled':'')+'>›</button></div>'
+    +'<div style="display:flex;gap:6px;margin-top:8px">'+k(S.call,"call")+k(S.talked,"baat hui","#059669")+k(S.lead,"lead bani")+k(S.mana,"mana","#B91C1C")+k(S.flag,"🚩",S.flag?"#B91C1C":"var(--t3)")+'</div>'
+    +(S.dayFlag?'<div style="margin-top:6px;background:#FEF2F2;color:#B91C1C;border-radius:8px;padding:6px 9px;font-size:11.5px;font-weight:800">🚩 '+esc(S.dayFlag)+'</div>':'')
+    +'</div><div style="flex:1;overflow-y:auto;padding:4px 15px">'+rows+'</div>'
+    +'<div style="padding:10px 15px;border-top:1px solid var(--br);display:flex;gap:8px">'
+    +'<button class="btn bgh" onclick="document.getElementById(\'m-myday\').remove()">Band</button>'
+    +'<button class="btn bp bfl" style="flex:1" onclick="myDayPrint(\''+uid+'\',\''+d+'\')">📄 PDF</button>'
+    +'<button class="btn bfl" style="flex:1;background:#25D366;color:#fff;border:none" onclick="myDayWa(\''+uid+'\',\''+d+'\')">📲 WhatsApp</button>'
+    +'</div></div>';
+  _ovOpen(dd);
+}
+function _waShareText(msg){try{window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank")}catch(e){}}
+function myDayText(uid,d){
+  var L=_wlFlags(workLog(d,d,uid)),S=wlSum(L),u=_userById(uid)||{name:""};
+  var t="*"+(u.name||"")+" — "+fmtDate(d)+"*\n"
+    +S.call+" call · "+S.talked+" baat hui · "+S.lead+" lead · "+S.mana+" mana"+(S.ord?(" · "+S.ord+" order "+_wiRs(S.ordRs)):"")+"\n";
+  if(S.flag)t+="🚩 "+S.flag+(S.dayFlag?(" ("+S.dayFlag+")"):"")+"\n";
+  t+="\n"+L.filter(function(e){return e.k!=="wa"}).slice(0,60).map(function(e){
+    return _hhmm(e.at)+" "+(e.party||"")+" — "+(e.res||"")+(e.k==="call"&&e.away!=null?(" ("+_awayTxt(e.away)+")"):"")+(e.flag?(" 🚩"+e.flag):"")}).join("\n");
+  return t;
+}
+function myDayWa(uid,d){_waShareText(myDayText(uid,d))}
+function myDayPrint(uid,d){
+  var L=_wlFlags(workLog(d,d,uid)),S=wlSum(L),u=_userById(uid)||{name:""};
+  var h=_pdfHead("Kaam — "+(u.name||""))+_pdfCo();
+  h+='<div class="hdr"><div><div class="doc-lbl">Aaj kya kiya</div><div class="doc-no">'+escHtml(u.name||"")+'</div>'
+    +'<div class="doc-date">'+escHtml(fmtDate(d))+'</div></div></div>';
+  h+='<div class="meta"><div><div class="ml">Call</div><div class="mv">'+S.call+'</div></div><div><div class="ml">Baat hui</div><div class="mv">'+S.talked+'</div></div>'
+    +'<div><div class="ml">Lead bani</div><div class="mv">'+S.lead+'</div></div><div><div class="ml">Mana / 🚩</div><div class="mv">'+S.mana+' / '+S.flag+'</div></div></div>';
+  h+='<table><tr><th>Samay</th><th>Party</th><th>Kaam</th><th>Kya hua</th><th class="tr">Bahar</th><th>🚩</th></tr>'
+    +L.map(function(e){return'<tr><td>'+_hhmm(e.at)+'</td><td>'+escHtml(e.party||"")+'</td><td>'+escHtml(_wlType(e))+'</td><td>'+escHtml(e.res||"")+'</td>'
+      +'<td class="tr">'+(e.k==="call"?_awayTxt(e.away):"")+'</td><td>'+escHtml(e.flag||"")+'</td></tr>'}).join("")+'</table>';
+  h+='<div class="footer">'+escHtml((STATE.settings&&STATE.settings.companyName)||"ALT Stock")+' &nbsp;•&nbsp; Printed: '+(new Date).toLocaleDateString("en-IN")+'</div></body></html>';
+  _printWin(h,"Kaam "+(u.name||""));
+}
+/* ── Day Wrap: SC aur Salesman ────────────────────────────────────── */
+function dwTeamRows(td){
+  var L=_wlFlags(workLog(td,td,""));
+  var by={};L.forEach(function(e){(by[e.uid]=by[e.uid]||[]).push(e)});
+  var due={},isToday=td===today();
+  if(isToday){try{workItems().forEach(function(x){if(x.due&&String(x.due)>td)return;var k=_uidOf("",x.who);if(k)due[k]=(due[k]||0)+1})}catch(e){}}
+  var smIds={};try{(getAssignableSalesmen().staff||[]).forEach(function(x){smIds[x.id]=1})}catch(e){}
+  var sc=[],sm=[];
+  (STATE.users||[]).filter(function(u){return u&&!u._deleted&&u.active!==false}).forEach(function(u){
+    var l=by[u.id]||[],s=wlSum(l);s.u=u;s.left=isToday?(due[u.id]||0):null;s.list=l;
+    if(isScUser(u))sc.push(s);
+    else if(smIds[u.id]||l.length)sm.push(s);
+  });
+  var srt=function(a,b){return String(a.u.name||"").localeCompare(String(b.u.name||""))};
+  sc.sort(srt);sm.sort(srt);
+  return{sc:sc,sm:sm,isToday:isToday};
+}
+function _dwFlagLines(arr){
+  return arr.filter(function(s){return s.flag}).map(function(s){
+    var parts=Object.keys(s.flags).map(function(f){return f+" ("+s.flags[f]+")"});
+    if(s.dayFlag)parts.push(s.dayFlag);
+    return{name:s.u.name||"",txt:parts.join(", "),n:s.flag};
+  });
+}
+function dwTeamHtml(td){
+  var R=dwTeamRows(td);
+  var th='style="font-size:9px;color:var(--t3);text-align:right;font-weight:800;padding:3px 3px;white-space:nowrap"';
+  var td1='style="padding:6px 2px;border-top:1px solid var(--br);font-weight:700;text-align:right"';
+  var nmCell=function(s){return'<td style="padding:6px 2px;border-top:1px solid var(--br);font-weight:900;color:var(--P);cursor:pointer" onclick="openMyDay(\''+s.u.id+'\',\''+td+'\')">'+esc(s.u.name||"")+' ›</td>'};
+  var fl=function(s){return'<td '+td1.replace('font-weight:700','font-weight:900;color:'+(s.flag?'#B91C1C':'var(--t3)'))+'>'+(s.flag||"—")+'</td>'};
+  var h='<div style="background:#fff;border:1.5px solid var(--br);border-radius:14px;padding:12px;margin-bottom:12px">'
+    +'<div style="font-size:11px;font-weight:900;color:#9D174D;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">📞 SC — '+esc(fmtDate(td))+'</div>';
+  h+=R.sc.length?('<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px"><tr><th style="font-size:9.5px;color:var(--t3);text-align:left">Naam</th><th '+th+'>Call</th><th '+th+'>WA</th><th '+th+'>Baat</th><th '+th+'>Na utha</th><th '+th+'>Lead</th><th '+th+'>Mana</th><th '+th+'>🚩</th></tr>'
+    +R.sc.map(function(s){return'<tr>'+nmCell(s)+'<td '+td1+'>'+s.call+'</td><td '+td1+'>'+s.wa+'</td><td '+td1+'>'+s.talked+'</td><td '+td1+'>'+s.noTalk+'</td><td '+td1+'>'+s.lead+'</td><td '+td1+'>'+s.mana+'</td>'+fl(s)+'</tr>'}).join("")+'</table></div>')
+    :'<div class="xs ct3">Koi SC nahi (user me "Sab ka Follow-up (SC)")</div>';
+  h+='</div><div style="background:#fff;border:1.5px solid var(--br);border-radius:14px;padding:12px;margin-bottom:12px">'
+    +'<div style="font-size:11px;font-weight:900;color:#1E40AF;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">🧑‍💼 Salesman</div>';
+  h+=R.sm.length?('<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px"><tr><th style="font-size:9.5px;color:var(--t3);text-align:left">Naam</th><th '+th+'>Kiye</th><th '+th+'>Baaki</th><th '+th+'>Baat</th><th '+th+'>L/J</th><th '+th+'>Order</th><th '+th+'>🚩</th></tr>'
+    +R.sm.map(function(s){return'<tr>'+nmCell(s)+'<td '+td1+'>'+s.out+'</td>'
+      +'<td '+td1.replace('font-weight:700','font-weight:900;color:'+(s.left?'#B91C1C':'#059669'))+'>'+(s.left==null?"—":s.left)+'</td>'
+      +'<td '+td1+'>'+s.talked+'</td><td '+td1+'>'+s.lead+'/'+s.won+'</td><td '+td1+'>'+(s.ord?(s.ord+" · "+_wiRs(s.ordRs)):"—")+'</td>'+fl(s)+'</tr>'}).join("")+'</table></div>')
+    :'<div class="xs ct3">Koi salesman nahi</div>';
+  if(R.isToday)h+='<div class="xs ct3" style="margin-top:5px;font-weight:600">Baaki = aaj ka kaam jo abhi tak nahi hua</div>';
+  var F=_dwFlagLines(R.sc.concat(R.sm));
+  if(F.length)h+='<div style="margin-top:8px;background:#FEF2F2;border-radius:9px;padding:7px 9px;font-size:11.5px;font-weight:700;color:#991B1B;line-height:1.5">'
+    +F.map(function(f){return'🚩 <b>'+esc(f.name)+'</b>: '+esc(f.txt)}).join("<br>")+'</div>';
+  h+='<div style="display:flex;gap:8px;margin-top:9px">'
+    +'<button class="btn bp bfl" style="flex:1" onclick="dwTeamPrint(\''+td+'\')">📄 PDF</button>'
+    +'<button class="btn bfl" style="flex:1;background:#25D366;color:#fff;border:none" onclick="dwTeamWa(\''+td+'\')">📲 WhatsApp</button></div>';
+  return h+'</div>';
+}
+function dwTeamInject(){
+  var c=el("rep-dayend-body");if(!c)return;
+  var td=(el("rep-dayend-date")||{}).value||today();
+  var R=dwTeamRows(td);
+  var any=R.sc.concat(R.sm).some(function(s){return s.list.length});
+  if(any){var em=c.querySelector(".emp");if(em&&/No activity/.test(em.textContent||""))em.remove()}
+  var old=document.getElementById("dw-team");if(old)old.remove();
+  c.insertAdjacentHTML("afterbegin",'<div id="dw-team">'+dwTeamHtml(td)+'</div>');
+}
+function dwTeamText(td){
+  var R=dwTeamRows(td);
+  var t="*Day Wrap — "+fmtDate(td)+"*\n\n*SC*\n";
+  t+=R.sc.length?R.sc.map(function(s){return s.u.name+": "+s.call+" call, "+s.talked+" baat, "+s.lead+" lead, "+s.mana+" mana"+(s.flag?(" 🚩"+s.flag):"")}).join("\n"):"—";
+  t+="\n\n*Salesman*\n";
+  t+=R.sm.length?R.sm.map(function(s){return s.u.name+": "+s.out+" kiye"+(s.left!=null?(", "+s.left+" baaki"):"")+", "+s.talked+" baat, "+s.lead+"/"+s.won+" lead/jeeti"+(s.ord?(", "+s.ord+" order "+_wiRs(s.ordRs)):"")+(s.flag?(" 🚩"+s.flag):"")}).join("\n"):"—";
+  var F=_dwFlagLines(R.sc.concat(R.sm));
+  if(F.length)t+="\n\n🚩 "+F.map(function(f){return f.name+": "+f.txt}).join("\n🚩 ");
+  return t;
+}
+function dwTeamWa(td){_waShareText(dwTeamText(td||today()))}
+function dwTeamPrint(td){
+  td=td||today();var R=dwTeamRows(td);
+  var h=_pdfHead("Day Wrap")+_pdfCo();
+  h+='<div class="hdr"><div><div class="doc-lbl">Day Wrap — Team</div><div class="doc-no">'+escHtml(fmtDate(td))+'</div></div></div>';
+  h+='<h3 style="margin:10px 0 4px">SC</h3><table><tr><th>Naam</th><th class="tr">Call</th><th class="tr">WA</th><th class="tr">Baat</th><th class="tr">Jawab nahi</th><th class="tr">Lead</th><th class="tr">Mana</th><th class="tr">🚩</th></tr>'
+    +R.sc.map(function(s){return'<tr><td>'+escHtml(s.u.name||"")+'</td><td class="tr">'+s.call+'</td><td class="tr">'+s.wa+'</td><td class="tr">'+s.talked+'</td><td class="tr">'+s.noTalk+'</td><td class="tr">'+s.lead+'</td><td class="tr">'+s.mana+'</td><td class="tr">'+(s.flag||"")+'</td></tr>'}).join("")+'</table>';
+  h+='<h3 style="margin:14px 0 4px">Salesman</h3><table><tr><th>Naam</th><th class="tr">Kiye</th><th class="tr">Baaki</th><th class="tr">Baat</th><th class="tr">Lead/Jeeti</th><th class="tr">Order</th><th class="tr">🚩</th></tr>'
+    +R.sm.map(function(s){return'<tr><td>'+escHtml(s.u.name||"")+'</td><td class="tr">'+s.out+'</td><td class="tr">'+(s.left==null?"—":s.left)+'</td><td class="tr">'+s.talked+'</td><td class="tr">'+s.lead+'/'+s.won+'</td><td class="tr">'+(s.ord?(s.ord+" · "+_wiRs(s.ordRs)):"—")+'</td><td class="tr">'+(s.flag||"")+'</td></tr>'}).join("")+'</table>';
+  var F=_dwFlagLines(R.sc.concat(R.sm));
+  if(F.length)h+='<h3 style="margin:14px 0 4px">🚩 Dhyan do</h3>'+F.map(function(f){return'<div style="margin:3px 0"><b>'+escHtml(f.name)+'</b>: '+escHtml(f.txt)+'</div>'}).join("");
+  h+='<div class="footer">'+escHtml((STATE.settings&&STATE.settings.companyName)||"ALT Stock")+' &nbsp;•&nbsp; Printed: '+(new Date).toLocaleDateString("en-IN")+'</div></body></html>';
+  _printWin(h,"Day Wrap "+td);
+}
+(function(){
+  if(typeof renderDayEndReport!=="function"||renderDayEndReport._team)return;
+  var o=renderDayEndReport;
+  renderDayEndReport=function(){var r=o.apply(this,arguments);try{dwTeamInject()}catch(e){}return r};
+  renderDayEndReport._team=true;
+})();
 /* SC ne aaj khud kitne "Kya hua" likhe -- har tarah ke kaam par. */
 function scCallsToday(uid){
   if(!uid)return 0;
@@ -10297,10 +10691,9 @@ function wiScoreHtml(){
     return box('<div style="font-size:10.5px;font-weight:900;color:var(--Pd);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Is mahine \u2014 meri leads</div>'
       +'<div style="display:flex;gap:10px">'
       +cell("banayi",_r.banayi)
-      +cell("salesman ko di",_r.pahunchi,"var(--Pd)")
-      +cell("jeeti",_r.jeeti,"#059669")
-      +cell("aaj ke call",scCallsToday(_u),"#059669")
-      +"</div>");
+      +(function(){var _s=wlSum([]);try{_s=wlSum(_wlFlags(workLog(today(),today(),_u)))}catch(e){}
+        return cell("jeeti",_r.jeeti,"#059669")+cell("aaj call",_s.call,"var(--Pd)")+cell("baat hui",_s.talked,"#059669")
+          +"</div>"+_myDayLink(_s)})());
   }
   if(!adm){
     var uid=(STATE.user&&STATE.user.id)||"",nm=(STATE.user&&STATE.user.name)||"";
@@ -10312,6 +10705,7 @@ function wiScoreHtml(){
       +cell("sale",_wiRs(wiMonthSale(uid)),"var(--Pd)")
       +cell("aaj nipte",wiDoneToday(nm,uid),"#059669")
       +"</div>"
+      +(function(){var _s=wlSum([]);try{_s=wlSum(_wlFlags(workLog(today(),today(),uid)))}catch(e){}return _myDayLink(_s)})()
       +(function(){
         var d=wiDoneSplit(nm,uid);
         if(!d.talked&&!d.noTalk)return"";
@@ -10544,7 +10938,7 @@ function _wiWaBtn(ph,label,bg,fg,t,id,forBroker){
   return'<button onclick="wiWA(\''+t+'\',\''+id+'\','+(forBroker?1:0)+',\''+esc(ph)+'\')" style="background:'+bg+';color:'+fg
     +';border:none;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">'
     +label+"</button>"
-    +'<a href="tel:'+esc(ph)+'" style="background:var(--bg);color:var(--t2);text-decoration:none;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;font-family:inherit">\uD83D\uDCDE</a>';
+    +'<a href="tel:'+esc(ph)+'" data-wt="'+esc(t||"")+'" data-wid="'+esc(id||"")+'" data-wb="'+(forBroker?1:0)+'" style="background:var(--bg);color:var(--t2);text-decoration:none;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;font-family:inherit">\uD83D\uDCDE</a>';
 }
 // Aaj ki list is kram me banti hai. Jo party khud poochh rahi hai wo
 // pehle -- wahan order milne ka chance sabse zyada hai.
@@ -11651,7 +12045,7 @@ function _starEscClose(custId){
   });
   return n;
 }
-function markStarContacted(custId,taskId,outcome,callbackDate){const c=STATE.customers.find(x=>x.id===custId);if(!c)return;const sg=STATE.settings.starGrading||{};const grade=c.starGrade||getStarGrade(custId)||"C";const today_s=today();rmEl("m-star-outcome");rmEl("m-star-callback");const task=(STATE.taskInstances||[]).find(t=>t.id===taskId);if(task){task.status="Done";task.completedDate=today_s;task.completedBy=STATE.user?.name||"";task.completedById=STATE.user?.id||"";task.starOutcome=outcome;task._ts=_bumpTs(task)}c.starLastContactDate=today_s;c.starLastOutcome=outcome;c._ts=_bumpTs(c);if(outcome==="order_soon"){const days=getStarSnoozeDays(grade,sg);const until=new Date(today_s+"T00:00:00");until.setDate(until.getDate()+days);c.starSnoozedUntil=until.toISOString().slice(0,10);toast("✅ Snoozed "+days+" days — next follow-up "+fmtDate(c.starSnoozedUntil),"ok")}else if(outcome==="callback"){c.starSnoozedUntil=callbackDate||"";c.starCallbackDate=callbackDate||"";toast("📅 Callback set for "+fmtDate(callbackDate),"ok")}else if(outcome==="cant_reach"){const days=sg.cantReachDays||3;const until=new Date(today_s+"T00:00:00");until.setDate(until.getDate()+days);c.starSnoozedUntil=until.toISOString().slice(0,10);toast("📵 Will retry in "+days+" days","ok")}else if(outcome==="escalate"){c.starEscalated=true;c.starEscalatedDate=today_s;c.starEscalatedBy=STATE.user?.name||"";
+function markStarContacted(custId,taskId,outcome,callbackDate){const c=STATE.customers.find(x=>x.id===custId);if(!c)return;try{_callOutDone("star",custId)}catch(e){}const sg=STATE.settings.starGrading||{};const grade=c.starGrade||getStarGrade(custId)||"C";const today_s=today();rmEl("m-star-outcome");rmEl("m-star-callback");const task=(STATE.taskInstances||[]).find(t=>t.id===taskId);if(task){task.status="Done";task.completedDate=today_s;task.completedBy=STATE.user?.name||"";task.completedById=STATE.user?.id||"";task.completedAt=new Date().toISOString();task.completedByUserId=STATE.user?.id||"";task.completedByName=STATE.user?.name||"";task.starOutcome=outcome;task._ts=_bumpTs(task)}else{if(!Array.isArray(c.starLog))c.starLog=[];c.starLog.push({at:Date.now(),date:today_s,byId:STATE.user?.id||"",by:STATE.user?.name||"",out:outcome});if(c.starLog.length>20)c.starLog=c.starLog.slice(-20)}c.starLastContactDate=today_s;c.starLastOutcome=outcome;c._ts=_bumpTs(c);if(outcome==="order_soon"){const days=getStarSnoozeDays(grade,sg);const until=new Date(today_s+"T00:00:00");until.setDate(until.getDate()+days);c.starSnoozedUntil=until.toISOString().slice(0,10);toast("✅ Snoozed "+days+" days — next follow-up "+fmtDate(c.starSnoozedUntil),"ok")}else if(outcome==="callback"){c.starSnoozedUntil=callbackDate||"";c.starCallbackDate=callbackDate||"";toast("📅 Callback set for "+fmtDate(callbackDate),"ok")}else if(outcome==="cant_reach"){const days=sg.cantReachDays||3;const until=new Date(today_s+"T00:00:00");until.setDate(until.getDate()+days);c.starSnoozedUntil=until.toISOString().slice(0,10);toast("📵 Will retry in "+days+" days","ok")}else if(outcome==="escalate"){c.starEscalated=true;c.starEscalatedDate=today_s;c.starEscalatedBy=STATE.user?.name||"";
 /* Pehle escalate karne par KUCHH banta hi nahi tha -- wo party sirf
    admin ki list me dikhne lag jaati thi, aur chhoot jaati thi. Ab asli
    task, admin ke naam, Tasks screen par. */
@@ -12993,6 +13387,7 @@ function _leadStPush(l,from,to,why,note){
     try{_leadSrcLost(l,why)}catch(e){}
   }
   if(l.stHist.length>12)l.stHist=l.stHist.slice(-12);
+  try{_callOutDone(l.kind==="newparty"?"new":"inq",l.id)}catch(e){}
 }
 /* Wajah poochhne ka dabba. Status seedha badalne ke bajaye pehle yahan
    rukta hai; "via" yaad rakhta hai ki bulane wala kaun tha, taaki wapas
