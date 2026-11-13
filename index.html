@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.465-->
+<!DOCTYPE html><!--ALTV:1.45.468-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -99,7 +99,7 @@
 </div></div>
 <div class="ov" id="m-market-mgr" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>🏙️ Manage Markets</h3><button class="btn bgh bsm" onclick="hideMod('m-market-mgr')">✕</button></div></div><div class="shb"><div class="fi" style="margin-bottom:12px"><input class="inp" id="mkt-new-name" placeholder="New market name"/><button class="ai" onclick="addMarketMgr()">+ Add</button></div><div id="mkt-mgr-list"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-market-mgr')">Close</button></div></div></div>
 <div class="ov" id="m-star-mgr" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>⭐ Star Customers</h3><p class="sub">Uncheck to remove from Stars</p></div><button class="btn bgh bsm" onclick="hideMod('m-star-mgr')">✕</button></div></div><div class="shb" id="star-mgr-body" style="padding:0"></div><div class="shf" style="flex-wrap:wrap;gap:8px"><button class="btn bgh bfl" onclick="hideMod('m-star-mgr')">Cancel</button><button class="btn bfl" style="background:#F59E0B;color:white;border:none;font-weight:800" onclick="saveStarMgrChanges()">✔ Apply Changes</button></div></div></div>
-<div class="ov" id="m-brk" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Broker</h3><button class="btn bgh bsm" onclick="hideMod('m-brk')">✕</button></div></div><div class="shb"><input type="hidden" id="brk-id"/><div class="fg"><label>Name *</label><input class="inp" id="brk-name"/></div><div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="brk-ph" type="tel"/></div><div class="fg"><label>Commission %</label><input class="inp" id="brk-cm" type="number" step="0.1" placeholder="2.5"/></div></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-brk')">Cancel</button><button class="btn bp bfl" onclick="saveBrk()">Save</button></div>
+<div class="ov" id="m-brk" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Broker</h3><button class="btn bgh bsm" onclick="hideMod('m-brk')">✕</button></div></div><div class="shb"><input type="hidden" id="brk-id"/><div class="fg"><label>Name *</label><input class="inp" id="brk-name"/></div><div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="brk-ph" type="tel"/></div><div class="fg"><label>Commission %</label><input class="inp" id="brk-cm" type="number" step="0.1" placeholder="2.5"/></div></div><div id="brk-fu-box"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-brk')">Cancel</button><button class="btn bp bfl" onclick="saveBrk()">Save</button></div>
 </div></div>
 <div class="ov" id="m-party-detail" onclick="ovc(event,this)"><div class="sh" style="max-height:92vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="pd-title">Details</h3><p class="sub" id="pd-sub"></p></div><button class="btn bgh bsm" onclick="hideMod('m-party-detail')">✕</button></div></div><div class="shb" id="pd-body"></div><div class="shf" style="display:flex;gap:8px"><button class="btn bd bsm" id="pd-delete-btn" style="flex:0 0 auto">🗑️ Delete</button><button class="btn bgh" style="flex:1" onclick="hideMod('m-party-detail')">Close</button><button class="btn bp" style="flex:1" id="pd-edit-btn">✏️ Edit</button></div>
 </div></div>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.465";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.468";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -7759,7 +7759,7 @@ function renderSettingsForm(){const c=el("setbod");if(!c)return;setTimeout(funct
     +'<div class="xs ct3" style="margin-top:9px;line-height:1.5">'
     +'Bahut bada karne par chhoti screen me upar-neeche ke button tang pad sakte hain \u2014 '
     +'tab ek step chhota kar lena.</div>';
-  c.innerHTML=_sg("look","\uD83D\uDD0D","Akshar ka Size",true,_look)+_sg("company","🏢","Company & Billing",true,_company)+_sg("orders","🧾","Orders, Payment & Leads",true,_orders)+_sg("stock","📦","Stock Settings",true,_stock)+_sg("wa","📲","WhatsApp Sharing",true,_waSharing)+_sg("ordpdf","📄","Order Form PDF",false,(()=>{const ps=STATE.settings.orderPdfSettings||{};const cb=(k,lbl,desc,def=true)=>'<label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--s2)"><input type="checkbox" data-k="'+k+'" id="s-opdf-'+k+'" style="width:18px;height:18px;accent-color:#4F46E5;flex-shrink:0"'+((ps[k]===false?false:def)?" checked":"")+' onchange="(STATE.settings.orderPdfSettings=STATE.settings.orderPdfSettings||{})[this.dataset.k]=this.checked"/><div><div class="fw7 sm">'+lbl+'</div><div class="xs ct3">'+desc+"</div></div></label>";return'<div class="xs ct3 mb12">Control what appears on the printed order form PDF. Changes take effect immediately.</div>'+cb("showDate","Order Date","Show the order date")+cb("showColour","Colour / Range column","Show which colour or range each item is")+cb("showRate","Rate per metre","Show the Rs./m rate for each line")+cb("showMetres","Metres calculation","Show pcs x cut = total metres")+cb("showAmount","Amount column","Show the Rs. amount per line item")+cb("showTotal","Total amount","Show the order total at the bottom")+cb("showTerms","Payment terms","Show discount % and net payment days")+cb("showCustGstin","Customer GSTIN","Show the customer GSTIN number")+cb("showCustAddress","Customer Address","Show the customer address")+cb("showBroker","Broker Name","Show the broker name")+cb("showSalesman","Salesman Name","Show the salesman name")+cb("showNotes","Notes / Remarks","Show any notes entered on the order")+cb("showSignature","Signature lines","Show signature lines at the bottom")+cb("showDelivery","Delivery info","Show delivery section (date, method, person)")+cb("showTnC","Terms & Conditions","Show T&C text set below")+'<div style="padding:8px 0 4px"><div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Terms & Conditions Text</div><textarea class="ta" id="s-tnc" rows="4" style="width:100%;box-sizing:border-box;font-size:12px" placeholder="Enter terms & conditions shown on every order PDF (e.g. Goods once sold will not be returned)">'+(STATE.settings.termsConditions||"")+"</textarea><div style=\"font-size:11px;color:#9CA3AF;margin-top:2px\">Shown on PDF when 'Terms & Conditions' toggle is on above</div></div>"})())+_sg("star","⭐","Star Customers",false,_star)+_sg("tasks","📅","Tasks & Holidays",true,_tasks)+_sg("dashboard","📊","Dashboard",false,_dashboard)+_sg("data","🔒","Data & Security",false,_data)+_costSetCard()+_crCardHtml()+_lwCardHtml()+_npCardHtml()+_waTplCardHtml()+_bkCardHtml()+_actCardHtml()+_appHealthHtml()+'<div class="card mt12" style="background:#F9FAFB;text-align:center"><div class="xs ct3">ALT Stock v'+APP_VERSION+" | Build: "+APP_BUILD_DATE+"</div></div>"+'<div style="background:var(--s2);border-radius:14px;padding:16px;margin:16px 0" id="s-rpt-access-wrap"><div style="font-size:13px;font-weight:900;color:var(--tx);margin-bottom:10px">📊 Report Access Per User</div><div style="font-size:11px;color:var(--t3);margin-bottom:10px">Select a user and choose which reports they can see. Admin always sees everything.</div><select class="sel" id="s-rpt-user" style="width:100%;margin-bottom:12px" onchange="renderUserReportAccessUI(this.value)"><option value="">— Select a user —</option>'+(STATE.users||[]).filter(u=>!u._deleted&&u.role!=="admin").map(u=>'<option value="'+u.id+'">'+escHtml(u.name)+' ('+u.role+')</option>').join('')+'</select><div id="s-rpt-checkboxes" style="font-size:12px;color:var(--t3)">Select a user above to configure their report access.</div></div>'+'<div style="display:flex;gap:8px;margin-top:16px">'+'<button class="btn bp" style="flex:1;padding:14px;font-size:14px;font-weight:800" onclick="saveSettings()">💾 Save Settings</button>'+'<button class="btn bd" style="padding:14px 18px;font-size:14px" onclick="logout()">Logout</button>'+"</div>"+'<div style="height:20px"></div>';setTimeout(()=>{const d=el("rec-pin-status");if(d)d.innerHTML=recPinStatusHtml().replace(/<div[^>]*>/,"").replace("</div>","")},0)}function saveSettings(){const nA=parseFloat(el("s-avg")?.value||"90")||90;const sv=id=>el(id)?.value??"";const sn=(id,fallback)=>{const v=el(id);if(!v)return fallback;const t=v.value.trim();return t!==""?t:fallback};const sf=(id,fallback)=>{const v=el(id);if(!v)return fallback;const n=parseFloat(v.value);return isNaN(n)?fallback:n};const si=(id,fallback)=>{const v=el(id);if(!v)return fallback;const n=parseInt(v.value);return isNaN(n)?fallback:n};
+  c.innerHTML=_sg("look","\uD83D\uDD0D","Akshar ka Size",true,_look)+_sg("company","🏢","Company & Billing",true,_company)+_sg("orders","🧾","Orders, Payment & Leads",true,_orders)+_sg("stock","📦","Stock Settings",true,_stock)+_sg("wa","📲","WhatsApp Sharing",true,_waSharing)+_sg("ordpdf","📄","Order Form PDF",false,(()=>{const ps=STATE.settings.orderPdfSettings||{};const cb=(k,lbl,desc,def=true)=>'<label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--s2)"><input type="checkbox" data-k="'+k+'" id="s-opdf-'+k+'" style="width:18px;height:18px;accent-color:#4F46E5;flex-shrink:0"'+((ps[k]===false?false:def)?" checked":"")+' onchange="(STATE.settings.orderPdfSettings=STATE.settings.orderPdfSettings||{})[this.dataset.k]=this.checked"/><div><div class="fw7 sm">'+lbl+'</div><div class="xs ct3">'+desc+"</div></div></label>";return'<div class="xs ct3 mb12">Control what appears on the printed order form PDF. Changes take effect immediately.</div>'+cb("showDate","Order Date","Show the order date")+cb("showColour","Colour / Range column","Show which colour or range each item is")+cb("showRate","Rate per metre","Show the Rs./m rate for each line")+cb("showMetres","Metres calculation","Show pcs x cut = total metres")+cb("showAmount","Amount column","Show the Rs. amount per line item")+cb("showTotal","Total amount","Show the order total at the bottom")+cb("showTerms","Payment terms","Show discount % and net payment days")+cb("showCustGstin","Customer GSTIN","Show the customer GSTIN number")+cb("showCustAddress","Customer Address","Show the customer address")+cb("showBroker","Broker Name","Show the broker name")+cb("showSalesman","Salesman Name","Show the salesman name")+cb("showNotes","Notes / Remarks","Show any notes entered on the order")+cb("showSignature","Signature lines","Show signature lines at the bottom")+cb("showDelivery","Delivery info","Show delivery section (date, method, person)")+cb("showTnC","Terms & Conditions","Show T&C text set below")+'<div style="padding:8px 0 4px"><div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Terms & Conditions Text</div><textarea class="ta" id="s-tnc" rows="4" style="width:100%;box-sizing:border-box;font-size:12px" placeholder="Enter terms & conditions shown on every order PDF (e.g. Goods once sold will not be returned)">'+(STATE.settings.termsConditions||"")+"</textarea><div style=\"font-size:11px;color:#9CA3AF;margin-top:2px\">Shown on PDF when 'Terms & Conditions' toggle is on above</div></div>"})())+_sg("star","⭐","Star Customers",false,_star)+_sg("tasks","📅","Tasks & Holidays",true,_tasks)+_sg("dashboard","📊","Dashboard",false,_dashboard)+_sg("data","🔒","Data & Security",false,_data)+_costSetCard()+_crCardHtml()+_lwCardHtml()+_khCardHtml()+_npCardHtml()+_waTplCardHtml()+_bkCardHtml()+_actCardHtml()+_appHealthHtml()+'<div class="card mt12" style="background:#F9FAFB;text-align:center"><div class="xs ct3">ALT Stock v'+APP_VERSION+" | Build: "+APP_BUILD_DATE+"</div></div>"+'<div style="background:var(--s2);border-radius:14px;padding:16px;margin:16px 0" id="s-rpt-access-wrap"><div style="font-size:13px;font-weight:900;color:var(--tx);margin-bottom:10px">📊 Report Access Per User</div><div style="font-size:11px;color:var(--t3);margin-bottom:10px">Select a user and choose which reports they can see. Admin always sees everything.</div><select class="sel" id="s-rpt-user" style="width:100%;margin-bottom:12px" onchange="renderUserReportAccessUI(this.value)"><option value="">— Select a user —</option>'+(STATE.users||[]).filter(u=>!u._deleted&&u.role!=="admin").map(u=>'<option value="'+u.id+'">'+escHtml(u.name)+' ('+u.role+')</option>').join('')+'</select><div id="s-rpt-checkboxes" style="font-size:12px;color:var(--t3)">Select a user above to configure their report access.</div></div>'+'<div style="display:flex;gap:8px;margin-top:16px">'+'<button class="btn bp" style="flex:1;padding:14px;font-size:14px;font-weight:800" onclick="saveSettings()">💾 Save Settings</button>'+'<button class="btn bd" style="padding:14px 18px;font-size:14px" onclick="logout()">Logout</button>'+"</div>"+'<div style="height:20px"></div>';setTimeout(()=>{const d=el("rec-pin-status");if(d)d.innerHTML=recPinStatusHtml().replace(/<div[^>]*>/,"").replace("</div>","")},0)}function saveSettings(){const nA=parseFloat(el("s-avg")?.value||"90")||90;const sv=id=>el(id)?.value??"";const sn=(id,fallback)=>{const v=el(id);if(!v)return fallback;const t=v.value.trim();return t!==""?t:fallback};const sf=(id,fallback)=>{const v=el(id);if(!v)return fallback;const n=parseFloat(v.value);return isNaN(n)?fallback:n};const si=(id,fallback)=>{const v=el(id);if(!v)return fallback;const n=parseInt(v.value);return isNaN(n)?fallback:n};
 const _ctrBefore={};COUNTER_KEYS.forEach(function(k){_ctrBefore[k]=parseInt(STATE.settings[k])||1});
 STATE.settings={...STATE.settings,companyName:sn("s-cn",STATE.settings.companyName),gstin:(sn("s-gs",STATE.settings.gstin||"")||"").toUpperCase(),address:sn("s-ad",STATE.settings.address),phone:sn("s-ph",STATE.settings.phone),email:sn("s-em",STATE.settings.email),adminWhatsApp:sn("s-wa",STATE.settings.adminWhatsApp)||sn("s-adwa",STATE.settings.adminWhatsApp),orderPrefix:sn("s-pfx",STATE.settings.orderPrefix||"B/"),inwardPrefix:sn("s-inpfx",STATE.settings.inwardPrefix||"GRN/"),nextInwardNo:si("s-inno",STATE.settings.nextInwardNo||1),csPrefix:sn("s-cspfx",STATE.settings.csPrefix||"CS/"),nextCsNo:si("s-csno",STATE.settings.nextCsNo||1),csPadLen:si("s-cspad",STATE.settings.csPadLen||4),billPrefix:sn("s-bpfx",STATE.settings.billPrefix||"INV-"),billStartNo:si("s-bsno",STATE.settings.billStartNo||1),billPadLen:si("s-bpad",STATE.settings.billPadLen||4),discount:sf("s-disc",STATE.settings.discount),discountDays:si("s-dd",STATE.settings.discountDays),nettDays:si("s-nd",STATE.settings.nettDays),avgMtrPerTaka:nA,avgMtrPerTP:sf("s-avgtp",STATE.settings.avgMtrPerTP),autoDeleteCompletedDays:si("s-autodel",STATE.settings.autoDeleteCompletedDays||0),autoDeleteWonLeadsDays:si("s-del-won",STATE.settings.autoDeleteWonLeadsDays||0),autoDeleteLostLeadsDays:si("s-del-lost",STATE.settings.autoDeleteLostLeadsDays||0),waTemplateSalesman:sv("s-wa-tpl-sm"),waTemplateBroker:sv("s-wa-tpl-brk"),waPartyTpl:sv("s-wa-party-tpl"),waBrokerPartyTpl:sv("s-wa-party-brk"),waNewLeadBrokerTpl:sv("s-wa-tpl-newlead-brk"),exchWaTplPending:sv("s-ex-tpl-pending"),exchWaTplUnderProcess:sv("s-ex-tpl-uprocess"),exchWaTplReady:sv("s-ex-tpl-ready"),exchWaTplCollected:sv("s-ex-tpl-collected"),mixedSareesCut:sf("s-mixcut",STATE.settings.mixedSareesCut||6),taskRefreshTime:sv("s-trt")||"09:30",officeTimezone:sv("s-otz")||"Asia/Calcutta",starFollowupDaysDefault:si("s-star-days",STATE.settings.starFollowupDaysDefault||4),starWaTemplate:sv("s-star-wa-tpl"),starGrading:{thresholdA:el("s-sg-thresh-a")?.value.trim()!==""?parseInt(el("s-sg-thresh-a").value)||0:undefined,thresholdB:el("s-sg-thresh-b")?.value.trim()!==""?parseInt(el("s-sg-thresh-b").value)||0:undefined,thresholdC:el("s-sg-thresh-c")?.value.trim()!==""?parseInt(el("s-sg-thresh-c").value)||0:undefined,followupDaysA:el("s-sg-days-a")?.value.trim()!==""?parseInt(el("s-sg-days-a").value)||3:undefined,followupDaysB:el("s-sg-days-b")?.value.trim()!==""?parseInt(el("s-sg-days-b").value)||5:undefined,followupDaysC:el("s-sg-days-c")?.value.trim()!==""?parseInt(el("s-sg-days-c").value)||7:undefined,snoozeDaysA:el("s-sg-snooze-a")?.value.trim()!==""?parseInt(el("s-sg-snooze-a").value)||3:undefined,snoozeDaysB:el("s-sg-snooze-b")?.value.trim()!==""?parseInt(el("s-sg-snooze-b").value)||5:undefined,snoozeDaysC:el("s-sg-snooze-c")?.value.trim()!==""?parseInt(el("s-sg-snooze-c").value)||7:undefined,cantReachDays:el("s-sg-cant-reach")?.value.trim()!==""?parseInt(el("s-sg-cant-reach").value)||3:undefined,escalationCycles:el("s-sg-escalate")?.value.trim()!==""?parseInt(el("s-sg-escalate").value)||3:undefined,notifyDayBefore:el("s-sg-notify-before")?.checked!==false,autoCreateTask:el("s-sg-auto-task")?.checked!==false,waSalesmanTemplate:el("s-sg-wa-sm")?.value.trim()||"",waBrokerTemplate:el("s-sg-wa-brk")?.value.trim()||"",waShowPhone:el("s-sg-wa-phone")?.checked!==false,waShowMarket:el("s-sg-wa-market")?.checked!==false,waBrokerMoney:el("s-sg-wa-brk-money")?.checked===true},waTemplateSsSmn:sv("s-wa-tpl-ss-sm"),waTemplateSsBrk:sv("s-wa-tpl-ss-brk"),waTemplateSsCarrier:sv("s-wa-tpl-ss-carrier"),waTemplateOrder:sv("s-wa-tpl-order"),termsConditions:sv("s-tnc"),waTemplateBill:sv("s-wa-tpl-bill"),holidays:STATE.settings.holidays||[],holidayLabels:STATE.settings.holidayLabels||{},holidayTypes:STATE.settings.holidayTypes||{},holidayConfirmed:STATE.settings.holidayConfirmed||{},waShareSections:STATE.settings.waShareSections||{reports:true,orders:true,bills:true,tasks:true},orderPdfSettings:(()=>{const keys=["showDate","showColour","showRate","showMetres","showAmount","showTotal","showTerms","showCustGstin","showCustAddress","showBroker","showSalesman","showNotes","showSignature","showDelivery","showTnC"];const cur=STATE.settings.orderPdfSettings||{};const out={};keys.forEach(k=>{const el2=document.getElementById("s-opdf-"+k);out[k]=el2?el2.checked:cur[k]!==false});return out})()};// Ginti haath se badli gayi ho to use sabse upar rakho -- sab devices par
 // wahi chalegi, chahe wo pehle se chhoti ho.
@@ -9882,6 +9882,7 @@ function _wiLeadSeed(t,id){
     customerId:c?c.id:"",smId:(sm&&sm.id)||"",smName:(sm&&sm.name)||"",lbl:lbl};
 }
 function wiLeadOpen(t,id,taskId){
+  var _sv=window._wiSay||String(((document.getElementById("star-say")||{}).value)||"");window._wiSay="";
   try{rmEl("m-star-outcome")}catch(e){}
   var sd=_wiLeadSeed(t,id);
   var ix=_openLeadIdx(),ex=(sd.customerId&&ix.byCust[sd.customerId])||ix.bySrc[t+"|"+id];
@@ -9897,7 +9898,7 @@ function wiLeadOpen(t,id,taskId){
   setv("lead-address",sd.address);setv("lead-followup",_dAdd(today(),1));
   try{refreshLeadSalesmanDropdown(sd.smId||"")}catch(e){}
   var sub=el("lead-sub");if(sub)sub.textContent=sd.lbl+" \u2014 order form salesman banayega";
-  var it=el("lead-interest");if(it){it.value="";try{it.focus()}catch(e){}}
+  var it=el("lead-interest");if(it){it.value=_sv||"";try{it.focus()}catch(e){}}
   /* openNewLead ise saaf karta hai -- isliye form khulne ke BAAD. */
   window._leadSrcPending={t:t,id:id,taskId:taskId||"",lbl:sd.lbl,customerId:sd.customerId||""};
 }
@@ -9998,13 +9999,13 @@ function _wiNeverGo(t,id,why){
   var u=STATE.user||{},td=today();
   if(t==="bd"){
     if(!Array.isArray(r.bdLog))r.bdLog=[];
-    r.bdLog.push({byId:u.id||"",by:u.name||"",date:td,out:"never",why:why,at:Date.now()});r.bdLog=r.bdLog.slice(-30);
+    r.bdLog.push({byId:u.id||"",by:u.name||"",date:td,out:"never",why:why,at:Date.now(),say:window._wiSay||""});r.bdLog=r.bdLog.slice(-30);
     r.bdDropped=false;r.bdSnooze=_dAdd(td,wapsiNeverDays());r.bdNext=r.bdSnooze;
     r.bdWhy=why;r.bdWhyFor=r.bdSnooze;r.bdLast=td;r._ts=_bumpTs(r);
     toast((r.name||"")+" \u2014 mana kiya ("+why+"). "+wapsiNeverDays()+" din baad phir poochhenge.","ok");
   }else if(t==="ss"){
     if(!Array.isArray(r.ssLog))r.ssLog=[];
-    r.ssLog.push({date:td,by:u.name||"",byId:u.id||"",at:Date.now(),out:"never",why:why,note:"Mana kiya \u2014 "+why});r.ssLog=r.ssLog.slice(-20);
+    r.ssLog.push({date:td,by:u.name||"",byId:u.id||"",at:Date.now(),out:"never",why:why,say:window._wiSay||"",note:"Mana kiya \u2014 "+why});r.ssLog=r.ssLog.slice(-20);
     r.ssWapas=true;r.ssWhy=why;r.ssNext=_dAdd(td,1);r._ts=_bumpTs(r);
     var ph="";try{ph=ssFollowPhone(r)}catch(e){}
     var co=((STATE.settings||{}).companyName)||"";
@@ -10019,7 +10020,10 @@ function _wiNeverGo(t,id,why){
 }
 var BD_OUT=[["no","Jawab nahi",3],["later","Baad me bola",10],["rate","Rate poocha",2],
   ["order","Order mila",0],["never","Mana kiya",0]];
-function bdOutcome(t,id,code,taskId){
+function bdOutcome(t,id,code,taskId,opts){
+  opts=opts||{};
+  bdOutSync();
+  var _say=String(opts.say||"").trim().slice(0,200);
   var o=BD_OUT.filter(function(x){return x[0]===code})[0];
   if(!o)return;
   /* Daawa nahi -- darwaza. */
@@ -10029,7 +10033,7 @@ function bdOutcome(t,id,code,taskId){
     return wiOrderForm(t,id);
   }
   if(code==="never"&&(t==="bd"||t==="ss"))return leadWhyPick(id,"Mana kiya",t);
-  var gap=o[2],nx=gap?_dAdd(today(),gap):"";
+  var gap=o[2],nx=opts.date||(gap?_dAdd(today(),gap):"");
   if(t==="rec"){
     /* Routine visit ka jawab uske apne visitLog me jaata hai -- wahi
        jagah jo Recurring wale tab me pehle se thi. "Mana kiya" matlab is
@@ -10037,7 +10041,7 @@ function bdOutcome(t,id,code,taskId){
     var rr=(STATE.recurringLeads||[]).filter(function(x){return x&&x.id===id})[0];
     if(!rr)return;
     if(!Array.isArray(rr.visitLog))rr.visitLog=[];
-    rr.visitLog.push({id:uid(),date:today(),outcome:code,note:"",
+    rr.visitLog.push({id:uid(),date:today(),outcome:code,note:"",say:_say,
       smId:rr.smId||"",smName:rr.smName||"",
       loggedById:(STATE.user&&STATE.user.id)||"",
       loggedByName:(STATE.user&&STATE.user.name)||"",ts:Date.now()});
@@ -10050,12 +10054,12 @@ function bdOutcome(t,id,code,taskId){
     if(!c)return;
     if(!Array.isArray(c.bdLog))c.bdLog=[];
     /* byId bhi likho -- warna ginti naam par nirbhar reh jaati hai. */
-    c.bdLog.push({byId:(STATE.user&&STATE.user.id)||"",date:today(),by:(STATE.user&&STATE.user.name)||"",out:code,at:Date.now()});
+    c.bdLog.push({byId:(STATE.user&&STATE.user.id)||"",date:today(),by:(STATE.user&&STATE.user.name)||"",out:code,at:Date.now(),say:_say});
     c.bdLog=c.bdLog.slice(-30);
     c.bdLast=today();
     if(code==="never"){c.bdDropped=true;c.bdNext=""}
     else if(code==="order"){c.bdNext="";c.bdSnooze=""}
-    else{c.bdNext=nx;if(code==="later")c.bdSnooze=nx}
+    else{c.bdNext=nx;if(code==="later"||opts.date)c.bdSnooze=nx}
     c._ts=_bumpTs(c);
   }else if(t==="new"){
     var l=npAll().filter(function(x){return x.id===id})[0];
@@ -10063,7 +10067,7 @@ function bdOutcome(t,id,code,taskId){
     if(code==="order")return npWon(id);
     if(!Array.isArray(l.visits))l.visits=[];
     l.visits.push({date:today(),by:(STATE.user&&STATE.user.name)||"",outcome:code,
-      note:(BD_OUT.filter(function(x){return x[0]===code})[0]||[])[1]||"",at:new Date().toISOString()});
+      note:(BD_OUT.filter(function(x){return x[0]===code})[0]||[])[1]||"",say:_say,at:new Date().toISOString()});
     if(code==="never"){l.status="dropped";l.nextDate=""}
     else l.nextDate=nx||_dAdd(today(),npGapDays());
     l._ts=_bumpTs(l);
@@ -10077,7 +10081,7 @@ function bdOutcome(t,id,code,taskId){
     if(!sx)return;
     if(!Array.isArray(sx.ssLog))sx.ssLog=[];
     sx.ssLog.push({date:today(),by:(STATE.user&&STATE.user.name)||"",byId:(STATE.user&&STATE.user.id)||"",at:Date.now(),out:code,
-      note:(BD_OUT.filter(function(x){return x[0]===code})[0]||[])[1]||""});
+      note:(BD_OUT.filter(function(x){return x[0]===code})[0]||[])[1]||"",say:_say});
     sx.ssLog=sx.ssLog.slice(-20);
     if(code==="order"){sx.ssNext="";delete sx.ssWapas}
     else if(code==="never"){sx.ssWapas=true;sx.ssNext=_dAdd(today(),2)}
@@ -10093,7 +10097,10 @@ function bdOutcome(t,id,code,taskId){
     if(code==="order"){leadWinPick(id);return}
     q.status="Follow Up";q.followupDate=nx;
     _leadStPush(q,"",q.status,"","Aaj ka kaam — "
-      +((BD_OUT.filter(function(x){return x[0]===code})[0]||[])[1]||code));
+      +((BD_OUT.filter(function(x){return x[0]===code})[0]||[])[1]||code)+(_say?(" \u00b7 "+_say):""));
+    try{q.stHist[q.stHist.length-1].code=code}catch(e){}
+    if(_say){if(!Array.isArray(q.notes))q.notes=[];
+      q.notes.push({note:_say,date:today(),by:(STATE.user&&STATE.user.name)||"",status:q.status})}
     q._ts=_bumpTs(q);
   }else if(t==="star"){
     try{return openStarOutcomePicker(id,taskId)}catch(e){}
@@ -10109,7 +10116,7 @@ function bdOutcome(t,id,code,taskId){
   var _nm="";try{_nm=(_wiRec(t,id)||{}).name||""}catch(e){_nm=""}
   toast((_nm?_nm+" \u00b7 ":"")
     +(BD_OUT.filter(function(x){return x[0]===code})[0]||[])[1]
-    +(nx?(" \u2014 wapas "+fmtDate(nx)+" ("+gap+" din)"):""),"ok");
+    +(nx?(" \u2014 wapas "+fmtDate(nx)+(opts.date?"":(" ("+gap+" din)"))):""),"ok");
   renderNewParty();
   try{updateTaskDot()}catch(e){}
 }
@@ -10261,7 +10268,7 @@ function wiDoneSplit(name,uid){
    Har aadmi ne kab kya kiya -- call, WhatsApp, "Kya hua", lead, order.
    Naya khaana koi nahi: sab usi party ke record se padha jata hai. Bas 📞
    dabane ka record (callLog) naya hai -- wo bhi usi record par. */
-var CALL_COL={bd:"customers",star:"customers",inq:"leads","new":"leads",ss:"sampleSets",rec:"recurringLeads"};
+var CALL_COL={bd:"customers",star:"customers",inq:"leads","new":"leads",ss:"sampleSets",rec:"recurringLeads",brk:"brokers"};
 function _ph10(p){return String(p||"").replace(/\D/g,"").slice(-10)}
 function _dIso(ms){if(!ms)return"";var d=new Date(ms);return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
 function _tsOf(v){if(!v)return 0;if(typeof v==="number")return v;var t=Date.parse(v);return isFinite(t)?t:0}
@@ -10292,6 +10299,7 @@ function _phoneMatch(ph){
   if(l)return{t:l.kind==="newparty"?"new":"inq",id:l.id};
   var c=(STATE.customers||[]).filter(m)[0];if(c)return{t:c.isStar?"star":"bd",id:c.id};
   var r=(STATE.recurringLeads||[]).filter(m)[0];if(r)return{t:"rec",id:r.id};
+  var bk=(STATE.brokers||[]).filter(m)[0];if(bk)return{t:"brk",id:bk.id};
   return null;
 }
 /* Pichhli call ka "Kya hua" baaki -- phone me yaad, sirf isi aadmi ka. */
@@ -10359,6 +10367,7 @@ var WL_LBL={no:"Jawab nahi",later:"Baad me bola",rate:"Rate poocha",never:"Mana 
   cant_reach:"Phone nahi utha",escalate:"Admin ko bheja",order_received:"Order mil gaya",lead_made:"Lead banayi"};
 /* Ek aadmi (uid) ya sabka, from..to (YYYY-MM-DD) ka saara kaam. */
 function workLog(from,to,uid){
+  bdOutSync();
   var out=[];
   var inR=function(d){d=String(d||"").slice(0,10);return!!d&&d>=from&&d<=to};
   var add=function(e){if(!inR(e.d))return;if(uid&&e.uid!==uid)return;out.push(e)};
@@ -10377,31 +10386,38 @@ function workLog(from,to,uid){
       if(!code||code==="lead"||code==="lead_lost")return;     /* lead lead ki taraf se gini jaati hai */
       var at=_tsOf(m.at);
       add({k:"out",at:at,d:String(m.d||_dIso(at)).slice(0,10),uid:_uidOf(m.id,m.by),who:m.by||"",t:t,col:col,rid:r.id,
-        party:nm(r),code:code,res:(WL_LBL[code]||code)+(m.why?(" — "+m.why):""),talked:!!WI_TALKED[code],why:m.why||""});
+        party:nm(r),code:code,res:(WL_LBL[code]||_optLbl(code)||code)+(m.why?(" \u2014 "+m.why):"")+(m.say?(" \u00b7 \u201c"+m.say+"\u201d"):""),
+        talked:!!WI_TALKED[code],why:m.why||"",say:m.say||""});
     });
   };
   (STATE.customers||[]).forEach(function(c){
     if(!c||c._deleted)return;var t=c.isStar?"star":"bd";
     calls("customers",t,c);
-    logs("customers","bd",c,c.bdLog,function(l){return{code:l.out,at:l.at,d:l.date,id:l.byId,by:l.by,why:l.why}});
-    logs("customers","star",c,c.starLog,function(l){return{code:l.out==="lead_made"?"":l.out,at:l.at,d:l.date,id:l.byId,by:l.by}});
+    logs("customers","bd",c,c.bdLog,function(l){return{code:l.out,at:l.at,d:l.date,id:l.byId,by:l.by,why:l.why,say:l.say}});
+    logs("customers","star",c,c.starLog,function(l){return{code:l.out==="lead_made"?"":l.out,at:l.at,d:l.date,id:l.byId,by:l.by,say:l.say}});
+  });
+  (STATE.brokers||[]).forEach(function(b){
+    if(!b||b._deleted)return;
+    calls("brokers","brk",b);
+    /* "Lead di" lead ki taraf se gini jaati hai */
+    logs("brokers","brk",b,b.brkLog,function(l){return{code:l.out==="b_lead"?"":l.out,at:l.at,d:l.date,id:l.byId,by:l.by,say:l.say}});
   });
   (STATE.sampleSets||[]).forEach(function(q){
     if(!q||q._deleted)return;
     var r2={id:q.id,name:(function(){try{return ssWhoName(q)}catch(e){return q.custName||""}})()};
     calls("sampleSets","ss",Object.assign({},q,{name:r2.name}));
-    logs("sampleSets","ss",r2,q.ssLog,function(l){return{code:l.out,at:l.at,d:l.date,id:l.byId,by:l.by,why:l.why}});
+    logs("sampleSets","ss",r2,q.ssLog,function(l){return{code:l.out,at:l.at,d:l.date,id:l.byId,by:l.by,why:l.why,say:l.say}});
   });
   (STATE.recurringLeads||[]).forEach(function(r){
     if(!r||r._deleted)return;
     calls("recurringLeads","rec",r);
-    logs("recurringLeads","rec",r,r.visitLog,function(v){return{code:v.outcome,at:v.ts,d:v.date,id:v.loggedById,by:v.loggedByName}});
+    logs("recurringLeads","rec",r,r.visitLog,function(v){return{code:v.outcome,at:v.ts,d:v.date,id:v.loggedById,by:v.loggedByName,say:v.say}});
   });
   (STATE.leads||[]).forEach(function(l){
     if(!l||l._deleted)return;
     var t=l.kind==="newparty"?"new":"inq";
     calls("leads",t,l);
-    logs("leads",t,l,l.visits,function(v){return{code:v.outcome,at:v.at,d:v.date,by:v.by}});
+    logs("leads",t,l,l.visits,function(v){return{code:v.outcome,at:v.at,d:v.date,by:v.by,say:v.say}});
     var madeLogged=false;
     (l.stHist||[]).forEach(function(h){
       if(!h)return;var at=_tsOf(h.at),u=_uidOf(h.byId,h.by),note=String(h.note||"");
@@ -10411,9 +10427,10 @@ function workLog(from,to,uid){
         add(Object.assign(base,{k:"lead",talked:true,src:l.srcKind||"",srcCol:CALL_COL[l.srcKind]||"",srcId:l.srcId||"",
           res:"Lead banayi → "+(l.assignedName||"")+(l.source?(" · "+l.source):"")}));
       }else if(/^Aaj ka kaam/.test(note)){
-        var lbl=note.replace(/^Aaj ka kaam\s*—\s*/,"");
-        var code=(BD_OUT.filter(function(o){return o[1]===lbl})[0]||[])[0]||"";
-        add(Object.assign(base,{k:"out",code:code,res:lbl,talked:!!WI_TALKED[code]}));
+        var lbl=note.replace(/^Aaj ka kaam\s*\u2014\s*/,"");
+        var _pp=lbl.split(" \u00b7 ");lbl=_pp[0];var _sy=_pp.slice(1).join(" \u00b7 ");
+        var code=h.code||(BD_OUT.filter(function(o){return o[1]===lbl})[0]||[])[0]||"";
+        add(Object.assign(base,{k:"out",code:code,res:lbl+(_sy?(" \u00b7 \u201c"+_sy+"\u201d"):""),talked:!!WI_TALKED[code],say:_sy}));
       }else if(LEAD_CLOSE_ST.indexOf(String(h.to||""))>=0&&LEAD_CLOSE_ST.indexOf(String(h.from||""))<0){
         add(Object.assign(base,{k:"out",code:"never",res:"Band: "+h.to+(h.why?(" — "+h.why):""),talked:true,why:h.why||""}));
       }else if((h.to==="Order Received"||h.to==="won")&&h.from!==h.to){
@@ -10431,7 +10448,7 @@ function workLog(from,to,uid){
     var at=_tsOf(k.completedAt);
     add({k:"out",at:at,d:String(k.completedDate||_dIso(at)).slice(0,10),uid:_uidOf(k.completedById,k.completedBy),
       who:k.completedBy||"",t:"star",col:"customers",rid:k.starCustId,party:k.starCustName||"",code:code,
-      res:WL_LBL[code]||code,talked:!!WI_TALKED[code]});
+      res:(WL_LBL[code]||_optLbl(code)||code)+(k.starSay?(" \u00b7 \u201c"+k.starSay+"\u201d"):""),talked:!!WI_TALKED[code],say:k.starSay||""});
   });
   (STATE.orders||[]).forEach(function(o){
     if(!o||o._deleted||o.status==="cancelled"||o.status==="deleted")return;
@@ -10476,7 +10493,7 @@ function wlSum(list){
     else if(e.k==="out"){s.out++;if(e.talked)s.talked++;else s.noTalk++;if(e.code==="never")s.mana++}
     else if(e.k==="won")s.won++;
     else if(e.k==="order"){s.ord++;s.ordRs+=e.rs||0}
-    if(e.flag){s.flag++;var f=String(e.flag).replace(/\d+ sec/,"kam sec");s.flags[f]=(s.flags[f]||0)+1}
+    if(e.flag){s.flag++;var f=String(e.flag).replace(/^Sirf \d+ sec bahar$/,"Chhoti call par \u2018baat hui\u2019");s.flags[f]=(s.flags[f]||0)+1}
   });
   s.dayFlag=(s.call>=20&&s.talked<=s.call*0.1)?(s.call+" call, sirf "+s.talked+" se baat"):"";
   if(s.dayFlag)s.flag++;
@@ -10496,6 +10513,292 @@ function _wlIcon(e){
 }
 function _awayTxt(s){if(s==null)return"";s=Number(s)||0;return s>=60?(Math.floor(s/60)+"m "+(s%60)+"s"):(s+"s")}
 function _wlType(e){try{return(WI_M[e.t]||{}).l||""}catch(x){return""}}
+/* Ek party ka saara kaam ek jagah -- pehle kaam ke samay ke kram me. */
+function _wlGroups(L){
+  var m={},order=[];
+  L.forEach(function(e){
+    var k=(e.col||"")+"|"+(e.rid||e.party||"");
+    if(!m[k]){m[k]={party:e.party,type:_wlType(e),first:e.at||0,items:[]};order.push(k)}
+    var g=m[k];g.items.push(e);
+    if(e.at&&(!g.first||e.at<g.first))g.first=e.at;
+    if(!g.type)g.type=_wlType(e);
+  });
+  return order.map(function(k){return m[k]}).sort(function(a,b){return(a.first||9e15)-(b.first||9e15)});
+}
+/* ══ TEAM KA KAAM / MERA KAAM (1.45.467) ════════════════════════════ */
+var _trP="week";
+function trRange(p){
+  var T=today(),d=new Date(T+"T00:00:00"),dow=(d.getDay()+6)%7,mon=_dAdd(T,-dow);
+  if(p==="today")return{from:T,to:T,lbl:"Aaj"};
+  if(p==="lastweek")return{from:_dAdd(mon,-7),to:_dAdd(mon,-1),lbl:"Pichhla hafta"};
+  if(p==="month")return{from:T.slice(0,8)+"01",to:T,lbl:"Is mahina"};
+  return{from:mon,to:T,lbl:"Is hafta"};
+}
+function _trDays(from,to){var out=[],d=from,n=0;while(d<=to&&n++<40){out.push(d);d=_dAdd(d,1)}return out}
+/* Ek aadmi ka hisaab -- kaam, lead, target, sawal. */
+function trPerson(u,R){
+  var L=_wlFlags(workLog(R.from,R.to,u.id)),S=wlSum(L);
+  var p={u:u,S:S,L:L,sc:isScUser(u),days:{}};
+  L.forEach(function(e){var x=p.days[e.d]||(p.days[e.d]=[]);x.push(e)});
+  if(p.sc){
+    var r={};try{r=leadScRows(R.from,R.to).filter(function(x){return x.id===u.id})[0]||{}}catch(e){r={}}
+    p.banayi=r.banayi||0;p.jeeti=r.jeeti||0;p.band=r.band||0;p.ruki=r.ruki||0;p.conv=r.conv||0;
+    p.src={};L.forEach(function(e){if(e.k==="lead"){var k=e.src||"bahar se";p.src[k]=(p.src[k]||0)+1}});
+  }else{
+    var lr={};try{lr=leadRepRows(R.from,R.to).filter(function(x){return x.id===u.id})[0]||{}}catch(e){lr={}}
+    p.mili=lr.mili||0;p.jeeti=lr.jeeti||0;p.band=lr.band||0;p.fuMiss=lr.fuMiss||0;p.why=lr.why||{};
+    var mk=npMonthKey(),tg=0,od=0;
+    try{tg=smTargetOf(u);od=smMonthOrder(u.id,mk)}catch(e){}
+    p.tg=tg;p.od=od;p.pct=tg>0?Math.round(od/tg*100):0;
+    try{p.dl=smDaysLeft(mk)}catch(e){p.dl=0}
+    p.need=(tg>od&&p.dl)?Math.round((tg-od)/p.dl):0;
+  }
+  p.lost={};L.forEach(function(e){if(e.code==="never"&&e.why){p.lost[e.why]=(p.lost[e.why]||0)+1}});
+  if(p.why)Object.keys(p.why).forEach(function(w){p.lost[w]=Math.max(p.lost[w]||0,p.why[w])});
+  p.q=trQuestions(p);
+  return p;
+}
+function _topKey(m){var ks=Object.keys(m||{}).sort(function(a,b){return m[b]-m[a]});return ks.length?{k:ks[0],n:m[ks[0]]}:null}
+/* ❓ -- jo poochhna banta hai, wahi. */
+function trQuestions(p){
+  var q=[],S=p.S;
+  if(p.sc){
+    if(S.call>=10&&S.talked<S.call*0.3)q.push(S.call+" call, sirf "+S.talked+" se baat");
+    if(S.call>=10&&!S.lead)q.push(S.call+" call ke baad ek bhi lead nahi");
+    if(p.ruki>=2)q.push(p.ruki+" lead 7 din se ruki — salesman ne kuchh nahi kiya");
+    if(p.jeeti+p.band>=3&&p.conv<20)q.push("Conversion sirf "+p.conv+"%");
+    if(!S.call&&!S.out)q.push("Is samay koi kaam nahi likha");
+  }else{
+    if(p.tg>0&&p.pct<100&&p.dl>0){
+      var mDays=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
+      var exp=Math.round((mDays-p.dl+1)/mDays*100);
+      if(p.pct<exp-10)q.push("Target "+p.pct+"% (hona chahiye ~"+exp+"%) — "+p.dl+" din bache, roz "+_wiRs(p.need)+" chahiye");
+    }
+    if(p.fuMiss)q.push(p.fuMiss+" follow-up ki tareekh nikal gayi");
+    if(p.band>=2){var tw=_topKey(p.why);q.push(p.band+" lead haari"+(tw?(" — sabse zyada \""+tw.k+"\" ("+tw.n+")"):""))}
+    if(p.mili>=3&&!p.jeeti)q.push(p.mili+" lead mili, ek bhi nahi jeeti");
+    if(!S.out&&!S.ord)q.push("Is samay koi follow-up nahi likha");
+  }
+  if(S.flag){var parts=Object.keys(S.flags).map(function(f){return f+" ("+S.flags[f]+")"});if(S.dayFlag)parts.push(S.dayFlag);
+    q.push("🚩 "+parts.join(", "))}
+  return q;
+}
+function trTeam(R){
+  var smIds={};try{(getAssignableSalesmen().staff||[]).forEach(function(x){smIds[x.id]=1})}catch(e){}
+  var sc=[],sm=[];
+  (STATE.users||[]).filter(function(u){return u&&!u._deleted&&u.active!==false}).forEach(function(u){
+    var p=trPerson(u,R);
+    if(p.sc)sc.push(p);
+    else if(smIds[u.id]||p.L.length)sm.push(p);
+  });
+  var srt=function(a,b){return String(a.u.name||"").localeCompare(String(b.u.name||""))};
+  sc.sort(srt);sm.sort(srt);
+  var lost={};sc.concat(sm).forEach(function(p){Object.keys(p.lost).forEach(function(w){lost[w]=(lost[w]||0)+p.lost[w]})});
+  return{sc:sc,sm:sm,lost:lost,R:R};
+}
+/* 🔍 Spot check -- har SC ki 5 "baat hui" party, hafte bhar ek hi list. */
+function trSpot(p,R,n){
+  var cand=p.L.filter(function(e){return(e.k==="out"||e.k==="lead")&&e.talked&&e.col!=="orders"});
+  var seen={},uniq=[];cand.forEach(function(e){var k=e.col+"|"+e.rid;if(!seen[k]){seen[k]=1;uniq.push(e)}});
+  var h=function(x){var v=0;for(var i=0;i<x.length;i++)v=(v*31+x.charCodeAt(i))|0;return v};
+  uniq.sort(function(a,b){return h(R.from+p.u.id+a.rid)-h(R.from+p.u.id+b.rid)});
+  return uniq.slice(0,n||5).map(function(e){
+    var r=null;try{r=(STATE[e.col]||[]).filter(function(x){return x&&x.id===e.rid})[0]}catch(x){}
+    if(e.col==="sampleSets"&&r){try{var c=_wiSsParty(r);if(c)r=c}catch(x){}}
+    return{e:e,ph:(r&&(r.whatsapp||r.phone||r.wa))||""};
+  });
+}
+function _trChips(fn){
+  return'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'
+    +[["today","Aaj"],["week","Is hafta"],["lastweek","Pichhla hafta"],["month","Is mahina"]].map(function(c){
+      var on=c[0]===_trP;
+      return'<button onclick="_trP=\''+c[0]+'\';'+fn+'" style="border:1.5px solid '+(on?'var(--P)':'var(--br)')+';background:'+(on?'var(--P)':'#fff')
+        +';color:'+(on?'#fff':'var(--t2)')+';border-radius:99px;padding:5px 11px;font-weight:800;font-size:11.5px;cursor:pointer;font-family:inherit">'+c[1]+'</button>'}).join("")+'</div>';
+}
+var _TH='style="font-size:9px;color:var(--t3);text-align:right;font-weight:800;padding:3px 3px;white-space:nowrap"';
+var _TD='style="padding:6px 3px;border-top:1px solid var(--br);font-weight:700;text-align:right;white-space:nowrap"';
+function _trTd(v,col){return'<td style="padding:6px 3px;border-top:1px solid var(--br);font-weight:800;text-align:right;white-space:nowrap'+(col?(';color:'+col):'')+'">'+v+'</td>'}
+function _trName(p){return'<td style="padding:6px 3px;border-top:1px solid var(--br);font-weight:900;color:var(--P);cursor:pointer;white-space:nowrap" onclick="openPersonRep(\''+p.u.id+'\')">'+esc(p.u.name||"")+' ›</td>'}
+function teamRepHtml(){
+  var R=trRange(_trP),T=trTeam(R);
+  var h='<div style="background:#fff;border:1.5px solid var(--br);border-radius:14px;padding:12px;margin-bottom:12px">'
+    +'<div style="font-weight:900;font-size:15px">👥 Team ka kaam</div>'
+    +'<div class="xs ct3" style="font-weight:600;margin-bottom:8px">'+esc(R.lbl)+' · '+esc(fmtDate(R.from))+(R.from!==R.to?(' – '+esc(fmtDate(R.to))):'')+' — naam dabao, poora hisaab</div>'
+    +_trChips("_trRefresh()");
+  h+='<div style="font-size:10.5px;font-weight:900;color:#9D174D;text-transform:uppercase;letter-spacing:.4px;margin:4px 0">📞 Sales Coordinator</div>';
+  h+=T.sc.length?('<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px"><tr><th style="font-size:9px;color:var(--t3);text-align:left">Naam</th>'
+    +'<th '+_TH+'>Call</th><th '+_TH+'>Baat</th><th '+_TH+'>Lead</th><th '+_TH+'>Jeeti</th><th '+_TH+'>Conv</th><th '+_TH+'>Ruki</th><th '+_TH+'>🚩</th></tr>'
+    +T.sc.map(function(p){return'<tr>'+_trName(p)+_trTd(p.S.call)+_trTd(p.S.talked)+_trTd(p.banayi)+_trTd(p.jeeti,"#059669")
+      +_trTd((p.jeeti+p.band)?p.conv+"%":"—",(p.jeeti+p.band)&&p.conv<20?"#B91C1C":"")+_trTd(p.ruki,p.ruki?"#B91C1C":"")+_trTd(p.S.flag||"—",p.S.flag?"#B91C1C":"var(--t3)")+'</tr>'}).join("")+'</table></div>')
+    :'<div class="xs ct3">Koi SC nahi</div>';
+  h+='<div style="font-size:10.5px;font-weight:900;color:#1E40AF;text-transform:uppercase;letter-spacing:.4px;margin:12px 0 4px">🧑‍💼 Salesman</div>';
+  h+=T.sm.length?('<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px"><tr><th style="font-size:9px;color:var(--t3);text-align:left">Naam</th>'
+    +'<th '+_TH+'>Target</th><th '+_TH+'>Order</th><th '+_TH+'>Kiye</th><th '+_TH+'>Mili</th><th '+_TH+'>Jeeti</th><th '+_TH+'>Haari</th><th '+_TH+'>🚩</th></tr>'
+    +T.sm.map(function(p){return'<tr>'+_trName(p)+_trTd(p.tg?p.pct+"%":"—",p.tg&&p.pct<50?"#B91C1C":(p.pct>=100?"#059669":""))
+      +_trTd(p.S.ordRs?_wiRs(p.S.ordRs):"—")+_trTd(p.S.out)+_trTd(p.mili)+_trTd(p.jeeti,"#059669")+_trTd(p.band,p.band?"#B91C1C":"")+_trTd(p.S.flag||"—",p.S.flag?"#B91C1C":"var(--t3)")+'</tr>'}).join("")+'</table></div>')
+    :'<div class="xs ct3">Koi salesman nahi</div>';
+  var Q=T.sc.concat(T.sm).filter(function(p){return p.q.length});
+  if(Q.length)h+='<div style="margin-top:10px;background:#FEF3C7;border-radius:10px;padding:8px 10px;font-size:11.5px;font-weight:700;color:#78350F;line-height:1.55">'
+    +'<div style="font-weight:900;margin-bottom:3px">❓ Inse poochho</div>'
+    +Q.map(function(p){return'<div style="margin-top:4px"><b style="color:#7C2D12">'+esc(p.u.name)+':</b> '+p.q.map(esc).join(" · ")+'</div>'}).join("")+'</div>';
+  var lk=Object.keys(T.lost).sort(function(a,b){return T.lost[b]-T.lost[a]});
+  if(lk.length)h+='<div style="margin-top:10px;border:1.5px solid #FECACA;border-radius:10px;padding:8px 10px">'
+    +'<div style="font-size:10.5px;font-weight:900;color:#B91C1C;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Kyun haar rahe hain</div>'
+    +lk.slice(0,8).map(function(w){return'<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;padding:3px 0;border-top:1px solid #FEE2E2"><span>'+esc(w)+'</span><b>'+T.lost[w]+'</b></div>'}).join("")+'</div>';
+  var sp=T.sc.map(function(p){return{p:p,list:trSpot(p,R,5)}}).filter(function(x){return x.list.length});
+  if(sp.length)h+='<div style="margin-top:10px;border:1.5px solid #BFDBFE;border-radius:10px;padding:8px 10px">'
+    +'<div style="font-size:10.5px;font-weight:900;color:#1E40AF;text-transform:uppercase;letter-spacing:.4px">🔍 Spot check</div>'
+    +'<div class="xs ct3" style="margin-bottom:5px">In party ko khud phone karke poochho: "Hamare yahan se call aaya tha?" Ek jhooth pakda to sab sambhal jaate hain.</div>'
+    +sp.map(function(x){return'<div style="margin-top:5px;font-weight:900;font-size:12px">'+esc(x.p.u.name)+'</div>'
+      +x.list.map(function(s){return'<div style="display:flex;gap:6px;align-items:center;padding:4px 0;border-top:1px solid #DBEAFE;font-size:11.5px">'
+        +'<span style="flex:1;min-width:0"><b>'+esc(s.e.party)+'</b> <span style="color:var(--t3)">'+esc(fmtDate(s.e.d))+'</span><br>'+esc(s.e.res||"")+'</span>'
+        +(s.ph?'<a href="tel:'+esc(s.ph)+'" style="background:#EFF6FF;color:#1D4ED8;text-decoration:none;padding:5px 9px;border-radius:8px;font-weight:800">📞</a>':'')+'</div>'}).join("")}).join("")+'</div>';
+  h+='<div style="display:flex;gap:8px;margin-top:10px">'
+    +'<button class="btn bp bfl" style="flex:1" onclick="teamRepPrint()">📄 PDF</button>'
+    +'<button class="btn bfl" style="flex:1;background:#25D366;color:#fff;border:none" onclick="teamRepWa()">📲 WhatsApp</button></div>';
+  return h+'</div>';
+}
+/* Ek aadmi ka poora hisaab -- admin ke liye sheet, staff ke liye "Mera kaam". */
+function personRepBody(p,R,fn){
+  var S=p.S,k=function(v,l,c){return'<div style="flex:1;min-width:60px;background:#fff;border:1.5px solid var(--br);border-radius:10px;padding:6px 4px;text-align:center">'
+    +'<div style="font-size:16px;font-weight:900;color:'+(c||"var(--P)")+'">'+v+'</div><div style="font-size:9.5px;font-weight:800;color:var(--t3)">'+l+'</div></div>'};
+  var h=_trChips(fn);
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">'+k(S.call,"call")+k(S.talked,"baat hui","#059669")
+    +(p.sc?k(p.banayi,"lead bani")+k(p.jeeti,"jeeti","#059669")+k((p.jeeti+p.band)?p.conv+"%":"—","conv")
+      :k(S.out,"follow-up")+k(p.jeeti,"jeeti","#059669")+k(p.band,"haari","#B91C1C"))
+    +k(S.flag,"🚩",S.flag?"#B91C1C":"var(--t3)")+'</div>';
+  if(!p.sc&&p.tg)h+='<div style="background:#EEF2FF;border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:12px;font-weight:700;color:#1E1B4B">'
+    +'🎯 Is mahine target '+_wiRs(p.tg)+' · order '+_wiRs(p.od)+' (<b>'+p.pct+'%</b>)'
+    +(p.need?(' · '+p.dl+' din me roz '+_wiRs(p.need)+' chahiye'):'')+'</div>';
+  if(p.sc&&Object.keys(p.src).length){var SL={bd:"Non Active",star:"Star",ss:"Sample set",rec:"Routine"};
+    h+='<div class="xs" style="font-weight:700;margin-bottom:8px;color:var(--t2)">Lead kahan se: '
+      +Object.keys(p.src).map(function(x){return(SL[x]||x)+" "+p.src[x]}).join(" · ")+'</div>'}
+  if(p.q.length)h+='<div style="background:#FEF3C7;border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:11.5px;font-weight:700;color:#78350F;line-height:1.5">❓ '+p.q.map(esc).join("<br>❓ ")+'</div>';
+  var lk=Object.keys(p.lost).sort(function(a,b){return p.lost[b]-p.lost[a]});
+  if(lk.length)h+='<div class="xs" style="font-weight:700;margin-bottom:8px;color:#B91C1C">Haar ki wajah: '+lk.map(function(w){return esc(w)+" ("+p.lost[w]+")"}).join(" · ")+'</div>';
+  h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11.5px"><tr><th style="font-size:9px;color:var(--t3);text-align:left">Din</th>'
+    +'<th '+_TH+'>Call</th><th '+_TH+'>Baat</th><th '+_TH+'>'+(p.sc?'Lead':'Kiye')+'</th><th '+_TH+'>Mana</th><th '+_TH+'>🚩</th></tr>'
+    +_trDays(R.from,R.to).reverse().map(function(d){var s=wlSum(p.days[d]||[]);
+      return'<tr onclick="openMyDay(\''+p.u.id+'\',\''+d+'\')" style="cursor:pointer"><td style="padding:6px 3px;border-top:1px solid var(--br);font-weight:800;color:var(--P);white-space:nowrap">'+esc(fmtDate(d))+' ›</td>'
+        +_trTd(s.call)+_trTd(s.talked)+_trTd(p.sc?s.lead:s.out)+_trTd(s.mana)+_trTd(s.flag||"—",s.flag?"#B91C1C":"var(--t3)")+'</tr>'}).join("")+'</table></div>';
+  h+='<div style="display:flex;gap:8px;margin-top:10px">'
+    +'<button class="btn bp bfl" style="flex:1" onclick="personRepPrint(\''+p.u.id+'\')">📄 PDF</button>'
+    +'<button class="btn bfl" style="flex:1;background:#25D366;color:#fff;border:none" onclick="personRepWa(\''+p.u.id+'\')">📲 WhatsApp</button></div>';
+  return h;
+}
+function openPersonRep(uid){
+  var me=(STATE.user&&STATE.user.id)||"";
+  if(uid!==me&&!(STATE.user&&STATE.user.role==="admin"))uid=me;
+  var u=_userById(uid);if(!u)return;
+  var R=trRange(_trP),p=trPerson(u,R);
+  var d=document.getElementById("m-prep");if(d)d.remove();
+  d=document.createElement("div");d.className="ov";d.id="m-prep";d.style.zIndex="630";
+  d.innerHTML='<div class="sh" style="max-height:90vh;display:flex;flex-direction:column">'
+    +'<div style="padding:12px 15px 8px;border-bottom:1px solid var(--br);display:flex;align-items:center">'
+    +'<div style="flex:1"><div style="font-weight:900;font-size:15px">📊 '+esc(u.name||"")+(p.sc?' (SC)':'')+'</div>'
+    +'<div class="xs ct3" style="font-weight:700">'+esc(R.lbl)+' · din dabao = us din ka poora kaam</div></div>'
+    +'<button class="btn bgh bsm" onclick="document.getElementById(\'m-prep\').remove()">✕</button></div>'
+    +'<div style="flex:1;overflow-y:auto;padding:10px 15px">'+personRepBody(p,R,"openPersonRep('"+uid+"')")+'</div></div>';
+  _ovOpen(d);
+}
+function meraKaamHtml(){
+  var u=STATE.user&&_userById(STATE.user.id)||STATE.user;if(!u)return"";
+  var R=trRange(_trP),p=trPerson(u,R);
+  return'<div style="background:#fff;border:1.5px solid var(--br);border-radius:14px;padding:12px;margin-bottom:12px">'
+    +'<div style="font-weight:900;font-size:15px">📊 Mera kaam</div>'
+    +'<div class="xs ct3" style="font-weight:600;margin-bottom:8px">'+esc(R.lbl)+' — din dabao, us din ka poora kaam</div>'
+    +personRepBody(p,R,"_trRefresh()")+'</div>';
+}
+function _trRefresh(){try{renderLeadReport()}catch(e){}}
+function personRepText(uid){
+  var u=_userById(uid);if(!u)return"";var R=trRange(_trP),p=trPerson(u,R),S=p.S;
+  var t="*"+(u.name||"")+" — "+R.lbl+"* ("+fmtDate(R.from)+(R.from!==R.to?(" – "+fmtDate(R.to)):"")+")\n"
+    +S.call+" call · "+S.talked+" baat · "+(p.sc?(p.banayi+" lead · "+p.jeeti+" jeeti"+((p.jeeti+p.band)?(" · conv "+p.conv+"%"):"")):(S.out+" follow-up · "+p.jeeti+" jeeti · "+p.band+" haari"))
+    +(S.flag?(" · 🚩"+S.flag):"")+"\n";
+  if(!p.sc&&p.tg)t+="Target "+_wiRs(p.tg)+" · order "+_wiRs(p.od)+" ("+p.pct+"%)"+(p.need?(" · roz "+_wiRs(p.need)+" chahiye"):"")+"\n";
+  if(p.q.length)t+="\n❓ "+p.q.join("\n❓ ")+"\n";
+  t+="\n"+_trDays(R.from,R.to).map(function(d){var s=wlSum(p.days[d]||[]);if(!s.call&&!s.out&&!s.ord)return"";
+    return fmtDate(d)+": "+s.call+" call, "+s.talked+" baat, "+(p.sc?s.lead+" lead":s.out+" kiye")+(s.flag?(" 🚩"+s.flag):"")}).filter(Boolean).join("\n");
+  return t;
+}
+function personRepWa(uid){_waShareText(personRepText(uid))}
+function personRepPrint(uid){
+  var u=_userById(uid);if(!u)return;var R=trRange(_trP),p=trPerson(u,R),S=p.S;
+  var h=_pdfHead("Kaam — "+(u.name||""))+_pdfCo();
+  h+='<div class="hdr"><div><div class="doc-lbl">'+(p.sc?'SC':'Salesman')+' — '+escHtml(R.lbl)+'</div><div class="doc-no">'+escHtml(u.name||"")+'</div>'
+    +'<div class="doc-date">'+escHtml(fmtDate(R.from))+(R.from!==R.to?(' – '+escHtml(fmtDate(R.to))):'')+'</div></div></div>';
+  h+='<div class="meta"><div><div class="ml">Call / Baat</div><div class="mv">'+S.call+' / '+S.talked+'</div></div>'
+    +(p.sc?'<div><div class="ml">Lead / Jeeti / Conv</div><div class="mv">'+p.banayi+' / '+p.jeeti+' / '+((p.jeeti+p.band)?p.conv+'%':'—')+'</div></div>'
+      :'<div><div class="ml">Follow-up / Jeeti / Haari</div><div class="mv">'+S.out+' / '+p.jeeti+' / '+p.band+'</div></div>')
+    +(!p.sc&&p.tg?'<div><div class="ml">Target (mahina)</div><div class="mv">'+p.pct+'% · '+escHtml(_wiRs(p.od))+' / '+escHtml(_wiRs(p.tg))+'</div></div>':'')
+    +'<div><div class="ml">🚩</div><div class="mv">'+S.flag+'</div></div></div>';
+  if(p.q.length)h+='<h3 style="margin:10px 0 4px">Sawal</h3>'+p.q.map(function(x){return'<div style="margin:2px 0">❓ '+escHtml(x)+'</div>'}).join("");
+  h+='<table><tr><th>Din</th><th class="tr">Call</th><th class="tr">Baat</th><th class="tr">'+(p.sc?'Lead':'Kiye')+'</th><th class="tr">Mana</th><th class="tr">🚩</th></tr>'
+    +_trDays(R.from,R.to).map(function(d){var s=wlSum(p.days[d]||[]);return'<tr><td>'+escHtml(fmtDate(d))+'</td><td class="tr">'+s.call+'</td><td class="tr">'+s.talked+'</td><td class="tr">'+(p.sc?s.lead:s.out)+'</td><td class="tr">'+s.mana+'</td><td class="tr">'+(s.flag||"")+'</td></tr>'}).join("")+'</table>';
+  h+='<h3 style="margin:12px 0 4px">Poora kaam</h3><table><tr><th>Din</th><th>Samay</th><th>Party</th><th>Kya hua</th><th>🚩</th></tr>'
+    +p.L.filter(function(e){return e.k!=="wa"}).map(function(e){return'<tr><td>'+escHtml(fmtDate(e.d))+'</td><td>'+_hhmm(e.at)+'</td><td>'+escHtml(e.party||"")+'</td><td>'+escHtml(e.res||"")+(e.k==="call"&&e.away!=null?(" ("+_awayTxt(e.away)+")"):"")+'</td><td>'+escHtml(e.flag||"")+'</td></tr>'}).join("")+'</table>';
+  h+='<div class="footer">'+escHtml((STATE.settings&&STATE.settings.companyName)||"ALT Stock")+' &nbsp;•&nbsp; Printed: '+(new Date).toLocaleDateString("en-IN")+'</div></body></html>';
+  _printWin(h,"Kaam "+(u.name||""));
+}
+function teamRepText(){
+  var R=trRange(_trP),T=trTeam(R);
+  var t="*Team ka kaam — "+R.lbl+"* ("+fmtDate(R.from)+(R.from!==R.to?(" – "+fmtDate(R.to)):"")+")\n\n*SC*\n";
+  t+=T.sc.length?T.sc.map(function(p){return p.u.name+": "+p.S.call+" call, "+p.S.talked+" baat, "+p.banayi+" lead, "+p.jeeti+" jeeti"+((p.jeeti+p.band)?(" ("+p.conv+"%)"):"")+(p.S.flag?(" 🚩"+p.S.flag):"")}).join("\n"):"—";
+  t+="\n\n*Salesman*\n";
+  t+=T.sm.length?T.sm.map(function(p){return p.u.name+": "+(p.tg?("target "+p.pct+"%, "):"")+(p.S.ordRs?("order "+_wiRs(p.S.ordRs)+", "):"")+p.S.out+" follow-up, "+p.jeeti+" jeeti, "+p.band+" haari"+(p.S.flag?(" 🚩"+p.S.flag):"")}).join("\n"):"—";
+  var Q=T.sc.concat(T.sm).filter(function(p){return p.q.length});
+  if(Q.length)t+="\n\n❓ *Poochhna hai*\n"+Q.map(function(p){return p.u.name+": "+p.q.join(" · ")}).join("\n");
+  var lk=Object.keys(T.lost).sort(function(a,b){return T.lost[b]-T.lost[a]});
+  if(lk.length)t+="\n\n*Haar ki wajah*\n"+lk.slice(0,6).map(function(w){return w+": "+T.lost[w]}).join("\n");
+  return t;
+}
+function teamRepWa(){_waShareText(teamRepText())}
+function teamRepPrint(){
+  var R=trRange(_trP),T=trTeam(R);
+  var h=_pdfHead("Team ka kaam")+_pdfCo();
+  h+='<div class="hdr"><div><div class="doc-lbl">Team ka kaam — '+escHtml(R.lbl)+'</div><div class="doc-no">'+escHtml(fmtDate(R.from))+(R.from!==R.to?(' – '+escHtml(fmtDate(R.to))):'')+'</div></div></div>';
+  h+='<h3 style="margin:10px 0 4px">Sales Coordinator</h3><table><tr><th>Naam</th><th class="tr">Call</th><th class="tr">Baat</th><th class="tr">Lead</th><th class="tr">Jeeti</th><th class="tr">Conv</th><th class="tr">Ruki</th><th class="tr">🚩</th></tr>'
+    +T.sc.map(function(p){return'<tr><td>'+escHtml(p.u.name||"")+'</td><td class="tr">'+p.S.call+'</td><td class="tr">'+p.S.talked+'</td><td class="tr">'+p.banayi+'</td><td class="tr">'+p.jeeti+'</td><td class="tr">'+((p.jeeti+p.band)?p.conv+"%":"—")+'</td><td class="tr">'+p.ruki+'</td><td class="tr">'+(p.S.flag||"")+'</td></tr>'}).join("")+'</table>';
+  h+='<h3 style="margin:12px 0 4px">Salesman</h3><table><tr><th>Naam</th><th class="tr">Target</th><th class="tr">Order</th><th class="tr">Follow-up</th><th class="tr">Mili</th><th class="tr">Jeeti</th><th class="tr">Haari</th><th class="tr">🚩</th></tr>'
+    +T.sm.map(function(p){return'<tr><td>'+escHtml(p.u.name||"")+'</td><td class="tr">'+(p.tg?p.pct+"%":"—")+'</td><td class="tr">'+(p.S.ordRs?escHtml(_wiRs(p.S.ordRs)):"—")+'</td><td class="tr">'+p.S.out+'</td><td class="tr">'+p.mili+'</td><td class="tr">'+p.jeeti+'</td><td class="tr">'+p.band+'</td><td class="tr">'+(p.S.flag||"")+'</td></tr>'}).join("")+'</table>';
+  var Q=T.sc.concat(T.sm).filter(function(p){return p.q.length});
+  if(Q.length)h+='<h3 style="margin:12px 0 4px">❓ Inse poochho</h3>'+Q.map(function(p){return'<div style="margin:3px 0"><b>'+escHtml(p.u.name)+'</b>: '+p.q.map(escHtml).join(" · ")+'</div>'}).join("");
+  var lk=Object.keys(T.lost).sort(function(a,b){return T.lost[b]-T.lost[a]});
+  if(lk.length)h+='<h3 style="margin:12px 0 4px">Kyun haar rahe hain</h3><table><tr><th>Wajah</th><th class="tr">Kitni</th></tr>'+lk.map(function(w){return'<tr><td>'+escHtml(w)+'</td><td class="tr">'+T.lost[w]+'</td></tr>'}).join("")+'</table>';
+  var sp=T.sc.map(function(p){return{p:p,list:trSpot(p,R,5)}}).filter(function(x){return x.list.length});
+  if(sp.length)h+='<h3 style="margin:12px 0 4px">Spot check</h3><table><tr><th>SC</th><th>Party</th><th>Phone</th><th>Din</th><th>Likha</th></tr>'
+    +sp.map(function(x){return x.list.map(function(s){return'<tr><td>'+escHtml(x.p.u.name)+'</td><td>'+escHtml(s.e.party)+'</td><td>'+escHtml(s.ph)+'</td><td>'+escHtml(fmtDate(s.e.d))+'</td><td>'+escHtml(s.e.res||"")+'</td></tr>'}).join("")}).join("")+'</table>';
+  h+='<div class="footer">'+escHtml((STATE.settings&&STATE.settings.companyName)||"ALT Stock")+' &nbsp;•&nbsp; Printed: '+(new Date).toLocaleDateString("en-IN")+'</div></body></html>';
+  _printWin(h,"Team ka kaam");
+}
+/* Leads > Report: admin ko Team ka kaam, staff ko Mera kaam. SC ke liye
+   purani pipeline report hata do -- uske kaam ki nahi. */
+function trInject(){
+  var c=el("lead-rep-body");if(!c||!STATE.user)return;
+  var old=document.getElementById("tr-box");if(old)old.remove();
+  var adm=STATE.user.role==="admin";
+  var html=adm?teamRepHtml():meraKaamHtml();
+  if(!adm){
+    /* Staff: sirf apna. Purani report hatao -- usme permission ke hisaab se
+       doosron ki lead bhi aa sakti thi. Neeche apni lead ki patti, usi
+       samay ki (Aaj / hafta / mahina). */
+    var R=trRange(_trP);
+    c.innerHTML='<input type="hidden" id="lr-from" value="'+R.from+'"><input type="hidden" id="lr-to" value="'+R.to+'">'
+      +'<div id="tr-box">'+html+'</div>';
+    var extra="";
+    try{extra=(_meSc()||isScUser(STATE.user)||leadScRows(R.from,R.to).length)?_leadScHtml():""}catch(e){extra=""}
+    try{extra+=_leadRepTopHtml()}catch(e){}
+    if(extra)c.insertAdjacentHTML("beforeend",extra);
+    return;
+  }
+  c.insertAdjacentHTML("afterbegin",'<div id="tr-box">'+html+'</div>');
+}
+(function(){
+  if(typeof renderLeadReport!=="function"||renderLeadReport._tr)return;
+  var o=renderLeadReport;
+  renderLeadReport=function(){var r;try{r=o.apply(this,arguments)}catch(e){}try{trInject()}catch(e){}return r};
+  renderLeadReport._tr=true;
+})();
 /* ── 📋 Aaj kya kiya ──────────────────────────────────────────────── */
 function openMyDay(uid,d){
   var me=(STATE.user&&STATE.user.id)||"";
@@ -10506,16 +10809,28 @@ function openMyDay(uid,d){
   dd=document.createElement("div");dd.className="ov";dd.id="m-myday";dd.style.zIndex="640";
   var k=function(v,l,c){return'<div style="flex:1;background:#fff;border:1.5px solid var(--br);border-radius:10px;padding:6px 4px;text-align:center">'
     +'<div style="font-size:16px;font-weight:900;color:'+(c||"var(--P)")+'">'+v+'</div><div style="font-size:9.5px;font-weight:800;color:var(--t3)">'+l+'</div></div>'};
-  var rows=L.length?L.map(function(e){
-    return'<div style="display:flex;gap:8px;padding:8px 0;border-top:1px solid var(--br);align-items:flex-start">'
-      +'<span style="font-size:10.5px;font-weight:800;color:var(--t3);min-width:36px">'+_hhmm(e.at)+'</span>'
-      +'<span style="width:18px">'+_wlIcon(e)+'</span>'
-      +'<span style="flex:1;line-height:1.35;font-size:12.5px"><b>'+esc(e.party||"")+'</b>'
-      +(_wlType(e)?'<span style="color:var(--t3);font-size:10.5px"> · '+esc(_wlType(e))+'</span>':'')
-      +'<br>'+esc(e.res||"")
-      +(e.k==="call"&&e.away!=null?' <span style="background:#ECFDF5;color:#047857;border-radius:5px;padding:1px 6px;font-size:10px;font-weight:900">'+_awayTxt(e.away)+'</span>':'')
-      +(e.flag?' <span style="background:#FEF2F2;color:#B91C1C;border-radius:5px;padding:1px 6px;font-size:10px;font-weight:900">🚩 '+esc(e.flag)+'</span>':'')
-      +'</span></div>'}).join(""):'<div class="emp" style="padding:18px"><h3>Is din koi kaam nahi likha</h3></div>';
+  var G=_wlGroups(L);
+  var rows=G.length?G.map(function(g,gi){
+    var lastOut=g.items.filter(function(e){return e.k!=="call"&&e.k!=="wa"}).slice(-1)[0];
+    var nc=g.items.filter(function(e){return e.k==="call"}).length,nw=g.items.filter(function(e){return e.k==="wa"}).length;
+    var fl=g.items.filter(function(e){return e.flag}).length;
+    var sum=[nc?(nc+" call"):"",nw?(nw+" WA"):"",lastOut?lastOut.res:""].filter(Boolean).join(" · ");
+    return'<div style="border-top:1px solid var(--br)">'
+      +'<div onclick="var x=document.getElementById(\'mdg'+gi+'\');x.style.display=x.style.display===\'none\'?\'\':\'none\'" style="display:flex;gap:8px;padding:9px 0;cursor:pointer;align-items:flex-start">'
+      +'<span style="font-size:10.5px;font-weight:800;color:var(--t3);min-width:36px">'+_hhmm(g.first)+'</span>'
+      +'<span style="width:18px">'+_wlIcon(lastOut||g.items[g.items.length-1])+'</span>'
+      +'<span style="flex:1;line-height:1.35;font-size:12.5px"><b>'+esc(g.party||"")+'</b>'
+      +(g.type?'<span style="color:var(--t3);font-size:10.5px"> · '+esc(g.type)+'</span>':'')
+      +'<br><span style="color:var(--t2)">'+esc(sum)+'</span>'
+      +(fl?' <span style="background:#FEF2F2;color:#B91C1C;border-radius:5px;padding:1px 6px;font-size:10px;font-weight:900">🚩 '+fl+'</span>':'')
+      +'</span><span style="color:var(--t3);font-weight:900">›</span></div>'
+      +'<div id="mdg'+gi+'" style="display:none;margin:0 0 8px 44px;border-left:2px solid var(--br);padding-left:9px">'
+      +g.items.map(function(e){
+        return'<div style="padding:5px 0;font-size:12px;line-height:1.35"><span style="color:var(--t3);font-weight:800;font-size:10.5px">'+_hhmm(e.at)+'</span> '+_wlIcon(e)+' '+esc(e.res||"")
+          +(e.k==="call"&&e.away!=null?' <span style="background:#ECFDF5;color:#047857;border-radius:5px;padding:1px 6px;font-size:10px;font-weight:900">'+_awayTxt(e.away)+'</span>':'')
+          +(e.flag?' <span style="background:#FEF2F2;color:#B91C1C;border-radius:5px;padding:1px 6px;font-size:10px;font-weight:900">🚩 '+esc(e.flag)+'</span>':'')
+          +'</div>'}).join("")
+      +'</div></div>'}).join(""):'<div class="emp" style="padding:18px"><h3>Is din koi kaam nahi likha</h3></div>';
   dd.innerHTML='<div class="sh" style="max-height:90vh;display:flex;flex-direction:column">'
     +'<div style="padding:12px 15px 8px;border-bottom:1px solid var(--br)">'
     +'<div style="display:flex;align-items:center;gap:8px">'
@@ -10539,8 +10854,9 @@ function myDayText(uid,d){
   var t="*"+(u.name||"")+" — "+fmtDate(d)+"*\n"
     +S.call+" call · "+S.talked+" baat hui · "+S.lead+" lead · "+S.mana+" mana"+(S.ord?(" · "+S.ord+" order "+_wiRs(S.ordRs)):"")+"\n";
   if(S.flag)t+="🚩 "+S.flag+(S.dayFlag?(" ("+S.dayFlag+")"):"")+"\n";
-  t+="\n"+L.filter(function(e){return e.k!=="wa"}).slice(0,60).map(function(e){
-    return _hhmm(e.at)+" "+(e.party||"")+" — "+(e.res||"")+(e.k==="call"&&e.away!=null?(" ("+_awayTxt(e.away)+")"):"")+(e.flag?(" 🚩"+e.flag):"")}).join("\n");
+  t+="\n"+_wlGroups(L).slice(0,40).map(function(g){
+    return"*"+(g.party||"")+"*"+(g.type?(" ("+g.type+")"):"")+"\n"+g.items.filter(function(e){return e.k!=="wa"}).map(function(e){
+      return"  "+_hhmm(e.at)+" "+(e.res||"")+(e.k==="call"&&e.away!=null?(" ("+_awayTxt(e.away)+")"):"")+(e.flag?(" \uD83D\uDEA9"+e.flag):"")}).join("\n")}).join("\n");
   return t;
 }
 function myDayWa(uid,d){_waShareText(myDayText(uid,d))}
@@ -10765,11 +11081,13 @@ var WI_M={
   rec:{i:"\uD83D\uDCC5",c:"#0891B2",bg:"#ECFEFF",l:"Routine visit"},
   /* Sample set ka apna khaana. 441 me ye chhoot gaya tha, isliye wo
      bd (= "Wapsi") par gir raha tha aur list me do Wapsi dikhte the. */
-  ss:{i:"\uD83D\uDCE6",c:"#B45309",bg:"#FFFBEB",l:"Sample set"}
+  ss:{i:"\uD83D\uDCE6",c:"#B45309",bg:"#FFFBEB",l:"Sample set"},
+  brk:{i:"\uD83E\uDD1D",c:"#4F46E5",bg:"#EEF2FF",l:"Broker follow-up"}
 };
 // Star aur thandi party customer master me hoti hai, inquiry aur nayi
 // party lead me. Dono ka pata ek hi shakal me nikal lo.
 function _wiRec(t,id){
+  if(t==="brk")return(STATE.brokers||[]).filter(function(x){return x&&x.id===id})[0]||null;
   /* Sample set apne khaane me rehta hai. Ye 1.45.441 me chhoot gaya tha,
      isliye set ke card par na phone aata tha na WhatsApp ka button. */
   if(t==="ss")return(STATE.sampleSets||[]).filter(function(x){return x&&x.id===id})[0]||null;
@@ -10942,7 +11260,7 @@ function _wiWaBtn(ph,label,bg,fg,t,id,forBroker){
 }
 // Aaj ki list is kram me banti hai. Jo party khud poochh rahi hai wo
 // pehle -- wahan order milne ka chance sabse zyada hai.
-var WI_ORDER=["inq","ss","star","rec","new","bd"];
+var WI_ORDER=["inq","ss","star","brk","rec","new","bd"];
 // Kaunsa group khula hai -- sirf isi phone par yaad rehta hai.
 var _wiOpen=(function(){
   try{var o=JSON.parse(localStorage.getItem("vs_wi_open")||"null");if(o&&typeof o==="object")return o}catch(e){}
@@ -11012,6 +11330,7 @@ function _wiCard(x){
     +(phone?_wiLine("\uD83D\uDCF1",(p.contact?p.contact+" \u00b7 ":"")+phone):"")
     +(p.brkName?_wiLine("\uD83E\uDD1D",p.brkName+(p.brkPhone?" \u00b7 "+p.brkPhone:" \u00b7 number nahi")):"")
     +(x.why?'<div class="xs" style="font-weight:700;color:'+m.c+';margin-top:4px">'+esc(x.why)+"</div>":"")
+    +(function(){var ls=null;try{ls=_wiLastSay(x.t,x.id)}catch(e){}return ls?('<div class="xs" style="font-weight:700;margin-top:4px;color:#3730A3">\uD83D\uDCAC '+esc(ls.say)+' <span style="color:var(--t3);font-weight:600">\u2014 '+esc(ls.by||"")+(ls.d?(", "+esc(fmtDate(ls.d))):"")+'</span></div>'):""})()
     +(wiSeeTeam()&&x.who?'<div class="xs ct3" style="font-weight:700;margin-top:4px">\uD83D\uDC64 '+esc(x.who)+"</div>":"")
     +(function(){if(!wiSeeAll())return"";var on=false;try{on=scMarketsOn()}catch(e){}if(!on)return"";
       var sc=null;try{sc=scOfWork(x)}catch(e){}
@@ -11065,6 +11384,7 @@ function wiSaveBrkPhone(brkId){
   try{renderNewParty()}catch(e){}
 }
 function _wiOutLbl(t,o){
+  if(o[3]&&!o[3].sys)return o[1]+(o[3].noteReq?" \u270D\uFE0F":"");
   var k=o[0],door=(t==="bd"||t==="ss"||t==="rec");
   if(k==="order"&&door)return _meSc()?"\uD83C\uDFAF Lead banao (salesman ko)":"\uD83E\uDDFE Order mila \u2014 order form banao";
   if(k==="never"&&(t==="bd"||t==="ss"))return"Mana kiya (wajah batao)";
@@ -11072,8 +11392,16 @@ function _wiOutLbl(t,o){
 }
 function wiActions(t,id,taskId){
   if(t==="star"){try{return openStarOutcomePicker(id,taskId)}catch(e){return}}
-  var _outs=BD_OUT.filter(function(o){return !(t==="bd"&&o[0]==="order"&&!_meSc())});
+  if(t==="brk"){try{return brkPicker(id)}catch(e){return}}
+  bdOutSync();
+  var _outs=BD_OUT.filter(function(o){return !(o[3]&&o[3].hide)&&!(t==="bd"&&o[0]==="order"&&!_meSc())});
   var nm=(workItems().filter(function(x){return x.id===id&&x.t===t})[0]||{}).name||"";
+  if(!nm){try{var _rr=_wiRec(t,id)||{};nm=_rr.name||_rr.custName||""}catch(e){}}
+  /* Is party ko call lagi aur jawab baaki -- tab dabba band nahi hota. */
+  var forced=(function(){var p=_callPend();return!!(p&&(CALL_COL[p.t]||p.t)===(CALL_COL[t]||t)&&p.id===id)})();
+  var last=null;try{last=_wiLastSay(t,id)}catch(e){}
+  var lgap=((BD_OUT.filter(function(o){return o[0]==="later"})[0])||[])[2]||10;
+  window._wiSay="";
   var d=document.getElementById("m-wi-out");if(d)d.remove();
   d=document.createElement("div");d.className="ov";d.id="m-wi-out";
   d.innerHTML='<div class="sh" style="max-height:70vh;display:flex;flex-direction:column">'
@@ -11081,9 +11409,17 @@ function wiActions(t,id,taskId){
     +'<div style="font-weight:900;font-size:15px">'+esc(nm)+'</div>'
     +'<div class="xs ct3" style="font-weight:600;margin-top:2px">Kya hua? Ek dabao, agla din khud tay ho jayega.</div></div>'
     +'<div style="flex:1;overflow-y:auto;padding:11px 13px">'
+    +(last?('<div style="background:#EEF2FF;border-radius:9px;padding:7px 9px;margin-bottom:8px;font-size:11.5px;font-weight:700;color:#3730A3">\uD83D\uDCAC Pichhli baat: '+esc(last.say)
+      +' <span style="color:var(--t3);font-weight:600">\u2014 '+esc(last.by||"")+(last.d?(", "+esc(fmtDate(last.d))):"")+'</span></div>'):"")
+    +'<textarea id="wio-say" class="inp" rows="2" maxlength="200" placeholder="Kya baat hui? (agli baar kaam aayega)" style="margin-bottom:9px"></textarea>'
+    +'<div id="wio-later" style="display:none;background:#F9FAFB;border:1.5px solid var(--br);border-radius:11px;padding:10px;margin-bottom:9px">'
+    +'<div id="wio-later-h" style="font-size:12px;font-weight:900;margin-bottom:7px">Baad me kab?</div>'
+    +'<button id="wio-std" onclick="wiOutLaterGo(\''+t+'\',\''+id+'\',\'std\')" style="width:100%;background:var(--P);color:#fff;border:none;padding:10px;border-radius:9px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:7px">'+lgap+' din baad \u2014 '+esc(fmtDate(_dAdd(today(),lgap)))+'</button>'
+    +'<div style="display:flex;gap:7px"><input type="date" id="wio-date" class="inp" min="'+_dAdd(today(),1)+'" style="flex:1">'
+    +'<button onclick="wiOutLaterGo(\''+t+'\',\''+id+'\',\'pick\')" style="background:#059669;color:#fff;border:none;padding:0 14px;border-radius:9px;font-weight:800;cursor:pointer;font-family:inherit">Is din</button></div></div>'
     +_outs.map(function(o){
       var col=o[0]==="order"?"#059669":o[0]==="never"?"#B91C1C":"var(--t1)";
-      return'<button onclick="document.getElementById(\'m-wi-out\').remove();bdOutcome(\''+t+'\',\''+id+'\',\''+o[0]+'\')" '
+      return'<button onclick="wiOutPick(\''+t+'\',\''+id+'\',\''+o[0]+'\')" '
         +'style="width:100%;text-align:left;background:var(--sf);border:1.5px solid var(--br);color:'+col
         +';padding:13px 14px;border-radius:11px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px">'
         +esc(_wiOutLbl(t,o))+(o[2]?'<span style="float:right;font-size:11px;font-weight:700;color:var(--t3)">phir '+o[2]+' din baad</span>':"")
@@ -11094,11 +11430,559 @@ function wiActions(t,id,taskId){
     +(t==="new"?'<button onclick="document.getElementById(\'m-wi-out\').remove();npVisitForm(\''+id+'\')" style="width:100%;text-align:left;background:var(--Al);border:none;color:var(--Ad);padding:12px 14px;border-radius:11px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px">\u270D\uFE0F Note likhkar din chuno</button>':"")
     +'</div>'
     +'<div style="padding:10px 15px;border-top:1px solid var(--br)">'
-    +'<button class="btn bs bfl" onclick="document.getElementById(\'m-wi-out\').remove()">Rehne do</button></div></div>';
+    +(forced?'<div class="xs" style="font-weight:800;color:#B45309;text-align:center;padding:4px 0">\uD83D\uDCDE Call ke baad jawab chunna zaroori hai</div>'
+      :'<button class="btn bs bfl" onclick="document.getElementById(\'m-wi-out\').remove()">Rehne do</button>')+'</div></div>';
   _ovOpen(d);
 }
+/* Button dabaya -- Rate poocha bina baat ke nahi; Baad me bola par tareekh. */
+/* ══ JAWAB KI LIST -- Settings se (1.45.467) ════════════════════════
+   type: plain = itne din baad phir · date = tareekh poochho ·
+         lead = lead banao/order form · never = mana kiya (wajah)
+   Star: lead · soon (grade ke din) · date (call back) · cant · esc · plain */
+var KH_DEF=[
+  {id:"no",type:"plain",lbl:"Jawab nahi",gap:3,talked:0,sys:1},
+  {id:"later",type:"date",lbl:"Baad me bola",gap:10,talked:1,sys:1},
+  {id:"rate",type:"plain",lbl:"Rate poocha",gap:2,talked:1,noteReq:1,sys:1},
+  {id:"order",type:"lead",lbl:"Order mila / Lead banao",gap:0,talked:1,sys:1},
+  {id:"never",type:"never",lbl:"Mana kiya",gap:0,talked:1,sys:1}];
+var STAR_DEF=[
+  {id:"lead",type:"lead",lbl:"Lead banao",sub:"Salesman ko inquiry — order form wo banayega, lead usse judkar band hogi",talked:1,sys:1},
+  {id:"order_soon",type:"soon",lbl:"Placing order soon",sub:"Agla follow-up grade ke din baad",talked:1,sys:1},
+  {id:"callback",type:"date",lbl:"Call back on date",sub:"Tareekh chuno",talked:1,sys:1},
+  {id:"cant_reach",type:"cant",lbl:"Can't reach",sub:"Phir koshish (Star settings ke din)",talked:0,sys:1},
+  {id:"escalate",type:"esc",lbl:"Escalate to admin",sub:"Admin ke Tasks me jayega",talked:1,sys:1}];
+function _optMerge(def,saved){
+  var out=[],seen={};
+  (Array.isArray(saved)?saved:[]).forEach(function(o){
+    if(!o||!o.id||seen[o.id])return;seen[o.id]=1;
+    var d=def.filter(function(x){return x.id===o.id})[0];
+    var m=Object.assign({},d||{},o);
+    if(d){m.type=d.type;m.sys=1}           /* tay kaam wale ka kaam nahi badalta */
+    else if(m.type!=="date")m.type="plain";
+    out.push(m);
+  });
+  def.forEach(function(d){if(!seen[d.id])out.push(Object.assign({},d))});
+  return out;
+}
+function khOpts(){return _optMerge(KH_DEF,(STATE.settings||{}).kyaHuaOpts)}
+function starOpts(){return _optMerge(STAR_DEF,(STATE.settings||{}).starOpts)}
+function khOpt(code){return khOpts().filter(function(o){return o.id===code})[0]||null}
+/* BD_OUT purane raaston ke liye -- Settings se bharta hai. */
+function bdOutSync(){
+  try{
+    var L=khOpts();
+    BD_OUT=L.map(function(o){return[o.id,o.lbl,(o.type==="plain"||o.type==="date")?(Number(o.gap)||0):0,o]});
+    L.forEach(function(o){WI_TALKED[o.id]=o.talked?1:0});
+    starOpts().forEach(function(o){if(o.type==="plain")WI_TALKED[o.id]=o.talked?1:0});
+    brkOpts().forEach(function(o){WI_TALKED[o.id]=o.talked?1:0});
+  }catch(e){}
+}
+function _optLbl(code){
+  var o=khOpts().concat(starOpts()).concat(brkOpts()).filter(function(x){return x.id===code})[0];
+  return o?o.lbl:"";
+}
+/* ── Settings card ── */
+function _khAdmin(){return!!(STATE.user&&STATE.user.role==="admin")}
+function _khCardHtml(){
+  if(!_khAdmin())return"";
+  return'<div class="card mt12" style="padding:12px 14px">'
+    +'<div class="xs ct3" style="font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Kya hua? ke jawab</div>'
+    +'<div class="xs ct3" style="margin-bottom:9px;line-height:1.5">Non Active, sample set, inquiry, routine — call ke baad yahi list. '
+    +'"Din" = itne din baad party phir list me. Hatane se purana hisaab nahi badalta.</div>'
+    +'<div id="kh-rows">'+_optRowsHtml("kh")+'</div>'
+    +'<button class="btn bs bfl" style="margin-top:8px" onclick="optAdd(\'kh\')">+ Naya jawab</button></div>'
+    +'<div class="card mt12" style="padding:12px 14px">'
+    +'<div class="xs ct3" style="font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Star follow-up ke jawab</div>'
+    +'<div class="xs ct3" style="margin-bottom:9px;line-height:1.5">Star party ke "What happened?" me yahi list.</div>'
+    +'<div id="so-rows">'+_optRowsHtml("so")+'</div>'
+    +'<button class="btn bs bfl" style="margin-top:8px" onclick="optAdd(\'so\')">+ Naya jawab</button></div>'+_brkCardHtml();
+}
+var OPT_TYPE_LBL={plain:"Itne din baad phir",date:"Tareekh poochho",lead:"Lead banao / order form",never:"Mana kiya (wajah)",
+  soon:"Grade ke din baad",cant:"Phir koshish",esc:"Admin ko"};
+function _optRowsHtml(w){
+  var L=_optL(w);
+  return L.map(function(o,i){
+    var dayOk=(o.type==="plain"||o.type==="date");
+    return'<div style="border:1.5px solid var(--br);border-radius:10px;padding:8px;margin-bottom:7px;'+(o.hide?'opacity:.5;':'')+'">'
+      +'<div style="display:flex;gap:6px;align-items:center">'
+      +'<input class="inp" style="flex:1;min-width:0" value="'+esc(o.lbl||"")+'" onchange="optSet(\''+w+'\',\''+o.id+'\',\'lbl\',this.value)">'
+      +(i>0?'<button class="btn bgh bxs" title="Upar" onclick="optUp(\''+w+'\',\''+o.id+'\')">▲</button>':'<span style="width:30px"></span>')
+      +'<button class="btn '+(o.hide?'bs':'bd')+' bxs" onclick="optHide(\''+w+'\',\''+o.id+'\')">'+(o.hide?'Wapas':'🗑')+'</button></div>'
+      +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:11.5px;font-weight:700;color:var(--t2)">'
+      +(o.sys?'<span style="background:#F3F4F6;border-radius:6px;padding:3px 7px">'+esc(OPT_TYPE_LBL[o.type]||o.type)+'</span>'
+        :'<select class="sel" style="width:auto;padding:4px 6px;font-size:11.5px" onchange="optSet(\''+w+'\',\''+o.id+'\',\'type\',this.value)">'
+          +'<option value="plain"'+(o.type==="plain"?' selected':'')+'>Itne din baad phir</option>'
+          +(w!=="so"?'<option value="date"'+(o.type==="date"?' selected':'')+'>Tareekh poochho</option>':'')+'</select>')
+      +(dayOk?'<label>Din <input type="number" min="1" max="365" class="inp" style="width:62px;padding:4px 6px" value="'+(Number(o.gap)||"")+'" onchange="optSet(\''+w+'\',\''+o.id+'\',\'gap\',this.value)"></label>':'')
+      +'<label><input type="checkbox"'+(o.noteReq?' checked':'')+' onchange="optSet(\''+w+'\',\''+o.id+'\',\'noteReq\',this.checked)"> baat likhna zaroori</label>'
+      +'<label><input type="checkbox"'+(o.talked?' checked':'')+' onchange="optSet(\''+w+'\',\''+o.id+'\',\'talked\',this.checked)"> "baat hui" me gino</label>'
+      +'</div>'
+      +(w==="so"?'<input class="inp" style="margin-top:6px;font-size:12px" placeholder="Chhoti line (button ke neeche)" value="'+esc(o.sub||"")+'" onchange="optSet(\'so\',\''+o.id+'\',\'sub\',this.value)">':'')
+      +'</div>';
+  }).join("");
+}
+function _optSave(w,L){
+  if(!_khAdmin())return;
+  var S=STATE.settings||(STATE.settings={});
+  S[({kh:"kyaHuaOpts",so:"starOpts",bo:"brkOpts"})[w]]=L.map(function(o){
+    var x={id:o.id,lbl:o.lbl,type:o.type};
+    if(o.gap!=null)x.gap=Number(o.gap)||0;if(o.sub)x.sub=o.sub;
+    if(o.noteReq)x.noteReq=1;if(o.talked)x.talked=1;if(o.hide)x.hide=1;
+    return x;
+  });
+  S._ts=_bumpTs(S);
+  try{lsSave("vs_settings",STATE.settings)}catch(e){}
+  try{persist()}catch(e){}
+  try{autoSyncCloud()}catch(e){}
+  bdOutSync();
+  var box=document.getElementById(w+"-rows");if(box)box.innerHTML=_optRowsHtml(w);
+}
+function optSet(w,id,k,v){
+  if(!_khAdmin())return;
+  var L=_optL(w),o=L.filter(function(x){return x.id===id})[0];if(!o)return;
+  if(k==="lbl"){v=String(v||"").trim();if(!v){toast("Naam khaali nahi ho sakta","warn");_optSave(w,L);return}}
+  if(k==="gap"){v=parseInt(v,10);if(!isFinite(v)||v<1){toast("Din 1 ya zyada","warn");_optSave(w,L);return}}
+  if(k==="type"&&o.sys)return;
+  o[k]=(k==="noteReq"||k==="talked")?(v?1:0):v;
+  _optSave(w,L);toast("Sambhal liya","ok");
+}
+function optUp(w,id){
+  var L=_optL(w),i=L.map(function(x){return x.id}).indexOf(id);
+  if(i<=0)return;var t=L[i-1];L[i-1]=L[i];L[i]=t;_optSave(w,L);
+}
+function optHide(w,id){
+  var L=_optL(w),o=L.filter(function(x){return x.id===id})[0];if(!o)return;
+  if(!o.hide&&L.filter(function(x){return!x.hide}).length<=1){toast("Kam se kam ek jawab rehna chahiye","warn");return}
+  o.hide=o.hide?0:1;_optSave(w,L);
+}
+function optAdd(w){
+  if(!_khAdmin())return;
+  var L=_optL(w);
+  L.push({id:"k_"+Date.now().toString(36),type:"plain",lbl:"Naya jawab",gap:3,talked:1});
+  _optSave(w,L);
+}
+/* ── Star ka naya dabba -- list Settings se ── */
+function starPicker(custId,taskId){
+  bdOutSync();
+  var c=(STATE.customers||[]).filter(function(x){return x.id===custId})[0];if(!c)return;
+  var sg=(STATE.settings&&STATE.settings.starGrading)||{};
+  var grade=c.starGrade||(function(){try{return getStarGrade(custId)}catch(e){return""}})()||"C";
+  var snooze=7;try{snooze=getStarSnoozeDays(grade,sg)}catch(e){}
+  var cant=sg.cantReachDays||3;
+  var forced=_starForced(custId);
+  var ls=null;try{ls=_wiLastSay("star",custId)}catch(e){}
+  var col={lead:["#DB2777","#9D174D","#fff"],soon:["#D1FAE5","#059669","#065F46"],date:["#EFF6FF","#3B82F6","#1E40AF"],
+    cant:["#FEF3C7","#D97706","#92400E"],esc:["#FEE2E2","#DC2626","#991B1B"],plain:["#F5F3FF","#7C3AED","#5B21B6"]};
+  var scOk=_meSc()||(STATE.user&&STATE.user.role==="admin");
+  var btns=starOpts().filter(function(o){return!o.hide&&(o.type!=="lead"||scOk)}).map(function(o){
+    var k=col[o.type]||col.plain;
+    var sub=o.sub||"";
+    if(o.type==="soon")sub=(o.sub?o.sub+" — ":"")+snooze+" din (Grade "+grade+")";
+    if(o.type==="cant")sub=(o.sub?o.sub+" — ":"")+cant+" din baad";
+    if(o.type==="plain")sub=(o.sub?o.sub+" — ":"")+(Number(o.gap)||0)+" din baad";
+    return'<button onclick="starPick(\''+custId+'\',\''+(taskId||"")+'\',\''+o.id+'\')" style="text-align:left;background:'+k[0]+';border:1.5px solid '+k[1]
+      +';border-radius:10px;padding:12px 14px;font-size:13px;font-weight:800;cursor:pointer;color:'+k[2]+';width:100%;font-family:inherit">'
+      +escHtml(o.lbl)+(o.noteReq?' <span style="font-size:10px">✍️</span>':'')
+      +(sub?'<div style="font-size:11px;font-weight:400;margin-top:2px;opacity:.9">'+escHtml(sub)+'</div>':'')+'</button>';
+  }).join("");
+  var brk="";
+  try{if(c.defaultBrokerId){var b=(STATE.brokers||[]).filter(function(x){return x.id===c.defaultBrokerId})[0];var bn=b?b.name:"Broker";
+    brk='<div style="margin-top:6px;padding-top:10px;border-top:1px solid var(--br)"><div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Ya broker ko message</div>'
+      +'<div style="display:flex;gap:8px"><button onclick="waStarBrokerSingle(\''+custId+'\');rmEl(\'m-star-outcome\')" style="flex:1;background:#7C3AED;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:800;cursor:pointer;color:#fff">📲 WA Broker<div style="font-size:10px;font-weight:400;opacity:.85">'+escHtml(bn)+'</div></button>'
+      +'<button id="m-star-compiled-'+custId+'" onclick="waStarBrokerCompiled(\''+custId+'\',\'m-star-compiled-'+custId+'\')" style="flex:1;background:#4F46E5;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:800;cursor:pointer;color:#fff">📋 WA All (Broker)</button></div></div>'}}catch(e){brk=""}
+  rmEl("m-star-outcome");
+  var div=document.createElement("div");div.id="m-star-outcome";
+  div.style.cssText="position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center";
+  div.innerHTML='<div style="background:var(--bg);border-radius:16px 16px 0 0;width:min(500px,100%);padding:16px 16px 28px;max-height:86vh;overflow-y:auto">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h3 style="margin:0;font-size:16px;font-weight:800">📞 Kya hua?</h3>'
+    +(forced?'':'<button onclick="rmEl(\'m-star-outcome\')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--t3)">×</button>')+'</div>'
+    +'<div style="font-size:13px;color:var(--t2);margin-bottom:10px;font-weight:700">⭐ '+escHtml(c.name)+' ['+grade+']</div>'
+    +(ls?('<div style="background:#EEF2FF;border-radius:9px;padding:7px 9px;margin-bottom:8px;font-size:11.5px;font-weight:700;color:#3730A3">💬 Pichhli baat: '+escHtml(ls.say)
+      +' <span style="color:var(--t3);font-weight:600">— '+escHtml(ls.by||"")+(ls.d?(", "+fmtDate(ls.d)):"")+'</span></div>'):'')
+    +'<textarea id="star-say" class="inp" rows="2" maxlength="200" placeholder="Kya baat hui? (agli baar kaam aayega)" style="margin-bottom:9px;width:100%"></textarea>'
+    +(forced?'<div style="font-size:11px;font-weight:800;color:#B45309;margin-bottom:8px">📞 Call ke baad jawab chunna zaroori hai</div>':'')
+    +'<div style="display:flex;flex-direction:column;gap:8px">'+btns+brk+'</div></div>';
+  document.body.appendChild(div);
+}
+function starPick(custId,taskId,oid){
+  var o=starOpts().filter(function(x){return x.id===oid})[0];if(!o)return;
+  var ta=document.getElementById("star-say"),say=ta?String(ta.value||"").trim():"";
+  if(o.noteReq&&!say){if(ta){ta.style.borderColor="#DC2626";ta.placeholder="Kya baat hui — likhna zaroori";try{ta.focus()}catch(e){}}
+    toast("Kya baat hui — likho","warn");return}
+  if(o.type==="lead")return wiLeadOpen("star",custId,taskId);
+  if(o.type==="soon")return markStarContacted(custId,taskId,"order_soon");
+  if(o.type==="date")return openStarCallbackPicker(custId,taskId);
+  if(o.type==="cant")return markStarContacted(custId,taskId,"cant_reach");
+  if(o.type==="esc")return markStarContacted(custId,taskId,"escalate");
+  /* naya jawab -- itne din baad phir */
+  markStarContacted(custId,taskId,o.id);
+  var c=(STATE.customers||[]).filter(function(x){return x.id===custId})[0];
+  if(c){c.starSnoozedUntil=_dAdd(today(),Number(o.gap)||3);c._ts=_bumpTs(c);try{persist()}catch(e){}try{autoSyncCloud()}catch(e){}}
+  toast(o.lbl+" — phir "+fmtDate(_dAdd(today(),Number(o.gap)||3)),"ok");
+  try{renderNewParty()}catch(e){}
+}
+(function(){
+  if(typeof openStarOutcomePicker!=="function"||openStarOutcomePicker._v467)return;
+  openStarOutcomePicker=function(custId,taskId){return starPicker(custId,taskId)};
+  openStarOutcomePicker._v467=true;
+})();
+function wiOutPick(t,id,code){
+  var ta=document.getElementById("wio-say");var say=ta?String(ta.value||"").trim():"";
+  window._wiSay=say;
+  var oc=khOpt(code)||{};
+  if(oc.noteReq&&!say){
+    if(ta){ta.style.borderColor="#DC2626";ta.placeholder=(code==="rate"?"Kis cheez ka rate poocha? (design / item / qty)":"Kya baat hui?")+" \u2014 likhna zaroori";try{ta.focus()}catch(e){}}
+    toast((code==="rate"?"Kis cheez ka rate poocha":"Kya baat hui")+" \u2014 likho","warn");return;
+  }
+  if(oc.type==="date"){var p=document.getElementById("wio-later");
+    if(p&&(p.style.display==="none"||p.dataset.code!==code)){
+      p.dataset.code=code;var g=Number(oc.gap)||10,sb=document.getElementById("wio-std");
+      if(sb)sb.textContent=g+" din baad \u2014 "+fmtDate(_dAdd(today(),g));
+      var hd=document.getElementById("wio-later-h");if(hd)hd.textContent=(oc.lbl||"Baad me")+" \u2014 kab?";
+      p.style.display="";try{p.scrollIntoView({block:"nearest"})}catch(e){}return}}
+  var d=document.getElementById("m-wi-out");if(d)d.remove();
+  bdOutcome(t,id,code,"",{say:say});
+}
+function wiOutLaterGo(t,id,which){
+  var say=String(((document.getElementById("wio-say")||{}).value)||"").trim();
+  var pn=document.getElementById("wio-later"),code=(pn&&pn.dataset.code)||"later";
+  var oc=khOpt(code)||{},lgap=Number(oc.gap)||10;
+  if(oc.noteReq&&!say){toast("Kya baat hui \u2014 likho","warn");return}
+  var dt=which==="std"?_dAdd(today(),lgap):String(((document.getElementById("wio-date")||{}).value)||"");
+  if(!dt||dt<=today()){toast("Aage ki tareekh chuno","warn");return}
+  var d=document.getElementById("m-wi-out");if(d)d.remove();
+  bdOutcome(t,id,code,"",{say:say,date:dt});
+}
+/* Party par aakhri likhi baat -- kisi bhi raaste se likhi ho. */
+function _wiLastSay(t,id){
+  var r=_wiRec(t,id);if(!r)return null;var best=null;
+  var take=function(say,at,d,by){say=String(say||"").trim();if(!say)return;var k=at||_tsOf(d);
+    if(!best||k>=best.k)best={say:say,k:k,d:String(d||_dIso(at)).slice(0,10),by:by||""}};
+  (r.bdLog||[]).forEach(function(l){if(l)take(l.say,l.at,l.date,l.by)});
+  (r.ssLog||[]).forEach(function(l){if(l)take(l.say,l.at,l.date,l.by)});
+  (r.visitLog||[]).forEach(function(l){if(l)take(l.say,l.ts,l.date,l.loggedByName)});
+  (r.visits||[]).forEach(function(l){if(l)take(l.say,_tsOf(l.at),l.date,l.by)});
+  (r.starLog||[]).forEach(function(l){if(l)take(l.say,l.at,l.date,l.by)});
+  (r.brkLog||[]).forEach(function(l){if(l)take(l.say,l.at,l.date,l.by)});
+  if(t==="star"||t==="bd")(STATE.taskInstances||[]).forEach(function(k){
+    if(k&&!k._deleted&&k.starCustId===id&&k.starSay)take(k.starSay,_tsOf(k.completedAt),k.completedDate,k.completedBy)});
+  (r.notes||[]).forEach(function(n){if(n)take(n.note,0,n.date,n.by)});
+  return best;
+}
+function _starForced(cid){var p=_callPend();return!!(p&&(CALL_COL[p.t]||p.t)==="customers"&&p.id===cid)}
 // Ek hi list: aaj ka kaam. Har card par likha hai ye kis tarah ka kaam hai.
 // Baaki sab "Sab dekho" ke peeche -- salesman ko rozana sirf ek list milti hai.
+/* ══ BROKER FOLLOW-UP (1.45.468) ═══════════════════════════════════
+   Star jaisa: jaisa business, waisa grade; grade ke din baad SC ka phone.
+   Naya khaana koi nahi -- sab broker ke apne record par (brkLog, brkNext). */
+var BRK_DEF=[
+  {id:"b_lead",type:"lead",lbl:"Lead di",sub:"Lead form khulega — broker bhara hua, salesman chuno",talked:1,sys:1},
+  {id:"b_none",type:"soon",lbl:"Abhi kuchh nahi",sub:"Grade ke din baad phir",talked:1,sys:1},
+  {id:"b_cat",type:"plain",lbl:"Catalogue / rate bhejo",gap:3,talked:1,noteReq:1,sys:1},
+  {id:"b_later",type:"date",lbl:"Baad me call karo",gap:7,talked:1,sys:1},
+  {id:"b_no",type:"plain",lbl:"Phone nahi utha",gap:1,talked:0,sys:1}];
+function brkOpts(){return _optMerge(BRK_DEF,(STATE.settings||{}).brkOpts)}
+function _optL(w){return w==="kh"?khOpts():w==="bo"?brkOpts():starOpts()}
+function brkFu(){
+  var s=(STATE.settings||{}).brkFu||{};
+  var n=function(k,d){var v=Number(s[k]);return isFinite(v)&&v>0?v:d};
+  return{on:!(s.on===0||s.on===false),thA:n("thA",1000000),thB:n("thB",300000),thC:n("thC",1),
+    dA:n("dA",2),dB:n("dB",3),dC:n("dC",5),dD:n("dD",10),cap:n("cap",10),
+    wa:String(s.wa||"Namaste {naam} ji, Amrit Laxmi Textiles se. Koi nayi party ya requirement ho to batayein.")};
+}
+function brkGradeOf(rs,F){F=F||brkFu();if(rs>=F.thA)return"A";if(rs>=F.thB)return"B";if(rs>=F.thC)return"C";return"D"}
+var BRK_WHAT={bill:"bill",order:"order",lead:"lead",set:"sample set"};
+/* Ek hi baar sab padh lo -- purane phone par bhi halka. */
+function brkCtx(){
+  var td=today(),cut=_dAdd(td,-365),rs={},act={},parties={},cust={};
+  (STATE.customers||[]).forEach(function(c){if(!c||c._deleted)return;cust[c.id]=c;
+    if(c.defaultBrokerId)parties[c.defaultBrokerId]=(parties[c.defaultBrokerId]||0)+1});
+  var up=function(id,d,w){d=String(d||"").slice(0,10);if(!id||!d||d>td)return;if(!act[id]||d>act[id].d)act[id]={d:d,w:w}};
+  (STATE.bills||[]).forEach(function(b){
+    if(!b||b._deleted||b.status==="cancelled")return;
+    var bid=b.brkId||((cust[b.custId]||{}).defaultBrokerId)||"";if(!bid)return;
+    var d=String(b.date||"").slice(0,10);
+    if(d>=cut)rs[bid]=(rs[bid]||0)+(Number(b.grandTotal||b.netTaxable||b.total)||0);
+    up(bid,d,"bill");
+  });
+  (STATE.orders||[]).forEach(function(o){if(o&&!o._deleted&&o.status!=="cancelled"&&o.brkId)up(o.brkId,o.date,"order")});
+  (STATE.leads||[]).forEach(function(l){if(l&&!l._deleted&&l.brokerId)up(l.brokerId,l.createdAt,"lead")});
+  (STATE.sampleSets||[]).forEach(function(q){if(q&&!q._deleted&&q.brokerId)up(q.brokerId,q.date,"set")});
+  return{rs:rs,act:act,parties:parties};
+}
+function brkInfo(id,X,F){
+  X=X||brkCtx();F=F||brkFu();
+  var rs=X.rs[id]||0,g=brkGradeOf(rs,F);
+  return{rs:rs,g:g,gd:F["d"+g],act:X.act[id]||null,parties:X.parties[id]||0};
+}
+/* Kaun dekhe: admin sab; SC -- jis broker par uska naam (chhutti me stand-in),
+   aur jin par kisi ka naam nahi. Salesman ko nahi. */
+function _brkScOf(b){
+  var own=b&&b.scId?_userById(b.scId):null;
+  if(own&&!isScUser(own))own=null;
+  return{own:own,who:own?scStandIn(own):null};
+}
+function brkItems(){
+  var F=brkFu();if(!F.on)return[];
+  var u=STATE.user;if(!u)return[];
+  var adm=wiSeeAll();if(!adm&&!isScUser(u))return[];
+  var X=brkCtx(),td=today(),out=[];
+  (STATE.brokers||[]).forEach(function(b){
+    if(!b||b._deleted||b.fuStop||!String(b.name||"").trim())return;
+    var sc=_brkScOf(b);
+    if(!adm&&sc.own&&!(sc.who&&sc.who.id===u.id))return;
+    var I=brkInfo(b.id,X,F);
+    var due=I.act?_dAdd(I.act.d,I.gd):"";
+    if(b.brkNext&&b.brkNext>due)due=b.brkNext;
+    if(!due)due=td;
+    var late=Math.max(0,_bdDaysTo(due)),since=I.act?Math.max(0,_bdDaysTo(I.act.d)):-1;
+    out.push({t:"brk",id:b.id,name:b.name,grade:I.g,rs:I.rs,gd:I.gd,
+      sub:"Grade "+I.g+" · "+(I.rs?(_wiRs(I.rs)+" (12 mahine)"):"12 mahine me koi bill nahi")+" · "+I.parties+" party",
+      who:sc.own?((sc.who?sc.who.name:"koi nahi")+(sc.who&&sc.who.id!==sc.own.id?(" ("+sc.own.name+" ki jagah)"):"")):"Sab SC",
+      due:due,why:I.act?("Aakhri "+BRK_WHAT[I.act.w]+" "+since+" din pehle ("+fmtDate(I.act.d)+")"):"Abhi tak koi lead / order nahi",
+      phone:b.whatsapp||b.phone||"",late:late,
+      score:150+({A:30,B:20,C:10,D:0}[I.g])+Math.min(20,late),ref:b});
+  });
+  /* Roz ki seema -- baaki agle din. */
+  var dueL=out.filter(function(x){return x.due<=td}).sort(function(a,c){return c.score-a.score}),keep={};
+  dueL.slice(0,F.cap).forEach(function(x){keep[x.id]=1});
+  return out.filter(function(x){return x.due>td||keep[x.id]});
+}
+(function(){
+  if(workItems._v468)return;
+  var base=workItems;
+  workItems=function(kind){
+    var out=(kind==="brk")?[]:base(kind);
+    if(!kind||kind==="brk"){
+      var b=[];try{b=brkItems()}catch(e){b=[]}
+      if(b.length){out=out.concat(b);out.sort(function(a,c){return c.score-a.score})}
+    }
+    return out;
+  };
+  workItems._v468=true;
+  var card=_wiCard;
+  _wiCard=function(x){return(x&&x.t==="brk")?_brkCard(x):card.apply(this,arguments)};
+  var lme=_wiLeadMadeEffects;
+  _wiLeadMadeEffects=function(t,id,taskId,lead,lbl){
+    var r=lme.apply(this,arguments);
+    if(t==="brk"){try{
+      var b=_wiRec("brk",id);if(b){var u=STATE.user||{},td=today();
+        if(!Array.isArray(b.brkLog))b.brkLog=[];
+        b.brkLog.push({out:"b_lead",at:Date.now(),date:td,byId:u.id||"",by:u.name||"",leadId:(lead&&lead.id)||""});
+        b.brkLog=b.brkLog.slice(-30);
+        b.brkNext=_dAdd(td,brkInfo(id).gd);b._ts=_bumpTs(b);
+        try{lsSave("vs_brokers",STATE.brokers)}catch(e){}try{persist()}catch(e){}}
+    }catch(e){}}
+    return r;
+  };
+  var sm=showMod;
+  showMod=function(id){var r=sm.apply(this,arguments);if(id==="m-brk"){try{_brkExtraFill()}catch(e){}}return r};
+  var sb=saveBrk;
+  saveBrk=async function(){
+    var id=String((el("brk-id")||{}).value||""),scS=el("brk-sc"),stS=el("brk-fustop");
+    var has=!!(scS&&_khAdmin()),sc=has?String(scS.value||""):"",stop=!!(has&&stS&&stS.checked);
+    var before=(STATE.brokers||[]).length;
+    var r=await sb.apply(this,arguments);
+    if(has){
+      var b=id?(STATE.brokers||[]).filter(function(x){return x&&x.id===id})[0]
+        :((STATE.brokers||[]).length>before?STATE.brokers[STATE.brokers.length-1]:null);
+      if(b&&(String(b.scId||"")!==sc||!!b.fuStop!==stop)){
+        b.scId=sc;b.fuStop=stop?1:0;b._ts=_bumpTs(b);
+        try{lsSave("vs_brokers",STATE.brokers)}catch(e){}try{persist()}catch(e){}try{autoSyncCloud()}catch(e){}
+      }
+    }
+    return r;
+  };
+})();
+function _brkCard(x){
+  var m=WI_M.brk,late=x.late>0,ph=x.phone;
+  var gc={A:"#059669",B:"#2563EB",C:"#D97706",D:"#6B7280"}[x.grade]||"#6B7280";
+  var ls=null;try{ls=_wiLastSay("brk",x.id)}catch(e){}
+  var wa="";try{wa=waLogSummary(x.ref)}catch(e){wa=""}
+  return'<div style="background:var(--sf);border:1.5px solid '+(late?"#FCA5A5":"var(--br)")
+    +';border-left:4px solid '+m.c+';border-radius:12px;padding:11px 12px;margin-bottom:8px">'
+    +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+    +'<span style="background:'+m.bg+';color:'+m.c+';font-size:9.5px;font-weight:900;padding:2px 7px;border-radius:5px;white-space:nowrap">'+m.i+" "+m.l+"</span>"
+    +'<span style="background:'+gc+';color:#fff;font-size:9.5px;font-weight:900;padding:2px 7px;border-radius:5px">Grade '+x.grade+'</span>'
+    +(late?'<span style="background:#FEF2F2;color:#B91C1C;font-size:9.5px;font-weight:900;padding:2px 7px;border-radius:5px">'+x.late+" din late</span>":"")
+    +"</div>"
+    +'<div style="font-weight:900;font-size:14px;color:var(--t1);margin-top:4px">'+esc(x.name)+"</div>"
+    +'<div class="xs ct3" style="font-weight:600;margin-top:1px">'+esc(x.sub)+"</div>"
+    +(ph?_wiLine("📱",ph):"")
+    +'<div class="xs" style="font-weight:700;color:'+m.c+';margin-top:4px">'+esc(x.why)+"</div>"
+    +(ls?('<div class="xs" style="font-weight:700;margin-top:4px;color:#3730A3">💬 '+esc(ls.say)+' <span style="color:var(--t3);font-weight:600">— '+esc(ls.by||"")+(ls.d?(", "+esc(fmtDate(ls.d))):"")+'</span></div>'):"")
+    +(wiSeeAll()?'<div class="xs" style="font-weight:700;margin-top:3px;color:#9D174D">📞 SC: '+esc(x.who||"")+"</div>":"")
+    +(wa?'<div class="xs" style="font-weight:800;color:#15803D;margin-top:4px">📲 '+esc(wa)+"</div>":"")
+    +'<div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;align-items:center">'
+    +(ph?('<button onclick="brkWA(\''+x.id+'\')" style="background:#7C3AED;color:#fff;border:none;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">📲 Broker</button>'
+        +'<a href="tel:'+esc(ph)+'" data-wt="brk" data-wid="'+esc(x.id)+'" data-wb="1" style="background:var(--bg);color:var(--t2);text-decoration:none;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;font-family:inherit">📞</a>')
+      :'<button onclick="wiBrkPhone(\''+x.id+'\',\'brk\',\''+x.id+'\')" style="background:#FEF3C7;color:#92400E;border:1.5px solid #FDE68A;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">⚠️ Number laao</button>')
+    +'<button onclick="wiActions(\'brk\',\''+x.id+'\',\'\')" style="flex:1;min-width:104px;background:var(--P);color:#fff;border:none;padding:7px 11px;border-radius:8px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">Kya hua? ›</button>'
+    +"</div></div>";
+}
+function brkWA(id){
+  var b=_wiRec("brk",id);if(!b)return;var ph=b.whatsapp||b.phone||"";
+  if(!ph){toast("Broker ka number nahi hai","warn");return}
+  openWA(ph,brkFu().wa.replace(/\{naam\}/g,b.name||""));
+  try{_waLogPush("brk",id,"broker",ph)}catch(e){}
+  try{renderNewParty()}catch(e){}
+}
+/* ── Kya hua? -- broker ka dabba ── */
+function brkPicker(id){
+  bdOutSync();
+  var b=_wiRec("brk",id);if(!b)return;
+  var I=brkInfo(id);
+  var p=_callPend(),forced=!!(p&&p.t==="brk"&&p.id===id);
+  var ls=null;try{ls=_wiLastSay("brk",id)}catch(e){}
+  var btns=brkOpts().filter(function(o){return!o.hide}).map(function(o){
+    var sub=o.sub||"";
+    if(o.type==="soon")sub="Grade "+I.g+" — "+I.gd+" din baad phir";
+    if(o.type==="plain")sub="phir "+(Number(o.gap)||1)+" din baad";
+    if(o.type==="date")sub=sub||"Tareekh chuno";
+    var col=o.type==="lead"?["#FDF2F8","#DB2777","#9D174D"]:["var(--sf)","var(--br)","var(--t1)"];
+    return'<button onclick="brkPick(\''+id+'\',\''+o.id+'\')" style="width:100%;text-align:left;background:'+col[0]+';border:1.5px solid '+col[1]
+      +';color:'+col[2]+';padding:12px 14px;border-radius:11px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px">'
+      +esc(o.lbl)+(o.noteReq?' ✍️':'')
+      +(sub?'<div style="font-size:11px;font-weight:600;margin-top:2px;color:var(--t3)">'+esc(sub)+'</div>':'')+'</button>';
+  }).join("");
+  var d=document.getElementById("m-brk-out");if(d)d.remove();
+  d=document.createElement("div");d.className="ov";d.id="m-brk-out";
+  d.innerHTML='<div class="sh" style="max-height:80vh;display:flex;flex-direction:column">'
+    +'<div style="padding:13px 15px 9px;border-bottom:1px solid var(--br)">'
+    +'<div style="font-weight:900;font-size:15px">🤝 '+esc(b.name)+' <span style="font-size:12px;color:var(--t3)">[Grade '+I.g+']</span></div>'
+    +'<div class="xs ct3" style="font-weight:600;margin-top:2px">'+(I.rs?(_wiRs(I.rs)+" (12 mahine) · "):"")+I.parties+' party'
+    +(I.act?(' · aakhri '+BRK_WHAT[I.act.w]+' '+esc(fmtDate(I.act.d))):' · abhi tak kuchh nahi')+'</div></div>'
+    +'<div style="flex:1;overflow-y:auto;padding:11px 13px">'
+    +(ls?('<div style="background:#EEF2FF;border-radius:9px;padding:7px 9px;margin-bottom:8px;font-size:11.5px;font-weight:700;color:#3730A3">💬 Pichhli baat: '+esc(ls.say)
+      +' <span style="color:var(--t3);font-weight:600">— '+esc(ls.by||"")+(ls.d?(", "+esc(fmtDate(ls.d))):"")+'</span></div>'):"")
+    +'<textarea id="brk-say" class="inp" rows="2" maxlength="200" placeholder="Kya baat hui? (agli baar kaam aayega)" style="margin-bottom:9px"></textarea>'
+    +'<div id="brk-later" style="display:none;background:#F9FAFB;border:1.5px solid var(--br);border-radius:11px;padding:10px;margin-bottom:9px">'
+    +'<div id="brk-later-h" style="font-size:12px;font-weight:900;margin-bottom:7px">Kab?</div>'
+    +'<button id="brk-std" onclick="brkLaterGo(\''+id+'\',\'std\')" style="width:100%;background:var(--P);color:#fff;border:none;padding:10px;border-radius:9px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:7px"></button>'
+    +'<div style="display:flex;gap:7px"><input type="date" id="brk-date" class="inp" min="'+_dAdd(today(),1)+'" style="flex:1">'
+    +'<button onclick="brkLaterGo(\''+id+'\',\'pick\')" style="background:#059669;color:#fff;border:none;padding:0 14px;border-radius:9px;font-weight:800;cursor:pointer;font-family:inherit">Is din</button></div></div>'
+    +btns+'</div>'
+    +'<div style="padding:10px 15px;border-top:1px solid var(--br)">'
+    +(forced?'<div class="xs" style="font-weight:800;color:#B45309;text-align:center;padding:4px 0">📞 Call ke baad jawab chunna zaroori hai</div>'
+      :'<button class="btn bs bfl" onclick="document.getElementById(\'m-brk-out\').remove()">Rehne do</button>')+'</div></div>';
+  _ovOpen(d);
+}
+function _brkSay(o){
+  var ta=document.getElementById("brk-say"),say=ta?String(ta.value||"").trim():"";
+  if(o&&o.noteReq&&!say){
+    if(ta){ta.style.borderColor="#DC2626";ta.placeholder="Kya baat hui — likhna zaroori";try{ta.focus()}catch(e){}}
+    toast("Kya baat hui — likho","warn");return null;
+  }
+  return say;
+}
+function brkPick(id,oid){
+  var o=brkOpts().filter(function(x){return x.id===oid})[0];if(!o)return;
+  var say=_brkSay(o);if(say===null)return;
+  if(o.type==="lead")return brkLeadOpen(id,say);
+  if(o.type==="date"){
+    var p=document.getElementById("brk-later");
+    if(p){p.dataset.code=oid;var g=Number(o.gap)||7,sb=document.getElementById("brk-std");
+      if(sb)sb.textContent=g+" din baad — "+fmtDate(_dAdd(today(),g));
+      var hd=document.getElementById("brk-later-h");if(hd)hd.textContent=o.lbl+" — kab?";
+      p.style.display="";try{p.scrollIntoView({block:"nearest"})}catch(e){}}
+    return;
+  }
+  var gap=o.type==="soon"?brkInfo(id).gd:(Number(o.gap)||1);
+  brkOutcome(id,oid,{say:say,date:_dAdd(today(),gap)});
+}
+function brkLaterGo(id,which){
+  var pn=document.getElementById("brk-later"),oid=(pn&&pn.dataset.code)||"b_later";
+  var o=brkOpts().filter(function(x){return x.id===oid})[0]||{};
+  var say=_brkSay(o);if(say===null)return;
+  var dt=which==="std"?_dAdd(today(),Number(o.gap)||7):String(((document.getElementById("brk-date")||{}).value)||"");
+  if(!dt||dt<=today()){toast("Aage ki tareekh chuno","warn");return}
+  brkOutcome(id,oid,{say:say,date:dt});
+}
+function brkOutcome(id,code,opts){
+  opts=opts||{};
+  var b=_wiRec("brk",id);if(!b)return;
+  var u=STATE.user||{},td=today();
+  if(!Array.isArray(b.brkLog))b.brkLog=[];
+  var e={out:code,at:Date.now(),date:td,byId:u.id||"",by:u.name||""};
+  var say=String(opts.say||"").trim().slice(0,200);if(say)e.say=say;
+  b.brkLog.push(e);b.brkLog=b.brkLog.slice(-30);
+  if(opts.date)b.brkNext=opts.date;
+  b._ts=_bumpTs(b);
+  try{lsSave("vs_brokers",STATE.brokers)}catch(x){}try{persist()}catch(x){}try{autoSyncCloud()}catch(x){}
+  try{_callOutDone("brk",id)}catch(x){}
+  var d=document.getElementById("m-brk-out");if(d)d.remove();
+  toast((_optLbl(code)||"Likh liya")+(opts.date?(" — phir "+fmtDate(opts.date)):""),"ok");
+  try{renderNewParty()}catch(x){}
+}
+/* "Lead di" -- wahi Leads ka form, broker pehle se bhara. Lead save hone par
+   hi broker ka kaam poora (aur salesman ke paas loop shuru). */
+function brkLeadOpen(id,say){
+  var b=_wiRec("brk",id);if(!b)return;
+  try{rmEl("m-brk-out")}catch(e){}
+  try{openNewLead()}catch(e){toast("Lead form nahi khula","er");return}
+  try{refreshLeadBrokerDropdown(id)}catch(e){}
+  var bs=el("lead-broker");if(bs){bs.value=id;try{syncSearchable(bs)}catch(e){}}
+  var f=el("lead-followup");if(f)f.value=_dAdd(today(),1);
+  var sub=el("lead-sub");if(sub)sub.textContent="🤝 "+(b.name||"")+" ne lead di — party ka naam aur salesman bharo";
+  var it=el("lead-interest");if(it)it.value=say||"";
+  var nm=el("lead-name");if(nm){try{nm.focus()}catch(e){}}
+  window._leadSrcPending={t:"brk",id:id,taskId:"",lbl:"Broker — "+(b.name||""),customerId:""};
+}
+/* ── Broker master: SC + Stop (sirf admin) ── */
+function _brkExtraFill(){
+  var box=el("brk-fu-box");if(!box)return;
+  if(!_khAdmin()){box.innerHTML="";return}
+  var id=String((el("brk-id")||{}).value||"");
+  var b=id?_wiRec("brk",id):null;
+  var cur=b?String(b.scId||""):"";
+  var opts='<option value="">Sab SC (koi bhi)</option>'+scUsers().map(function(u){
+    return'<option value="'+esc(u.id)+'"'+(u.id===cur?" selected":"")+'>'+esc(u.name||"")+'</option>'}).join("");
+  var info="";
+  if(b){var I=brkInfo(id);info='<div class="xs" style="font-weight:700;color:#4F46E5;margin-bottom:6px">Grade '+I.g+' · '
+    +(I.rs?_wiRs(I.rs):"₹0")+' (12 mahine) · '+I.parties+' party'+(I.act?(' · aakhri '+BRK_WHAT[I.act.w]+' '+esc(fmtDate(I.act.d))):'')+'</div>'}
+  box.innerHTML='<div style="border:1.5px solid #C7D2FE;background:#EEF2FF;border-radius:11px;padding:10px;margin-top:4px">'
+    +'<div style="font-size:12px;font-weight:900;color:#3730A3;margin-bottom:6px">🤝 Broker follow-up</div>'+info
+    +'<div class="fg"><label>Kaun SC phone karega</label><select class="sel" id="brk-sc">'+opts+'</select></div>'
+    +'<label style="display:flex;gap:8px;align-items:flex-start;font-size:12.5px;font-weight:800;color:#B91C1C">'
+    +'<input type="checkbox" id="brk-fustop"'+(b&&b.fuStop?" checked":"")+' style="margin-top:2px"> <span>Stop Future Follow up'
+    +'<div style="font-size:11px;font-weight:600;color:var(--t3)">Is broker ko SC ki list me nahi laayenge, chahe kitne din kuchh na aaye</div></span></label></div>';
+}
+/* ── Settings card ── */
+function brkSet(k,v){
+  if(!_khAdmin())return;
+  var S=STATE.settings||(STATE.settings={});
+  var o=Object.assign({},S.brkFu||{});
+  if(k==="on")o.on=v?1:0;
+  else if(k==="wa")o.wa=String(v||"").trim();
+  else{var n=Number(v);if(!isFinite(n)||n<1){toast("1 ya zyada likho","warn");return}o[k]=Math.round(n)}
+  S.brkFu=o;S._ts=_bumpTs(S);
+  try{lsSave("vs_settings",STATE.settings)}catch(e){}try{persist()}catch(e){}try{autoSyncCloud()}catch(e){}
+  toast("Sambhal liya","ok");
+}
+function _brkCardHtml(){
+  if(!_khAdmin())return"";
+  var F=brkFu();
+  var inp=function(k,v,w){return'<input type="number" min="1" class="inp mono" style="width:'+(w||110)+'px;padding:5px 7px" value="'+v+'" onchange="brkSet(\''+k+'\',this.value)">'};
+  var row=function(g,c,th,dk,dv){return'<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:12px;font-weight:800">'
+    +'<span style="background:'+c+';color:#fff;border-radius:6px;padding:3px 8px;min-width:26px;text-align:center">'+g+'</span>'
+    +'<span style="flex:1;min-width:0">'+th+'</span>'+inp(dk,dv,58)+'<span class="ct3">din</span></div>'};
+  return'<div class="card mt12" style="padding:12px 14px">'
+    +'<div class="xs ct3" style="font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">🤝 Broker follow-up</div>'
+    +'<div class="xs ct3" style="margin-bottom:9px;line-height:1.5">Grade = pichhle 12 mahine ke bill (bill par broker, ya party ka default broker). '
+    +'Broker se aakhri lead / order / bill / sample set ke itne din baad SC ki list me aata hai. Broker master me SC chuno ya follow-up band karo.</div>'
+    +'<label style="display:flex;gap:8px;align-items:center;font-size:12.5px;font-weight:800;margin-bottom:9px"><input type="checkbox"'+(F.on?" checked":"")+' onchange="brkSet(\'on\',this.checked)"> Chalu</label>'
+    +row("A","#059669",'₹ '+inp("thA",F.thA)+' se upar',"dA",F.dA)
+    +row("B","#2563EB",'₹ '+inp("thB",F.thB)+' se upar',"dB",F.dB)
+    +row("C","#D97706",'₹ '+inp("thC",F.thC)+' se upar',"dC",F.dC)
+    +row("D","#6B7280",'Baaki (kuchh nahi / kam)',"dD",F.dD)
+    +'<div style="display:flex;gap:8px;align-items:center;margin:8px 0;font-size:12px;font-weight:800">Roz zyada se zyada '+inp("cap",F.cap,64)+' broker</div>'
+    +'<div class="fg"><label>WhatsApp message ({naam} = broker)</label><textarea class="inp" rows="2" onchange="brkSet(\'wa\',this.value)">'+esc(F.wa)+'</textarea></div></div>'
+    +'<div class="card mt12" style="padding:12px 14px">'
+    +'<div class="xs ct3" style="font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Broker ke jawab</div>'
+    +'<div class="xs ct3" style="margin-bottom:9px;line-height:1.5">Broker ko call ke baad "Kya hua?" me yahi list.</div>'
+    +'<div id="bo-rows">'+_optRowsHtml("bo")+'</div>'
+    +'<button class="btn bs bfl" style="margin-top:8px" onclick="optAdd(\'bo\')">+ Naya jawab</button></div>';
+}
 function renderNewParty(){
   var c=el("np-body");if(!c)return;
   try{npCheckTasks()}catch(e){}
@@ -11645,7 +12529,7 @@ const existingTask=(STATE.taskInstances||[]).find(t=>!t._deleted&&t.type==="star
     setTimeout(function(){var s=el("od-c");if(s){s.value=custId;onOrderCustChange()}},300);
   }catch(e){}
 }
-function openStarOutcomePicker(custId,taskId){const c=STATE.customers.find(x=>x.id===custId);if(!c)return;const sg=STATE.settings.starGrading||{};const grade=c.starGrade||getStarGrade(custId)||"C";const snoozeDays=getStarSnoozeDays(grade,sg);const cantReachDays=sg.cantReachDays||3;rmEl("m-star-outcome");const div=document.createElement("div");div.id="m-star-outcome";div.style.cssText="position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center";div.innerHTML='<div style="background:var(--bg);border-radius:16px 16px 0 0;width:min(500px,100%);padding:16px 16px 28px;max-height:80vh;overflow-y:auto">'+'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'+'<h3 style="margin:0;font-size:16px;font-weight:800">📞 What happened?</h3>'+'<button onclick="rmEl(\'m-star-outcome\')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--t3)">×</button></div>'+'<div style="font-size:13px;color:var(--t2);margin-bottom:12px;font-weight:700">⭐ '+escHtml(c.name)+" ["+grade+"]</div>"+'<div style="display:flex;flex-direction:column;gap:8px">'+""+((_meSc()||STATE.user?.role==="admin")?"<button onclick=\"wiLeadOpen('star','"+custId+"','"+taskId+"')\" style=\"text-align:left;background:#DB2777;border:1.5px solid #9D174D;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:800;cursor:pointer;color:#fff;width:100%\">"+'\uD83C\uDFAF Lead banao<div style="font-size:11px;font-weight:400;opacity:.9;margin-top:2px">Salesman ko inquiry \u2014 order form wo banayega, lead usse judkar band hogi</div></button>':"")+"<button onclick=\"markStarContacted('"+custId+"','"+taskId+"','order_soon')\" style=\"text-align:left;background:#D1FAE5;border:1.5px solid #059669;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#065F46;width:100%\">"+'✅ Placing order soon<div style="font-size:11px;font-weight:400;color:#059669;margin-top:2px">Next follow-up in '+snoozeDays+" days (Grade "+grade+" setting)</div></button>"+"<button onclick=\"openStarCallbackPicker('"+custId+"','"+taskId+'\')" style="text-align:left;background:#EFF6FF;border:1.5px solid #3B82F6;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#1E40AF;width:100%">'+'📅 Call back on date<div style="font-size:11px;font-weight:400;color:#3B82F6;margin-top:2px">Pick a specific date for callback</div></button>'+"<button onclick=\"markStarContacted('"+custId+"','"+taskId+"','cant_reach')\" style=\"text-align:left;background:#FEF3C7;border:1.5px solid #D97706;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#92400E;width:100%\">"+'📵 Can\'t reach<div style="font-size:11px;font-weight:400;color:#D97706;margin-top:2px">Will retry in '+cantReachDays+" days</div></button>"+"<button onclick=\"markStarContacted('"+custId+"','"+taskId+"','escalate')\" style=\"text-align:left;background:#FEE2E2;border:1.5px solid #DC2626;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#991B1B;width:100%\">"+'⬆️ Escalate to admin<div style="font-size:11px;font-weight:400;color:#DC2626;margin-top:2px">Admin will be notified and take over this follow-up</div></button>'+(c.defaultBrokerId?(()=>{const brk=STATE.brokers.find(x=>x.id===c.defaultBrokerId);const brkName=brk?brk.name:"Broker";return'<div style="margin-top:6px;padding-top:10px;border-top:1px solid var(--br)">'+'<div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Or, message the broker</div>'+'<div style="display:flex;gap:8px">'+"<button onclick=\"waStarBrokerSingle('"+custId+"');rmEl('m-star-outcome')\" style=\"flex:1;text-align:center;background:#7C3AED;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:800;cursor:pointer;color:white\">"+'📲 WA Broker<div style="font-size:10px;font-weight:400;opacity:.85;margin-top:2px">'+escHtml(brkName)+" — this customer</div></button>"+'<button id="m-star-compiled-'+custId+'" onclick="waStarBrokerCompiled(\''+custId+"','m-star-compiled-"+custId+'\')" style="flex:1;text-align:center;background:#4F46E5;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:800;cursor:pointer;color:white">'+'📋 WA All (Broker)<div style="font-size:10px;font-weight:400;opacity:.85;margin-top:2px">All overdue for '+escHtml(brkName)+"</div></button>"+"</div></div>"})():"")+"</div></div>";document.body.appendChild(div)}function openStarCallbackPicker(custId,taskId){const t_s=today();const tmr=new Date(t_s+"T00:00:00");tmr.setDate(tmr.getDate()+1);const tmrStr=tmr.toISOString().slice(0,10);rmEl("m-star-callback");const div=document.createElement("div");div.id="m-star-callback";div.style.cssText="position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px";div.innerHTML='<div style="background:var(--bg);border-radius:14px;width:min(360px,100%);padding:20px">'+'<h3 style="margin:0 0 14px;font-size:16px;font-weight:800">📅 Callback Date</h3>'+'<input type="date" id="star-cb-date" class="inp mono" value="'+tmrStr+'" min="'+tmrStr+'" style="width:100%;margin-bottom:14px"/>'+'<div style="display:flex;gap:8px">'+'<button onclick="rmEl(\'m-star-callback\')" class="btn bgh bfl">Cancel</button>'+"<button onclick=\"const d=el('star-cb-date')?.value;if(d)markStarContacted('"+custId+"','"+taskId+"','callback',d);rmEl('m-star-callback')\" class=\"btn bp bfl\">Set Callback</button>"+"</div></div>";document.body.appendChild(div)}// An order from a starred party finishes whatever follow-up was asking for
+function openStarOutcomePicker(custId,taskId){const c=STATE.customers.find(x=>x.id===custId);if(!c)return;const sg=STATE.settings.starGrading||{};const grade=c.starGrade||getStarGrade(custId)||"C";const snoozeDays=getStarSnoozeDays(grade,sg);const cantReachDays=sg.cantReachDays||3;rmEl("m-star-outcome");const div=document.createElement("div");div.id="m-star-outcome";div.style.cssText="position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center";div.innerHTML='<div style="background:var(--bg);border-radius:16px 16px 0 0;width:min(500px,100%);padding:16px 16px 28px;max-height:80vh;overflow-y:auto">'+'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'+'<h3 style="margin:0;font-size:16px;font-weight:800">📞 What happened?</h3>'+(_starForced(custId)?'':'<button onclick="rmEl(\'m-star-outcome\')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--t3)">×</button>')+'</div>'+'<div style="font-size:13px;color:var(--t2);margin-bottom:12px;font-weight:700">⭐ '+escHtml(c.name)+" ["+grade+"]</div>"+(function(){var ls=null;try{ls=_wiLastSay("star",custId)}catch(e){}return ls?('<div style="background:#EEF2FF;border-radius:9px;padding:7px 9px;margin-bottom:8px;font-size:11.5px;font-weight:700;color:#3730A3">\uD83D\uDCAC Pichhli baat: '+escHtml(ls.say)+' <span style="color:var(--t3);font-weight:600">\u2014 '+escHtml(ls.by||"")+(ls.d?(", "+fmtDate(ls.d)):"")+'</span></div>'):""})()+'<textarea id="star-say" class="inp" rows="2" maxlength="200" placeholder="Kya baat hui? (agli baar kaam aayega)" style="margin-bottom:9px;width:100%"></textarea>'+(_starForced(custId)?'<div style="font-size:11px;font-weight:800;color:#B45309;margin-bottom:8px">\uD83D\uDCDE Call ke baad jawab chunna zaroori hai</div>':'')+'<div style="display:flex;flex-direction:column;gap:8px">'+""+((_meSc()||STATE.user?.role==="admin")?"<button onclick=\"wiLeadOpen('star','"+custId+"','"+taskId+"')\" style=\"text-align:left;background:#DB2777;border:1.5px solid #9D174D;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:800;cursor:pointer;color:#fff;width:100%\">"+'\uD83C\uDFAF Lead banao<div style="font-size:11px;font-weight:400;opacity:.9;margin-top:2px">Salesman ko inquiry \u2014 order form wo banayega, lead usse judkar band hogi</div></button>':"")+"<button onclick=\"markStarContacted('"+custId+"','"+taskId+"','order_soon')\" style=\"text-align:left;background:#D1FAE5;border:1.5px solid #059669;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#065F46;width:100%\">"+'✅ Placing order soon<div style="font-size:11px;font-weight:400;color:#059669;margin-top:2px">Next follow-up in '+snoozeDays+" days (Grade "+grade+" setting)</div></button>"+"<button onclick=\"openStarCallbackPicker('"+custId+"','"+taskId+'\')" style="text-align:left;background:#EFF6FF;border:1.5px solid #3B82F6;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#1E40AF;width:100%">'+'📅 Call back on date<div style="font-size:11px;font-weight:400;color:#3B82F6;margin-top:2px">Pick a specific date for callback</div></button>'+"<button onclick=\"markStarContacted('"+custId+"','"+taskId+"','cant_reach')\" style=\"text-align:left;background:#FEF3C7;border:1.5px solid #D97706;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#92400E;width:100%\">"+'📵 Can\'t reach<div style="font-size:11px;font-weight:400;color:#D97706;margin-top:2px">Will retry in '+cantReachDays+" days</div></button>"+"<button onclick=\"markStarContacted('"+custId+"','"+taskId+"','escalate')\" style=\"text-align:left;background:#FEE2E2;border:1.5px solid #DC2626;border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#991B1B;width:100%\">"+'⬆️ Escalate to admin<div style="font-size:11px;font-weight:400;color:#DC2626;margin-top:2px">Admin will be notified and take over this follow-up</div></button>'+(c.defaultBrokerId?(()=>{const brk=STATE.brokers.find(x=>x.id===c.defaultBrokerId);const brkName=brk?brk.name:"Broker";return'<div style="margin-top:6px;padding-top:10px;border-top:1px solid var(--br)">'+'<div style="font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Or, message the broker</div>'+'<div style="display:flex;gap:8px">'+"<button onclick=\"waStarBrokerSingle('"+custId+"');rmEl('m-star-outcome')\" style=\"flex:1;text-align:center;background:#7C3AED;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:800;cursor:pointer;color:white\">"+'📲 WA Broker<div style="font-size:10px;font-weight:400;opacity:.85;margin-top:2px">'+escHtml(brkName)+" — this customer</div></button>"+'<button id="m-star-compiled-'+custId+'" onclick="waStarBrokerCompiled(\''+custId+"','m-star-compiled-"+custId+'\')" style="flex:1;text-align:center;background:#4F46E5;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:800;cursor:pointer;color:white">'+'📋 WA All (Broker)<div style="font-size:10px;font-weight:400;opacity:.85;margin-top:2px">All overdue for '+escHtml(brkName)+"</div></button>"+"</div></div>"})():"")+"</div></div>";document.body.appendChild(div)}function openStarCallbackPicker(custId,taskId){const t_s=today();const tmr=new Date(t_s+"T00:00:00");tmr.setDate(tmr.getDate()+1);const tmrStr=tmr.toISOString().slice(0,10);rmEl("m-star-callback");const div=document.createElement("div");div.id="m-star-callback";div.style.cssText="position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px";div.innerHTML='<div style="background:var(--bg);border-radius:14px;width:min(360px,100%);padding:20px">'+'<h3 style="margin:0 0 14px;font-size:16px;font-weight:800">📅 Callback Date</h3>'+'<input type="date" id="star-cb-date" class="inp mono" value="'+tmrStr+'" min="'+tmrStr+'" style="width:100%;margin-bottom:14px"/>'+'<div style="display:flex;gap:8px">'+'<button onclick="rmEl(\'m-star-callback\')" class="btn bgh bfl">Cancel</button>'+"<button onclick=\"const d=el('star-cb-date')?.value;if(d)markStarContacted('"+custId+"','"+taskId+"','callback',d);rmEl('m-star-callback')\" class=\"btn bp bfl\">Set Callback</button>"+"</div></div>";document.body.appendChild(div)}// An order from a starred party finishes whatever follow-up was asking for
 // it, names the order on the task, and starts the party's clock again.
 // Is party ki khuli inquiry band karo -- sirf jiska pakka link juda hai.
 function _leadIsOpen(l){
@@ -12045,7 +12929,7 @@ function _starEscClose(custId){
   });
   return n;
 }
-function markStarContacted(custId,taskId,outcome,callbackDate){const c=STATE.customers.find(x=>x.id===custId);if(!c)return;try{_callOutDone("star",custId)}catch(e){}const sg=STATE.settings.starGrading||{};const grade=c.starGrade||getStarGrade(custId)||"C";const today_s=today();rmEl("m-star-outcome");rmEl("m-star-callback");const task=(STATE.taskInstances||[]).find(t=>t.id===taskId);if(task){task.status="Done";task.completedDate=today_s;task.completedBy=STATE.user?.name||"";task.completedById=STATE.user?.id||"";task.completedAt=new Date().toISOString();task.completedByUserId=STATE.user?.id||"";task.completedByName=STATE.user?.name||"";task.starOutcome=outcome;task._ts=_bumpTs(task)}else{if(!Array.isArray(c.starLog))c.starLog=[];c.starLog.push({at:Date.now(),date:today_s,byId:STATE.user?.id||"",by:STATE.user?.name||"",out:outcome});if(c.starLog.length>20)c.starLog=c.starLog.slice(-20)}c.starLastContactDate=today_s;c.starLastOutcome=outcome;c._ts=_bumpTs(c);if(outcome==="order_soon"){const days=getStarSnoozeDays(grade,sg);const until=new Date(today_s+"T00:00:00");until.setDate(until.getDate()+days);c.starSnoozedUntil=until.toISOString().slice(0,10);toast("✅ Snoozed "+days+" days — next follow-up "+fmtDate(c.starSnoozedUntil),"ok")}else if(outcome==="callback"){c.starSnoozedUntil=callbackDate||"";c.starCallbackDate=callbackDate||"";toast("📅 Callback set for "+fmtDate(callbackDate),"ok")}else if(outcome==="cant_reach"){const days=sg.cantReachDays||3;const until=new Date(today_s+"T00:00:00");until.setDate(until.getDate()+days);c.starSnoozedUntil=until.toISOString().slice(0,10);toast("📵 Will retry in "+days+" days","ok")}else if(outcome==="escalate"){c.starEscalated=true;c.starEscalatedDate=today_s;c.starEscalatedBy=STATE.user?.name||"";
+function markStarContacted(custId,taskId,outcome,callbackDate){const c=STATE.customers.find(x=>x.id===custId);if(!c)return;try{_callOutDone("star",custId)}catch(e){}var _ssay=String(((document.getElementById("star-say")||{}).value)||"").trim().slice(0,200);const sg=STATE.settings.starGrading||{};const grade=c.starGrade||getStarGrade(custId)||"C";const today_s=today();rmEl("m-star-outcome");rmEl("m-star-callback");const task=(STATE.taskInstances||[]).find(t=>t.id===taskId);if(task){task.status="Done";task.completedDate=today_s;task.completedBy=STATE.user?.name||"";task.completedById=STATE.user?.id||"";task.completedAt=new Date().toISOString();task.starSay=_ssay;task.completedByUserId=STATE.user?.id||"";task.completedByName=STATE.user?.name||"";task.starOutcome=outcome;task._ts=_bumpTs(task)}else{if(!Array.isArray(c.starLog))c.starLog=[];c.starLog.push({at:Date.now(),date:today_s,byId:STATE.user?.id||"",by:STATE.user?.name||"",out:outcome,say:_ssay});if(c.starLog.length>20)c.starLog=c.starLog.slice(-20)}c.starLastContactDate=today_s;c.starLastOutcome=outcome;c._ts=_bumpTs(c);if(outcome==="order_soon"){const days=getStarSnoozeDays(grade,sg);const until=new Date(today_s+"T00:00:00");until.setDate(until.getDate()+days);c.starSnoozedUntil=until.toISOString().slice(0,10);toast("✅ Snoozed "+days+" days — next follow-up "+fmtDate(c.starSnoozedUntil),"ok")}else if(outcome==="callback"){c.starSnoozedUntil=callbackDate||"";c.starCallbackDate=callbackDate||"";toast("📅 Callback set for "+fmtDate(callbackDate),"ok")}else if(outcome==="cant_reach"){const days=sg.cantReachDays||3;const until=new Date(today_s+"T00:00:00");until.setDate(until.getDate()+days);c.starSnoozedUntil=until.toISOString().slice(0,10);toast("📵 Will retry in "+days+" days","ok")}else if(outcome==="escalate"){c.starEscalated=true;c.starEscalatedDate=today_s;c.starEscalatedBy=STATE.user?.name||"";
 /* Pehle escalate karne par KUCHH banta hi nahi tha -- wo party sirf
    admin ki list me dikhne lag jaati thi, aur chhoot jaati thi. Ab asli
    task, admin ke naam, Tasks screen par. */
