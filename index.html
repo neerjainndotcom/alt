@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.489-->
+<!DOCTYPE html><!--ALTV:1.45.490-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.489";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.490";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -14266,6 +14266,23 @@ function _wiSabHtml(list){
   });
   return h;
 }
+/* ══ PARCHI KI PURANI COPY -- SAB DEVICE PAR EK JAISA (1.45.490) ═════ */
+/* Ek parchi ka ek hi sach: uska record (mirror). Usi csId ki alag copy tab mitao
+   jab mirror mita hua ho, ya mirror zinda ho aur uska order bhi -- tab copy faltu hai.
+   Order hi na ho to copy rehne do (wahi parchi ka akela nishaan hai). */
+function _csKillStaleCopies(){
+  var A=STATE.csSlips||[],M={},live={},n=0;
+  A.forEach(function(x){if(x&&x._mirror&&x.csId)M[x.csId]=x});
+  (STATE.orders||[]).forEach(function(o){if(o&&!o._deleted&&o.status!=="deleted")live[o.id]=1});
+  A.forEach(function(x){
+    if(!x||x._mirror||x._deleted||!x.csId)return;
+    var m=M[x.csId];if(!m)return;
+    if(!(m._deleted||live[m.ordId]))return;
+    x._deleted=true;x._ts=_bumpTs(x);x._staleCopy=1;n++;
+  });
+  if(n){try{_tlAdd("parchi ki purani copy mitayi",0,n+"")}catch(e){}}
+  return n;
+}
 function renderNewParty(){
   var c=el("np-body");if(!c)return;
   try{npCheckTasks()}catch(e){}
@@ -21301,6 +21318,7 @@ function csSweepOrphanSlips(order){
 // list, with the order they came from written on them. Put them back.
 function csRestoreDetachedSlips(){
   try{applyKillList()}catch(e){}
+  try{_csKillStaleCopies()}catch(e){}
   try{csApplyMirrors()}catch(e){}
   if(!Array.isArray(STATE.csSlips)||!STATE.csSlips.length)return 0;
   var byOrd={};
@@ -21325,6 +21343,11 @@ function csRestoreDetachedSlips(){
       o._csData[lot.key].push(copy);
     }
     o._ts=_quietTs(o);n++;
+    /* 1.45.490: copy chupke se hatani nahi -- uska apna record (mirror) banao
+       aur copy par nishaan lagao, taaki har device par ek jaisa ho. */
+    try{var _cp=(o._csData[lot.key]||[]).filter(function(x){return x&&x.csId===sl.csId})[0];
+      if(_cp&&!_csMirror(sl.csId))csMirrorPut(o,lot.key,_cp,false)}catch(e){}
+    sl._deleted=true;sl._ts=_bumpTs(sl);keep.push(sl);
   });
   if(n)STATE.csSlips=keep;
   return n;
@@ -22454,6 +22477,8 @@ function _csApplyMirrorsRaw(){
       });
     });
   });
+  var _kc=0;try{_kc=_csKillStaleCopies()}catch(e){_kc=0}
+  if(_kc){n+=_kc;setTimeout(function(){try{autoSyncCloud()}catch(e){}},1500)}
   if(n){try{lsSave("vs_cs_slips",STATE.csSlips);lsSave("vs_orders",STATE.orders)}catch(e){}}
   try{csFixDupSlipNos()}catch(e){}
   return n;
@@ -24013,6 +24038,8 @@ function _csWipeSlip(csId){
     if(ssl){ssl._deleted=true;ssl._ts=_bumpTs(ssl);
       try{killRecord("csSlips",ssl.id||("csm_"+csId))}catch(e){}}
   }
+  /* 1.45.490: is parchi ki har copy (mirror + purani alag copy) -- sab gayi. */
+  (STATE.csSlips||[]).forEach(function(x){if(x&&x.csId===csId&&!x._deleted){x._deleted=true;x._ts=_bumpTs(x)}});
   try{delete _csSlipChecked[csId]}catch(e){}
   return no;
 }
