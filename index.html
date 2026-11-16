@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.484-->
+<!DOCTYPE html><!--ALTV:1.45.489-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.484";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.489";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -1523,6 +1523,8 @@ if(!cloudReached&&FIREBASE_URL){if(!found){el("le").innerHTML='⚠️ Can\'t rea
       // wanra sirf jo badla hai. Dono haalat me "login = naya data".
       await _startupPull();
       window._loginPulledAt=Date.now();
+      /* Login = cloud se poora. Kisi bhi device par login karo, saara data. */
+      setTimeout(function(){try{if(Date.now()-(_lastFullPull()||0)>18e5)syncFullReconcile()}catch(e){}},2500);
     }catch(e){}
     if(st)st.innerHTML="";
   }
@@ -7215,11 +7217,7 @@ function openHandover(uid){
   bk.forEach(function(b){tot+=b.rows.length});
   var hist=_hoHistory(uid);
   var opt="";
-  try{
-    var g=getAssignableSalesmen();
-    opt=(g.admins||[]).concat(g.staff||[]).filter(function(x){return x&&x.id!==uid})
-      .map(function(x){return'<option value="'+x.id+'">'+escHtml(x.name)+'</option>'}).join("");
-  }catch(e){opt=""}
+  try{opt=_hoOptions(uid)}catch(e){opt=""}
   var rows=bk.map(function(b){
     var on=b.rows.length>0;
     return'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;'
@@ -7339,6 +7337,8 @@ function _usrGoneSection(c){
     row.appendChild(av);row.appendChild(body);
     if(!u._deleted)row.appendChild(back);   // delete ho chuka, wapas nahi aa sakta
     row.appendChild(btn);
+    if(!u._deleted&&!n){var del=document.createElement("button");del.className="btn bd";del.style.cssText="white-space:nowrap";
+      del.textContent="\uD83D\uDDD1 Delete";del.onclick=function(){deleteUser(u.id)};row.appendChild(del)}
     c.appendChild(row);
   });
 }
@@ -9823,7 +9823,7 @@ function workItems(kind){
 function wiPipe(all){
   if(!all){try{all=workItems()}catch(e){all=[]}}
   var td=today(),aaj=0,aage=0,next="",cap=18;
-  try{cap=bdDayCap()}catch(e){cap=18}
+  try{cap=_wiCap()}catch(e){cap=18}
   all.forEach(function(x){
     var d=x.due?String(x.due):"";
     if(!d||d<=td){aaj++;return}
@@ -9851,7 +9851,7 @@ function wiPipeHtml(all){
 }
 function todayWork(){
   return workItems().filter(function(x){return!x.due||String(x.due)<=today()})
-    .slice(0,bdDayCap());
+    .slice(0,_wiCap());
 }
 // ── ek-tap outcome ────────────────────────────────────────────────────
 /* ══ FOLLOW-UP KE DO DARWAZE ═══════════════════════════════════════ */
@@ -11308,19 +11308,27 @@ function goToAllInquiry(){
   if(b&&typeof leadTab==="function")leadTab(_isAdminOrCRE()?"all":"mine",b);
 }
 // Ek list ko group me todo, kram WI_ORDER se.
-function _wiGrouped(list){
+function _wiCap(){return wiSeeAll()?1e9:bdDayCap()}
+var _wiMore={};
+function wiMore(t){_wiMore[t]=1;try{renderNewParty()}catch(e){}}
+function _wiCards(t,L,lim){
+  if(!lim||_wiMore[t]||L.length<=lim)return L.map(_wiCard).join("");
+  return L.slice(0,lim).map(_wiCard).join("")
+    +'<button onclick="wiMore(\''+t+'\')" style="width:100%;background:var(--sf);border:1.5px dashed var(--br);color:var(--P);padding:9px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px">Aur '+(L.length-lim)+' dikhao \u203A</button>';
+}
+function _wiGrouped(list,lim){
   var by={},h="";
   (list||[]).forEach(function(x){(by[x.t]=by[x.t]||[]).push(x)});
   var seen={};
   WI_ORDER.forEach(function(t){
     seen[t]=1;
     if(!by[t]||!by[t].length)return;
-    h+=_wiGroupHead(t,by[t].length)+(wiGroupOpen(t)?by[t].map(_wiCard).join(""):"")+_wiGroupFoot(t);
+    h+=_wiGroupHead(t,by[t].length)+(wiGroupOpen(t)?_wiCards(t,by[t],lim):"")+_wiGroupFoot(t);
   });
   // koi naya kism aa jaye to wo bhi chhute nahi
   Object.keys(by).forEach(function(t){
     if(seen[t])return;
-    h+=_wiGroupHead(t,by[t].length)+(wiGroupOpen(t)?by[t].map(_wiCard).join(""):"")+_wiGroupFoot(t);
+    h+=_wiGroupHead(t,by[t].length)+(wiGroupOpen(t)?_wiCards(t,by[t],lim):"")+_wiGroupFoot(t);
   });
   return h;
 }
@@ -12488,13 +12496,14 @@ function rcvDetail(id){
     +(ed?'<div id="rcv-ed" style="display:none;margin-top:10px;background:#F8FAFC;border-radius:10px;padding:9px">'
       +'<div class="fg"><label>'+(r.mode==="Cheque"?"Cheque no.":"UTR no.")+'</label><input class="inp" id="rcv-ed-ref" value="'+esc(r.ref)+'"></div>'
       +'<div class="fg"><label>Tareekh</label><input class="inp" type="date" id="rcv-ed-cd" value="'+esc(r.cdate||"")+'"></div>'
-      +'<div class="xs ct3" style="margin-bottom:6px">Bill ya rakam galat hai? Receipt cancel karke nayi banao.</div>'
+      +(r.nh?'<div class="fg"><label>Rakam \u20B9 (bina hisaab)</label><input class="inp" type="number" inputmode="decimal" id="rcv-ed-amt" value="'+esc(r.amt)+'"></div>':'')
+      +'<div class="xs ct3" style="margin-bottom:6px">'+(r.nh?'Party galat hai? "Payment cancel" karke nayi banao.':'Bill ya rakam galat hai? "Payment cancel" karke nayi banao.')+'</div>'
       +'<button class="btn bp bfl" onclick="rcvEditSave(\''+r.id+'\')">Save</button></div>':'')
     +'</div><div style="padding:10px 14px;border-top:1px solid var(--br);display:flex;gap:7px;flex-wrap:wrap">'
     +'<button class="btn" style="flex:1;background:#25D366;color:#fff;border:none" onclick="rcvWa(\''+r.id+'\',\'acc\')">\uD83D\uDCF2 WhatsApp</button>'
 
     +(ed?'<button class="btn bs" onclick="var e=document.getElementById(\'rcv-ed\');e.style.display=e.style.display===\'none\'?\'\':\'none\'">\u270F\uFE0F Edit</button>'
-      +'<button class="btn bd" onclick="rcvCancel(\''+r.id+'\')">\u274C Cancel</button>':'')
+      +'<button class="btn bd" onclick="rcvCancel(\''+r.id+'\')">\u274C Payment cancel</button>':'')
     +'<button class="btn bs" onclick="document.getElementById(\'m-rcv-det\').remove()">Band</button></div></div>';
   _ovOpen(d);
 }
@@ -12624,7 +12633,7 @@ function payStandIn(u){
   return null;
 }
 var _pmC={sig:"",map:null};function _pmSig(){var t="";[STATE.markets,STATE.users,STATE.staffLeave].forEach(function(a){a=a||[];var x=0;for(var i=0;i<a.length;i++)x+=(a[i]&&a[i]._ts)||0;t+=a.length+":"+x+"|"});return t+today()}
-function _payMkt(name){if(!name)return null;var sg=_pmSig();if(_pmC.sig!==sg||!_pmC.map){var M={};mktLive().forEach(function(m){var k=String(m.name||"");if(!M[k])M[k]=m});_pmC={sig:sg,map:M,ps:{}}}return _pmC.map[String(name)]||null}
+function _payMkt(name){if(!name)return null;var sg=_pmSig();if(_pmC.sig!==sg||!_pmC.map){var M={};mktLive().forEach(function(m){var k=_mkNorm(m.name);if(k&&!M[k])M[k]=m});_pmC={sig:sg,map:M,ps:{}}}return _pmC.map[_mkNorm(name)]||null}
 function payOwnerRaw(name){var m=_payMkt(name);if(!m||!m.payId)return null;var u=_userById(m.payId);return _rcvCanU(u,"rcv_check")?u:null}
 function payOwnerOf(name){return payStandIn(payOwnerRaw(name))}
 function _isPayStaff(u){if(!u)return false;_payMkt("_");var c=_pmC.ps||(_pmC.ps={});if(u.id in c)return c[u.id];return c[u.id]=mktLive().some(function(m){var o=payOwnerOf(m.name);return o&&o.id===u.id})}
@@ -12887,8 +12896,8 @@ function ptSave(){
   STATE.payments.push(stamp(t));_rcvSave();
   try{actPush({act:"pay_task",col:"payments",rec:t.id,label:p.name,note:(o?o.name:"admin")})}catch(e){}
   _ptF=null;renderRcv();
-  toast("Task bana — "+(o?o.name:"admin ke paas"),"ok");
-  ptWa(t.id);
+  toast("Task bana — "+(o?o.name:"kisi ka nahi — staff chuno"),"ok");
+  if(o)ptWa(t.id);else setTimeout(function(){ptAssignOpen(t.id)},300);
 }
 function _ptMsg(t){
   var L=rcvLedger(),p=L.byKey[t.pk]||{},B=_ptBills(t,L).filter(function(b){return b.due>0.5});
@@ -13816,8 +13825,8 @@ function rcvNoBill(){
   _rcvSave();
   try{actPush({act:"rcv_rcpt",col:"payments",rec:r.id,label:p.name,note:r.no+" · bina hisaab · "+_rcvRs(amt)})}catch(e){}
   _rcvF=null;_rcvTab="check";renderRcv();
-  toast(_rcvRs(amt)+" jama — hisaab ka task "+(o?o.name:"admin")+" ko","ok");
-  ptWa(t.id);
+  toast(_rcvRs(amt)+" jama — hisaab ka task "+(o?o.name:"kisi ka nahi — staff chuno")+"","ok");
+  if(o)ptWa(t.id);else setTimeout(function(){ptAssignOpen(t.id)},300);
 }
 /* Set-off shuru: jama wali receipt se Payment Check */
 function rcvSetoff(id){
@@ -14087,6 +14096,176 @@ renderFYTab=function(){
         +'</div></div>'}).join("");
   c.innerHTML=h;
 };
+/* ══ DATA TAAZA HAI YA NAHI (1.45.486) ════════════════════════════════ */
+window._appStartAt=window._appStartAt||Date.now();
+window._visSince=document.hidden?0:Date.now();
+document.addEventListener("visibilitychange",function(){window._visSince=document.hidden?0:Date.now()});
+var FRESH_MIN=12;
+(function(){
+  if(pullAllFromFirebase._v486)return;
+  var pa=pullAllFromFirebase;
+  pullAllFromFirebase=async function(){var r=await pa.apply(this,arguments);if(r){window._fbFreshAt=Date.now();window._fbColFail=null;try{_freshCheck()}catch(e){}}return r};
+  pullAllFromFirebase._v486=true;
+  var ls=setLiveStatus;
+  setLiveStatus=function(state){
+    var r=ls.apply(this,arguments);
+    try{if(_isStale()){var d=el("live-dot"),t=el("live-txt");if(d&&t){d.style.background="#DC2626";t.style.color="#DC2626";t.textContent="⚠️ Data purana"}}}catch(e){}
+    return r;
+  };
+})();
+function _staleMin(){var f=window._fbFreshAt||window._appStartAt||Date.now();return Math.floor((Date.now()-f)/60000)}
+function _isStale(){
+  if(!STATE.user||!FIREBASE_URL)return false;
+  try{if(_noPullMode())return false}catch(e){}
+  return _staleMin()>=FRESH_MIN;
+}
+function _staleWhy(){
+  var f=window._fbColFail;
+  if(navigator.onLine===false)return"Is device par net nahi hai.";
+  if(f&&(f.st===401||f.st===403))return"Cloud ne data dene se mana kiya (login ki chaabi purani). Logout karke dobara login karo.";
+  if(f&&f.st)return"Cloud ne jawab nahi diya ("+f.st+" — "+f.col+").";
+  if(f)return"Cloud tak nahi pahunch pa rahe ("+f.col+").";
+  if(window._fbLastPullOk===false)return"Cloud tak nahi pahunch pa rahe.";
+  return"Kai minute se naya data nahi utra.";
+}
+function _freshCheck(){
+  var b=document.getElementById("_freshbar");
+  var show=!document.hidden&&window._visSince&&(Date.now()-window._visSince>6e4)&&_isStale();
+  if(!show){if(b){b.remove();try{setLiveStatus(window._fbLastPullOk===false?"offline":"live")}catch(e){}}return}
+  if(!b){b=document.createElement("div");b.id="_freshbar";
+    b.style.cssText="position:fixed;left:0;right:0;top:0;z-index:9000;background:#B91C1C;color:#fff;padding:9px 12px;box-shadow:0 2px 10px rgba(0,0,0,.25);font-family:inherit";
+    document.body.appendChild(b)}
+  var m=_staleMin(),tx=m>=120?(Math.floor(m/60)+" ghante"):(m+" minute");
+  b.innerHTML='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:960px;margin:0 auto">'
+    +'<div style="flex:1;min-width:200px;line-height:1.35"><div style="font-size:13px;font-weight:900">⚠️ Is device par data purana hai — '+tx+' se cloud se naya nahi aaya</div>'
+    +'<div style="font-size:11px;font-weight:700;opacity:.92">'+esc(_staleWhy())+' Doosre phone par alag dikh sakta hai.</div></div>'
+    +'<button id="_freshgo" style="background:#fff;color:#B91C1C;border:none;border-radius:9px;padding:8px 12px;font-weight:900;font-size:12px;cursor:pointer;font-family:inherit">🔄 Abhi poora milao</button>'
+    +'<button onclick="openNetDiag()" style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:9px;padding:8px 10px;font-weight:800;font-size:11.5px;cursor:pointer;font-family:inherit">Net ka hisaab</button></div>';
+  var g=document.getElementById("_freshgo");
+  if(g)g.onclick=async function(){g.disabled=true;g.textContent="Mil raha hai…";try{await syncFullReconcile()}catch(e){}try{_freshCheck()}catch(e){}};
+  try{setLiveStatus("live")}catch(e){}
+}
+setInterval(function(){try{_freshCheck()}catch(e){}},3e4);
+/* ══ TASK KO STAFF DO + RAKAM EDIT (1.45.487) ════════════════════════ */
+function _mkNorm(x){return String(x||"").trim().toUpperCase().replace(/\s+/g," ")}
+function _ptCanAssign(){return _rcvAdm()||rcvCan("rcv_task")}
+function _payStaffList(){
+  return(STATE.users||[]).filter(function(u){return u&&!u._deleted&&u.active!==false&&u.role!=="admin"&&_rcvCanU(u,"rcv_check")})
+    .sort(function(a,b){var x=_isPayType(a)?0:1,y=_isPayType(b)?0:1;return x-y||String(a.name||"").localeCompare(String(b.name||""))});
+}
+function ptAssignOpen(id){
+  if(!_ptCanAssign()){toast("Permission nahi","er");return}
+  var t=_ptAll().filter(function(x){return x.id===id})[0];if(!t)return;
+  var o=ptOwner(t),L=_payStaffList();
+  var d=document.getElementById("m-pt-as");if(d)d.remove();
+  d=document.createElement("div");d.className="ov";d.id="m-pt-as";d.style.zIndex="670";
+  d.innerHTML='<div class="sh" style="max-height:85vh;display:flex;flex-direction:column"><div style="padding:13px 15px 9px;border-bottom:1px solid var(--br)">'
+    +'<div style="font-weight:900;font-size:15px">👤 Kis staff ko dena hai?</div>'
+    +'<div class="xs ct3" style="font-weight:700">'+esc(t.party)+(t.market?(' · '+esc(t.market)):'')+' · abhi: '+esc(o?o.name:"kisi ka nahi")+'</div></div>'
+    +'<div style="flex:1;overflow-y:auto;padding:10px 13px">'
+    +(L.length?L.map(function(u){var on=o&&o.id===u.id;
+      return'<button onclick="ptAssign(\''+t.id+'\',\''+u.id+'\')" style="width:100%;text-align:left;display:flex;gap:8px;align-items:center;background:'+(on?"#EEF2FF":"var(--sf)")+';border:1.5px solid '+(on?"#A5B4FC":"var(--br)")+';border-radius:10px;padding:10px 12px;margin-bottom:6px;cursor:pointer;font-family:inherit">'
+        +'<span style="flex:1;font-weight:800">'+(_isPayType(u)?"💰 ":"")+esc(u.name||"")+'</span>'+(on?'<span class="xs" style="font-weight:900;color:var(--P)">abhi</span>':'')+'</button>'}).join("")
+      :'<div class="emp">Koi staff nahi jiske paas "Payment Check" permission ho</div>')
+    +'<div class="xs ct3" style="margin-top:8px;line-height:1.5">Hamesha ke liye: Users me us staff ke 💰 button se market do — phir us market ke naye task apne aap usi ko jayenge.</div></div>'
+    +'<div style="padding:10px 14px;border-top:1px solid var(--br)"><button class="btn bs bfl" onclick="document.getElementById(\'m-pt-as\').remove()">Band</button></div></div>';
+  _ovOpen(d);
+}
+function ptAssign(id,uid){
+  if(!_ptCanAssign())return;
+  var t=_ptAll().filter(function(x){return x.id===id})[0],u=_userById(uid);if(!t||!u)return;
+  t.assId=u.id;t.assName=u.name||"";t.assLock=1;t.assBy=(STATE.user&&STATE.user.name)||"";t.assAt=Date.now();t._ts=_bumpTs(t);_rcvSave();
+  var d=document.getElementById("m-pt-as");if(d)d.remove();
+  toast("Task "+(u.name||"")+" ko","ok");
+  try{renderRcv()}catch(e){}
+  ptWa(t.id);
+}
+(function(){
+  if(ptAssign._v487)return;ptAssign._v487=true;
+  var po=ptOwner;
+  ptOwner=function(t){
+    if(t&&t.assLock&&t.assId){var u=_userById(t.assId);if(_rcvCanU(u,"rcv_check"))return payStandIn(u)}
+    return po.apply(this,arguments);
+  };
+  var pc=_ptCard;
+  _ptCard=function(t,L){
+    var h=pc.apply(this,arguments);
+    if(!t||!_ptCanAssign()||h.slice(-12)!=="</div></div>")return h;
+    var o=ptOwner(t);
+    var row='<div style="display:flex;gap:6px;align-items:center;margin-top:7px;padding-top:7px;border-top:1px dashed var(--br)">'
+      +'<span class="xs" style="flex:1;font-weight:800;color:'+(o?"#0E7490":"#B91C1C")+'">👤 '+esc(o?o.name:"Kisi ka nahi — is market ka payment staff nahi")+'</span>'
+      +'<button class="btn bs bxs" onclick="ptAssignOpen(\''+t.id+'\')">'+(o?"Staff badlo":"Staff chuno")+'</button></div>';
+    return h.slice(0,-6)+row+'</div>';
+  };
+  /* Bina hisaab ki rakam */
+  var es=rcvEditSave;
+  rcvEditSave=function(id){
+    var r=_rcvById(id),ai=el("rcv-ed-amt");
+    if(!r||!r.nh||!ai)return es.apply(this,arguments);
+    if(!rcvCan("rcv_edit")){toast("Permission nahi","er");return}
+    var na=Math.round((Number(ai.value)||0)*100)/100,used=Math.round(((Number(r.adv)||0)-_advLeft(r))*100)/100;
+    if(na<=0){toast("Rakam likho","warn");return}
+    if(na<used){toast(_rcvRs(used)+" ka hisaab ho chuka — isse kam nahi","er");return}
+    if(Math.abs(na-(Number(r.amt)||0))<0.01)return es.apply(this,arguments);
+    var nr=String((el("rcv-ed-ref")||{}).value||"").trim(),nd=String((el("rcv-ed-cd")||{}).value||"");
+    if(!nr){toast("Number khaali nahi","warn");return}
+    var ch=["Rakam "+_rcvRs(r.amt)+" → "+_rcvRs(na)];
+    if(nr!==r.ref)ch.push("No. "+r.ref+" → "+nr);if(nd!==(r.cdate||""))ch.push("Tareekh "+(r.cdate||"-")+" → "+nd);
+    r.amt=na;r.adv=na;r.ref=nr;r.cdate=nd;_rcvTouch(r,"Edit: "+ch.join(", "));
+    toast("Sambhal liya","ok");rcvDetail(id);try{renderRcv()}catch(e){}
+  };
+})();
+/* ══ KAAM TRANSFER -- SAB LOG, TYPE KE SAATH; PAYMENT BHI (1.45.488) ══ */
+function _usrTypeLbl(u){return u&&u.role==="admin"?"Admin":(_staffTypeName(u)||"Bina type")}
+function _hoOptions(uid){
+  var from=_userById(uid),ft=from?_usrTypeLbl(from):"";
+  var L=(STATE.users||[]).filter(function(x){return x&&!x._deleted&&x.active!==false&&x.id!==uid});
+  var G={};L.forEach(function(x){var t=_usrTypeLbl(x);(G[t]=G[t]||[]).push(x)});
+  var keys=Object.keys(G).sort(function(a,b){return(a===ft?0:1)-(b===ft?0:1)||(a==="Admin"?1:0)-(b==="Admin"?1:0)||a.localeCompare(b)});
+  return keys.map(function(t){
+    return'<optgroup label="'+escHtml(t)+'">'+G[t].sort(function(a,b){return String(a.name||"").localeCompare(String(b.name||""))})
+      .map(function(x){return'<option value="'+x.id+'">'+escHtml(x.name||"")+' — '+escHtml(t)+'</option>'}).join("")+'</optgroup>'}).join("");
+}
+(function(){
+  if(_hoBuckets._v488)return;
+  var hb=_hoBuckets;
+  _hoBuckets=function(uid){
+    var a=hb.apply(this,arguments);
+    a.push({k:"paymkt",lbl:"Payment market (💰)",
+      rows:(STATE.markets||[]).filter(function(x){return x&&!x._deleted&&x.payId===uid}),
+      put:function(x,u){x.payId=u.id;x.payName=u.name}});
+    a.push({k:"ptask",lbl:"Khule payment task",
+      rows:(STATE.payments||[]).filter(function(x){return x&&!x._deleted&&x.kind==="ptask"&&x.status==="open"&&x.assId===uid}),
+      put:function(x,u){x.assId=u.id;x.assName=u.name}});
+    return a;
+  };
+  _hoBuckets._v488=true;
+  var hr=handoverRun;
+  handoverRun=function(){var r=hr.apply(this,arguments);try{_rcvSave()}catch(e){}return r};
+})();
+/* ══ SAB KAAM: AAJ UPAR, AAGE KE ALAG (1.45.489) ═════════════════════ */
+var _wiFutOpen=false;
+function wiFutToggle(){_wiFutOpen=!_wiFutOpen;try{renderNewParty()}catch(e){}}
+function _wiSabHtml(list){
+  var td=today(),D=[],Fu=[];
+  (list||[]).forEach(function(x){(x.due&&String(x.due)>td?Fu:D).push(x)});
+  var h=D.length?_wiGrouped(D,0):'<div class="emp" style="margin:10px 0">Aaj ka kaam khatam!</div>';
+  if(!Fu.length)return h;
+  Fu.sort(function(a,b){return String(a.due).localeCompare(String(b.due))||(b.score||0)-(a.score||0)});
+  h+='<button onclick="wiFutToggle()" style="width:100%;display:flex;align-items:center;gap:9px;margin:20px 0 9px;background:#F1F5F9;border:1.5px solid #CBD5E1;border-radius:11px;padding:11px 13px;cursor:pointer;font-family:inherit;text-align:left">'
+    +'<span style="font-size:18px">📅</span><span style="flex:1;font-size:15px;font-weight:900;color:#334155">Aage ke kaam <span style="font-size:11px;font-weight:700;color:#64748B">— apne din par yahan se Aaj me aa jayenge</span></span>'
+    +'<span style="background:#475569;color:#fff;font-size:12px;font-weight:900;padding:2px 9px;border-radius:99px">'+Fu.length+'</span>'
+    +'<span style="font-size:13px;font-weight:900;color:#475569;transform:rotate('+(_wiFutOpen?"90":"0")+'deg);display:inline-block">›</span></button>';
+  if(!_wiFutOpen)return h;
+  var last="";
+  Fu.forEach(function(x){
+    var d=String(x.due);
+    if(d!==last){last=d;var n=_dDiff(td,d);
+      h+='<div style="font-size:11.5px;font-weight:900;color:#475569;margin:10px 0 6px">📅 '+esc(fmtDate(d))+(n===1?" — kal":(" — "+n+" din baad"))+'</div>'}
+    h+='<div style="opacity:.85">'+_wiCard(x)+'</div>';
+  });
+  return h;
+}
 function renderNewParty(){
   var c=el("np-body");if(!c)return;
   try{npCheckTasks()}catch(e){}
@@ -14118,7 +14297,7 @@ function renderNewParty(){
   var list=[];
   try{
     list=sab?_all:_all.filter(function(x){return!x.due||String(x.due)<=today()})
-      .slice(0,bdDayCap());
+      .slice(0,_wiCap());
   }catch(e){list=[]}
   if(q)list=list.filter(function(x){
     return[x.name,x.sub,x.why,x.who].filter(Boolean).join(" ").toLowerCase().indexOf(q)>=0;
@@ -14126,9 +14305,9 @@ function renderNewParty(){
   if(sab)h+=_wiBackLink("\uD83D\uDCCB Sab kaam ("+list.length+")")+_wiSearchHtml();
   else h+='<div style="display:flex;align-items:baseline;gap:7px;margin-bottom:8px">'
     +'<div style="font-size:15px;font-weight:900;color:var(--t1)">\uD83D\uDD25 Aaj ke '+list.length+' kaam</div></div>'
-    +(list.length?'<div class="xs ct3" style="font-weight:700;margin-bottom:9px;line-height:1.5">Upar wala sabse zaroori. Ye nipta do \u2014 baaki kal apne aap aa jayenge.</div>':"");
+    +(list.length?'<div class="xs ct3" style="font-weight:700;margin-bottom:9px;line-height:1.5">'+(wiSeeAll()?'Poori team ka aaj ka kaam \u2014 har kism alag. Har patte me sabse zaroori pehle.':'Upar wala sabse zaroori. Ye nipta do \u2014 baaki kal apne aap aa jayenge.')+'</div>':"");
   h+='</div><div style="padding:0 14px 80px">';
-  h+=list.length?_wiGrouped(list)
+  h+=list.length?(sab?_wiSabHtml(list):_wiGrouped(list,wiSeeAll()?10:0))
     :_wiEmpty(q?"Kuch nahi mila":(sab?"Yahan abhi kuch nahi":"Aaj ka kaam khatam!"),!q&&!sab);
   // ── neeche ke raaste ──────────────────────────────────────────────
   h+='<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">'
@@ -18164,7 +18343,7 @@ var _got=await Promise.all(_need.map(async function(x){
   try{var c=new AbortController,t=setTimeout(function(){c.abort()},12e3);
     r=await fetch(url,{signal:c.signal});clearTimeout(t)}catch(e){r=null}
   _tCols+=Date.now()-_tq;_tN++;
-  if(!r||!r.ok){_tlAdd("utara: "+x.col,Date.now()-_tq,"(nahi mila)");return null}
+  if(!r||!r.ok){try{window._fbColFail={col:x.col,st:r?r.status:0,at:Date.now()}}catch(e){}_tlAdd("utara: "+x.col,Date.now()-_tq,"(nahi mila)");return null}
   var obj=null;try{obj=await _fbRead(r,"badlav")}catch(e){obj=null}
   var arr=obj?Object.values(obj):[];
   _tlAdd("utara: "+x.col,Date.now()-_tq,arr.length?(arr.length+" badlav"):"");
@@ -18183,7 +18362,7 @@ _got.forEach(function(g){
     STATE[col]=cleanupDeleted(STATE[col]);anyUpdated=true;
   }
   pullMap[col]=g.cloudTs;
-});const ctrCloudTs=meta.counters&&meta.counters.ts||0;
+});if(_got.every(function(g){return!!g})){window._fbFreshAt=Date.now();window._fbColFail=null}const ctrCloudTs=meta.counters&&meta.counters.ts||0;
 if(ctrCloudTs>(pullMap.counters||0)){
   const cr=await fetch(FIREBASE_URL+"/altstock/counters.json").catch(()=>null);
   if(cr&&cr.ok){const cd=await cr.json();if(_ctrApply(cd))anyUpdated=true;pullMap.counters=ctrCloudTs}
