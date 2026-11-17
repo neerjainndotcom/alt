@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.491-->
+<!DOCTYPE html><!--ALTV:1.45.492-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.491";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.492";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -1933,6 +1933,7 @@ function netDiagLines(){
   L.push("  Ruka hua kaam: "+_un);
   L.push("  Aakhri baar bheja: "+(_dsLastPush()?new Date(_dsLastPush()).toLocaleString():"kabhi nahi"));
   L.push("  Net se data utra: "+(window._fbLastPullOk?"haan":"nahi"));
+  try{L.push("  "+_twLine())}catch(e){}
   var _bad=[];try{_bad=window._pushBadList||[]}catch(e){}
   if(_bad.length){
     L.push("  \u26A0\uFE0F "+_bad.length+" record ka naam kharab hai -- ye upar nahi ja sakte:");
@@ -1970,7 +1971,8 @@ function netDiagLines(){
   })());
   L.push((function(){
     var sh=[];try{sh=_dsShortList()}catch(e){}
-    if(!sh.length)return "  \u2705 Sab mil raha hai";
+    if(!sh.length){var _ex=[];try{_ex=_dsExtraList()}catch(e){}
+      return _ex.length?("  \u26A0\uFE0F Is device par zyada: "+_ex.map(function(x){return x.col+" "+x.more}).join(", ")+"  \u2014 kisi device ka badlav cloud tak nahi pahuncha; us device par (ya yahan) \"Cloud se poora milao\" dabao"):"  \u2705 Sab mil raha hai"}
     return "  \u26A0\uFE0F Kam hai: "+sh.map(function(x){
       return x.col+" "+x.miss}).join(", ")+"  \u2014 app khud mangwa legi";
   })());
@@ -14501,6 +14503,90 @@ doMergeSku=async function(){
   try{renderItems((document.querySelector("#tp-itm .srch input")||{}).value||"")}catch(e){}
   try{if(el("m-item")&&el("m-item").classList.contains("on")){var it=_itmById(el("itm-id").value);if(it&&!it._deleted)renderItemRanges(it);else hideMod("m-item")}}catch(e){}
 };
+/* ══ DO-TARFA MILAN (1.45.492) ═══════════════════════════════════════ */
+var _fpSet={};
+function _fpHas(col,id){return!!_fpSet[col+"/"+id]}
+function _fpClear(){_fpSet={}}
+function _dsExtraList(){
+  var c=null;try{c=window._dsCloudCounts}catch(e){}
+  if(!c||!c.n)return[];
+  var mine=_dsMyCounts(true),out=[];
+  DS_COUNT_COLS.forEach(function(k){var want=Number(c.n[k]);if(isFinite(want)&&want>0&&mine[k]>want)out.push({col:k,more:mine[k]-want})});
+  return out;
+}
+function _twLine(){
+  var t=null;try{t=JSON.parse(localStorage.getItem("vs_twoway_last")||"null")}catch(e){}
+  if(!t)return"Do-tarfa milan: abhi tak nahi hua";
+  var b=Object.keys(t.sent||{}).filter(function(k){return t.sent[k]}).map(function(k){return k+" "+t.sent[k]});
+  return"Do-tarfa milan: "+new Date(t.at).toLocaleString()+" — cloud ko bheja "+(t.n||0)+(b.length?(" ("+b.join(", ")+")"):"")+(t.took?(", "+t.took+" cloud se mita maana"):"");
+}
+/* Poora cloud saamne hai. Jo yahan naya hai ya cloud me hai hi nahi -- bhejne ki list. */
+function _twoWayCompare(){
+  var G=window._fullGot||{};window._fullGot=null;
+  var sent={},n=0,took=0;
+  Object.keys(G).forEach(function(col){
+    var arr=G[col],loc=STATE[col];
+    if(!Array.isArray(arr)||!Array.isArray(loc))return;
+    var C={};arr.forEach(function(r){if(r&&r.id!=null)C[r.id]=r});
+    /* cloud khaali par yahan dher -- shak; haath mat lagao */
+    if(!arr.length&&loc.length>20)return;
+    loc.forEach(function(r){
+      if(!r||r.id==null||r._pushBad)return;
+      try{if(_fbBadKey(r.id))return}catch(e){}
+      var c=C[r.id],lt=Number(r._ts)||0;
+      if(!c){_fpSet[col+"/"+r.id]=1;sent[col]=(sent[col]||0)+1;n++;return}
+      var ct=Number(c._ts)||0;
+      if(lt>ct){_fpSet[col+"/"+r.id]=1;sent[col]=(sent[col]||0)+1;n++;return}
+      if(lt===ct&&!!r._deleted!==!!c._deleted){
+        /* barabar samay, ek jagah mita -- mita hua jeetta hai */
+        if(r._deleted){_fpSet[col+"/"+r.id]=1;sent[col]=(sent[col]||0)+1;n++}
+        else{r._deleted=true;took++}
+      }
+    });
+  });
+  try{localStorage.setItem("vs_twoway_last",JSON.stringify({at:Date.now(),n:n,sent:sent,took:took}))}catch(e){}
+  try{_tlAdd("do-tarfa milan",0,"bhejna "+n)}catch(e){}
+  return n;
+}
+(function(){
+  if(pullAllFromFirebase._v492)return;
+  var pa=pullAllFromFirebase;
+  pullAllFromFirebase=async function(){
+    try{window._fullGot=null}catch(e){}
+    var r=await pa.apply(this,arguments);
+    var n=0;
+    if(r){try{n=_twoWayCompare()}catch(e){n=0}}
+    else{try{window._fullGot=null}catch(e){}}
+    if(n){
+      try{persistAllCollections()}catch(e){}
+      try{await pushDeltaToFirebase()}catch(e){}
+      try{toast("Poora milan: is device ke "+n+" badlav cloud par nahi the — bhej diye","ok")}catch(e){}
+    }
+    return r;
+  };
+  pullAllFromFirebase._v492=true;
+})();
+/* Update ke baad har device EK baar do-tarfa milan kare -- purana farak apne aap mite. */
+var TW_FLAG="vs_twoway_v492";
+function _twOnceDue(){
+  try{if(localStorage.getItem(TW_FLAG))return false}catch(e){return false}
+  if(!STATE.user||!FIREBASE_URL)return false;
+  try{if(_noPullMode())return false}catch(e){}
+  if(navigator.onLine===false||document.hidden)return false;
+  if(window._syncRunning||window._pullRunning||window._saveLock||window._twRunning)return false;
+  if(!window._fbLastPullOk)return false;
+  return true;
+}
+async function _twOnce(){
+  if(!_twOnceDue())return false;
+  window._twRunning=true;
+  var ok=false;
+  try{ok=await syncFullReconcile()}catch(e){ok=false}
+  window._twRunning=false;
+  if(ok){try{localStorage.setItem(TW_FLAG,String(Date.now()))}catch(e){}}
+  return ok;
+}
+setInterval(function(){try{_twOnce()}catch(e){}},45e3);
 function renderNewParty(){
   var c=el("np-body");if(!c)return;
   try{npCheckTasks()}catch(e){}
@@ -16429,7 +16515,7 @@ function _viewDirtyWatch(){
   },700);
 }
 function refreshCurrentView(){try{if(_viewOvOpen()){window._viewDirty=true;_viewDirtyWatch();return}window._viewDirty=false;const cur=window._currentNav||"";if(cur==="tasks"){try{renderMyTasks()}catch(e){}try{renderAllTasks()}catch(e){}try{updateTaskDot()}catch(e){}}else if(cur==="dash"){try{renderDash()}catch(e){}}else if(cur==="sales"){try{renderOrders()}catch(e){}try{renderBills()}catch(e){}}else if(cur==="leads"){try{renderLeads("all")}catch(e){}try{renderLeads("mine")}catch(e){}try{renderLeads("today")}catch(e){}}else if(cur==="masters"){try{renderItems()}catch(e){}try{renderCusts()}catch(e){}try{renderBrks()}catch(e){}try{renderSups()}catch(e){}try{renderPrds()}catch(e){}try{renderCustGroups()}catch(e){}}else if(cur==="inward"){try{renderInRec()}catch(e){}try{renderExchangeList()}catch(e){}}else if(cur==="jw"){try{renderJWLists()}catch(e){}}else if(cur==="admin"){try{renderUsers()}catch(e){}try{renderDevices()}catch(e){}try{renderLedger()}catch(e){}}
-  else if(cur==="cutting"||cur==="floor"){try{csRefreshFlowViews()}catch(e){}}}catch(e){}}async function pullLatestAndRefresh(){if(!FIREBASE_URL)return;if(window._saveLock||window._syncRunning)return;if(window._lastSaveAt&&Date.now()-window._lastSaveAt<8e3)return;await pullDeltaFromFirebase()}function saveGasUrl(){const url=(el("gas-url")?.value||"").trim();STATE.settings.gasUrl=url;GAS_URL=url;lsSave("vs_settings",STATE.settings);toast("GAS URL saved","ok")}async function testGasConnection(){testFirebaseConnection()}async function testFirebaseConnection(){const url=(el("firebase-url")?.value||STATE.settings.firebaseUrl||"").trim().replace(/\/$/,"");if(!url){toast("Paste Firebase URL first","er");return}const s=el("gas-status");if(s)s.innerHTML='<span style="color:var(--Ad)">Testing...</span>';try{const r=await fetch(url+"/altstock/_ping.json",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({t:Date.now()})});if(r.ok){if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Connected to Firebase!</span>';toast("Firebase connected","ok")}else{if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; HTTP '+r.status+" — Check database is in test mode</span>"}}catch(e){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; Cannot reach Firebase. Check URL.</span>'}}async function syncToCloud(){if(!FIREBASE_URL&&!GAS_URL){toast("Set Firebase URL in Admin → Database first","er");return}const s=el("gas-status");if(s)s.innerHTML='<span style="color:var(--Ad)">Pushing...</span>';try{window._autoSyncTimer&&clearTimeout(window._autoSyncTimer);let ok=false;if(FIREBASE_URL){ok=await pushDeltaToFirebase(true)}else if(GAS_URL){const nowTs=(new Date).toISOString();const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],custGroups:STATE.custGroups||[],markets:STATE.markets||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],settings:{...STATE.settings,lastSync:nowTs},_savedAt:nowTs};const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"saveAll",...pl})});const j=await r.json().catch(()=>null);ok=j&&!j.error;if(ok){STATE.settings.lastSync=nowTs;lsSave("vs_settings",STATE.settings)}}if(ok){if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pushed at '+(new Date).toTimeString().slice(0,8)+"</span>";toast("Pushed to Firebase","ok");setLiveStatus("live")}else{if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; Push failed — check connection</span>'}}catch(e){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; '+e.message+"</span>"}}async function syncFromCloud(){if(!FIREBASE_URL&&!GAS_URL){toast("Set Firebase URL in Admin → Database first","er");return}const ok=await appConfirm("Pull from Firebase?","Merges cloud data into local. Newer records win.","?","Pull","ok");if(!ok)return;const s=el("gas-status");if(s)s.innerHTML='<span style="color:var(--Ad)">Downloading...</span>';try{if(FIREBASE_URL){const got=await pullAllFromFirebase(true);if(!got){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; No data in Firebase yet — push first</span>';return}persist();if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pulled and merged successfully</span>';toast("Data pulled from Firebase","ok");refreshCurrentView();return}const d=await api("getAll");if(!d||!d.items){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; No data in Firebase yet — push first</span>';return}applyCloudData(d,true);persist();if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pulled and merged successfully</span>';toast("Data pulled from Firebase","ok");refreshCurrentView()}catch(e){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; '+e.message+"</span>"}}function saveJsonBinCreds(){STATE.settings.jsonbinId=(el("jb-bin")?.value||"").trim();STATE.settings.jsonbinKey=(el("jb-key")?.value||"").trim();lsSave("vs_settings",STATE.settings);toast("JSONBin credentials saved","ok")}async function testJsonBin(){const binId=STATE.settings.jsonbinId,key=STATE.settings.jsonbinKey;if(!binId||!key){toast("Enter Bin ID and API Key first","er");return}const s=el("jb-status");if(s)s.innerHTML='<span style="color:var(--Ad)">Testing...</span>';try{const r=await fetch("https://api.jsonbin.io/v3/b/"+binId+"/latest",{headers:{"X-Master-Key":key,"X-Bin-Meta":"false"}});if(r.ok){if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Connected to JSONBin!</span>';toast("JSONBin connected","ok")}else{const d=await r.json();if(s)s.innerHTML='<span style="color:var(--Rd)">&#x274C; Error: '+(d.message||r.status)+"</span>";toast("JSONBin test failed","er")}}catch(e){if(s)s.innerHTML='<span style="color:var(--Rd)">&#x274C; '+e.message+"</span>";toast("Connection error","er")}}function setLiveStatus(state){const dot=document.getElementById("live-dot");const txt=document.getElementById("live-txt");if(!dot||!txt)return;
+  else if(cur==="cutting"||cur==="floor"){try{csRefreshFlowViews()}catch(e){}}}catch(e){}}async function pullLatestAndRefresh(){if(!FIREBASE_URL)return;if(window._saveLock||window._syncRunning)return;if(window._lastSaveAt&&Date.now()-window._lastSaveAt<8e3)return;await pullDeltaFromFirebase()}function saveGasUrl(){const url=(el("gas-url")?.value||"").trim();STATE.settings.gasUrl=url;GAS_URL=url;lsSave("vs_settings",STATE.settings);toast("GAS URL saved","ok")}async function testGasConnection(){testFirebaseConnection()}async function testFirebaseConnection(){const url=(el("firebase-url")?.value||STATE.settings.firebaseUrl||"").trim().replace(/\/$/,"");if(!url){toast("Paste Firebase URL first","er");return}const s=el("gas-status");if(s)s.innerHTML='<span style="color:var(--Ad)">Testing...</span>';try{const r=await fetch(url+"/altstock/_ping.json",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({t:Date.now()})});if(r.ok){if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Connected to Firebase!</span>';toast("Firebase connected","ok")}else{if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; HTTP '+r.status+" — Check database is in test mode</span>"}}catch(e){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; Cannot reach Firebase. Check URL.</span>'}}async function syncToCloud(){if(!FIREBASE_URL&&!GAS_URL){toast("Set Firebase URL in Admin → Database first","er");return}const s=el("gas-status");if(s)s.innerHTML='<span style="color:var(--Ad)">Pushing...</span>';try{window._autoSyncTimer&&clearTimeout(window._autoSyncTimer);let ok=false;if(FIREBASE_URL){ok=await syncFullReconcile()}else if(GAS_URL){const nowTs=(new Date).toISOString();const pl={items:STATE.items,entries:STATE.entries,customers:STATE.customers,brokers:STATE.brokers,suppliers:STATE.suppliers,users:STATE.users,orders:STATE.orders,bills:STATE.bills,payments:STATE.payments||[],jobWork:STATE.jobWork,leads:STATE.leads||[],flaggedEntries:STATE.flaggedEntries||[],taskTemplates:STATE.taskTemplates||[],taskInstances:STATE.taskInstances||[],staffLeave:STATE.staffLeave||[],recurringLeads:STATE.recurringLeads||[],custGroups:STATE.custGroups||[],markets:STATE.markets||[],products:STATE.products||[],mixedSarees:STATE.mixedSarees||[],settings:{...STATE.settings,lastSync:nowTs},_savedAt:nowTs};const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"saveAll",...pl})});const j=await r.json().catch(()=>null);ok=j&&!j.error;if(ok){STATE.settings.lastSync=nowTs;lsSave("vs_settings",STATE.settings)}}if(ok){if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pushed at '+(new Date).toTimeString().slice(0,8)+"</span>";toast("Pushed to Firebase","ok");setLiveStatus("live")}else{if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; Push failed — check connection</span>'}}catch(e){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; '+e.message+"</span>"}}async function syncFromCloud(){if(!FIREBASE_URL&&!GAS_URL){toast("Set Firebase URL in Admin → Database first","er");return}const ok=await appConfirm("Pull from Firebase?","Merges cloud data into local. Newer records win.","?","Pull","ok");if(!ok)return;const s=el("gas-status");if(s)s.innerHTML='<span style="color:var(--Ad)">Downloading...</span>';try{if(FIREBASE_URL){const got=await pullAllFromFirebase(true);if(!got){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; No data in Firebase yet — push first</span>';return}persist();if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pulled and merged successfully</span>';toast("Data pulled from Firebase","ok");refreshCurrentView();return}const d=await api("getAll");if(!d||!d.items){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; No data in Firebase yet — push first</span>';return}applyCloudData(d,true);persist();if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Pulled and merged successfully</span>';toast("Data pulled from Firebase","ok");refreshCurrentView()}catch(e){if(s)s.innerHTML='<span style="color:var(--Ad)">&#x26A0; '+e.message+"</span>"}}function saveJsonBinCreds(){STATE.settings.jsonbinId=(el("jb-bin")?.value||"").trim();STATE.settings.jsonbinKey=(el("jb-key")?.value||"").trim();lsSave("vs_settings",STATE.settings);toast("JSONBin credentials saved","ok")}async function testJsonBin(){const binId=STATE.settings.jsonbinId,key=STATE.settings.jsonbinKey;if(!binId||!key){toast("Enter Bin ID and API Key first","er");return}const s=el("jb-status");if(s)s.innerHTML='<span style="color:var(--Ad)">Testing...</span>';try{const r=await fetch("https://api.jsonbin.io/v3/b/"+binId+"/latest",{headers:{"X-Master-Key":key,"X-Bin-Meta":"false"}});if(r.ok){if(s)s.innerHTML='<span style="color:var(--Gd)">&#x2705; Connected to JSONBin!</span>';toast("JSONBin connected","ok")}else{const d=await r.json();if(s)s.innerHTML='<span style="color:var(--Rd)">&#x274C; Error: '+(d.message||r.status)+"</span>";toast("JSONBin test failed","er")}}catch(e){if(s)s.innerHTML='<span style="color:var(--Rd)">&#x274C; '+e.message+"</span>";toast("Connection error","er")}}function setLiveStatus(state){const dot=document.getElementById("live-dot");const txt=document.getElementById("live-txt");if(!dot||!txt)return;
   try{
     var box=txt.parentNode;
     if(box&&!box._netTap){box._netTap=true;box.style.cursor="pointer";
@@ -18243,7 +18329,7 @@ async function pushDeltaToFirebase(full){if(!FIREBASE_URL)return false;
 const _pushRecs=[];const _pushBad=[];
 DELTA_COLLECTIONS.forEach(col=>{let touched=false;(STATE[col]||[]).forEach(rec=>{
   if(!rec||!rec.id)return;
-  if((rec._ts||0)<=cutoff)return;
+  if((rec._ts||0)<=cutoff&&!_fpHas(col,rec.id))return;
   /* Firebase kuchh akshar naam me nahi leta: . # $ [ ] /
      Aisa ek bhi record poore packet ko thukra deta hai -- aur phir
      us phone ka kaam kabhi upar nahi jaata. Use alag rakh do. */
@@ -18260,6 +18346,14 @@ try{window._pushBadList=_pushBad}catch(e){}
  _pushRecs.forEach(x=>{if(x.ts>_lim){x.r._ts=pushStartTs;x.ts=pushStartTs;_fx++}});
  if(_fx){try{_tlAdd("aage ke samay wali "+_fx+" row theek ki",0)}catch(e){}}}
 _pushRecs.sort((a,b)=>a.ts-b.ts);
+/* Der se ja raha kaam (ya zabardasti wala): abhi ka nishaan do, warna baaki
+   device ka cursor ise peechhe chhod chuka hota hai aur unhe ye kabhi nahi milta.
+   Sirf tab jab abhi-abhi cloud se taaza liya ho (takkar asli samay se sulajh chuki) --
+   offline pada purana kaam naya nishaan pa kar kisi ka naya kaam na dabaye. */
+{let _k=0;window._pushMaxTs=0;
+ const _rsOk=!!(window._fbFreshAt&&Date.now()-window._fbFreshAt<15e3);
+ if(_rsOk)_pushRecs.forEach(x=>{if(pushStartTs-x.ts>3e4||_fpHas(x.c,x.r.id)){_k++;x.r._ts=pushStartTs+_k;x.ts=pushStartTs+_k}});
+ if(_k){window._pushMaxTs=pushStartTs+_k;_pushRecs.sort((a,b)=>a.ts-b.ts);try{_dsNoteCloudTs(pushStartTs+_k)}catch(e){}try{_tlAdd("der wale "+_k+" row ko abhi ka nishaan",0)}catch(e){}}}
 const nowIso=(new Date).toISOString();
 const _setOut={...STATE.settings,lastSync:nowIso,appVersion:_verMax(STATE.settings.appVersion,APP_VERSION)};
 const _setSig=_settingsSig(_setOut);
@@ -18394,7 +18488,7 @@ try{
     if(r&&r.ok){_setChanged=false;_ctrChanged=false;try{_dsSetSettingsSig(_setSig)}catch(e){}
       try{_tlAdd("settings/ginti cloud ne nahi li — chhod di",0)}catch(e){}}
   }
-  if(r&&r.ok){_dsSetLastPush(pushStartTs);if(_setChanged)_dsSetSettingsSig(_setSig);if(_ctrChanged){const _k2=_ctrCloudGet();Object.keys(_ctrSent).forEach(function(k){// Haath se set ki hui ginti chhoti bhi ho sakti hai -- uspar "bada wala" mat lagao, warna device samajhta rahega ki cloud par abhi bhi badi ginti hai aur aage kuchh bhejega hi nahi.
+  if(r&&r.ok){_dsSetLastPush(Math.max(pushStartTs,window._pushMaxTs||0));try{_fpClear()}catch(e){}if(_setChanged)_dsSetSettingsSig(_setSig);if(_ctrChanged){const _k2=_ctrCloudGet();Object.keys(_ctrSent).forEach(function(k){// Haath se set ki hui ginti chhoti bhi ho sakti hai -- uspar "bada wala" mat lagao, warna device samajhta rahega ki cloud par abhi bhi badi ginti hai aur aage kuchh bhejega hi nahi.
 if(_ctrSetSent[k]){_k2[k]=_ctrSent[k];return}_k2[k]=Math.max(_k2[k]||0,_ctrSent[k])});_ctrCloudSet(_k2)}STATE.settings.lastSync=nowIso;lsSave("vs_settings",STATE.settings);window._pushWhy="";window._pushErr=null;setLiveStatus("live");try{_renderUnsyncedBar()}catch(e){}return true}return _pushFail()}catch(e){return _pushFail()}}/* Kaam ko uske khaane ke hisaab se baant kar bhejta hai. Jawab wahi
    shakal ka lautata hai jo fetch lautata tha ({ok,status}), taaki
    bulane walon ka hisaab waisa ka waisa chale -- 400 wala kharab-row
@@ -18699,7 +18793,10 @@ async function pullAllFromFirebase(force){
           clearTimeout(t);
           if(r.ok){
             const raw=await _fbRead(r,cur?"badlav":"poora");
-            return Array.isArray(raw)?raw:raw&&typeof raw==="object"?Object.values(raw):[];
+            const _arr=Array.isArray(raw)?raw:raw&&typeof raw==="object"?Object.values(raw):[];
+            /* poora khaana aaya -- do-tarfa milan ke liye yaad rakho */
+            if(!cur){try{(window._fullGot=window._fullGot||{})[col]=_arr}catch(e){}}
+            return _arr;
           }
         }catch(e){}
         /* thoda ruk kar phir -- dheeme net par ek saans mil jaati hai */
@@ -18778,7 +18875,7 @@ async function pullAllFromFirebase(force){
     }
   }
 }
-function applyCloudData(d,force=false){if(!d)return;if(!force){const cloudTs=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);const localTs=STATE.settings?.lastSync?new Date(STATE.settings.lastSync):new Date(0);const hasNewItems=(d.items||[]).some(ci=>!(STATE.items||[]).find(li=>li.id===ci.id));if(cloudTs<=localTs&&localTs.getTime()>0&&!hasNewItems)return}const keys=["items","entries","customers","brokers","suppliers","users","orders","bills","payments","jobWork","leads","flaggedEntries","taskTemplates","taskInstances","staffLeave","recurringLeads","mixedSarees","custGroups","markets","products","exchanges","sampleSets"];const uniqueKeys={users:"username"};const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;if(localCount<=1){keys.forEach(k=>{if(d[k]!==undefined)STATE[k]=d[k]})}else{keys.forEach(k=>{if(d[k]===undefined)return;STATE[k]=k==="items"?mergeItems(STATE[k],d[k]):k==="taskInstances"?mergeTaskInstances(STATE[k],d[k]):smartMerge(STATE[k],d[k],uniqueKeys[k])})}keys.forEach(k=>{STATE[k]=cleanupDeleted(STATE[k])});(STATE.items||[]).forEach(item=>{if(!Array.isArray(item.colours))item.colours=[]});if(d.settings){const mergedPerUser={...STATE.settings.dashConfigPerUser||{},...d.settings.dashConfigPerUser||{}};const _localCtrs={};COUNTER_KEYS.forEach(function(k){_localCtrs[k]=parseFloat(STATE.settings[k])||1});STATE.settings={...STATE.settings,...d.settings};COUNTER_KEYS.forEach(function(k){STATE.settings[k]=Math.max(_localCtrs[k],parseFloat(STATE.settings[k])||1)});if(Object.keys(mergedPerUser).length)STATE.settings.dashConfigPerUser=mergedPerUser}if(d.settings?.lastSync)STATE.settings.lastSync=d.settings.lastSync;try{migrateData()}catch(e){}
+function applyCloudData(d,force=false){if(!d)return;if(!force){const cloudTs=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);const localTs=STATE.settings?.lastSync?new Date(STATE.settings.lastSync):new Date(0);const hasNewItems=(d.items||[]).some(ci=>!(STATE.items||[]).find(li=>li.id===ci.id));if(cloudTs<=localTs&&localTs.getTime()>0&&!hasNewItems)return}const keys=["items","entries","customers","brokers","suppliers","users","orders","bills","payments","jobWork","leads","flaggedEntries","taskTemplates","taskInstances","staffLeave","recurringLeads","mixedSarees","custGroups","markets","products","exchanges","sampleSets","csSlips","killed","activity"];const uniqueKeys={users:"username"};const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;if(localCount<=1){keys.forEach(k=>{if(d[k]!==undefined)STATE[k]=d[k]})}else{keys.forEach(k=>{if(d[k]===undefined)return;STATE[k]=k==="items"?mergeItems(STATE[k],d[k]):k==="taskInstances"?mergeTaskInstances(STATE[k],d[k]):smartMerge(STATE[k],d[k],uniqueKeys[k])})}keys.forEach(k=>{STATE[k]=cleanupDeleted(STATE[k])});(STATE.items||[]).forEach(item=>{if(!Array.isArray(item.colours))item.colours=[]});if(d.settings){const mergedPerUser={...STATE.settings.dashConfigPerUser||{},...d.settings.dashConfigPerUser||{}};const _localCtrs={};COUNTER_KEYS.forEach(function(k){_localCtrs[k]=parseFloat(STATE.settings[k])||1});STATE.settings={...STATE.settings,...d.settings};COUNTER_KEYS.forEach(function(k){STATE.settings[k]=Math.max(_localCtrs[k],parseFloat(STATE.settings[k])||1)});if(Object.keys(mergedPerUser).length)STATE.settings.dashConfigPerUser=mergedPerUser}if(d.settings?.lastSync)STATE.settings.lastSync=d.settings.lastSync;try{migrateData()}catch(e){}if(d.killed!==undefined){try{applyKillList()}catch(e){}}if(d.csSlips!==undefined){try{csApplyMirrors()}catch(e){}}
 /* Stock ka hisaab tabhi jab sach me entries ya items aaye hon -- ye
    60,000 entry par chalta hai aur poore pull me 10-12 baar chal jaata tha. */
 if(d.entries!==undefined||d.items!==undefined)recalcStockFromEntries();
@@ -18789,7 +18886,7 @@ try{refreshCurrentUser()}catch(e){}
 var _SAVEMAP={items:"vs_items",entries:"vs_entries",customers:"vs_customers",
   brokers:"vs_brokers",suppliers:"vs_suppliers",users:"vs_users",orders:"vs_orders",
   bills:"vs_bills",payments:"vs_payments",jobWork:"vs_jobwork",leads:"vs_leads",
-  taskTemplates:"vs_task_templates"};
+  taskTemplates:"vs_task_templates",csSlips:"vs_cs_slips",killed:"vs_killed",activity:"vs_activity"};
 Object.keys(_SAVEMAP).forEach(function(k){
   if(d[k]===undefined)return;
   if(k==="taskTemplates"&&!STATE.taskTemplates)return;
