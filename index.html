@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.497-->
+<!DOCTYPE html><!--ALTV:1.45.498-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.497";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.498";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -14789,6 +14789,60 @@ function _mgKeyRepair(){
   };
   setTimeout(tick,3000);
 })();
+/* 498: Users ko ID se milao, username se nahi.
+   Harish ji ka username "pc01" se "harishji" hua to PC ne usko naya user
+   samjha aur purana record bhi rakh liya -- ek hi ID ke do user. Us
+   purane ko koi edit/delete karta to cloud ka asli user bhi bigad jata.
+   Ab: pehle ID se (bada _ts jeete). Phir purane zamane ki galti ke liye
+   -- do alag ID, same username, dono zinda -- naya wala rakho. */
+function mergeUsers(local,remote){
+  var map=new Map(),order=[];
+  var put=function(u){
+    if(!u||typeof u!=="object")return;
+    var k=u.id?"#"+u.id:"@"+String(u.username||"").toLowerCase();
+    var ex=map.get(k);
+    if(!ex){map.set(k,u);order.push(k);return}
+    if((u._ts||0)>=(ex._ts||0))map.set(k,u);
+  };
+  (local||[]).forEach(put);
+  (remote||[]).forEach(function(u){
+    if(!u||typeof u!=="object")return;
+    var k=u.id?"#"+u.id:"@"+String(u.username||"").toLowerCase();
+    var ex=map.get(k);
+    if(!ex){map.set(k,u);order.push(k);return}
+    if((u._ts||0)>(ex._ts||0))map.set(k,u);
+  });
+  var out=order.map(function(k){return map.get(k)});
+  var byName={},drop=new Set();
+  out.forEach(function(u){
+    if(u._deleted||!u.username)return;
+    var n=String(u.username).toLowerCase(),ex=byName[n];
+    if(!ex){byName[n]=u;return}
+    if((u._ts||0)>(ex._ts||0)){drop.add(ex);byName[n]=u}else drop.add(u);
+  });
+  return drop.size?out.filter(function(u){return!drop.has(u)}):out;
+}
+/* Jis device par pehle se ek ID ke do user pade hain, unhe ek baar saaf
+   karo. Cloud pehle se sahi hai, isliye kuchh upload nahi hota. */
+function _usersDedupLocal(){
+  var a=STATE.users;if(!Array.isArray(a)||a.length<2)return 0;
+  var b=mergeUsers(a,[]);var n=a.length-b.length;
+  if(n>0){STATE.users=b;try{lsSave("vs_users",STATE.users)}catch(e){}}
+  return n;
+}
+(function(){
+  var tries=0;
+  var tick=function(){
+    tries++;
+    if(Array.isArray(STATE.users)&&STATE.users.length){
+      var r=0;try{r=_usersDedupLocal()}catch(e){r=0}
+      if(r){try{refreshCurrentView()}catch(e){}}
+      if(window._initialPullDone)return;
+    }
+    if(tries<60)setTimeout(tick,3000);
+  };
+  setTimeout(tick,2000);
+})();
 function renderNewParty(){
   var c=el("np-body");if(!c)return;
   try{npCheckTasks()}catch(e){}
@@ -18892,7 +18946,7 @@ _got.forEach(function(g){
   if(arr.length){
     STATE[col]=col==="items"?mergeItems(STATE[col],arr):
       col==="taskInstances"?mergeTaskInstances(STATE[col],arr):
-      smartMerge(STATE[col],arr,col==="users"?"username":undefined);
+      col==="users"?mergeUsers(STATE[col],arr):smartMerge(STATE[col],arr);
     STATE[col]=cleanupDeleted(STATE[col]);anyUpdated=true;
   }
   pullMap[col]=g.cloudTs;
@@ -19081,7 +19135,7 @@ async function pullAllFromFirebase(force){
     }
   }
 }
-function applyCloudData(d,force=false){if(!d)return;if(!force){const cloudTs=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);const localTs=STATE.settings?.lastSync?new Date(STATE.settings.lastSync):new Date(0);const hasNewItems=(d.items||[]).some(ci=>!(STATE.items||[]).find(li=>li.id===ci.id));if(cloudTs<=localTs&&localTs.getTime()>0&&!hasNewItems)return}const keys=["items","entries","customers","brokers","suppliers","users","orders","bills","payments","jobWork","leads","flaggedEntries","taskTemplates","taskInstances","staffLeave","recurringLeads","mixedSarees","custGroups","markets","products","exchanges","sampleSets","csSlips","killed","activity"];const uniqueKeys={users:"username"};const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;if(localCount<=1){keys.forEach(k=>{if(d[k]!==undefined)STATE[k]=d[k]})}else{keys.forEach(k=>{if(d[k]===undefined)return;STATE[k]=k==="items"?mergeItems(STATE[k],d[k]):k==="taskInstances"?mergeTaskInstances(STATE[k],d[k]):smartMerge(STATE[k],d[k],uniqueKeys[k])})}keys.forEach(k=>{STATE[k]=cleanupDeleted(STATE[k])});(STATE.items||[]).forEach(item=>{if(!Array.isArray(item.colours))item.colours=[]});if(d.settings){const mergedPerUser={...STATE.settings.dashConfigPerUser||{},...d.settings.dashConfigPerUser||{}};const _localCtrs={};COUNTER_KEYS.forEach(function(k){_localCtrs[k]=parseFloat(STATE.settings[k])||1});STATE.settings={...STATE.settings,...d.settings};COUNTER_KEYS.forEach(function(k){STATE.settings[k]=Math.max(_localCtrs[k],parseFloat(STATE.settings[k])||1)});if(Object.keys(mergedPerUser).length)STATE.settings.dashConfigPerUser=mergedPerUser}if(d.settings?.lastSync)STATE.settings.lastSync=d.settings.lastSync;try{migrateData()}catch(e){}if(d.killed!==undefined){try{applyKillList()}catch(e){}}if(d.csSlips!==undefined){try{csApplyMirrors()}catch(e){}}
+function applyCloudData(d,force=false){if(!d)return;if(!force){const cloudTs=d.settings?.lastSync?new Date(d.settings.lastSync):new Date(0);const localTs=STATE.settings?.lastSync?new Date(STATE.settings.lastSync):new Date(0);const hasNewItems=(d.items||[]).some(ci=>!(STATE.items||[]).find(li=>li.id===ci.id));if(cloudTs<=localTs&&localTs.getTime()>0&&!hasNewItems)return}const keys=["items","entries","customers","brokers","suppliers","users","orders","bills","payments","jobWork","leads","flaggedEntries","taskTemplates","taskInstances","staffLeave","recurringLeads","mixedSarees","custGroups","markets","products","exchanges","sampleSets","csSlips","killed","activity"];const uniqueKeys={users:"username"};const localCount=(STATE.items||[]).length+(STATE.customers||[]).length+(STATE.users||[]).length;if(localCount<=1){keys.forEach(k=>{if(d[k]!==undefined)STATE[k]=k==="users"?mergeUsers([],d[k]):d[k]})}else{keys.forEach(k=>{if(d[k]===undefined)return;STATE[k]=k==="items"?mergeItems(STATE[k],d[k]):k==="taskInstances"?mergeTaskInstances(STATE[k],d[k]):k==="users"?mergeUsers(STATE[k],d[k]):smartMerge(STATE[k],d[k],uniqueKeys[k])})}keys.forEach(k=>{STATE[k]=cleanupDeleted(STATE[k])});(STATE.items||[]).forEach(item=>{if(!Array.isArray(item.colours))item.colours=[]});if(d.settings){const mergedPerUser={...STATE.settings.dashConfigPerUser||{},...d.settings.dashConfigPerUser||{}};const _localCtrs={};COUNTER_KEYS.forEach(function(k){_localCtrs[k]=parseFloat(STATE.settings[k])||1});STATE.settings={...STATE.settings,...d.settings};COUNTER_KEYS.forEach(function(k){STATE.settings[k]=Math.max(_localCtrs[k],parseFloat(STATE.settings[k])||1)});if(Object.keys(mergedPerUser).length)STATE.settings.dashConfigPerUser=mergedPerUser}if(d.settings?.lastSync)STATE.settings.lastSync=d.settings.lastSync;try{migrateData()}catch(e){}if(d.killed!==undefined){try{applyKillList()}catch(e){}}if(d.csSlips!==undefined){try{csApplyMirrors()}catch(e){}}
 /* Stock ka hisaab tabhi jab sach me entries ya items aaye hon -- ye
    60,000 entry par chalta hai aur poore pull me 10-12 baar chal jaata tha. */
 if(d.entries!==undefined||d.items!==undefined)recalcStockFromEntries();
