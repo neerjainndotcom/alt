@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.503-->
+<!DOCTYPE html><!--ALTV:1.45.506-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.503";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.506";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -8160,16 +8160,22 @@ try{
     _oHeld.nos=_oHeld.nos.concat(h.nos);_oHeld.canNos=_oHeld.canNos.concat(h.canNos);
   });
 }catch(e){}
+/* 504: clear ho gaya order aur uski parchi zinda -- maal phir cutting me
+   chala jaata tha (B/946 / CS/4021). Ab:
+     * jo parchi abhi bani hi hai (kaam shuru nahi) -- apne aap cancel
+     * jo floor par hai (cutting/route/packing) -- clear ruk jaata hai;
+       pehle us parchi ka faisla karo */
+var _fr=_csFreshBusy(o),_busy=_fr.busy;
+if(_busy.length){
+  await appConfirm("Pehle parchi dekho",_busy.join(", ")+" abhi floor par hai (kaam chal raha hai).\n\n"
+    +"Order clear karne se pehle us parchi ko bill / short close / cancel karo \u2014 warna clear hua maal floor par chalta rahega.",
+    "\u26A0\uFE0F","Theek hai","ok","Band karo");
+  return;
+}
 const ok=await appConfirm("Clear Order?","Mark this order as cleared/fulfilled without creating a bill? Any pending sarees still left in this order (across all lots) will be marked as not to be billed or dispatched."
-  +(_oHeld.qty>0?("\n\nIs order par "+_oHeld.nos.join(", ")+" khuli padi hai ("+fmtN(_oHeld.qty)+" saree)."):""),"?","Clear","ok");if(!ok)return;
-if(_oHeld.canQty>0){
-  var _okSl=await appConfirm("Khuli parchi bhi cancel karein?",
-    _oHeld.canNos.join(", ")+" par "+fmtN(_oHeld.canQty)+" saree likhi hai.\n\n"
-    +"Cancel na karein to wo maal parchi par hi pada rahega aur lot pending\n"
-    +"me wapas nahi aayega.\n\n"
-    +"Bill aur stock par koi asar nahi padega.",
-    "\u2702\uFE0F","Haan, cancel karo","dr","Rehne do");
-  if(_okSl)_oHeld.lots.forEach(function(L){csCancelOpenSlipsOfLot(o,L,"order clear")});
+  +(_fr.fresh.length?("\n\n"+_fr.fresh.join(", ")+" ("+fmtN(_fr.freshQty)+" saree) bhi saath me cancel ho jayegi \u2014 cutting me nahi jayegi."):""),"?","Clear","ok");if(!ok)return;
+if(_fr.fresh.length){
+  try{csOrderLots(o).forEach(function(L){_csCancelFreshOfLot(o,L,"order clear")})}catch(e){}
 }
 if(o.type!=="open"){const fp=calcFixedOrderPending(o);if(fp.totalRemaining>0||fp.totalRemainingMtrs>0.5){if(!o.clearedItems)o.clearedItems={};if(!o.clearedMtrs)o.clearedMtrs={};Object.values(fp.bySku).forEach(x=>{if(x.remaining>0)o.clearedItems[x.sku]=(o.clearedItems[x.sku]||0)+x.remaining;if(x.remainingMtrs>0)o.clearedMtrs[x.sku]=csRound1((o.clearedMtrs[x.sku]||0)+x.remainingMtrs)})}}o.status="fulfilled";o._ts=_bumpTs(o);persist();renderOrders();renderPendingOrders();toast("Order marked as fulfilled","ok")}function editOrder(id){const o=STATE.orders.find(x=>x.id===id);if(!o)return;_ordId=id;_ordRows=[{}];window._editOrdTs=o._ts||0;_ordType=o.type==="open"?"open":"fixed";if(_ordType==="open"){_openItems=(o.openItems||[{id:0}]).map((oi,i)=>({...oi,id:i}));_openItemId=_openItems.length}window._ordPfx=(o.orderNo||"").replace(/[0-9]+$/,"");window._editOrdNo=o.orderNo;el("ordno").textContent=o.orderNo;el("ordtit").textContent="Edit Order";const lotGroups={};const hasLotIndex=(o.items||[]).some(it=>it.lotIndex!=null);(o.items||[]).forEach(it=>{const key=it.lotUid||(hasLotIndex?String(it.lotIndex):it.itemId+"|"+it.range);if(!lotGroups[key])lotGroups[key]={itemId:it.itemId,range:it.range,uid:it.lotUid||"",items:[]};lotGroups[key].items.push(it)});const groups=Object.entries(lotGroups).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).map(e=>e[1]);_ordLots=[];_lotId=0;if(groups.length){groups.forEach(g=>{_ordLots.push({id:_lotId,uid:g.uid||uid()});_lotId++})}else{_ordLots=[{id:0,uid:uid()}];_lotId=1}window._editLotData=groups.map((grp,gi)=>({lid:_ordLots[gi].id,grp:grp}));buildOrdBody();setTimeout(()=>{if(o.salesmanId&&el("od-sm"))el("od-sm").value=o.salesmanId;if(o.custId&&el("od-c")){el("od-c").value=o.custId;onOrderCustChange();syncSearchable(el("od-c"))}if(o.brkId&&el("od-b")){el("od-b").value=o.brkId;syncSearchable(el("od-b"))}if(o.date&&el("od-d"))el("od-d").value=o.date;if(o.notes&&el("od-nt"))el("od-nt").value=o.notes||"";try{fillBillFirmOptions(o.custId||"",o.billingFirm||"")}catch(e){}el("od-bfirm").value=o.billingFirm||"";el("od-bterms").value=o.billingTerms||"";if(el("od-dphone"))el("od-dphone").value=o.receiverPhone||"";el("od-ddate").value=o.deliveryDate||"";el("od-ddays").value=o.deliveryDays||"";el("od-dtype").value=o.deliveryType||el("od-dtype").value||"";el("od-dperson").value=o.deliveryPerson||"";if(el("od-ordno-edit"))el("od-ordno-edit").value=o.orderNo||"";if(_ordType==="open"){(o.openItems||[]).forEach((oi,i)=>{const iSel=el("od-oi-"+i+"-itm");if(iSel)iSel.value=oi.itemId||"";const pFld=el("od-oi-"+i+"-pcs");if(pFld)pFld.value=oi.totalPcs||"";const rFld=el("od-oi-"+i+"-rate");if(rFld)rFld.value=oi.rate||""})}_restoreEditLots(window._editLotData||[])},80);showMod("m-ord")}function duplicateOrder(id){const o=STATE.orders.find(x=>x.id===id);if(!o)return;_ordId=null;_ordRows=[{}];window._editOrdTs=0;_ordType=o.type==="open"?"open":"fixed";if(_ordType==="open"){_openItems=(o.openItems||[{id:0}]).map((oi,i)=>({...oi,id:i}));_openItemId=_openItems.length}const smUser=STATE.users.find(u=>u.id===o.salesmanId);window._ordPfx=smUser?.orderPrefix||STATE.user?.orderPrefix||STATE.settings.orderPrefix||"B/";window._editOrdNo=null;el("ordno").textContent=nextOrdNo(window._ordPfx);if(el("ordtit"))el("ordtit").textContent=(_hindi?"ऑर्डर डुप्लीकेट":"Duplicate Order");const lotGroups={};const hasLotIndex=(o.items||[]).some(it=>it.lotIndex!=null);(o.items||[]).forEach(it=>{const key=it.lotUid||(hasLotIndex?String(it.lotIndex):it.itemId+"|"+it.range);if(!lotGroups[key])lotGroups[key]={itemId:it.itemId,range:it.range,items:[]};lotGroups[key].items.push(it)});const groups=Object.entries(lotGroups).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0)).map(e=>e[1]);_ordLots=[];_lotId=0;if(groups.length){groups.forEach(()=>{_ordLots.push({id:_lotId,uid:uid()});_lotId++})}else{_ordLots=[{id:0}];_lotId=1}window._editLotData=groups.map((grp,gi)=>({lid:_ordLots[gi].id,grp:grp}));buildOrdBody();setTimeout(()=>{if(o.salesmanId&&el("od-sm"))el("od-sm").value=o.salesmanId;if(o.custId&&el("od-c")){el("od-c").value=o.custId;onOrderCustChange()}if(o.brkId&&el("od-b"))el("od-b").value=o.brkId;if(el("od-d"))el("od-d").value=new Date().toISOString().slice(0,10);if(o.notes&&el("od-nt"))el("od-nt").value=o.notes||"";try{fillBillFirmOptions(o.custId||"",o.billingFirm||"")}catch(e){}if(el("od-dphone"))el("od-dphone").value=o.receiverPhone||"";if(el("od-bfirm"))el("od-bfirm").value=o.billingFirm||"";if(el("od-bterms"))el("od-bterms").value=o.billingTerms||"";if(el("od-ddate"))el("od-ddate").value="";if(el("od-ddays"))el("od-ddays").value=o.deliveryDays||"";if(el("od-dtype"))el("od-dtype").value=o.deliveryType||el("od-dtype").value||"";if(el("od-dperson"))el("od-dperson").value=o.deliveryPerson||"";if(el("od-ordno-edit"))el("od-ordno-edit").value="";if(_ordType==="open"){(o.openItems||[]).forEach((oi,i)=>{const iSel=el("od-oi-"+i+"-itm");if(iSel)iSel.value=oi.itemId||"";const pFld=el("od-oi-"+i+"-pcs");if(pFld)pFld.value=oi.totalPcs||"";const rFld=el("od-oi-"+i+"-rate");if(rFld)rFld.value=oi.rate||""})}_restoreEditLots(window._editLotData||[])},80);showMod("m-ord");toast(_hindi?"ऑर्डर डुप्लीकेट हो गया — check karke Save karo":"Order duplicated — review and Save","ok")}/* Edit khulte hi bata do ki is lot ki parchi ban chuki hai. Parchi ban
    jaane ke baad number badla to kata hua maal aur kagaz alag ho jaate
@@ -12183,7 +12189,7 @@ function rcvLedger(){
     if(wait)(r.alloc||[]).forEach(function(a){if(bills[a.k])bills[a.k].wait=r.id});
     if(Number(r.adv)>0){
       var pt=party(r.pk,{custId:r.custId||"",name:r.party||""});
-      var ab={key:"a:"+r.id,billId:"",no:(r.nh?"Bina hisaab ":"Advance ")+(r.no||""),date:r.date,tx:0,amt:0,due0:-_advLeft(r),cr:0,rm:"",pk:r.pk,paid:0,back:0,adv:1};
+      var ab={key:"a:"+r.id,billId:"",no:(r.nh?"Bina hisaab ":"Advance ")+(r.no||""),date:r.date,tx:0,amt:0,due0:-_advLeftSo(r),cr:0,rm:"",pk:r.pk,paid:0,back:0,adv:1};
       bills[ab.key]=ab;pt.bills.push(ab);
     }
   });
@@ -12326,14 +12332,21 @@ function rcvCheckHtml(){
     +'<input class="inp" type="date" style="width:150px" value="'+esc(F.cdate)+'" oninput="_rcvF.cdate=this.value;rcvSum()" title="'+(F.mode==="Cheque"?"Cheque ki tareekh":"Paisa aane ki tareekh")+'"></div>'
     +'<input class="inp" id="rcv-amt" type="number" inputmode="decimal" placeholder="'+(F.mode==="Cheque"?"Cheque amount \u20B9 *":"Amount \u20B9 *")+'" value="'+esc(F.amt)+'" oninput="_rcvF.amt=this.value;rcvSum()" style="margin-bottom:10px;font-size:16px;font-weight:800">';
   h+='<div style="font-size:11px;font-weight:900;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Bill chuno (purane pehle)</div>';
+  var _paisa=_rcvPaisa(F),_run=_paisa;
   h+=p.open.filter(function(b){return Math.abs(b.due)>0.5}).map(function(b){
     var on=!!F.sel[b.key];
+    var _chip="";
+    if(on&&_paisa>0){var _pr=_run;_run=Math.round((_run-b.due)*100)/100;
+      _chip=b.due<=0?"":(_pr<=0.5?'<div style="font-size:10.5px;font-weight:900;color:#DC2626">paisa khatam \u2014 ye bill hatao</div>'
+        :_run<-0.5?'<div style="font-size:10.5px;font-weight:900;color:#2563EB">is bill me '+_rcvRs(_pr)+' hi \u2014 part</div>'
+        :'<div style="font-size:10.5px;font-weight:800;color:#059669">bacha '+_rcvRs(_run)+'</div>')}
     return'<label style="display:flex;gap:9px;align-items:center;background:'+(on?"#EEF2FF":"var(--sf)")+';border:1.5px solid '+(on?"#A5B4FC":"var(--br)")+';border-radius:10px;padding:8px 10px;margin-bottom:5px;cursor:pointer">'
       +'<input type="checkbox"'+(on?" checked":"")+' onchange="rcvSel(\''+b.key+'\',this.checked)" style="width:19px;height:19px;accent-color:var(--P);flex-shrink:0">'
       +'<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:12.5px">'+esc(b.no)+' <span class="ct3" style="font-weight:600">\u00b7 '+esc(fmtDate(b.date))+'</span>'+(b.wait?' \u23F3':'')+'</div>'
       +(b.due>0?'<div style="font-size:11px;font-weight:800;color:'+_rcvDayCol(b.days,b.cr)+'">'+b.days+' din \u00b7 dhara '+b.cr+'</div>':'<div class="xs" style="font-weight:700;color:#059669">Party ka jama (minus hoga)</div>')+'</div>'
-      +'<div style="font-weight:900;font-size:13px;white-space:nowrap">'+_rcvRs(b.due)+'</div></label>';
+      +'<div style="text-align:right"><div style="font-weight:900;font-size:13px;white-space:nowrap">'+_rcvRs(b.due)+'</div>'+_chip+'</div></label>';
   }).join("");
+  h+='<div id="rcv-run" style="position:sticky;bottom:calc(var(--nav-h,64px) + 6px);z-index:6;margin:6px 0">'+_rcvRunHtml()+'</div>';
   var selB=p.open.filter(function(b){return F.sel[b.key]&&b.due>0});
   if(selB.length)h+='<div style="margin:8px 0 4px;font-size:12px;font-weight:800">Part payment wala bill (agar koi bill poora nahi ho raha):</div>'
     +'<select class="sel" onchange="_rcvF.part=this.value;rcvReBody()" style="margin-bottom:8px"><option value="">\u2014 Koi nahi \u2014</option>'
@@ -12360,14 +12373,22 @@ function rcvCheckState(){
   o.tot=Math.round(o.bills.reduce(function(s2,b){return s2+b.due},0)*100)/100;
   (F.adj||[]).forEach(function(j){var a=Number(j.amt)||0;if(a<=0)return;var add=/add$/i.test(j.t);if(add)o.add+=a;else o.less+=a;o.adj.push({t:j.t,amt:a,sign:add?1:-1})});
   var bal=o.tot-o.less+o.add;
-  if(F.part){var pb=o.bills.filter(function(b){return b.key===F.part})[0];
+  o.selBal=Math.round(bal*100)/100;
+  /* 505: aakhri chuna bill -- jahan paisa khatam hota hai. Set-off me
+     amount bill se hi banta hai, isliye wahan ye apne aap part bill. */
+  var _pos=o.bills.filter(function(b){return b.due>0}),_last=_pos[_pos.length-1];
+  o.crossBill=(_last&&o.amt>0&&bal-o.amt>cfg.tol&&bal-_last.due<o.amt-cfg.tol)?_last:null;
+  var _pk=F.part;
+  if(!_pk&&F.so&&o.crossBill){_pk=o.crossBill.key;o.autoPart=true}
+  if(_pk){var pb=o.bills.filter(function(b){return b.key===_pk})[0];
     if(pb){var short=bal-o.amt;o.part=pb;o.partAmt=Math.round((pb.due-short)*100)/100;bal=o.amt}}
   o.bal=Math.round(bal*100)/100;o.diff=Math.round((o.amt-o.bal)*100)/100;
   if(!F.ref||!String(F.ref).trim()){o.why=(F.mode==="Cheque"?"Cheque no.":"UTR no.")+" likho";return o}
   if(!F.cdate){o.why="Tareekh chuno";return o}
   if(o.amt<=0){o.why="Amount likho";return o}
   if(!o.bills.length){o.why="Bill chuno";return o}
-  if(o.part&&(o.partAmt<=0||o.partAmt>=o.part.due)){o.why="Part bill ka hisaab nahi baith raha \u2014 bill ya kami-pesh dekho";return o}
+  if(o.part&&o.partAmt>=o.part.due){o.why="Bill "+o.part.no+" poora aa raha hai \u2014 abhi "+_rcvRs(Math.round((o.amt-o.selBal)*100)/100)+" bacha hai. Part ki zaroorat nahi (\u201cKoi nahi\u201d chuno) ya aur bill chuno";return o}
+  if(o.part&&o.partAmt<=0){o.why="Paisa "+o.part.no+" se pehle hi khatam \u2014 "+_rcvRs(Math.round((o.selBal-o.amt-o.part.due)*100)/100)+" ke bill zyada chune hain. "+o.part.no+" (aur neeche wale) hatao";return o}
   if(Math.abs(o.diff)>cfg.tol&&!String(F.why||"").trim()){o.need=o.diff<0?"short":"extra";o.why="Farq "+_rcvRs(Math.abs(o.diff))+" \u2014 wajah likho";return o}
   if(Math.abs(o.diff)>cfg.tol)o.need=o.diff<0?"short":"extra";
   var dup=_rcvAll().some(function(r){return r.status!=="cancelled"&&r.status!=="bounced"&&r.pk===p.key&&String(r.ref||"").trim().toUpperCase()===String(F.ref).trim().toUpperCase()});
@@ -13810,7 +13831,26 @@ function _workDue(at,days){
    Market ke payment staff ko "Hisaab lao" task. Dukaan par Payment Check wahi --
    bas paisa naya nahi, isi jama me se (set-off receipt, r.so = jama wali receipt). */
 function _soOf(id){return _rcvAll().filter(function(x){return x.so===id&&x.status==="ok"})}
+/* 506: jama paisa do tarah kaam aata hai -- "Iska hisaab" (set-off) se,
+   ya kisi doosri receipt me "Bina hisaab D/R/5" wali line tick karke.
+   Pehle sirf pehla gina jaata tha: D/R/15 me D/R/5, 6, 13, 14 jud gaye,
+   phir bhi unke "Hisaab lao" task khule rahe aur wahi paisa dobara
+   set-off ho sakta tha. Ledger apni line khud ghatata hai, isliye uske
+   liye purana (sirf set-off wala) hisaab _advLeftSo. */
+function _advUsedInRcpts(id){
+  var t=0,k="a:"+id;
+  _rcvAll().forEach(function(x){
+    if(!x||x.id===id||x.status!=="ok")return;
+    (x.alloc||[]).forEach(function(a){if(a&&a.k===k)t+=-(Number(a.amt)||0)});
+  });
+  return Math.max(0,t);
+}
 function _advLeft(r){
+  if(typeof r==="string")r=_rcvById(r);
+  if(!r||r.status!=="ok")return 0;
+  return Math.max(0,Math.round((_advLeftSo(r)-_advUsedInRcpts(r.id))*100)/100);
+}
+function _advLeftSo(r){
   if(typeof r==="string")r=_rcvById(r);
   if(!r||r.status!=="ok")return 0;
   var used=_soOf(r.id).reduce(function(a,x){return a+(Number(x.amt)||0)},0);
@@ -15224,6 +15264,140 @@ function _trRows(uid,mk){
     var oldOnly=L.filter(function(x){var o=(STATE.orders||[]).filter(function(y){return y&&y.id===x.id})[0];return!o||!_trNew(o)});
     return oldOnly.concat(_trRows(uid,mk));
   };
+})();
+/* 1.45.504: Band order (clear / poora / cancel) ya cancel lot ki parchi.
+   Order clear hua par parchi zinda rahi -- wo cutting ki list me padi
+   rahi aur koi bhi use kaat deta. Isliye:
+     * jo parchi sirf bani hai (kaam shuru nahi, kuchh bill nahi) --
+       app khulte hi / sync ke baad apne aap cancel
+     * jo floor par hai -- aage ka koi kadam nahi (cutting, route, packing) */
+function _csSlipOrderClosed(r){
+  var o=r&&r.order,sl=r&&r.slip;if(!o||!sl||sl.csCancelled)return"";
+  if(o.status==="cancelled")return"order cancel ho chuka";
+  if(o.status==="fulfilled")return"order clear / poora ho chuka";
+  var lk=(r.lot&&r.lot.key)||"";
+  if(lk&&o.cancelledLots&&o.cancelledLots[lk])return"ye lot cancel ho chuka";
+  return"";
+}
+/* Sirf wo parchi jo bani hai par jis par kaam shuru nahi hua (generated)
+   aur kuchh bill nahi hua. Bheji hui (dispatched) parchi ko kabhi nahi
+   chhedte -- wo maal ja chuka hai. */
+function _csIsFresh(o,lk,sl){
+  if(!sl||sl.csCancelled||sl.csShortClosed)return false;
+  if(String(sl.csStatus||"generated")!=="generated")return false;
+  var st=null;try{st=csSlipCancelState(o,lk,sl)}catch(e){st=null}
+  return!!(st&&st.can);
+}
+function _csCancelFreshOfLot(o,L,why){
+  var n=0,slips=[];try{slips=csGetLotSlips(o,L.key)||[]}catch(e){slips=[]}
+  slips.forEach(function(sl){
+    if(!_csIsFresh(o,L.key,sl))return;
+    if(_csMarkSlipCancelled(sl,why)){n++;try{csMirrorPut(o,L.key,sl,false)}catch(e){}}
+  });
+  if(n)o._ts=_bumpTs(o);
+  return n;
+}
+function _csFreshBusy(o){
+  var out={fresh:[],freshQty:0,busy:[]};
+  var lots=[];try{lots=csOrderLots(o)||[]}catch(e){lots=[]}
+  lots.forEach(function(L){
+    var slips=[];try{slips=csGetLotSlips(o,L.key)||[]}catch(e){slips=[]}
+    slips.forEach(function(sl){
+      if(!sl||sl.csCancelled||sl.csShortClosed)return;
+      if(_csIsFresh(o,L.key,sl)){out.fresh.push(sl.csNo||"");try{out.freshQty+=csSlipEffQty(sl)}catch(e){}return}
+      var st=null;try{st=csSlipCancelState(o,L.key,sl)}catch(e){st=null}
+      if(st&&st.why==="midwork"){
+        var rem=0;try{rem=Math.max(0,csSlipEffQty(sl)-csSlipDoneQty({order:o,lot:L,slip:sl}))}catch(e){rem=0}
+        if(rem>0)out.busy.push(sl.csNo||"");
+      }
+    });
+  });
+  return out;
+}
+var _csCzAt=0;
+function _csClosedSweep(force){
+  if(!force&&Date.now()-_csCzAt<6e4)return 0;
+  _csCzAt=Date.now();
+  var n=0;
+  (STATE.orders||[]).forEach(function(o){
+    if(!o||o._deleted||o.status==="deleted")return;
+    var closed=o.status==="fulfilled"||o.status==="cancelled";
+    var cl=o.cancelledLots||{};
+    if(!closed&&!Object.keys(cl).length)return;
+    var lots=[];try{lots=csOrderLots(o)||[]}catch(e){lots=[]}
+    lots.forEach(function(L){
+      if(!closed&&!cl[L.key])return;
+      var d=(o._csData&&o._csData[L.key])||[];
+      if(!d.some(function(sl){return sl&&!sl.csCancelled&&!sl.csShortClosed&&String(sl.csStatus||"generated")==="generated"}))return;
+      var c=0;try{c=_csCancelFreshOfLot(o,L,(closed?"order band":"lot cancel")+" \u2014 apne aap")}catch(e){c=0}
+      n+=c;
+    });
+  });
+  if(n){try{lsSave("vs_orders",STATE.orders);lsSave("vs_cs_slips",STATE.csSlips)}catch(e){}}
+  return n;
+}
+/* 1.45.505: Bill chunte waqt hisaab saamne. Paisa kitna hai, chune bill
+   kitne ke, aur kitna bacha -- ek patti jo neeche chipki rehti hai (phone
+   par bhi), aur har chune bill ke aage "bacha ₹..". Paisa khatam hone par
+   wahi bill part bill ban jaata hai; set-off me apne aap, cheque/NEFT me
+   ek button se. */
+function _rcvPaisa(F){
+  F=F||_rcvF||{};
+  if(F.so){var src=null;try{src=_rcvById(F.so)}catch(e){src=null}if(src){try{return Math.round(_advLeft(src)*100)/100}catch(e){}}}
+  return Number(F.amt)||0;
+}
+function _rcvRunHtml(){
+  var F=_rcvF||{};if(!F.pk)return"";
+  var o=null;try{o=rcvCheckState()}catch(e){o=null}if(!o||!o.p)return"";
+  var cfg=rcvCfg(),paisa=_rcvPaisa(F),sel=Number(o.selBal)||0,n=(o.bills||[]).filter(function(b){return b.due>0}).length;
+  var rem=Math.round((paisa-sel)*100)/100;
+  var bg="#F3F4F6",bd="#D1D5DB",col="#374151",msg="",btn="";
+  if(paisa<=0){msg=(F.mode==="Cheque"?"Pehle cheque amount likho":"Pehle amount likho")}
+  else if(!n){msg="Bill chuno — purane pehle"}
+  else if(Math.abs(rem)<=cfg.tol){bg="#ECFDF5";bd="#6EE7B7";col="#065F46";msg="✅ Barabar — ab Mark Received"}
+  else if(rem>0){bg="#FFFBEB";bd="#FCD34D";col="#92400E";msg="Bacha "+_rcvRs(rem)+" — aur bill chuno"+(F.so?" (ya itna jama rahega)":"")}
+  else if(o.part&&o.partAmt>0&&o.partAmt<o.part.due){bg="#EFF6FF";bd="#93C5FD";col="#1E3A8A";
+    msg="Bill "+esc(o.part.no)+" me "+_rcvRs(o.partAmt)+" jayega, "+_rcvRs(Math.round((o.part.due-o.partAmt)*100)/100)+" baaki rahega"+(o.autoPart?" (apne aap part)":"")}
+  else if(o.crossBill){bg="#FEF2F2";bd="#FCA5A5";col="#991B1B";
+    msg=_rcvRs(-rem)+" zyada — "+esc(o.crossBill.no)+" ko part bill banao";
+    btn='<button onclick="_rcvF.part=\''+o.crossBill.key+'\';rcvReBody()" style="background:#2563EB;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-weight:900;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">Part banao</button>'}
+  else{bg="#FEF2F2";bd="#FCA5A5";col="#991B1B";msg=_rcvRs(-rem)+" ke bill zyada chune — neeche se bill hatao"}
+  if(o.part&&o.partAmt>0&&o.partAmt<o.part.due)rem=0;
+  return'<div style="background:'+bg+';border:1.5px solid '+bd+';border-radius:12px;padding:8px 11px;box-shadow:0 4px 14px rgba(0,0,0,.12);display:flex;gap:8px;align-items:center">'
+    +'<div style="flex:1;min-width:0">'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;font-weight:800;color:#4B5563">'
+    +'<span>💰 Paisa <b style="color:#111827">'+_rcvRs(paisa)+'</b></span>'
+    +'<span>🧾 '+n+' bill <b style="color:#111827">'+_rcvRs(sel)+'</b></span>'
+    +'<span>Bacha <b style="color:'+(rem< -cfg.tol?"#DC2626":rem>cfg.tol?"#B45309":"#059669")+'">'+_rcvRs(rem)+'</b></span></div>'
+    +'<div style="font-size:12.5px;font-weight:900;color:'+col+';margin-top:2px">'+msg+'</div></div>'+btn+'</div>';
+}
+(function(){
+  var s0=rcvSum;
+  rcvSum=function(){var r=s0.apply(this,arguments);try{var b=el("rcv-run");if(b)b.innerHTML=_rcvRunHtml()}catch(e){}return r};
+})();
+/* 506: jo "Hisaab lao" task ka paisa kisi receipt me poora jud chuka --
+   wo task band (app khulte hi, cloud ka taaza data aane ke baad). */
+function _ptHkSweep(){
+  var n=0;
+  (STATE.payments||[]).forEach(function(t){
+    if(!t||t._deleted||t.kind!=="ptask"||!t.hk||t.status!=="open")return;
+    var src=null;try{src=_rcvById(t.hk)}catch(e){src=null}
+    if(!src||src.status!=="ok")return;
+    if(_advLeft(src)>0.5)return;
+    var by=_rcvAll().filter(function(x){return x&&x.status==="ok"&&(x.so===src.id||(x.alloc||[]).some(function(a){return a&&a.k==="a:"+src.id}))}).map(function(x){return x.no})[0]||"";
+    t.status="done";t.doneAt=Date.now();t.doneRcpt=by;t._ts=_bumpTs(t);n++;
+  });
+  if(n){try{_rcvSave()}catch(e){}}
+  return n;
+}
+(function(){
+  var tries=0;
+  var tick=function(){tries++;
+    if(window._initialPullDone&&window._fbLastPullOk===true){var r=0;try{r=_ptHkSweep()}catch(e){r=0}if(r){try{renderRcv()}catch(e){}}return}
+    if(tries<60)setTimeout(tick,3000)};
+  setTimeout(tick,3500);
+  var mk=rcvMark;
+  rcvMark=function(){var res=mk.apply(this,arguments);try{if(_ptHkSweep())renderRcv()}catch(e){}return res};
 })();
 function renderNewParty(){
   var c=el("np-body");if(!c)return;
@@ -23440,6 +23614,8 @@ function _csApplyMirrorsRaw(){
   });
   var _rk=0;try{_rk=_mgKeyRepair()}catch(e){_rk=0}
   if(_rk){n+=_rk;setTimeout(function(){try{autoSyncCloud()}catch(e){}},1500)}
+  var _cz=0;try{if(window._fbLastPullOk===true)_cz=_csClosedSweep()}catch(e){_cz=0}
+  if(_cz){n+=_cz;setTimeout(function(){try{autoSyncCloud()}catch(e){}},1500)}
   var _kc=0;try{_kc=_csKillStaleCopies()}catch(e){_kc=0}
   if(_kc){n+=_kc;setTimeout(function(){try{autoSyncCloud()}catch(e){}},1500)}
   if(n){try{lsSave("vs_cs_slips",STATE.csSlips);lsSave("vs_orders",STATE.orders)}catch(e){}}
@@ -26164,6 +26340,9 @@ async function csFreshRow(csId){
   return csFindSlip(csId);
 }
 function csStepOk(r,want){
+  try{if(want!=="generated"&&_csSlipOrderClosed(r)){
+    toast(r.slip.csNo+": "+_csSlipOrderClosed(r)+" \u2014 ye parchi aage nahi badhegi. Admin ise cancel kare.","er");
+    return false}}catch(e){}
   var cur=(r&&r.slip&&r.slip.csStatus)||"generated";
   if(cur===want)return true;                       // wahi kadam dobara -- theek
   var from=CS_STEP_FROM[want];
