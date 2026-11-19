@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.501-->
+<!DOCTYPE html><!--ALTV:1.45.503-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.501";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.503";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -3703,7 +3703,7 @@ function smCancelList(uid,mk){
       if(mkOf(x.cancelAt,x.date)!==mk)return;
       if(!smJoinOk(u,x.cancelAt||x.date))return;
       out.push({kind:"order",no:x.orderNo||"",what:"Poora order cancel",
-        party:x.custName||"",amt:Math.round(_ordAmtForCancel(x)),
+        party:x.custName||"",amt:Math.round(_trNew(x)?_ordAfterDisc(_trWholeRemain(x),x):_ordAmtForCancel(x)),
         at:String(x.cancelAt||x.date||"").slice(0,10),
         by:x.cancelBy||"",why:x.cancelReason||"",
         eff:x.cancelEff||crEffOf(x.cancelReason),id:x.id});
@@ -3718,6 +3718,7 @@ function smCancelList(uid,mk){
       if(!smJoinOk(u,c.at||x.date))return;
       var amt=Number(c.amt)||0;
       if(!amt){try{amt=smLotAmount(x,Lt)}catch(e){amt=0}}
+      if(_trNew(x)){try{amt=_trLotRemain(x,Lt.key,amt)}catch(e){}}
       /* Lot ki rakam bhi discount se pehle ki likhi jaati hai. */
       amt=_ordAfterDisc(amt,x);
       out.push({kind:"lot",lotKey:Lt.key,no:x.orderNo||"",
@@ -3911,6 +3912,12 @@ function smOrderDrill(uid,mk){
       +(x.credited?('<div style="margin-top:3px;display:inline-block;background:#FEF3C7;'
         +'color:#92400E;border-radius:5px;padding:1px 6px;font-size:9px;font-weight:900">'
         +'CANCEL \u00b7 GINTI ME JUDA</div>'):"")
+      +(x.kind==="cancel"?('<div style="margin-top:3px;display:inline-block;background:#FEE2E2;'
+        +'color:#991B1B;border-radius:5px;padding:1px 6px;font-size:9px;font-weight:900">'
+        +'CANCEL \u00b7 '+escHtml(x.what||"")+(x.ofDate?(' \u00b7 order '+fmtDate(x.ofDate)):'')+'</div>'):"")
+      +(x.info?('<div style="margin-top:3px;display:inline-block;background:#F3F4F6;'
+        +'color:#6B7280;border-radius:5px;padding:1px 6px;font-size:9px;font-weight:900">'
+        +'OPEN ORDER \u00b7 PROGRAMME BAAKI \u00b7 \u20b9'+fmtN(x.commit||0)+' (ginti me nahi)</div>'):"")
       +(!x.credited&&x.lotCredit>0?('<div style="margin-top:3px;display:inline-block;'
         +'background:#FEF3C7;color:#92400E;border-radius:5px;padding:1px 6px;font-size:9px;'
         +'font-weight:900">LOT CANCEL \u00b7 \u20b9'+fmtN(x.lotCredit)+' JUDA</div>'):""),
@@ -3918,14 +3925,18 @@ function smOrderDrill(uid,mk){
     (x.disc>0?('\u2212'+fmtN(x.disc)
       +'<div style="font-size:9px;color:var(--t3);font-weight:700">'+x.pct+'%</div>'):"\u2014"),
     '<b style="color:var(--P)">'+fmtN(x.net)+'</b>']});
-  var tot=["TOTAL",L.length+" orderform",fmtN(tp),fmtN(tm),fmtN(tg),
+  var _nb=L.filter(function(x){return!x.kind&&!x.info}).length,_nc=L.filter(function(x){return x.kind==="cancel"}).length;
+  var tot=["TOTAL",_nb+" orderform"+(_nc?(" \u00b7 "+_nc+" cancel"):""),fmtN(tp),fmtN(tm),fmtN(tg),
     (td>0?("\u2212"+fmtN(td)):"\u2014"),fmtN(tn)];
   _smDrillSheet("m-sm-ord-drill","\uD83D\uDCCB Order aaya \u2014 \u20b9"+fmtN(tn),
     escHtml((u&&u.name)||"Sab")+" \u00b7 "+escHtml(smMkLabel(mk)),
     "Niche TAXABLE ka jod <b>\u20b9"+fmtN(tn)+"</b> \u2014 patti par yahi number hai. "
       +"Value me se discount kat kar taxable banta hai; GST isme kahin nahi."
       +(_cr>0?("<br>Isme <b>\u20b9"+fmtN(_cr)+"</b> aisa cancel hua maal bhi juda hai jiska "
-        +"kaaran \u201cGinti me jod do\u201d par set hai \u2014 niche peele nishan wali line."):""),
+        +"kaaran \u201cGinti me jod do\u201d par set hai \u2014 niche peele nishan wali line."):"")
+      +(_nc?("<br><b style=\"color:#991B1B\">Laal line</b>: pichhle mahine ka order/programme jo is mahine cancel hua \u2014 "
+        +"bacha hua (jo gaya nahi) maal is mahine se minus. Beeta mahina waisa hi rehta hai."):"")
+      +(mk>=TR_NEW_FROM?"<br>Open order: jis mahine programme gaya, usi mahine ginta hai.":""),
     L.length?_smTblHtml(head,rows,tot)
       :'<div class="emp"><div class="emj">\uD83D\uDCCB</div><h3>Is mahine koi order nahi</h3></div>');
 }
@@ -7671,14 +7682,15 @@ function buildNewLeadBrokerMsg(l){
   var b=(STATE.brokers||[]).filter(function(x){return x&&x.id===l.brokerId})[0];
   var v={name:l.name||"",owner:l.contact||"",market:l.market||"",
     phone:l.whatsapp||l.phone||"",
-    salesman:l.assignedName||(u&&u.name)||"",
+    salesman:l.assignedName||(u&&u.name)||"hamari team",
     salesmanPhone:(u&&(u.whatsapp||u.phone))||"",
     broker:(b&&b.name)||l.brokerName||"",
     interest:l.interest||"",
     rate:l.rateGiven?("\u20B9"+l.rateGiven+"/mtr"):"",
     company:S.companyName||""};
-  var tpl=S.waNewLeadBrokerTpl||"";
-  if(String(tpl).trim())return wiWaFill(tpl,v);
+  /* 502: ek hi roop -- Settings me jo dikhta hai wahi jaata hai */
+  var tpl=String(S.waNewLeadBrokerTpl||"").trim()?S.waNewLeadBrokerTpl:WA_NEWLEAD_BRK_DEF;
+  return _tplFill(tpl,v);
   return"*"+v.broker+"* bhai \uD83D\uDE4F\n\n"
     +"*"+v.name+"*"+(v.market?(" \u00b7 "+v.market):"")+" ki inquiry le li hai."
     +(v.interest?("\nMaal: "+v.interest):"")
@@ -7704,7 +7716,8 @@ async function _newLeadBrokerOffer(editId){
   if(!b||!(b.whatsapp||b.phone))return;
   var ok=await appConfirm("Broker ko bata dein?",
     (b.name||"Broker")+" ko WhatsApp par jayega:\n\n"
-    +buildNewLeadBrokerMsg(l),
+    +buildNewLeadBrokerMsg(l)
+    +"\n\n(Message badalna ho: Settings \u2192 WhatsApp Sharing \u2192 Nayi lead \u2192 Broker)",
     "\uD83D\uDCF2","Haan, bhejo","ok","Rehne do");
   if(!ok)return;
   waNewLeadToBroker(l.id);
@@ -7734,7 +7747,7 @@ function altTxtSet(k){
   try{toast("Akshar ka size: "+altTxtStep(k).lbl+" \u2014 sirf is device par","ok")}catch(e){}
 }
 function renderSettingsForm(){const c=el("setbod");if(!c)return;setTimeout(function(){try{_renderAppHealth()}catch(e){}try{tplVarChipsAll()}catch(e){}},60);const s=STATE.settings||{};const ws=s.waShareSections||{};const chk=(v,def)=>v===undefined?def:v;const _company='<div class="fg"><label>Company Name</label><input class="inp" id="s-cn" value="'+(s.companyName||"")+'"/></div>'+'<div class="fg"><label>GSTIN</label><input class="inp mono" id="s-gs" value="'+(s.gstin||"")+'"/></div>'+'<div class="fg"><label>Address</label><textarea class="ta" id="s-ad" rows="2">'+(s.address||"")+"</textarea></div>"+'<div class="ir2"><div class="fg"><label>Phone</label><input class="inp" id="s-ph" value="'+(s.phone||"")+'"/></div><div class="fg"><label>Email</label><input class="inp" id="s-em" type="email" value="'+(s.email||"")+'"/></div></div>'+'<div class="dvd mt12 mb12"></div>'+'<div class="fw7 sm mb6">📋 Saved Carrier Contacts</div>'+'<div class="xs ct3 mb8">External carriers whose numbers are saved. Delete when someone leaves.</div>'+'<div id="s-carrier-contacts-list">'+renderCarrierContactsList()+"</div>"+'<div class="dvd mt12 mb12"></div>'+'<div class="fw7 sm" style="margin-bottom:8px">Invoice / Bill Numbering</div>'+'<div class="ir2"><div class="fg"><label>Invoice Prefix</label><input class="inp mono" id="s-bpfx" placeholder="INV-" value="'+(s.billPrefix||"INV-")+"\" oninput=\"const p=this.value;const n=el('s-bsno').value;const pad=parseInt(el('s-bpad').value)||4;el('s-bprev').textContent=p+String(parseInt(n)||1).padStart(pad,'0')\"/></div>"+'<div class="fg"><label>Start Number</label><input class="inp mono" type="number" id="s-bsno" step="1" min="1" value="'+(s.billStartNo||1)+"\" oninput=\"const p=el('s-bpfx').value;const pad=parseInt(el('s-bpad').value)||4;el('s-bprev').textContent=p+String(parseInt(this.value)||1).padStart(pad,'0')\"/></div></div>"+'<div class="ir2"><div class="fg"><label>Padding Digits</label><input class="inp mono" type="number" id="s-bpad" step="1" min="1" max="8" value="'+(s.billPadLen||4)+"\" oninput=\"const p=el('s-bpfx').value;const n=el('s-bsno').value;el('s-bprev').textContent=p+String(parseInt(n)||1).padStart(parseInt(this.value)||4,'0')\"/></div>"+'<div class="fg"><label>Preview</label><div class="inp mono" style="background:var(--Pl);color:var(--Pd);font-weight:800;display:flex;align-items:center" id="s-bprev">'+(s.billPrefix||"INV-")+String(s.billStartNo||1).padStart(s.billPadLen||4,"0")+"</div></div></div>"+'<div class="dvd mt12 mb12"></div>'+'<div class="fw7 sm" style="margin-bottom:8px">Inward Voucher</div>'+'<div class="ir2"><div class="fg"><label>Voucher Prefix</label><input class="inp mono" id="s-inpfx" value="'+(s.inwardPrefix||"GRN/")+'"/></div><div class="fg"><label>Next Number</label><input class="inp mono" type="number" id="s-inno" step="1" min="1" value="'+(s.nextInwardNo||1)+'"/></div></div>'+'<div class="xs ct3">Prefix + padded number on every inward entry. Change "Next Number" only to fix gaps or reset the series.</div>'+(csIsAdmin()?('<div class="dvd mt12 mb12"></div>'+'<div class="fw7 sm" style="margin-bottom:8px">&#9986;&#65039; Cutting Slip Numbering</div>'+'<div class="ir2"><div class="fg"><label>Slip Prefix</label><input class="inp mono" id="s-cspfx" value="'+(s.csPrefix||"CS/")+"\" oninput=\"const p=this.value;const n=el('s-csno').value;const pad=parseInt(el('s-cspad').value)||4;el('s-csprev').textContent=p+String(parseInt(n)||1).padStart(pad,'0')\"/></div>"+'<div class="fg"><label>Next Number</label><input class="inp mono" type="number" id="s-csno" step="1" min="1" value="'+(s.nextCsNo||1)+"\" oninput=\"const p=el('s-cspfx').value;const pad=parseInt(el('s-cspad').value)||4;el('s-csprev').textContent=p+String(parseInt(this.value)||1).padStart(pad,'0')\"/>"+(function(){try{return csNextNoHint()}catch(e){return""}})()+"</div></div>"+'<div class="ir2"><div class="fg"><label>Padding Digits</label><input class="inp mono" type="number" id="s-cspad" step="1" min="1" max="8" value="'+(s.csPadLen||4)+"\" oninput=\"const p=el('s-cspfx').value;const n=el('s-csno').value;el('s-csprev').textContent=p+String(parseInt(n)||1).padStart(parseInt(this.value)||4,'0')\"/></div>"+'<div class="fg"><label>Preview</label><div class="inp mono" style="background:var(--Pl);color:var(--Pd);font-weight:800;display:flex;align-items:center" id="s-csprev">'+(s.csPrefix||"CS/")+String(s.nextCsNo||1).padStart(s.csPadLen||4,"0")+"</div></div></div>"+'<div class="xs ct3">Naya slip generate hone par yeh number use hoga, aur aage khud badhta jayega. Beech mein kisi bhi waqt "Next Number" badal sakte ho &mdash; sirf naye slips is number se shuru honge, purani slips ke number waise hi rahenge.</div>'):"");const _orders='<div class="ir2"><div class="fg"><label>Default Order Prefix</label><input class="inp mono" id="s-pfx" value="'+(s.orderPrefix||"B/")+'"/></div><div class="fg"><label>Discount %</label><input class="inp mono" id="s-disc" type="number" step="0.1" value="'+(s.discount||5)+'"/></div></div>'+'<div class="ir2"><div class="fg"><label>Discount Days</label><input class="inp mono" id="s-dd" type="number" step="1" value="'+(s.discountDays||45)+'"/></div><div class="fg"><label>Nett Days</label><input class="inp mono" id="s-nd" type="number" step="1" value="'+(s.nettDays||120)+'"/></div></div>'+'<div class="dvd mt12 mb12"></div>'+'<div class="fw7 sm" style="margin-bottom:8px">🎯 Lead Auto-Cleanup</div>'+'<div class="xs ct3" style="margin-bottom:10px">Auto-remove Won and Lost leads after N days to keep CRM clean. Set 0 to never auto-delete.</div>'+'<div class="ir2"><div class="fg"><label>Delete <b style="color:#059669">Won</b> leads after (days)</label><input class="inp mono" id="s-del-won" type="number" min="0" step="1" placeholder="0 = never" value="'+(s.autoDeleteWonLeadsDays||0)+'"/></div>'+'<div class="fg"><label>Delete <b style="color:#EF4444">Lost</b> leads after (days)</label><input class="inp mono" id="s-del-lost" type="number" min="0" step="1" placeholder="0 = never" value="'+(s.autoDeleteLostLeadsDays||0)+'"/></div></div>';const _stock='<div class="ir2"><div class="fg"><label>Avg Meters / Taka</label><input class="inp mono" id="s-avg" type="number" step="0.5" value="'+(s.avgMtrPerTaka||90)+'"/></div><div class="fg"><label>Avg Meters / TP</label><input class="inp mono" id="s-avgtp" type="number" step="0.5" value="'+(s.avgMtrPerTP||45)+'"/></div></div>'+'<div class="xs ct3" style="margin-top:-8px">Changing Avg Mtr/Taka recalculates all meter displays across the app</div>'+'<div class="fg mt12"><label>Mixed Sarees Cut (meters per saree)</label><input class="inp mono" id="s-mixcut" type="number" step="0.5" min="0.5" placeholder="e.g. 6" value="'+(s.mixedSareesCut||6)+'"/></div>'+'<div class="xs ct3" style="margin-top:-8px">Used when converting leftover fabric into mixed sarees. Default: 6 mtrs/saree.</div>';const _waToggle=(key,lbl,desc)=>'<label style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--Pl);border-radius:8px;margin-bottom:6px;cursor:pointer">'+'<input type="checkbox" id="s-was-'+key+'" style="width:18px;height:18px;accent-color:#25D366;flex-shrink:0"'+(chk(ws[key],true)?" checked":"")+" onchange=\"(STATE.settings.waShareSections=STATE.settings.waShareSections||{})['"+key+"']=this.checked\"/>"+'<div><div style="font-size:13px;font-weight:700">'+lbl+'</div><div class="xs ct3">'+desc+"</div></div>"+"</label>";const _waSharing='<div class="fw7 sm" style="margin-bottom:4px">Admin WhatsApp Number</div>'+'<div class="fg"><input class="inp" id="s-wa" id="s-adwa" type="tel" placeholder="91XXXXXXXXXX" value="'+(s.adminWhatsApp||"")+'"/></div>'+'<div class="xs ct3 mb12">Reports and alerts will be shared to this number</div>'+'<div class="dvd mb12"></div>'+'<div class="fw7 sm" style="margin-bottom:4px">Section Permissions</div>'+'<div class="xs ct3" style="margin-bottom:10px">Turn off a section to block WA sharing from that part of the app — for everyone except Admin.</div>'+_waToggle("reports","Reports","Stock, Sales, Top SKUs, Daily reports")+_waToggle("orders","Orders","Share individual order details")+_waToggle("bills","Bills & Invoices","Share dispatch invoices")+_waToggle("tasks","Tasks","Send task reminders to staff")+'<div style="background:#FEF3C7;border-left:3px solid #F59E0B;border-radius:6px;padding:10px 12px;font-size:12px;margin-top:8px">'+'<div class="fw7">Admin always has full WA access.</div>'+'<div class="ct3 mt4">Per-user access: <span onclick="aTab(\'usr\')" style="color:var(--P);cursor:pointer;font-weight:700">Admin → Users</span> → enable WA permissions for each salesman.</div>'+"</div>"+'<div class="dvd mt12 mb12"></div>'+'<div class="fw7 sm" style="margin-bottom:6px">📲 Message Templates</div>'+'<div class="xs ct3" style="margin-bottom:10px">Leave any blank to use the built-in default. Variables depend on context.</div>'+'<div class="fg"><label>Order Message</label><textarea class="ta" id="s-wa-tpl-order" rows="4" placeholder="Variables: {company}, {address}, {phone}, {orderNo}, {date}, {party}, {owner}, {market}, {broker}, {salesman}, {salesmanPhone}, {lines}, {total}">'+(s.waTemplateOrder||"")+"</textarea></div>"+'<div class="fg mt8"><label>Bill / Invoice Message</label><textarea class="ta" id="s-wa-tpl-bill" rows="4" placeholder="Variables: {company}, {address}, {phone}, {billNo}, {date}, {party}, {owner}, {market}, {broker}, {salesman}, {salesmanPhone}, {lines}, {subtotal}, {gstin}, {gstLine}, {total}">'+(s.waTemplateBill||"")+"</textarea></div>"+'<div class="fg mt8"><label>Lead → Salesman</label><textarea class="ta" id="s-wa-tpl-sm" rows="4" placeholder="Variables: {name}, {owner}, {phone}, {status}, {market}, {interest}, {rate}, {followup}, {salesman}, {salesmanPhone}, {broker}, {notes}, {company}">'+(s.waTemplateSalesman||"")+"</textarea></div>"+'<div class="fg mt8"><label>Lead → Broker</label><textarea class="ta" id="s-wa-tpl-brk" rows="4" placeholder="Variables: {name}, {owner}, {phone}, {status}, {market}, {interest}, {rate}, {followup}, {salesman}, {salesmanPhone}, {broker}, {notes}, {company}">'+(s.waTemplateBroker||"")+"</textarea></div>"
-+'<div class="fg mt8"><label>Nayi lead \u2192 Broker</label><textarea class="ta" id="s-wa-tpl-newlead-brk" rows="5" placeholder="Variables: {name}, {owner}, {market}, {phone}, {salesman}, {salesmanPhone}, {broker}, {interest}, {rate}, {company}">'+(s.waNewLeadBrokerTpl||"")+'</textarea><div class="xs ct3 mt2">Nayi lead save karte hi broker ko bhejne ko poochha jayega. Khali chhodo to banaya hua default jayega.</div></div>'
++'<div class="fg mt8"><label>Nayi lead \u2192 Broker</label><textarea class="ta" id="s-wa-tpl-newlead-brk" rows="5" placeholder="Variables: {name}, {owner}, {market}, {phone}, {salesman}, {salesmanPhone}, {broker}, {interest}, {rate}, {company}">'+escHtml(String(s.waNewLeadBrokerTpl||"").trim()?s.waNewLeadBrokerTpl:WA_NEWLEAD_BRK_DEF)+'</textarea><div class="xs ct3 mt2">Nayi lead save karte hi broker ko yahi message bhejne ko poochha jayega. {naam} ki jagah asli cheez aati hai; [[ ]] ke andar wala hissa khali ho to apne aap hat jaata hai. Poora mita do to wapas pehle wala roop aa jayega.</div></div>'
 +_waPartyTplBox(s)+'<div class="fg mt8"><label>Sample Set → Salesman</label><textarea class="ta" id="s-wa-tpl-ss-sm" rows="4" placeholder="Variables: {name}, {party}, {owner}, {market}, {broker}, {salesman}, {salesmanPhone}, {address}, {partyPhone}, {date}, {items}, {carrier}, {notes}, {company}">'+(s.waTemplateSsSmn||"")+"</textarea></div>"+'<div class="fg mt8"><label>Sample Set → Broker</label><textarea class="ta" id="s-wa-tpl-ss-brk" rows="4" placeholder="Variables: {name}, {party}, {owner}, {market}, {broker}, {salesman}, {salesmanPhone}, {address}, {partyPhone}, {date}, {items}, {carrier}, {notes}, {company}">'+(s.waTemplateSsBrk||"")+"</textarea></div>"+'<div class="fg mt8"><label>Sample Set → Carrier</label><textarea class="ta" id="s-wa-tpl-ss-carrier" rows="4" placeholder="Variables: {name}, {party}, {owner}, {market}, {broker}, {salesman}, {salesmanPhone}, {address}, {partyPhone}, {date}, {items}, {carrier}, {notes}, {company}">'+(s.waTemplateSsCarrier||"")+"</textarea></div>"+'<div class="dvd mt12 mb12"></div>'+'<div class="fw7 sm" style="margin-bottom:6px">🔄 Exchange Slip Templates</div>'+'<div class="xs ct3" style="margin-bottom:10px">Variables: {vno}, {party}, {date}, {status}, {lines}, {totalDamage}, {totalExchange}, {totalSarees}, {rep}, {company}</div>'+'<div class="fg"><label>Pending</label><textarea class="ta" id="s-ex-tpl-pending" rows="4" placeholder="Default: damage details only">'+(s.exchWaTplPending||"")+"</textarea></div>"+'<div class="fg mt8"><label>Under Process</label><textarea class="ta" id="s-ex-tpl-uprocess" rows="4">'+(s.exchWaTplUnderProcess||"")+"</textarea></div>"+'<div class="fg mt8"><label>Ready for Collection</label><textarea class="ta" id="s-ex-tpl-ready" rows="4">'+(s.exchWaTplReady||"")+"</textarea></div>"+'<div class="fg mt8"><label>Collected</label><textarea class="ta" id="s-ex-tpl-collected" rows="4">'+(s.exchWaTplCollected||"")+"</textarea></div>";const _star='<div class="xs ct3" style="margin-bottom:12px">Mark your best customers as Star in Customer Master. When no order arrives for this many days, they appear on the salesman dashboard and the Star Follow-up report.</div>'+'<div class="fg"><label>Default Follow-up Days</label><input class="inp mono" id="s-star-days" type="number" min="1" step="1" placeholder="e.g. 4" value="'+(s.starFollowupDaysDefault||4)+'"/></div>'+'<div class="fg mt8"><label>WhatsApp Message to Customer (optional)</label><textarea class="ta" id="s-star-wa-tpl" rows="4" placeholder="Variables: {name}, {days}, {lastOrderDate}, {company}">'+(s.starWaTemplate||"")+"</textarea></div>"+'<button class="btn bfl mt8" style="background:#FEF3C7;color:#92400E;border:1.5px solid #FCD34D;font-weight:800;font-size:13px" onclick="openStarCustomersManager()">⭐ Manage Star Customers</button>'+'<div class="dvd mt12 mb12"></div>'+'<div class="fw8" style="margin-bottom:6px">Grading System</div>'+'<div class="xs ct3" style="margin-bottom:10px">Grade thresholds (12-month billing total), follow-up intervals, snooze days, and WA templates.</div>'+'<div class="fw7 xs" style="color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Grade Thresholds (₹ min 12-month billing)</div>'+'<div class="ir2" style="grid-template-columns:1fr 1fr 1fr;gap:8px">'+'<div class="fg"><label style="color:#D97706;font-weight:800">A — Min (₹)</label><input class="inp mono" id="s-sg-thresh-a" type="number" min="0" step="1000" placeholder="e.g. 500000" value="'+(s.starGrading?.thresholdA||"")+'"/></div>'+'<div class="fg"><label style="color:#7C3AED;font-weight:800">B — Min (₹)</label><input class="inp mono" id="s-sg-thresh-b" type="number" min="0" step="1000" placeholder="e.g. 200000" value="'+(s.starGrading?.thresholdB||"")+'"/></div>'+'<div class="fg"><label style="color:#0284C7;font-weight:800">C — Min (₹)</label><input class="inp mono" id="s-sg-thresh-c" type="number" min="0" step="1000" placeholder="e.g. 50000" value="'+(s.starGrading?.thresholdC||"")+'"/></div>'+"</div>"+'<div class="fw7 xs" style="color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px">Follow-up Days (no order threshold)</div>'+'<div class="ir2" style="grid-template-columns:1fr 1fr 1fr;gap:8px">'+'<div class="fg"><label style="color:#D97706;font-weight:800">Grade A</label><input class="inp mono" id="s-sg-days-a" type="number" min="1" step="1" placeholder="e.g. 3" value="'+(s.starGrading?.followupDaysA||"")+'"/></div>'+'<div class="fg"><label style="color:#7C3AED;font-weight:800">Grade B</label><input class="inp mono" id="s-sg-days-b" type="number" min="1" step="1" placeholder="e.g. 5" value="'+(s.starGrading?.followupDaysB||"")+'"/></div>'+'<div class="fg"><label style="color:#0284C7;font-weight:800">Grade C</label><input class="inp mono" id="s-sg-days-c" type="number" min="1" step="1" placeholder="e.g. 7" value="'+(s.starGrading?.followupDaysC||"")+'"/></div>'+"</div>"+'<div class="fw7 xs" style="color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px">"Ordering Soon" Snooze Days</div>'+'<div class="ir2" style="grid-template-columns:1fr 1fr 1fr;gap:8px">'+'<div class="fg"><label style="color:#D97706;font-weight:800">Grade A</label><input class="inp mono" id="s-sg-snooze-a" type="number" min="1" step="1" placeholder="e.g. 3" value="'+(s.starGrading?.snoozeDaysA||"")+'"/></div>'+'<div class="fg"><label style="color:#7C3AED;font-weight:800">Grade B</label><input class="inp mono" id="s-sg-snooze-b" type="number" min="1" step="1" placeholder="e.g. 5" value="'+(s.starGrading?.snoozeDaysB||"")+'"/></div>'+'<div class="fg"><label style="color:#0284C7;font-weight:800">Grade C</label><input class="inp mono" id="s-sg-snooze-c" type="number" min="1" step="1" placeholder="e.g. 7" value="'+(s.starGrading?.snoozeDaysC||"")+'"/></div>'+"</div>"+'<div class="ir2 mt10">'+'<div class="fg"><label>📵 "Can\'t Reach" Retry (days)</label><input class="inp mono" id="s-sg-cant-reach" type="number" min="1" step="1" placeholder="e.g. 3" value="'+(s.starGrading?.cantReachDays||"")+'"/></div>'+'<div class="fg"><label>⬆️ Escalate After N Cycles</label><input class="inp mono" id="s-sg-escalate" type="number" min="1" step="1" placeholder="e.g. 3" value="'+(s.starGrading?.escalationCycles||"")+'"/></div>'+"</div>"+'<div class="dvd mt10 mb10"></div>'+'<div style="display:flex;flex-direction:column;gap:10px">'+'<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="s-sg-notify-before" style="width:16px;height:16px;accent-color:var(--P);margin-top:2px"'+(s.starGrading?.notifyDayBefore!==false?" checked":"")+'/><div><div style="font-size:13px;font-weight:700">Notify admin 1 day before threshold</div><div class="xs ct3 mt2">Show an alert on the dashboard 1 day before a star customer\'s follow-up becomes due</div></div></label>'+'<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="s-sg-auto-task" style="width:16px;height:16px;accent-color:var(--P);margin-top:2px"'+(s.starGrading?.autoCreateTask!==false?" checked":"")+'/><div><div style="font-size:13px;font-weight:700">Auto-generate task if admin ignores notification</div><div class="xs ct3 mt2">If the notification is not acted on, automatically create a task for the salesman on the due date</div></div></label>'+"</div>"+'<div class="dvd mt10 mb10"></div>'+'<div class="fw7 xs" style="color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Follow-up Message</div>'
 +'<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">'
 +'<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer"><input type="checkbox" id="s-sg-wa-phone" style="width:16px;height:16px;accent-color:var(--P);margin-top:2px"'+(s.starGrading?.waShowPhone!==false?" checked":"")+'/><div><div style="font-size:13px;font-weight:700">Party ka phone number bheje</div><div class="xs ct3 mt2">Salesman seedha number dabakar call kar sake</div></div></label>'
@@ -15042,6 +15055,174 @@ function _ctsPreAll(d){
       }
     }
     return p.apply(this,arguments);
+  };
+})();
+/* 502: Nayi lead -> Broker ka WhatsApp. Pehle ye roop code me chhupa
+   tha aur Settings ka dabba khali dikhta tha -- isliye laga ki badalne
+   ki jagah hi nahi hai. Ab dabbe me yahi roop bhara aata hai. */
+var WA_NEWLEAD_BRK_DEF="*{broker}* bhai 🙏\n\n"
+  +"*{name}*[[ · {market}]] ki inquiry le li hai.\n"
+  +"[[Maal: {interest}\n]]"
+  +"[[Rate: {rate}\n]]\n"
+  +"Iska kaam *{salesman}* dekh rahe hain[[ — {salesmanPhone}]].\n"
+  +"Update ke liye seedha unse baat kar lijiye.\n\n"
+  +"— {company}";
+/* 1.45.503: Target me open order aur cancel -- Neer ka niyam
+   (November 2026 se; usse pehle ke mahine waise hi):
+     * Open order banne par kuchh nahi judta. Jo programme jis mahine
+       gaya, uski rakam usi mahine ke "Order aaya" me.
+     * Programme nahi gaya aur open order cancel -- kabhi juda hi nahi,
+       to ghatega bhi nahi.
+     * Cancel (lot / programme / poora order): usi mahine me hua to usi
+       mahine ka order ghatta hai. Agle kisi mahine hua to US mahine me
+       minus line -- beeta mahina (jiski report ban chuki) pakka rehta hai.
+     * Minus sirf us maal ka jo gaya nahi. 5,000 me se 2,000 bill ho
+       gaya, 3,000 cancel -- to 3,000 hi ghatega.
+     * "Ginti me jod do" wala kaaran ho to pehle jaisa: ghatta hi nahi. */
+var TR_NEW_FROM="2026-11";
+function _trMk(d){return String(d||"").slice(0,7)}
+function _trProgMk(o,p){return _trMk((p&&p.date)||o.date)}
+function _trNew(o){return!!o&&_trMk(o.date)>=TR_NEW_FROM}
+/* Lot ka bacha hua (jo bill nahi hua) -- discount se pehle */
+function _trLotRemain(o,key,full){
+  full=Number(full)||0;if(full<=0)return 0;
+  var b=0;
+  if(o.type==="open"){
+    (o.programmes||[]).forEach(function(p){
+      if(!p||"pg_"+progGid(p)!==key)return;
+      var q=Number(p.pcs)||0;if(!q)return;
+      var a=Number(p.amount)||q*(Number(p.cut)||0)*(Number(p.rate)||0);
+      b+=a*Math.min(q,Number(p.billedPcs)||0)/q;
+    });
+  }else{
+    var al={};try{al=(_fixedAlloc(o,null,null,false)||{})[key]||{}}catch(e){al={}}
+    var lot=null;try{lot=(buildLotsFromOrder(o)||[]).filter(function(l){return l.key===key})[0]}catch(e){lot=null}
+    var left={};Object.keys(al).forEach(function(k){left[k]=Number(al[k])||0});
+    ((lot&&lot.items)||[]).forEach(function(it){
+      var q=Number(it.pcs)||0;if(!q)return;
+      var a=Number(it.amount)||q*(Number(it.cut)||0)*(Number(it.rate)||0);
+      var bp=Math.min(q,left[it.sku]||0);left[it.sku]=(left[it.sku]||0)-bp;
+      b+=a*bp/q;
+    });
+  }
+  return Math.max(0,Math.round(full-b));
+}
+/* Order ke cancel -- har ek: kab, kitna (poora/bacha), jodna hai ya nahi */
+function _trCancels(o){
+  var cl=(o&&o.cancelledLots)||{},out=[];
+  Object.keys(cl).forEach(function(k){
+    var c=cl[k]||{};
+    var full=Number(c.amt)||0;
+    if(!full){try{var L=(csOrderLots(o)||[]).filter(function(l){return l.key===k})[0];full=L?smLotAmount(o,L):0}catch(e){full=0}}
+    out.push({key:k,full:full,at:c.at||o.cancelAt||o.date,credit:_lotCreditEff(c),why:c.why||"",pcs:Number(c.pcs)||0});
+  });
+  if(!out.length&&o.status==="cancelled"&&o.type!=="open"){
+    var g=_ordGrossForCancel(o);
+    out.push({key:null,full:g,at:o.cancelAt||o.date,credit:_ordCreditOnCancel(o),why:o.cancelReason||"",pcs:0,whole:true});
+  }
+  out.forEach(function(e){
+    e.cm=_trMk(e.at);
+    try{e.rem=e.key?_trLotRemain(o,e.key,e.full):Math.max(0,Math.round(e.full-_trBilledAll(o)))}catch(x){e.rem=e.full}
+  });
+  return out;
+}
+function _trBilledAll(o){
+  var t=0;
+  try{(buildLotsFromOrder(o)||[]).forEach(function(l){var f=smLotAmount(o,l);t+=f-_trLotRemain(o,l.key,f)})}catch(e){}
+  return t;
+}
+function _trWholeRemain(o){
+  return _trCancels(o).reduce(function(a,e){return a+(e.rem||0)},0);
+}
+/* Programme ka mahina -- lot ke pehle programme ki tareekh */
+function _trKeyMk(o,key){
+  var m="";
+  (o.programmes||[]).forEach(function(p){if(p&&"pg_"+progGid(p)===key){var x=_trProgMk(o,p);if(!m||x<m)m=x}});
+  return m||_trMk(o.date);
+}
+function _trPcsOf(list){
+  var p=0,m=0;
+  list.forEach(function(it){var q=Number(it.pcs)||0;p+=q;m+=Number(it.mtrs)||(q*(Number(it.cut)||0))});
+  return{pcs:p,mtrs:Math.round(m)};
+}
+function _trRows(uid,mk){
+  var u=smUserById(uid),out=[];
+  (STATE.orders||[]).forEach(function(o){
+    if(!o||o._deleted||o.status==="deleted"||!_trNew(o))return;
+    if(uid&&o.salesmanId!==uid)return;
+    var om=_trMk(o.date),C=_trCancels(o),base={id:o.id,no:o.orderNo||"",party:o.custName||"",pct:_ordDiscPct(o)};
+    var isOpen=o.type==="open";
+    var cntMk=function(e){return isOpen&&e.key?_trKeyMk(o,e.key):om};
+    /* 1) is mahine ka order / programme */
+    var gross=0,credit=0,minusSame=0,lotsHere={},any=false,items=[];
+    if(isOpen){
+      (o.programmes||[]).forEach(function(p){
+        if(!p||_trProgMk(o,p)!==mk)return;
+        any=true;var q=Number(p.pcs)||0;
+        gross+=Number(p.amount)||q*(Number(p.cut)||0)*(Number(p.rate)||0);
+        lotsHere["pg_"+progGid(p)]=1;items.push(Object.assign({_k:"pg_"+progGid(p)},p));
+      });
+    }else if(om===mk){
+      any=true;
+      var lots=[];try{lots=buildLotsFromOrder(o)||[]}catch(e){lots=[]}
+      lots.forEach(function(l){lotsHere[l.key]=1;(l.items||[]).forEach(function(it){items.push(Object.assign({_k:l.key},it))})});
+      gross=Math.round(Number(o.total)||0)+C.filter(function(e){return e.key}).reduce(function(a,e){return a+e.full},0);
+      var wh=C.filter(function(e){return e.whole})[0];
+      if(wh)gross=wh.full;
+    }
+    if(any&&smJoinOk(u,isOpen?(items[0]&&items[0].date)||o.date:o.date)){
+      var cutKeys={};
+      C.forEach(function(e){
+        if(e.key&&!lotsHere[e.key])return;
+        if(e.credit){credit+=e.full;return}
+        if(e.cm<=mk){minusSame+=e.rem;if(e.key)cutKeys[e.key]=1}
+      });
+      var g=Math.round(gross-minusSame);
+      var q=_trPcsOf(items.filter(function(it){return!cutKeys[it._k]}));
+      var allGone=g<=0&&(o.status==="cancelled"||Object.keys(lotsHere).every(function(k){return cutKeys[k]}));
+      if(!allGone){
+        var n=_ordAfterDisc(g,o);
+        out.push(Object.assign({},base,{date:isOpen?String((items[0]&&items[0].date)||o.date).slice(0,10):String(o.date||"").slice(0,10),
+          pcs:q.pcs,mtrs:q.mtrs,gross:g,disc:g-n,net:n,
+          credited:o.status==="cancelled"&&_ordCreditOnCancel(o),lotCredit:credit,
+          creditNet:_ordAfterDisc(credit,o),why:""}));
+      }
+    }
+    /* 2) open order jiska koi programme hi nahi -- sirf jaankari */
+    if(isOpen&&om===mk&&o.status!=="cancelled"&&!(o.programmes||[]).length&&smJoinOk(u,o.date)){
+      var cm=(o.openItems||[]).reduce(function(a,i){return a+(Number(i.totalPcs)||0)*(Number(i.rate)||0)},0);
+      out.push(Object.assign({},base,{date:String(o.date||"").slice(0,10),pcs:0,mtrs:0,gross:0,disc:0,net:0,
+        info:true,commit:Math.round(cm),credited:false,lotCredit:0,creditNet:0,why:""}));
+    }
+    /* 3) pichhle mahine ka maal jo is mahine cancel hua -- minus */
+    C.forEach(function(e){
+      if(e.credit||e.cm!==mk)return;
+      var cmk=cntMk(e);
+      if(cmk<TR_NEW_FROM||cmk>=mk)return;
+      if(!smJoinOk(u,e.at))return;
+      if(!(e.rem>0))return;
+      var n=_ordAfterDisc(e.rem,o);
+      var lotNo="";
+      try{if(e.key){var L=(csOrderLots(o)||[]).filter(function(l){return l.key===e.key})[0];lotNo=L?("LOT "+_ordLotNo(o,L)):""}}catch(x){}
+      out.push(Object.assign({},base,{date:String(e.at||"").slice(0,10),pcs:-Math.round((e.pcs||0)*(e.full>0?e.rem/e.full:1)),mtrs:0,
+        gross:-e.rem,disc:-(e.rem-n),net:-n,kind:"cancel",what:(e.whole?"poora order":(lotNo||"lot"))+(e.why?(" · "+e.why):""),
+        ofDate:isOpen&&e.key?(function(){var d="";(o.programmes||[]).forEach(function(p){if(p&&"pg_"+progGid(p)===e.key&&(!d||p.date<d))d=p.date});return d||o.date})():o.date,
+        credited:false,lotCredit:0,creditNet:0,why:e.why}));
+    });
+  });
+  return out.sort(function(a,b){
+    var ka=a.kind?1:a.info?2:0,kb=b.kind?1:b.info?2:0;if(ka!==kb)return ka-kb;
+    return a.date<b.date?-1:a.date>b.date?1:(a.no<b.no?-1:a.no>b.no?1:0)});
+}
+(function(){
+  var old=smMonthOrderList;
+  smMonthOrderList=function(uid,mk){
+    mk=mk||npMonthKey();
+    var L=old(uid,mk);
+    if(mk<TR_NEW_FROM)return L;
+    /* purane (Nov se pehle bane) order purane niyam se hi -- naye wale naye se */
+    var oldOnly=L.filter(function(x){var o=(STATE.orders||[]).filter(function(y){return y&&y.id===x.id})[0];return!o||!_trNew(o)});
+    return oldOnly.concat(_trRows(uid,mk));
   };
 })();
 function renderNewParty(){
