@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.506-->
+<!DOCTYPE html><!--ALTV:1.45.509-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.506";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.509";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -12222,6 +12222,12 @@ function _rcvTabs(){
   if(rcvCan("rcv_check")||rcvCan("rcv_task"))t.splice(1,0,["task","\uD83D\uDCCC Tasks"+(function(){var n=0;try{n=ptMine().length}catch(e){}return n?(" ("+n+")"):""})()]);
   if(rcvCan("rcv_drop"))t.push(["drop","\uD83D\uDCC4 Sign challan"]);
   if(rcvCan("rcv_report"))t.push(["rep","\uD83D\uDCCA Report"]);
+  if(rcvCan("rcv_int"))t.push(["int","\uD83E\uDDEE Interest"]);
+  /* 509: Neer ka kram -- Payment Check, Sign challan, Received, Tasks,
+     Unpaid Bills, Report; baaki (Interest wagairah) uske baad */
+  var ord=["check","drop","db","task","unpaid","rep"];
+  t=t.map(function(x,i){return{x:x,i:i}}).sort(function(a,b){
+    var ia=ord.indexOf(a.x[0]),ib=ord.indexOf(b.x[0]);if(ia<0)ia=99+a.i;if(ib<0)ib=99+b.i;return ia-ib}).map(function(y){return y.x});
   return t;
 }
 function renderRcv(){
@@ -12537,6 +12543,7 @@ function rcvDetail(id){
       +'<button class="btn bp bfl" onclick="rcvEditSave(\''+r.id+'\')">Save</button></div>':'')
     +'</div><div style="padding:10px 14px;border-top:1px solid var(--br);display:flex;gap:7px;flex-wrap:wrap">'
     +'<button class="btn" style="flex:1;background:#25D366;color:#fff;border:none" onclick="rcvWa(\''+r.id+'\',\'acc\')">\uD83D\uDCF2 WhatsApp</button>'
+    +(r.status==="ok"?_intRcptBtn(r):'')
 
     +(ed?'<button class="btn bs" onclick="var e=document.getElementById(\'rcv-ed\');e.style.display=e.style.display===\'none\'?\'\':\'none\'">\u270F\uFE0F Edit</button>'
       +'<button class="btn bd" onclick="rcvCancel(\''+r.id+'\')">\u274C Payment cancel</button>':'')
@@ -12680,7 +12687,7 @@ function _rcvMine(p){
 }
 function _rcvBodyFor(){
   return _rcvTab==="unpaid"?rcvUnpaidHtml():_rcvTab==="check"?rcvCheckHtml():_rcvTab==="db"?rcvDbHtml()
-    :_rcvTab==="task"?ptHtml():_rcvTab==="drop"?dropHtml():_rcvTab==="rep"?payRepHtml():_rcvTab==="mkt"?payMktHtml():"";
+    :_rcvTab==="task"?ptHtml():_rcvTab==="drop"?dropHtml():_rcvTab==="rep"?payRepHtml():_rcvTab==="mkt"?payMktHtml():_rcvTab==="int"?intTabHtml():"";
 }
 /* ── Market -> payment staff (admin) ── */
 function payMktHtml(){
@@ -13134,7 +13141,7 @@ function intSet(k,v){
   toast("Sambhal liya","ok");
 }
 function _intAll(){return(STATE.payments||[]).filter(function(p){return p&&!p._deleted&&p.kind==="pint"})}
-function _intOfRcpt(r){return _intAll().filter(function(v){return v.rcptId===r.id&&v.status!=="cancelled"})[0]||null}
+function _intOfRcpt(r){return _intAll().filter(function(v){return v.status!=="cancelled"&&(v.rcptId===r.id||(v.rcptIds||[]).indexOf(r.id)>=0)})[0]||null}
 function _intBtn(r){
   if(!rcvCan("rcv_int"))return"";
   var v=_intOfRcpt(r);
@@ -13170,7 +13177,7 @@ function intOpen(id){
   d.innerHTML='<div class="sh" style="max-height:90vh;display:flex;flex-direction:column"><div style="padding:13px 15px 9px;border-bottom:1px solid var(--br)">'
     +'<div style="font-weight:900;font-size:15px">🧮 Interest — '+esc(r.party)+'</div><div class="xs ct3" style="font-weight:600">'+esc(r.no)+' · din cheque ki tareekh ('+esc(fmtDate(r.cdate||r.date))+') tak</div></div>'
     +'<div style="flex:1;overflow-y:auto;padding:11px 13px">'
-    +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><label style="font-size:12.5px;font-weight:800;flex:1">Exclude days (chhoot)</label>'
+    +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><label style="font-size:12.5px;font-weight:800;flex:1">Grace Days</label>'
     +'<input class="inp" id="int-ex" type="number" min="0" placeholder="khaali = dhara" style="width:120px" oninput="_intS.excl=this.value;intRe()"></div>'
     +'<label style="display:flex;gap:8px;align-items:center;font-size:12.5px;font-weight:800;margin-bottom:9px"><input type="checkbox" id="int-gst" onchange="_intS.gst=this.checked;intRe()"> GST jodo ('+intCfg().gst+'%)</label>'
     +'<div id="int-box"></div></div>'
@@ -13184,7 +13191,7 @@ function intRe(){
   var b=el("int-box");if(!b||!_intS)return;var r=_rcvById(_intS.id);if(!r)return;
   var X=intCalc(r,_intS.excl,_intS.gst);
   b.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11.5px">'
-    +'<tr style="font-size:9.5px;color:var(--t3)"><th style="text-align:left">Bill</th><th style="text-align:right">Taxable</th><th style="text-align:right">Din</th><th style="text-align:right">Dhara</th><th style="text-align:right">Chhoot</th><th style="text-align:right">Byaj din</th><th style="text-align:right">Interest</th></tr>'
+    +'<tr style="font-size:9.5px;color:var(--t3)"><th style="text-align:left">Bill</th><th style="text-align:right">Taxable</th><th style="text-align:right">Din</th><th style="text-align:right">Dhara</th><th style="text-align:right">Grace Days</th><th style="text-align:right">Byaj din</th><th style="text-align:right">Interest</th></tr>'
     +X.lines.map(function(x){return'<tr><td style="padding:4px 2px;font-weight:800">'+esc(x.no)+'</td><td style="text-align:right">'+_rcvRs(x.tx)+'</td><td style="text-align:right">'+x.days+'</td><td style="text-align:right">'+x.cr+'</td><td style="text-align:right">'+x.skip+'</td>'
       +'<td style="text-align:right;font-weight:900;color:'+(x.cd?"#B91C1C":"var(--t3)")+'">'+x.cd+'</td><td style="text-align:right;font-weight:800">'+_rcvRs(x.int)+'</td></tr>'}).join("")+'</table></div>'
     +'<div style="background:#FFF7ED;border:1.5px solid #FDBA74;border-radius:11px;padding:9px 11px;margin-top:9px;font-size:12.5px;font-weight:800;line-height:1.7">'
@@ -13200,7 +13207,7 @@ function _intNextNo(){
 }
 function _intMsg(v){
   return"🧮 Interest — "+v.party+"\nVoucher: "+v.no+" · "+fmtDate(v.date)+"\nReceipt "+(v.rcptNo||"")+" · "+(v.mode==="NEFT"?"UTR ":"Cheque ")+(v.ref||"")+" · "+fmtDate(v.to)+"\n\n"
-    +v.lines.filter(function(x){return x.cd>0}).map(function(x){return"Bill "+x.no+" ("+fmtDate(x.date)+") · "+x.days+" din − "+x.skip+" chhoot = "+x.cd+" din · taxable "+_rcvRs(x.tx)+" → "+_rcvRs(x.int)}).join("\n")
+    +v.lines.filter(function(x){return x.cd>0}).map(function(x){return"Bill "+x.no+" ("+fmtDate(x.date)+") · "+x.days+" din − "+x.skip+" grace days = "+x.cd+" din · taxable "+_rcvRs(x.tx)+" → "+_rcvRs(x.int)}).join("\n")
     +"\n\nInterest "+v.rate+"% mahina: "+_rcvRs(v.base)+(v.withGst?("\nGST "+v.gstPct+"%: "+_rcvRs(v.gst)):"")+"\nKul: "+_rcvRs(v.amt)
     +"\n\nKripya party se dilwayein.\n— Amrit Laxmi Textile";
 }
@@ -13233,7 +13240,7 @@ function _intPdfHtml(v){
   var h=_pdfHead("Interest "+v.no)+_pdfCo();
   h+='<div class="hdr"><div><div class="doc-lbl">Interest — '+escHtml(v.party)+'</div><div class="doc-no">'+escHtml(v.no||"")+' · '+escHtml(fmtDate(v.date||today()))+'</div></div></div>'
     +'<p>Receipt '+escHtml(v.rcptNo||"")+' · '+escHtml((v.mode==="NEFT"?"UTR ":"Cheque ")+(v.ref||""))+' · din '+escHtml(fmtDate(v.to))+' tak · '+v.rate+'% mahina</p>'
-    +'<table><tr><th>Bill</th><th>Date</th><th class="tr">Taxable</th><th class="tr">Din</th><th class="tr">Dhara</th><th class="tr">Chhoot</th><th class="tr">Byaj din</th><th class="tr">Interest</th></tr>'
+    +'<table><tr><th>Bill</th><th>Date</th><th class="tr">Taxable</th><th class="tr">Din</th><th class="tr">Dhara</th><th class="tr">Grace Days</th><th class="tr">Byaj din</th><th class="tr">Interest</th></tr>'
     +v.lines.map(function(x){return'<tr><td>'+escHtml(x.no)+'</td><td>'+escHtml(fmtDate(x.date))+'</td><td class="tr">'+_rcvRs(x.tx)+'</td><td class="tr">'+x.days+'</td><td class="tr">'+x.cr+'</td><td class="tr">'+x.skip+'</td><td class="tr">'+x.cd+'</td><td class="tr">'+_rcvRs(x.int)+'</td></tr>'}).join("")
     +'</table><table style="margin-top:8px;width:50%;margin-left:auto"><tr><td>Interest</td><td class="tr">'+_rcvRs(v.base)+'</td></tr>'
     +(v.withGst?'<tr><td>GST '+v.gstPct+'%</td><td class="tr">'+_rcvRs(v.gst)+'</td></tr>':'')+'<tr><th>Kul</th><th class="tr">'+_rcvRs(v.amt)+'</th></tr></table>'
@@ -13264,7 +13271,8 @@ function _intUnpaidHtml(){
     return'<div style="background:#fff;border-radius:9px;padding:7px 9px;margin-top:6px;display:flex;gap:6px;align-items:center"><div style="flex:1;min-width:0"><b>'+esc(x.v.party)+'</b>'
       +'<div class="xs ct3" style="font-weight:700">'+esc(x.v.no)+' · '+esc(fmtDate(x.v.date))+' · '+_rcvDays(x.v.date)+' din</div></div><b style="color:#B91C1C">'+_rcvRs(x.due)+'</b>'
       +'<button class="btn bxs" style="background:#7C3AED;color:#fff;border:none" onclick="intRemind(\''+x.v.id+'\')">📲</button>'
-      +'<button class="btn bxs bs" onclick="intPdf(\''+x.v.id+'\')">📄</button></div>'}).join("");
+      +'<button class="btn bxs bs" onclick="intPdf(\''+x.v.id+'\')">📄</button>'
+      +(rcvCan("rcv_int")?'<button class="btn bxs bs" title="Badlo" onclick="intEdit(\''+x.v.id+'\')">✏️</button><button class="btn bxs bd" title="Cancel" onclick="intCancel(\''+x.v.id+'\')">🗑</button>':'')+'</div>'}).join("");
   return h+'</div>';
 }
 function intRemind(vid){var v=_intAll().filter(function(x){return x.id===vid})[0];if(v)openWA(v.brkPh,"Yaad dilana — interest abhi baaki\n\n"+_intMsg(v))}
@@ -13679,7 +13687,7 @@ _intMsg=function(v){
   var L=(v.lines||[]).filter(function(x){return x.cd>0}),R=function(n){return"₹"+Math.round(Number(n)||0).toLocaleString("en-IN")};
   return"*Interest — "+v.party+"*\nVoucher: "+v.no+" · "+fmtDate(v.date)+"\n"
     +(v.rcptNo?("Receipt "+v.rcptNo+" · "):"")+"Din "+fmtDate(v.to)+" tak · "+v.rate+"% mahina\n"
-    +L.map(function(x,i){return"\n"+(i+1)+") Bill "+x.no+" · "+fmtDate(x.date)+"\n   Taxable: "+R(x.tx)+"\n   "+x.days+" din − "+x.skip+" chhoot = *"+x.cd+" din*\n   Interest: "+R(x.int)}).join("\n")
+    +L.map(function(x,i){return"\n"+(i+1)+") Bill "+x.no+" · "+fmtDate(x.date)+"\n   Taxable: "+R(x.tx)+"\n   "+x.days+" din − "+x.skip+" grace days = *"+x.cd+" din*\n   Interest: "+R(x.int)}).join("\n")
     +"\n\n──────────\nInterest: "+R(v.base)+(v.withGst?("\nGST "+v.gstPct+"%: "+R(v.gst)):"")+"\n*Kul: "+R(v.amt)+"*"
     +"\n\nKripya party se dilwayein 🙏\n— Amrit Laxmi Textile";
 };
@@ -15398,6 +15406,239 @@ function _ptHkSweep(){
   setTimeout(tick,3500);
   var mk=rcvMark;
   rcvMark=function(){var res=mk.apply(this,arguments);try{if(_ptHkSweep())renderRcv()}catch(e){}return res};
+})();
+/* ══ INTEREST: bana hua badlo / cancel, kai cheque ek saath (1.45.507) ══
+   * Receipt kholo -> "🧮 Interest" (pehle ye button screen se gayab tha).
+   * Payment me naya tab "🧮 Interest": party chuno, bill tick karo --
+     alag-alag cheque wale bill ek saath. Har bill ka byaj usi cheque ki
+     tareekh tak jisse wo bhara. Jinka paisa abhi baaki hai unka aaj tak
+     ka byaj -- sirf yaad dilane ke liye.
+   * "Sirf yaad dilao" -- broker ko WhatsApp / PDF, koi entry nahi.
+   * "Pakka karo" -- EK voucher, sab chune cheque uske neeche.
+   * Bana hua interest: ✏️ badlo (wahi number) ya 🗑 cancel -- jab tak
+     uska paisa na aaya ho. */
+var _imS=null;
+function _intBillOk(k){k=String(k||"");return!/^(a|i|x):/.test(k)}
+function _intTaken(pk,skipId){
+  var by={},nos={};
+  _intAll().forEach(function(v){
+    if(!v||v.status==="cancelled"||v.pk!==pk||v.id===skipId)return;
+    (v.lines||[]).forEach(function(x){if(!(x.cd>0))return;if(x.rid)by[x.rid+"|"+x.k]=1;nos[x.no]=1});
+    (v.rcptIds||(v.rcptId?[v.rcptId]:[])).forEach(function(id){by["r|"+id]=1});
+  });
+  return{by:by,nos:nos};
+}
+function _intCands(pk,skipId){
+  var L=rcvLedger(),p=L.byKey[pk],T=_intTaken(pk,skipId),out=[],td=today();
+  _rcvAll().filter(function(r){return r&&r.pk===pk&&r.status==="ok"&&!r.intWaived}).forEach(function(r){
+    if(T.by["r|"+r.id])return;
+    (r.alloc||[]).forEach(function(a){
+      if(!a||!_intBillOk(a.k)||!(Number(a.amt)>0))return;
+      if(T.by[r.id+"|"+a.k]||T.nos[a.no])return;
+      out.push({id:r.id+"|"+a.k,kind:"paid",k:a.k,no:a.no,paid:Number(a.amt)||0,to:r.cdate||r.date,rc:r.no,rid:r.id,full:a.full!==false});
+    });
+  });
+  ((p&&p.open)||[]).forEach(function(b){
+    if(!b||b.int||b.adv||!_intBillOk(b.key)||!(b.due>0.5))return;
+    out.push({id:"due|"+b.key,kind:"due",k:b.key,no:b.no,paid:b.due,to:td,rc:"",rid:""});
+  });
+  return out;
+}
+function _intLine(L,x,c,ex){
+  var b=L.bills[x.k]||{},amt=Number(b.amt)||0,paid=Number(x.paid)||0;
+  var tx=Number(b.tx)>0&&amt>0?Number(b.tx)*(paid/amt):paid/(1+c.gst/100);
+  var days=_dDiff(b.date||x.to,x.to),cr=Number(b.cr)||0,skip=ex==null?cr:ex;
+  var cd=days>cr?Math.max(0,days-skip):0;
+  var it=Math.round(tx*c.rate/100/30*cd*100)/100;
+  return{no:x.no,date:b.date||"",paid:paid,tx:Math.round(tx*100)/100,days:days,cr:cr,skip:skip,cd:cd,int:it,
+    to:x.to,rc:x.rc||"",rid:x.rid||"",k:x.k,kind:x.kind};
+}
+function intCalcSel(sel,excl,withGst){
+  var c=intCfg(),L=rcvLedger(),ex=String(excl==null?"":excl).trim()===""?null:Math.max(0,Number(excl)||0);
+  var lines=sel.map(function(x){return _intLine(L,x,c,ex)});
+  var base=lines.reduce(function(a,x){return a+x.int},0),gst=withGst?base*c.gst/100:0;
+  var to=lines.reduce(function(m,x){return x.to>m?x.to:m},"");
+  return{lines:lines,base:Math.round(base*100)/100,gst:Math.round(gst*100)/100,amt:Math.round(base+gst),rate:c.rate,gstPct:c.gst,withGst:!!withGst,excl:ex,to:to};
+}
+function _intPaidOf(v){var b=null;try{b=rcvLedger().bills["i:"+v.id]}catch(e){b=null}return b?(Number(b.paid)||0):0}
+/* tab: party chuno + bane hue interest */
+var _imQ="";
+function intTabHtml(){
+  if(!rcvCan("rcv_int"))return"";
+  var L=rcvLedger(),q=_imQ.trim().toUpperCase();
+  var P=L.parties.filter(function(p){if(!_rcvMine(p))return false;if(q&&(p.name+" "+(p.market||"")+" "+(p.brk||"")).toUpperCase().indexOf(q)<0)return false;return true})
+    .map(function(p){var C=_intCands(p.key),c=intCfg(),n=0;C.forEach(function(x){if(_intLine(L,x,c,null).cd>0)n++});return{p:p,n:n,paid:C.filter(function(x){return x.kind==="paid"}).length}})
+    .filter(function(x){return x.n>0||q}).sort(function(a,b){return b.paid-a.paid||b.n-a.n});
+  var h='<input class="inp" placeholder="Party dhoondho\u2026" value="'+esc(_imQ)+'" oninput="_imQ=this.value;rcvReBody()" style="margin-bottom:8px">'
+    +'<div class="xs ct3" style="font-weight:700;margin-bottom:7px">Jin party ke bill dhara se upar gaye \u2014 paisa aaya ho ya baaki ho. Party dabao, bill chuno.</div>';
+  h+=P.slice(0,60).map(function(x){return'<div onclick="intMulti(\''+x.p.key+'\')" style="cursor:pointer;background:var(--sf);border:1.5px solid var(--br);border-radius:10px;padding:9px 11px;margin-bottom:6px;display:flex;gap:8px;align-items:center">'
+    +'<div style="flex:1;min-width:0"><div style="font-weight:800">'+esc(x.p.name)+'</div><div class="xs ct3">'+(x.p.brk?("\uD83E\uDD1D "+esc(x.p.brk)+" \u00b7 "):"")+x.n+' bill par byaj</div></div><span style="font-weight:900;color:#C2410C">\uD83E\uDDEE</span></div>'}).join("")
+    +(!P.length?'<div class="emp">Koi bill dhara se upar nahi</div>':'');
+  var V=_intAll().filter(function(v){return v.status!=="cancelled"}).sort(function(a,b){return(b.at||0)-(a.at||0)}).slice(0,40);
+  if(V.length)h+='<div style="font-size:11px;font-weight:900;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin:12px 0 5px">Bane hue interest</div>'
+    +V.map(function(v){var pd=_intPaidOf(v);return'<div style="background:#FFF7ED;border:1.5px solid #FDBA74;border-radius:10px;padding:7px 9px;margin-bottom:6px;display:flex;gap:6px;align-items:center">'
+      +'<div style="flex:1;min-width:0"><b>'+esc(v.party)+'</b><div class="xs ct3" style="font-weight:700">'+esc(v.no)+' \u00b7 '+esc(fmtDate(v.date))+((v.rcptNos&&v.rcptNos.length)?(' \u00b7 '+esc(v.rcptNos.join(", "))):(v.rcptNo?(' \u00b7 '+esc(v.rcptNo)):' \u00b7 bina receipt'))+(pd>0.5?' \u00b7 <span style="color:#059669">paisa aaya</span>':'')+'</div></div>'
+      +'<b>'+_rcvRs(v.amt)+'</b><button class="btn bxs bs" onclick="intPdf(\''+v.id+'\')">\uD83D\uDCC4</button>'
+      +'<button class="btn bxs bs" onclick="intEdit(\''+v.id+'\')">\u270F\uFE0F</button><button class="btn bxs bd" onclick="intCancel(\''+v.id+'\')">\uD83D\uDDD1</button></div>'}).join("");
+  return h;
+}
+/* receipt ke andar */
+function _intRcptBtn(r){
+  if(!rcvCan("rcv_int"))return"";
+  var v=_intOfRcpt(r);
+  if(v)return'<button class="btn" style="background:#FFF7ED;color:#9A3412;border:1.5px solid #FDBA74" onclick="intEdit(\''+v.id+'\')">\uD83E\uDDEE '+esc(v.no)+' \u00b7 '+_rcvRs(v.amt)+'</button>';
+  return'<button class="btn" style="background:#C2410C;color:#fff;border:none" onclick="intMulti(\''+r.pk+'\',{pre:[\''+r.id+'\']})">\uD83E\uDDEE Interest</button>';
+}
+function intMulti(pk,opt){
+  if(!rcvCan("rcv_int")){toast("Permission nahi","er");return}
+  opt=opt||{};
+  var L=rcvLedger(),p=L.byKey[pk];if(!p){toast("Party nahi mili","er");return}
+  var ed=opt.edit?_intAll().filter(function(v){return v.id===opt.edit})[0]:null;
+  var C=_intCands(pk,ed?ed.id:null),sel={};
+  if(ed)(ed.lines||[]).forEach(function(x){var id=x.rid?(x.rid+"|"+x.k):null;if(id&&C.some(function(c){return c.id===id}))sel[id]=1;else{var m=C.filter(function(c){return c.no===x.no&&c.kind==="paid"})[0];if(m)sel[m.id]=1}});
+  else if(opt.pre)C.forEach(function(x){if(x.rid&&opt.pre.indexOf(x.rid)>=0)sel[x.id]=1});
+  _imS={pk:pk,party:p.name,C:C,sel:sel,excl:ed&&ed.excl!=null?String(ed.excl):"",gst:!!(ed&&ed.withGst),edit:ed?ed.id:""};
+  var d=document.getElementById("m-int");if(d)d.remove();
+  d=document.createElement("div");d.className="ov";d.id="m-int";d.style.zIndex="660";
+  d.innerHTML='<div class="sh" style="max-height:92vh;display:flex;flex-direction:column"><div style="padding:13px 15px 9px;border-bottom:1px solid var(--br)">'
+    +'<div style="font-weight:900;font-size:15px">\uD83E\uDDEE Interest \u2014 '+esc(p.name)+(ed?(' <span style="color:#C2410C">('+esc(ed.no)+' badal rahe)</span>'):'')+'</div>'
+    +'<div class="xs ct3" style="font-weight:600">Har bill: jis cheque se bhara uski tareekh tak \u00b7 baaki bill: aaj tak</div></div>'
+    +'<div style="flex:1;overflow-y:auto;padding:11px 13px">'
+    +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><label style="font-size:12.5px;font-weight:800;flex:1">Grace Days</label>'
+    +'<input class="inp" type="number" min="0" placeholder="khaali = dhara" style="width:120px" value="'+esc(_imS.excl)+'" oninput="_imS.excl=this.value;intMultiRe()"></div>'
+    +'<label style="display:flex;gap:8px;align-items:center;font-size:12.5px;font-weight:800;margin-bottom:9px"><input type="checkbox"'+(_imS.gst?' checked':'')+' onchange="_imS.gst=this.checked;intMultiRe()"> GST jodo ('+intCfg().gst+'%)</label>'
+    +'<div id="im-box"></div></div>'
+    +'<div id="im-foot" style="padding:10px 14px;border-top:1px solid var(--br)"></div></div>';
+  _ovOpen(d);intMultiRe();
+}
+function _imSelList(){return _imS?_imS.C.filter(function(x){return _imS.sel[x.id]}):[]}
+function intMultiTick(id,on){if(!_imS)return;if(on)_imS.sel[id]=1;else delete _imS.sel[id];intMultiRe()}
+function intMultiRe(){
+  var b=el("im-box"),f=el("im-foot");if(!b||!_imS)return;
+  var L=rcvLedger(),c=intCfg(),ex=String(_imS.excl).trim()===""?null:Math.max(0,Number(_imS.excl)||0);
+  var groups={},order=[];
+  _imS.C.forEach(function(x){var g=x.kind==="due"?"due":x.rid;if(!groups[g]){groups[g]=[];order.push(g)}groups[g].push(x)});
+  order.sort(function(a,b2){if(a==="due")return 1;if(b2==="due")return-1;var ra=_rcvById(a)||{},rb=_rcvById(b2)||{};return String(rb.cdate||rb.date||"").localeCompare(String(ra.cdate||ra.date||""))});
+  var h="";
+  order.forEach(function(g){
+    var r=g==="due"?null:_rcvById(g);
+    h+='<div style="font-size:11px;font-weight:900;color:'+(r?"#1E3A8A":"#9A3412")+';margin:8px 0 4px">'
+      +(r?(esc(r.no)+' \u00b7 '+(r.mode==="Cheque"?"Cheque ":"UTR ")+esc(r.ref||"")+' \u00b7 '+esc(fmtDate(r.cdate||r.date))+' \u00b7 '+_rcvRs(r.amt))
+         :'Paisa abhi baaki \u2014 aaj tak (sirf yaad dilane ke liye)')+'</div>';
+    h+=groups[g].map(function(x){var on=!!_imS.sel[x.id],l=_intLine(L,x,c,ex);
+      return'<label style="display:flex;gap:8px;align-items:center;background:'+(on?"#FFF7ED":"var(--sf)")+';border:1.5px solid '+(on?"#FDBA74":"var(--br)")+';border-radius:9px;padding:7px 9px;margin-bottom:5px;cursor:pointer">'
+        +'<input type="checkbox"'+(on?' checked':'')+' onchange="intMultiTick(\''+x.id+'\',this.checked)" style="width:18px;height:18px;accent-color:#C2410C;flex-shrink:0">'
+        +'<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:12.5px">'+esc(x.no)+' <span class="ct3" style="font-weight:600">\u00b7 '+esc(fmtDate(l.date))+'</span>'+(x.kind==="paid"&&!x.full?' <b style="color:#2563EB">(part)</b>':'')+'</div>'
+        +'<div class="xs" style="font-weight:700;color:'+(l.cd?"#B91C1C":"var(--t3)")+'">'+l.days+' din \u00b7 dhara '+l.cr+' \u00b7 byaj '+l.cd+' din</div></div>'
+        +'<div style="text-align:right"><div style="font-weight:800;font-size:12px">'+_rcvRs(x.paid)+'</div><div style="font-weight:900;font-size:12.5px;color:#C2410C">'+_rcvRs(l.int)+'</div></div></label>'}).join("");
+  });
+  if(!_imS.C.length)h='<div class="emp">Is party ka koi bill nahi jispar interest bane</div>';
+  var S=_imSelList(),X=intCalcSel(S,_imS.excl,_imS.gst),hasDue=S.some(function(x){return x.kind==="due"});
+  h+='<div style="background:#FFF7ED;border:1.5px solid #FDBA74;border-radius:11px;padding:9px 11px;margin-top:9px;font-size:12.5px;font-weight:800;line-height:1.7">'
+    +'<div style="display:flex;justify-content:space-between"><span>'+S.length+' bill \u00b7 Interest ('+X.rate+'% mahina)</span><span>'+_rcvRs(X.base)+'</span></div>'
+    +(X.withGst?'<div style="display:flex;justify-content:space-between"><span>GST '+X.gstPct+'%</span><span>'+_rcvRs(X.gst)+'</span></div>':'')
+    +'<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:900;border-top:1.5px dashed #FDBA74;margin-top:3px;padding-top:3px"><span>Kul (round)</span><span>'+_rcvRs(X.amt)+'</span></div></div>';
+  b.innerHTML=h;
+  if(f)f.innerHTML='<div style="display:flex;gap:7px;flex-wrap:wrap">'
+    +'<button class="btn" style="flex:1;min-width:150px;background:#7C3AED;color:#fff;border:none" onclick="intMultiRemind()">\uD83D\uDCF2 Broker ko \u2014 sirf yaad</button>'
+    +'<button class="btn bs" onclick="intMultiPdf()">\uD83D\uDCC4 PDF</button></div>'
+    +'<button class="btn" '+(hasDue||!S.length?'disabled ':'')+'style="width:100%;margin-top:7px;background:'+(hasDue||!S.length?"#9CA3AF":"#C2410C")+';color:#fff;border:none" onclick="intMultiSave()">\u2705 '+(_imS.edit?"Badlav save karo":"Interest pakka karo")+'</button>'
+    +(hasDue?'<div class="xs" style="text-align:center;font-weight:800;color:#9A3412;margin-top:4px">Baaki (paisa nahi aaya) bill ka interest sirf yaad dilane ke liye \u2014 pakka tab jab paisa aaye</div>':'')
+    +'<button class="btn bs" style="width:100%;margin-top:6px" onclick="var d=document.getElementById(\'m-int\');if(d)d.remove()">Band</button>';
+}
+function _imVoucherLike(){
+  var S=_imSelList(),X=intCalcSel(S,_imS.excl,_imS.gst);
+  var rids=[],rnos=[];S.forEach(function(x){if(x.rid&&rids.indexOf(x.rid)<0){rids.push(x.rid);rnos.push(x.rc)}});
+  var p=rcvLedger().byKey[_imS.pk]||{};
+  return Object.assign({party:_imS.party,pk:_imS.pk,custId:p.custId||"",brk:p.brk||"",brkPh:p.brkPh||"",rcptIds:rids,rcptNos:rnos,rcptNo:rnos.join(", "),date:today(),multi:1},X);
+}
+function intMultiRemind(){
+  if(!_imS||!_imSelList().length){toast("Bill chuno","warn");return}
+  var v=_imVoucherLike();if(v.amt<=0){toast("Interest \u20B90 hai","warn");return}
+  v.no="(yaad dilana)";
+  openWA(v.brkPh,"Yaad dilana \u2014 interest\n\n"+_intMsg(v));
+}
+function intMultiPdf(){
+  if(!_imS||!_imSelList().length){toast("Bill chuno","warn");return}
+  var v=_imVoucherLike();v.no=_imS.edit?((_intAll().filter(function(x){return x.id===_imS.edit})[0]||{}).no||""):"(abhi pakka nahi)";
+  _printWin(_intPdfHtml(v),"Interest "+v.party);
+}
+function intMultiSave(){
+  if(!_imS||!rcvCan("rcv_int"))return;
+  var S=_imSelList();if(!S.length){toast("Bill chuno","warn");return}
+  if(S.some(function(x){return x.kind==="due"})){toast("Baaki bill ka interest pakka nahi hota","warn");return}
+  var X=_imVoucherLike();if(X.amt<=0){toast("Interest \u20B90 hai \u2014 kuchh nahi","warn");return}
+  var u=STATE.user||{},v=null;
+  var last=S.map(function(x){return _rcvById(x.rid)}).filter(Boolean).sort(function(a,b){return String(b.cdate||b.date).localeCompare(String(a.cdate||a.date))})[0]||{};
+  if(_imS.edit){
+    v=_intAll().filter(function(x){return x.id===_imS.edit})[0];if(!v)return;
+    if(_intPaidOf(v)>0.5){toast("Is interest ka paisa aa chuka \u2014 badal nahi sakte","er");return}
+    var old=v.amt;
+    ["lines","base","gst","amt","rate","gstPct","withGst","excl","to","rcptIds","rcptNos","rcptNo","multi"].forEach(function(k){v[k]=X[k]});
+    v.rcptId=X.rcptIds[0]||"";v.mode=last.mode||v.mode;v.ref=last.ref||v.ref;
+    (v.log=v.log||[]).push({at:Date.now(),by:u.name||"",what:"Badla: "+_rcvRs(old)+" \u2192 "+_rcvRs(v.amt)});
+    v._ts=_bumpTs(v);
+  }else{
+    v=Object.assign({},X,{id:uid(),kind:"pint",no:_intNextNo(),rcptId:X.rcptIds[0]||"",mode:last.mode||"",ref:last.ref||"",
+      at:Date.now(),byId:u.id||"",by:u.name||"",status:"open",log:[{at:Date.now(),by:u.name||"",what:"Bana"}]});
+    if(!STATE.payments)STATE.payments=[];
+    STATE.payments.push(stamp(v));
+  }
+  _rcvSave();
+  try{actPush({act:"pay_int",col:"payments",rec:v.id,label:v.party,note:v.no+" \u00b7 "+_rcvRs(v.amt)+(_imS.edit?" (badla)":"")})}catch(e){}
+  var d=document.getElementById("m-int");if(d)d.remove();
+  ["m-rcv-done","m-rcv-det"].forEach(function(x){var e=document.getElementById(x);if(e)e.remove()});
+  toast("Interest "+v.no+" \u2014 "+_rcvRs(v.amt)+(_imS.edit?" (badal gaya)":" pending me"),"ok");
+  var wasEdit=!!_imS.edit;_imS=null;
+  if(!wasEdit)openWA(v.brkPh,_intMsg(v));
+  try{renderRcv()}catch(e){}
+}
+function intEdit(vid){
+  var v=_intAll().filter(function(x){return x.id===vid})[0];if(!v)return;
+  if(!rcvCan("rcv_int")){toast("Permission nahi","er");return}
+  if(v.status==="cancelled"){toast("Ye interest cancel ho chuka","warn");return}
+  if(_intPaidOf(v)>0.5){toast("Is interest ka paisa aa chuka \u2014 badal nahi sakte. Pehle wo receipt cancel karo.","er");return}
+  intMulti(v.pk,{edit:v.id});
+}
+async function intCancel(vid){
+  var v=_intAll().filter(function(x){return x.id===vid})[0];if(!v)return;
+  if(!rcvCan("rcv_int")){toast("Permission nahi","er");return}
+  if(_intPaidOf(v)>0.5){toast("Is interest ka paisa aa chuka \u2014 cancel nahi. Pehle wo receipt cancel karo.","er");return}
+  var ok=await appConfirm("Interest cancel?",v.no+" \u00b7 "+v.party+" \u00b7 "+_rcvRs(v.amt)+"\n\nCancel hone ke baad ye bill dobara interest ke liye khule ho jayenge.","\uD83D\uDDD1","Haan, cancel","dr","Rehne do");
+  if(!ok)return;
+  v.status="cancelled";v.cancelAt=Date.now();v.cancelBy=(STATE.user&&STATE.user.name)||"";
+  (v.log=v.log||[]).push({at:Date.now(),by:v.cancelBy,what:"Cancel"});
+  v._ts=_bumpTs(v);_rcvSave();
+  try{actPush({act:"pay_int_cancel",col:"payments",rec:v.id,label:v.party,note:v.no+" \u00b7 "+_rcvRs(v.amt)})}catch(e){}
+  ["m-int","m-rcv-det"].forEach(function(x){var e=document.getElementById(x);if(e)e.remove()});
+  toast("Interest "+v.no+" cancel","ok");
+  try{renderRcv()}catch(e){}
+}
+/* message aur PDF: har line ki apni tareekh (kai cheque) */
+(function(){
+  var m0=_intMsg;
+  _intMsg=function(v){
+    if(!v||!v.multi)return m0.apply(this,arguments);
+    var L=(v.lines||[]).filter(function(x){return x.cd>0}),R=function(n){return"\u20B9"+Math.round(Number(n)||0).toLocaleString("en-IN")};
+    return"*Interest \u2014 "+v.party+"*\nVoucher: "+v.no+" \u00b7 "+fmtDate(v.date)+"\n"
+      +(v.rcptNo?("Receipt "+v.rcptNo+" \u00b7 "):"")+v.rate+"% mahina\n"
+      +L.map(function(x,i){return"\n"+(i+1)+") Bill "+x.no+" \u00b7 "+fmtDate(x.date)+"\n   "+(x.kind==="due"?"Abhi baaki":"Paisa "+(x.rc||"")+" \u00b7 "+fmtDate(x.to))+"\n   Taxable: "+R(x.tx)+"\n   "+x.days+" din \u2212 "+x.skip+" grace days = *"+x.cd+" din*\n   Interest: "+R(x.int)}).join("\n")
+      +"\n\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nInterest: "+R(v.base)+(v.withGst?("\nGST "+v.gstPct+"%: "+R(v.gst)):"")+"\n*Kul: "+R(v.amt)+"*"
+      +"\n\nKripya party se dilwayein \uD83D\uDE4F\n\u2014 Amrit Laxmi Textile";
+  };
+  var p0=_intPdfHtml;
+  _intPdfHtml=function(v){
+    if(!v||!v.multi)return p0.apply(this,arguments);
+    var h=_pdfHead("Interest "+v.no)+_pdfCo();
+    h+='<div class="hdr"><div><div class="doc-lbl">Interest \u2014 '+escHtml(v.party)+'</div><div class="doc-no">'+escHtml(v.no||"")+' \u00b7 '+escHtml(fmtDate(v.date||today()))+'</div></div></div>'
+      +'<p>'+(v.rcptNo?('Receipt '+escHtml(v.rcptNo)+' \u00b7 '):'')+v.rate+'% mahina \u00b7 har bill ka byaj uske paise ki tareekh tak</p>'
+      +'<table><tr><th>Bill</th><th>Date</th><th>Paisa</th><th class="tr">Taxable</th><th class="tr">Din</th><th class="tr">Dhara</th><th class="tr">Grace Days</th><th class="tr">Byaj din</th><th class="tr">Interest</th></tr>'
+      +v.lines.map(function(x){return'<tr><td>'+escHtml(x.no)+'</td><td>'+escHtml(fmtDate(x.date))+'</td><td>'+(x.kind==="due"?"baaki (aaj tak)":escHtml((x.rc||"")+" \u00b7 "+fmtDate(x.to)))+'</td><td class="tr">'+_rcvRs(x.tx)+'</td><td class="tr">'+x.days+'</td><td class="tr">'+x.cr+'</td><td class="tr">'+x.skip+'</td><td class="tr">'+x.cd+'</td><td class="tr">'+_rcvRs(x.int)+'</td></tr>'}).join("")
+      +'</table><table style="margin-top:8px;width:50%;margin-left:auto"><tr><td>Interest</td><td class="tr">'+_rcvRs(v.base)+'</td></tr>'
+      +(v.withGst?'<tr><td>GST '+v.gstPct+'%</td><td class="tr">'+_rcvRs(v.gst)+'</td></tr>':'')+'<tr><th>Kul</th><th class="tr">'+_rcvRs(v.amt)+'</th></tr></table>'
+      +'<div class="footer">'+escHtml((STATE.settings&&STATE.settings.companyName)||"Amrit Laxmi Textile")+' &nbsp;\u2022&nbsp; Printed: '+(new Date).toLocaleDateString("en-IN")+'</div></body></html>';
+    return h;
+  };
 })();
 function renderNewParty(){
   var c=el("np-body");if(!c)return;
