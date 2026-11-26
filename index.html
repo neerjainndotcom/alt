@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.540-->
+<!DOCTYPE html><!--ALTV:1.45.544-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -88,7 +88,7 @@
 <div data-i18n="recent">Recent Inward</div><div style="padding:0 16px 8px"><div class="srch"><span>🔍</span><input type="text" id="inward-search" placeholder="Search by voucher, item, party..." oninput="renderInRec(this.value)"/></div><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap"><input type="date" id="inward-dfrom" class="inp" style="flex:1;min-width:120px;font-size:12px;padding:6px 8px" title="From date" oninput="renderInRec()"/><input type="date" id="inward-dto" class="inp" style="flex:1;min-width:120px;font-size:12px;padding:6px 8px" title="To date" oninput="renderInRec()"/></div><div style="display:flex;gap:6px;margin-top:6px"><input type="text" id="inward-fparty" class="inp" style="flex:1;font-size:12px;padding:6px 8px" placeholder="Filter party..." oninput="renderInRec()"/><select id="inward-ftype" class="sel" style="flex:1;font-size:12px;padding:6px 8px" onchange="renderInRec()"><option value="">All Types</option><option value="mill">Mill G.P</option><option value="jobwork">Job Work</option><option value="exchange">Exchange</option></select></div></div><div id="inrec"></div></div></div><div id="s-jw" class="scr"><div class="shdr"><div class="hr"><div><h2>⚙️ Job Work</h2><p class="sub">Challans & Processing</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="showJWForm('s2j')">Shop → Job Work</button></div></div><div class="tb mt8"><button class="tbb on" onclick="jwTab('pnd',this)">Pending</button><button class="tbb" onclick="jwTab('rec',this)">Received</button><button class="tbb" onclick="jwTab('all',this)">All</button></div></div><div class="tp on" id="tp-pnd"><div style="padding:8px 16px"><div class="srch"><span>🔍</span><input type="text" id="jw-search" placeholder="Search by ref, party, item..." oninput="renderJWLists(this.value)"/></div></div><div id="jwpnd"></div></div><div class="tp" id="tp-rec"><div style="padding:8px 16px"><button class="btn bp bfl" onclick="openGenRecv()">+ Generate Receive Challan</button></div><div id="jwrec"></div></div><div class="tp" id="tp-all"><div id="jwall"></div></div></div><div id="s-masters" class="scr"><div class="shdr"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><h2>🗂️ Masters</h2><button id="mst-cost-btn" onclick="openCosting()" style="display:none;background:var(--G);color:#fff;border:none;padding:7px 13px;border-radius:9px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap">💰 Costing</button></div><div class="tb mt8"><button class="tbb on" onclick="mTab('itm',this)">Items</button><button class="tbb" onclick="mTab('cst',this)">Customers</button><button class="tbb" onclick="mTab('brk',this)">Brokers</button><button class="tbb" onclick="mTab('sup',this)">Suppliers</button><button class="tbb" onclick="mTab('prd',this)">Products</button><button class="tbb" onclick="mTab('grp',this)">Party Groups</button><button class="tbb" onclick="mTab('sku',this)">All SKUs</button></div></div><div class="tp on" id="tp-itm"><div class="srch"><span>🔍</span><input type="text" placeholder="Search items..." oninput="renderItems(this.value)"/></div><div id="itmlst"></div><button class="fab" onclick="openItem()">+</button></div><div class="tp" id="tp-cst"><div class="srch"><span>🔍</span><input type="text" id="cst-search" placeholder="Search customers..." oninput="renderCusts(this.value)"/></div><div style="display:flex;gap:8px;align-items:center;padding:0 16px 8px;flex-wrap:wrap"><select class="inp" id="cst-flt-market" onchange="renderCusts()" style="font-size:12px;padding:6px 8px;flex:1;min-width:120px"><option value="">All Markets</option></select><select class="inp" id="cst-flt-broker" onchange="renderCusts()" style="font-size:12px;padding:6px 8px;flex:1;min-width:120px"><option value="">All Brokers</option></select><select class="inp" id="cst-flt-star" onchange="renderCusts()" style="font-size:12px;padding:6px 8px;flex:1;min-width:120px"><option value="">All Customers</option><option value="star">&#11088; Star Only</option><option value="nonstar">Non-Star Only</option></select><select class="inp" id="cst-flt-salesman" onchange="renderCusts()" style="font-size:12px;padding:6px 8px;flex:1;min-width:120px"><option value="">All Salesmen</option></select><button class="btn bgh bxs" onclick="clearCustFlt()" style="font-size:11px">Clear</button><button class="btn bgh bxs" onclick="openMarketManager()" style="font-size:11px">⚙️ Manage Markets</button></div><div id="cstlst"></div><button class="fab" onclick="openCust()">+</button></div><div class="tp" id="tp-grp"><div style="padding:12px 16px 4px"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Party Groups — Link firms for cross-billing</div><div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:10px">Create a group when multiple firms belong to one party. Orders saved under Firm A can then be billed to Firm B or Firm C.</div></div><div id="grplst"></div><button class="fab" onclick="openCustGroup()">+</button></div><div class="tp" id="tp-brk"><div class="srch"><span>🔍</span><input type="text" id="brk-search" placeholder="Search brokers..." oninput="renderBrks(this.value)"/></div><div id="brklst"></div><button class="fab" onclick="showMod('m-brk')">+</button></div><div class="tp" id="tp-sup"><div id="suplst"></div><button class="fab" onclick="showMod('m-sup')">+</button></div><div class="tp" id="tp-prd"><div id="prdlst"></div><button class="fab" onclick="showMod('m-prd')">+</button></div><div class="tp" id="tp-sku"><div class="srch"><span>🔍</span><input type="text" placeholder="Search SKUs, items or colours..." oninput="renderAllSKUs(this.value)"/></div><div id="skulst"></div></div></div><div id="s-admin" class="scr"><div class="shdr"><h2>👑 Admin</h2><div class="tb mt8"><button class="tbb on" onclick="aTab('set',this)">Settings</button><button class="tbb" onclick="aTab('usr',this)">Users</button><button class="tbb" onclick="aTab('dev',this)">Devices</button><button class="tbb" onclick="aTab('led',this)">Ledger</button><button class="tbb" onclick="aTab('db',this)">Database</button><button class="tbb" onclick="aTab('fy',this)">Fin Year</button><button class="tbb" onclick="aTab('hin',this)">हिंदी Names</button><button class="tbb" data-tab="flags" onclick="aTab('flags',this)" id="admin-flag-tab">Flags <span id="flag-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:3px">!</span></button></div></div><div class="tp" id="tp-hin" style="background:var(--bg)"><div id="hinbod" class="p16" style="background:var(--bg)"></div></div><div class="tp on" id="tp-set" style="background:var(--bg)"><div id="setbod" class="p16" style="background:var(--bg)"></div></div><div class="tp" id="tp-usr" style="background:var(--bg)"><div style="padding:12px 16px 0;display:flex;justify-content:flex-end"><button class="btn bp bsm" onclick="openUserModal()">+ New User</button></div><div id="usrlst"></div></div><div class="tp" id="tp-dev" style="background:var(--bg)"><div id="devlst"></div></div><div class="tp" id="tp-led" style="background:var(--bg)"><div class="srch"><span>🔍</span><input type="text" placeholder="Filter ledger..." oninput="renderLedger(this.value)"/></div><div style="padding:0 16px 8px;display:flex;gap:6px;flex-wrap:wrap" id="ldflt"></div><div id="ledbod" class="p16"></div></div><div class="tp" id="tp-db" style="background:var(--bg)"><div id="dbbod" class="p16"></div></div><div class="tp" id="tp-fy" style="background:var(--bg)"><div id="fybody" class="p16"></div></div><div class="tp" id="tp-flags" style="background:var(--bg);overflow-y:auto;padding-bottom:80px"><div id="flagged-body" class="p16"></div></div></div><div id="s-reports" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CA; Reports</h2><p class="sub">Stock, Sales, SKU Analysis</p></div></div><div class="tb mt8"><button class="tbb on" onclick="repTab('stock',this)">Stock</button><button class="tbb" onclick="repTab('vsorder',this)">vs Orders</button><button class="tbb" onclick="repTab('daily',this)">Daily Sales</button><button class="tbb" onclick="repTab('topsku',this)">Top SKUs</button><button class="tbb" onclick="repTab('trends',this)">&#x1F4C8; Trends</button><button class="tbb" onclick="repTab('dayend',this)">&#x1F319; Day Wrap</button><button class="tbb" onclick="repTab('star',this)">&#11088; Star Follow-up</button><button class="tbb" onclick="repTab('topcust',this)">&#x1F3C6; Top Customers</button></div></div><div id="rep-item-flt-row" style="padding:6px 16px 4px;background:var(--bg);display:none"><select id="rep-item-flt" class="sel" style="width:100%;font-size:13px;padding:7px 10px" onchange="repItemFltChange()"><option value="">All Items</option></select></div><div class="tp on" id="tp-rstock" style="overflow-y:auto;padding-bottom:80px"><div class="srch" style="margin:12px 16px 0"><span>🔍</span><input type="text" id="rep-stock-search" placeholder="Search item or SKU..." oninput="renderStockReport(this.value)"/></div><div id="rep-stock-body" class="p16"></div></div><div class="tp" id="tp-rvsorder" style="overflow-y:auto;padding-bottom:80px"><div id="rep-vsorder-body" class="p16"></div></div><div class="tp" id="tp-rdaily" style="overflow-y:auto;padding-bottom:80px"><div style="padding:12px 16px;display:flex;gap:8px;align-items:center"><input type="date" id="rep-daily-date" class="inp" style="flex:1" value=""/><button class="btn bp bsm" onclick="renderDailyReport()">Go</button></div><div id="rep-daily-body" class="p16"></div></div><div class="tp" id="tp-rtopsku" style="overflow-y:auto;padding-bottom:80px"><div id="rep-topsku-body" class="p16"></div></div><div class="tp" id="tp-rtrends" style="overflow-y:auto;padding-bottom:80px"><div class="p16"><div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"><button class="sw on" id="trn-7" onclick="renderTrends(7,this)">7 Days</button><button class="sw" id="trn-14" onclick="renderTrends(14,this)">14 Days</button><button class="sw" id="trn-28" onclick="renderTrends(28,this)">28 Days</button><button class="sw" id="trn-90" onclick="renderTrends(90,this)">3 Months</button></div><div id="rep-trends-body"></div></div></div><div class="tp" id="tp-rdayend" style="overflow-y:auto;padding-bottom:80px"><div style="padding:12px 16px;display:flex;gap:8px;align-items:center"><input type="date" id="rep-dayend-date" class="inp" style="flex:1"/><button class="btn bp bsm" onclick="renderDayEndReport()">Go</button></div><div id="rep-dayend-body" class="p16"></div></div><div class="tp" id="tp-rstar" style="overflow-y:auto;padding-bottom:80px"><div id="rep-star-body" class="p16"></div></div><div class="tp" id="tp-rtopcust" style="overflow-y:auto;padding-bottom:80px"><div id="rep-topcust-body" class="p16"></div></div></div></div><div id="s-leads" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F3AF; Leads</h2><p class="sub">Lead Management</p></div><div style="display:flex;gap:6px"><button class="btn bsm" style="background:#059669;color:white;border:none" onclick="waLeadsNeedingAttention()">📲 WA Salesmen</button><button class="btn bd bsm" id="lead-cleanup-btn" style="display:none" onclick="openDeleteLeadsForStaff()" title="Bulk delete leads for a departed salesman">🗑 Cleanup</button><button class="btn bp bsm" onclick="openNewLead()">+ Lead</button></div></div><div class="tb mt8"><button class="tbb on" onclick="leadTab('all',this)" id="lead-tab-all">👥 Sab Parties</button><button class="tbb" onclick="leadTab('mine',this)" id="lead-tab-mine">Mine</button><button class="tbb" onclick="leadTab('today',this)" id="lead-tab-today" style="display:none">Follow Up</button><button class="tbb" onclick="leadTab('won',this)" id="lead-tab-won">Won/Lost</button><button class="tbb" onclick="leadTab('won2',this)" id="lead-tab-won2" style="display:none">&#x2705; Won</button><button class="tbb" onclick="leadTab('lost',this)" id="lead-tab-lost" style="display:none">&#x274C; Lost</button><button class="tbb" onclick="leadTab('recurring',this)" id="lead-tab-rec" style="display:none">Recurring <span id="lead-rec-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:2px">!</span></button><button class="tbb" onclick="leadTab('np',this)" id="lead-tab-np">&#x1F525; Aaj ka Kaam <span id="lead-np-dot" style="display:none;background:#DC2626;color:white;border-radius:99px;font-size:9px;padding:1px 5px;font-weight:800;margin-left:2px"></span></button><button class="tbb" onclick="leadTab('samples',this)" id="lead-tab-samples">&#x1F4E6; Sample Sets</button><button class="tbb" onclick="leadTab('report',this)" id="lead-tab-rep">&#x1F4CA; Report</button></div></div><div class="tp on" id="tp-lall"><div style="padding:8px 16px 4px"><div class="srch"><span>🔍</span><input type="text" id="lead-search" placeholder="Search by name, phone, status, salesman..." oninput="renderLeads('all',this.value)"/></div><div style="display:flex;gap:6px;margin-top:6px;align-items:center"><span style="font-size:10px;font-weight:700;color:var(--t3)">Filter:</span><select class="sel" id="lead-sort-all" style="flex:1;font-size:11px;padding:5px 8px" onchange="renderLeads('all')"><option value="recent">Recent First</option><option value="overdue">Overdue</option><option value="today">Due Today</option><option value="tomorrow">Due Tomorrow</option><option value="unattended">Unattended (Never Contacted)</option></select><select class="sel" id="lead-staff-all" style="flex:1;font-size:11px;padding:5px 8px" onchange="renderLeads('all')"><option value="">All Staff</option></select></div></div><div id="lead-chips" style="padding:0 16px 6px"></div><div id="lead-lst-all"></div></div><div class="tp" id="tp-lmine"><div style="padding:8px 16px 4px"><div class="srch"><span>🔍</span><input type="text" id="lead-search-mine" placeholder="Search..." oninput="renderLeads('mine',this.value)"/></div><div style="display:flex;gap:6px;margin-top:6px;align-items:center"><span style="font-size:10px;font-weight:700;color:var(--t3)">Filter:</span><select class="sel" id="lead-sort-mine" style="flex:1;font-size:11px;padding:5px 8px" onchange="renderLeads('mine')"><option value="recent">Recent First</option><option value="overdue">Overdue</option><option value="today">Due Today</option><option value="tomorrow">Due Tomorrow</option><option value="unattended">Unattended</option></select></div></div><div id="lead-lst-mine"></div></div><div class="tp" id="tp-ltoday"><div id="lead-lst-today"></div></div><div class="tp" id="tp-lwon"><div style="padding:8px 16px 4px"><div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><span style="font-size:10px;font-weight:700;color:var(--t3)">Closed:</span><button class="sw on" id="won-flt-all" onclick="wonFlt(0,this)">All Time</button><button class="sw" id="won-flt-7" onclick="wonFlt(7,this)">Last 7d</button><button class="sw" id="won-flt-30" onclick="wonFlt(30,this)">Last 30d</button><button class="sw" id="won-flt-90" onclick="wonFlt(90,this)">Last 90d</button></div></div><div id="lead-lst-won"></div></div><div class="tp" id="tp-lwon2"><div id="lead-lst-won2"></div></div><div class="tp" id="tp-llost"><div id="lead-lst-lost"></div></div><div class="tp" id="tp-lrecurring"><div id="lead-rec-list" class="p16"></div></div><div class="tp" id="tp-lnp"><div id="np-body"></div></div><div class="tp" id="tp-lsamples"><div style="padding:8px 16px 4px"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="sw on" id="ss-flt-pending" onclick="ssFlt('pending',this)">&#x23F3; Pending</button><button class="sw" id="ss-flt-returned" onclick="ssFlt('returned',this)">&#x2705; Returned</button><button class="sw" id="ss-flt-all" onclick="ssFlt('all',this)">All</button><button class="btn bsm" style="background:#7C3AED;color:white;border:none;margin-left:auto" onclick="openSampleSetForm()">+ New Set</button></div><div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap"><button class="btn bsm" style="background:#25D366;color:white;border:none;font-size:11px" onclick="waSampleSetAll('salesman')">&#x1F4F2; WA All Salesmen</button><button class="btn bsm" style="background:#059669;color:white;border:none;font-size:11px" onclick="waSampleSetAll('broker')">&#x1F4F2; WA All Brokers</button></div></div><div id="lead-chips-ss" style="padding:0 16px 6px"></div><div id="lead-lst-samples"></div></div><div class="tp" id="tp-lreport"><div id="lead-rep-body" class="p16"></div></div></div></div><div id="m-sample-set" class="ov"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="ss-form-title" style="font-size:16px;font-weight:800;margin:0">&#x1F4E6; New Sample Set</h3></div><button onclick="hideMod('m-sample-set')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">&#x2715;</button></div></div><div class="shb" id="ss-form-body"></div><div class="shf"><button class="btn bgh" style="flex:1" onclick="hideMod('m-sample-set')">Cancel</button><button class="btn bp" style="flex:1" id="ss-save-btn" onclick="saveSampleSet()">&#x1F4BE; Save</button></div></div></div><div id="s-tasks" class="scr"><div class="shdr"><div class="hr"><div><h2>&#x1F4CB; Tasks</h2><p class="sub" id="task-sub">Your task list</p></div><div style="display:flex;gap:6px"><button class="btn bp bsm" onclick="openNewTaskInstance()" id="task-add-btn">+ Task</button><button class="btn bgh bsm" onclick="openNewTaskTemplate()" id="task-tpl-btn" style="display:none">+ Template</button><button class="btn bsm" onclick="openAdHocTask()" id="task-adhoc-btn" style="display:none;background:#059669;color:white;border:none">&#x26A1; Quick Task</button></div></div><div class="tb mt8"><button class="tbb on" onclick="taskTab('my',this)" id="ttab-my">My Tasks</button><button class="tbb" onclick="taskTab('star',this)" id="ttab-star" style="display:none">&#11088; Star</button><button class="tbb" onclick="taskTab('all',this)" id="ttab-all" style="display:none">All Tasks</button><button class="tbb" onclick="taskTab('templates',this)" id="ttab-tpl" style="display:none">Templates</button><button class="tbb" onclick="taskTab('leave',this)" id="ttab-lv" style="display:none">Leave</button><button class="tbb" onclick="taskTab('rep',this)" id="ttab-rep" style="display:none">&#x1F4CA; Report</button></div></div><div class="tp on" id="tp-tmy"><div style="padding:8px 16px 0"><div class="srch"><span>🔍</span><input type="text" id="task-search" placeholder="Search by task name, category..." oninput="renderMyTasks(this.value)"/></div></div><div id="task-lst-my" class="p16"></div></div><div class="tp" id="tp-tstar"><div id="task-lst-star" class="p16"></div></div><div class="tp" id="tp-tall"><div id="task-lst-all" class="p16"></div></div><div class="tp" id="tp-ttemplates"><div style="padding:8px 16px 4px;display:flex;flex-direction:column;gap:6px"><div class="srch"><span>🔍</span><input type="text" id="tpl-search" placeholder="Search by name, user, category..." oninput="renderTaskTemplates()"/></div><div style="display:flex;gap:6px;flex-wrap:wrap"><select class="sel" id="tpl-flt-status" style="flex:1;min-width:90px;font-size:11px;padding:5px 8px" onchange="renderTaskTemplates()"><option value="">All Status</option><option value="active">Active</option><option value="paused">Paused</option></select><select class="sel" id="tpl-flt-cat" style="flex:1;min-width:110px;font-size:11px;padding:5px 8px" onchange="renderTaskTemplates()"><option value="">All Categories</option><option>Accounting</option><option>Dispatch</option><option>Mill/Stock</option><option>Sales</option><option>Admin</option><option>Compliance</option><option>Other</option></select><select class="sel" id="tpl-flt-freq" style="flex:1;min-width:90px;font-size:11px;padding:5px 8px" onchange="renderTaskTemplates()"><option value="">All Freq</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option><option value="once">One-Time</option></select></div><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><select class="sel" id="tpl-flt-user" style="flex:1;min-width:120px;font-size:11px;padding:5px 8px" onchange="renderTaskTemplates()"><option value="">All Users</option></select><select class="sel" id="tpl-sort" style="flex:1;min-width:120px;font-size:11px;padding:5px 8px" onchange="renderTaskTemplates()"><option value="name_az">Name A→Z</option><option value="name_za">Name Z→A</option><option value="cat">Category</option><option value="user">Assigned User</option><option value="freq">Frequency</option><option value="newest">Newest First</option><option value="oldest">Oldest First</option></select><button class="btn bgh bxs" onclick="clearTplFilters()" style="font-size:11px;padding:5px 10px">Clear</button></div></div><div id="task-lst-tpl" class="p16"></div></div><div class="tp" id="tp-tleave"><div id="task-lst-lv" class="p16"></div></div><div class="tp" id="tp-trep"><div class="p16"><div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><input type="date" class="inp" id="trep-from" style="flex:1"/><span>to</span><input type="date" class="inp" id="trep-to" style="flex:1"/><button class="btn bp bsm" onclick="renderTaskReport()">Go</button></div><button class="btn bd bsm" onclick="openDeleteCompletedTasks()" style="margin-bottom:12px">&#x1F5D1; Delete Completed Tasks</button><div id="task-report-body"></div></div></div></div><div id="s-rcv" class="scr"><div class="shdr"><div class="hr"><div><h2>💰 Payment</h2><p class="sub">Vasooli — unpaid bill, cheque, receipt</p></div></div></div><div id="rcv-root" style="padding:0 14px 110px"></div></div><div id="s-research" class="scr"><div class="shdr"><div class="hr"><div><h2>Research</h2><p class="sub">Market Intelligence</p></div></div><div class="tb mt8"><button class="tbb on" onclick="switchResTab('pipeline',this)">📊 Pipeline</button><button class="tbb" onclick="switchResTab('trends',this)">📈 Trends</button><button class="tbb" onclick="switchResTab('market',this)">💰 Market</button><button class="tbb" onclick="switchResTab('customers',this)">👥 Customers</button></div></div><div id="res-body" style="overflow-y:auto;padding-bottom:80px"></div></div><div id="s-cutting" class="scr"><div class="shdr"><div class="hr"><div><h2>✂️ Cutting Slips</h2><p class="sub">Generate &amp; track cutting slips</p></div></div></div><div id="cs-body" class="scr-body" style="overflow-y:auto;padding-bottom:80px"></div><div style="padding:12px 16px;position:sticky;bottom:0;background:var(--bg)"><button id="cs-gen-btn" class="btn bp" onclick="csGenerateSlips()" style="display:none;width:100%;border-radius:12px;padding:14px;font-family:inherit;font-weight:700;font-size:14px">Generate Slips</button></div></div><div id="s-floor" class="scr"><div class="shdr"><div class="hr"><div><h2>🏭 Shop Floor</h2><p class="sub">Cutting status &amp; khatawala</p></div></div></div><div id="floor-body" class="scr-body" style="overflow-y:auto;padding-bottom:80px"></div></div><nav id="bn"><button class="nb on" onclick="setNav('dash')" id="nb-dash"><span class="ni">📊</span>Dash</button><button class="nb" onclick="setNav('leads')" id="nb-leads"><span class="ni">&#x1F3AF;</span>Leads</button><button class="nb" onclick="setNav('rcv')" id="nb-rcv" style="display:none"><span class="ni">💰</span>Payment</button><button class="nb" onclick="setNav('sales')" id="nb-sales"><span class="ni">🧾</span>Sales</button><button class="nb" onclick="setNav('cutting')" id="nb-cutting"><span class="ni">✂️</span>Cutting</button><button class="nb" onclick="setNav('floor')" id="nb-floor"><span class="ni">🏭</span>Floor</button><button class="nb" onclick="setNav('reports')" id="nb-reports"><span class="ni">&#x1F4CA;</span>Reports</button><button class="nb" onclick="setNav('inward')" id="nb-inward"><span class="ni">📥</span>Inward</button><button class="nb" onclick="setNav('jw')" id="nb-jw"><span class="ni">⚙️</span>Job Work</button><button class="nb" onclick="setNav('tasks')" id="nb-tasks"><span class="ni">&#x1F4CB;</span>Tasks<span class="ndot hid" id="tdot"></span></button><button class="nb" onclick="setNav('masters')" id="nb-masters"><span class="ni">🗂️</span>Masters</button><button class="nb" onclick="setNav('research')" id="nb-research"><span class="ni">🔍</span>Research</button><button class="nb" onclick="setNav('admin')" id="nb-admin"><span class="ni">👑</span>Admin<span class="ndot hid" id="adot"></span></button></nav>
 </div>
 
-<div class="ov" id="m-item"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="itmtit">New Item</h3><p class="sub">Fabric type</p></div><button class="btn bgh bsm" onclick="hideMod('m-item')">✕</button></div></div><div class="shb"><input type="hidden" id="itm-id"/><div class="fg"><label>Item Name *</label><input class="inp" id="itm-name" placeholder="e.g. FRENDY CHIFFON" oninput="updateItmSkuPreview()"/><div id="itm-sku-preview" style="display:none;font-size:11px;font-weight:700;font-family:monospace;color:var(--Pd);margin-top:5px;padding:4px 9px;background:var(--Pl);border-radius:6px;letter-spacing:.3px"></div></div><div class="fg"><label>HSN Code</label><input class="inp" id="itm-hsn" placeholder="e.g. 5407"/></div><div id="itm-copyfrom-wrap" style="display:none"><div class="fg" style="margin-top:0"><label style="display:flex;align-items:center;gap:6px"><span>📋</span> Copy Ranges &amp; Colours From</label><select class="inp" id="itm-copyfrom"><option value="">None — start blank</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">Copies all ranges and colour names from the selected item (SKUs will be regenerated for the new item name).</div></div></div><div class="dvd"></div><div class="hr" style="margin-bottom:10px"><label style="margin-bottom:0">Ranges &amp; Colours</label><button class="ai" onclick="openAddRange()">+ Add Range</button></div><div id="itmrng"></div></div><div class="shf" style="flex-wrap:wrap;gap:8px"><button class="btn bd bfl" id="itm-del-btn" style="display:none" onclick="deleteItem()">Delete Item</button><div style="display:flex;gap:8px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-item')">Cancel</button><button class="btn bp bfl" onclick="saveItem()">Save Item</button></div></div>
+<div class="ov" id="m-item"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3 id="itmtit">New Item</h3><p class="sub">Fabric type</p></div><button class="btn bgh bsm" onclick="hideMod('m-item')">✕</button></div></div><div class="shb"><input type="hidden" id="itm-id"/><div class="fg"><label>Item Name *</label><input class="inp" id="itm-name" placeholder="e.g. FRENDY CHIFFON" oninput="updateItmSkuPreview()"/><div id="itm-sku-preview" style="display:none;font-size:11px;font-weight:700;font-family:monospace;color:var(--Pd);margin-top:5px;padding:4px 9px;background:var(--Pl);border-radius:6px;letter-spacing:.3px"></div></div><div class="fg"><label>HSN Code</label><input class="inp" id="itm-hsn" placeholder="e.g. 5407"/></div><div class="fg"><label>📝 Note (salesman ko order status me dikhega)</label><textarea class="inp" id="itm-note" rows="2" placeholder="jaise: ye item ab programme hone par hi banega"></textarea></div><div id="itm-copyfrom-wrap" style="display:none"><div class="fg" style="margin-top:0"><label style="display:flex;align-items:center;gap:6px"><span>📋</span> Copy Ranges &amp; Colours From</label><select class="inp" id="itm-copyfrom"><option value="">None — start blank</option></select><div style="font-size:11px;color:var(--t3);margin-top:4px">Copies all ranges and colour names from the selected item (SKUs will be regenerated for the new item name).</div></div></div><div class="dvd"></div><div class="hr" style="margin-bottom:10px"><label style="margin-bottom:0">Ranges &amp; Colours</label><button class="ai" onclick="openAddRange()">+ Add Range</button></div><div id="itmrng"></div></div><div class="shf" style="flex-wrap:wrap;gap:8px"><button class="btn bd bfl" id="itm-del-btn" style="display:none" onclick="deleteItem()">Delete Item</button><div style="display:flex;gap:8px;width:100%"><button class="btn bgh bfl" onclick="hideMod('m-item')">Cancel</button><button class="btn bp bfl" onclick="saveItem()">Save Item</button></div></div>
 </div></div>
 <div class="ov" id="m-rng" onclick="ovc(event,this)"><div class="sh" style="max-height:85vh"><div class="hdl"></div><div class="shh"><div class="hr"><h3>Add Range &amp; Colours</h3><button class="btn bgh bsm" onclick="hideMod('m-rng')">✕</button></div></div><div class="shb"><div class="fg" style="background:var(--Pl);border-radius:10px;padding:10px;margin-bottom:4px"><div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;font-size:13px;font-weight:700;color:var(--t1)"><span>📋</span> Copy from another item's range <span style="font-size:10px;color:var(--t3);font-weight:400">(optional)</span></div><select class="inp" id="rng-copyfrom-item" onchange="onRngCopyItemChange()" style="margin-bottom:6px"><option value="">— Enter manually below —</option></select><div id="rng-copyfrom-rng-wrap" style="display:none"><select class="inp" id="rng-copyfrom-rng" onchange="onRngCopyRngChange()"><option value="">Select range to copy</option></select></div></div><div class="fg"><label>Range Name *</label><input class="inp" id="rng-n" placeholder="e.g. A, B, PREMIUM" style="text-transform:uppercase" oninput="updateAllSkuPreviews('rng-rows')"/></div><div class="fg"><label>How Many Colours?</label><input class="inp big mono" type="number" id="rng-cnt" value="1" min="1" max="50" step="1" oninput="buildClrRows('rng-rows','rng-cnt')"/></div><div id="rng-rows"></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-rng')">Cancel</button><button class="btn bp bfl" onclick="saveRange()">Add Range</button></div>
 </div></div>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.540";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.544";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -4525,7 +4525,7 @@ function dashWidgetAllowed(id){
   // hai usse follow-up chhupana galat hai.
   if(id==="starfollow")return hasPerm("star_followup")||_ownsStarParty(STATE.user&&STATE.user.id);
   return false;
-}const DEFAULT_DASH_ORDER=["smtarget","pricelist","starfollow","floorstatus","stats","alerts","tasks","leadspipeline","daywrap","followups","recurring","shortcuts","stock","mixedsarees","exchanges","recent"];function getDashConfig(){const userId=STATE.user?.id;const userCfg=userId&&STATE.settings.dashConfigPerUser?STATE.settings.dashConfigPerUser[userId]:null;const globalCfg=STATE.settings.dashConfig||null;const cfg=userCfg||globalCfg||{};return{order:cfg.order||DEFAULT_DASH_ORDER,hidden:cfg.hidden||[]}}function saveDashConfig(cfg,isGlobal){if(isGlobal){STATE.settings.dashConfig=cfg}else{if(!STATE.settings.dashConfigPerUser)STATE.settings.dashConfigPerUser={};STATE.settings.dashConfigPerUser[STATE.user.id]=cfg}persist();renderDash();toast("Dashboard layout saved","ok")}function renderDash(){applyRoleUI();renderShortcuts();const h=(new Date).getHours();el("dg").textContent=(h<12?"Good morning":h<17?"Good afternoon":"Good evening")+", "+(STATE.user?.name||"");const chip=el("d-user-chip");if(chip)chip.textContent=STATE.user?.staffTypeName?"Logged in as "+STATE.user.name+" ("+STATE.user.staffTypeName+")":"";el("ds").textContent=fmtDate(new Date);let totT=0,totSKU=0;const activeItems=STATE.items.filter(i=>!i._deleted);activeItems.forEach(i=>(i.colours||[]).filter(c=>!c.discontinued&&!c._deleted).forEach(c=>{totSKU++;totT+=c.stock_taka||0}));const activeOrders=STATE.orders.filter(o=>!o._deleted&&o.status!=="deleted");const activeBillsDash=liveBills();const dashCfg=getDashConfig();const hiddenSet=new Set(dashCfg.hidden);const _missingWidgetIds=DASH_WIDGETS.map(w=>w.id).filter(id=>!dashCfg.order.includes(id)).sort((a,b)=>{const ia=DEFAULT_DASH_ORDER.indexOf(a),ib=DEFAULT_DASH_ORDER.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib)});const _fullOrder=_missingWidgetIds.concat(dashCfg.order);const orderedWidgets=_fullOrder.filter(id=>!hiddenSet.has(id)&&dashWidgetAllowed(id));const statsEl=el("dstats");const alertsEl=el("dash-alerts");const taskEl=el("dash-task-widget");const followupEl=el("dash-followup-alert");const recurringEl=document.getElementById("dash-recurring-visits");const shortcutsEl=el("dash-shortcuts");const stockHdr=document.querySelector('#s-dash .stl[data-i18n="stock_ov"]');const stockSearch=stockHdr?stockHdr.nextElementSibling:null;const stockEl=el("stkov");const recentHdr=document.querySelector('#s-dash .stl[data-i18n="recent"]');const recentEl=el("ract");const widgetMap={stats:{els:[statsEl],render:()=>{statsEl.innerHTML='<div class="sc cp"><div class="slbl">Items</div><div class="sval">'+activeItems.length+'</div><div class="ssub">'+totSKU+" SKUs</div></div>"+'<div class="sc ct"><div class="slbl">Total Stock</div><div class="sval">'+fmtN(totT)+'<span style="font-size:14px;font-weight:600">T</span></div><div class="ssub">TAKA</div></div>'+'<div class="sc ca"><div class="slbl">Meters</div><div class="sval">'+fmtN(totT*STATE.settings.avgMtrPerTaka)+'</div><div class="ssub">approx</div></div>'+'<div class="sc cg"><div class="slbl">Pending</div><div class="sval">'+activeOrders.filter(o=>o.status==="pending").length+'</div><div class="ssub">'+activeBillsDash.filter(b=>_billPayStatus(b)!=="paid").length+" unpaid bills</div></div>"}},alerts:{els:[alertsEl],render:()=>renderDashAlerts()},tasks:{els:[taskEl],render:()=>renderDashTaskWidget()},leadspipeline:{els:[(()=>{let e=el("dash-leads-pipeline");if(!e){e=document.createElement("div");e.id="dash-leads-pipeline";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>renderDashLeadsPipeline()},daywrap:{els:[(()=>{let e=el("dash-daywrap-widget");if(!e){e=document.createElement("div");e.id="dash-daywrap-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>renderDashDayWrapWidget()},followups:{els:[followupEl],render:()=>{try{renderFollowupAlert()}catch(e){}}},recurring:{els:[recurringEl],render:()=>{try{renderDashRecurringVisits()}catch(e){}}},shortcuts:{els:[shortcutsEl],render:()=>{}},stock:{els:[stockHdr,stockSearch,stockEl],render:()=>renderStock()},mixedsarees:{els:[el("dash-mixed-sarees")],render:()=>renderMixedSareesWidget()},exchanges:{els:[(()=>{let e=el("dash-exchange-widget");if(!e){e=document.createElement("div");e.id="dash-exchange-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>renderDashExchangeWidget()},recent:{els:[recentHdr,recentEl],render:()=>renderRecentAct()},starfollow:{els:[(()=>{let e=el("dash-star-widget");if(!e){e=document.createElement("div");e.id="dash-star-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>{try{renderStarDashWidget()}catch(e){}}},floorstatus:{els:[(()=>{let e=el("dash-floor-widget");if(!e){e=document.createElement("div");e.id="dash-floor-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>{try{renderFloorStatusWidget()}catch(e){}}},smtarget:{els:[(()=>{let e=el("dash-target-widget");if(!e){e=document.createElement("div");e.id="dash-target-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>{try{renderSmTargetWidget()}catch(e){}}},paysum:{els:[(()=>{let e=el("dash-pay-widget");if(!e){e=document.createElement("div");e.id="dash-pay-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>{try{renderPayWidget()}catch(e){}}},pricelist:{els:[(()=>{let e=el("dash-pricelist-widget");if(!e){e=document.createElement("div");e.id="dash-pricelist-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>renderPriceListWidget()}};Object.values(widgetMap).forEach(w=>w.els.forEach(e=>{if(e)e.style.display="none"}));const scrBody=document.querySelector("#s-dash .scr-body");if(scrBody){orderedWidgets.forEach(wid=>{const w=widgetMap[wid];if(!w)return;w.els.forEach(e=>{if(e){e.style.display="";scrBody.appendChild(e)}});w.render()})}let gearBtn=document.getElementById("dash-gear-btn");if(!gearBtn){gearBtn=document.createElement("button");gearBtn.id="dash-gear-btn";gearBtn.className="btn bgh bsm";gearBtn.title="Customize Dashboard";gearBtn.innerHTML="⚙️";gearBtn.onclick=()=>openDashConfig();const refreshBtn=document.getElementById("refresh-btn");if(refreshBtn&&refreshBtn.parentNode){refreshBtn.parentNode.insertBefore(gearBtn,refreshBtn)}}if(!document.getElementById("dash-cost-btn")&&gearBtn&&gearBtn.parentNode){const cb=document.createElement("button");cb.id="dash-cost-btn";cb.className="btn bgh bsm";cb.title="Costing";cb.innerHTML="💰";cb.style.display="none";cb.onclick=()=>openCosting();gearBtn.parentNode.insertBefore(cb,gearBtn)}try{_costBtnShow()}catch(e){}renderDashHolidayPrompt();try{_renderStarBar()}catch(e){}try{starTabLabel()}catch(e){}
+}const DEFAULT_DASH_ORDER=["smtarget","pricelist","starfollow","floorstatus","stats","alerts","tasks","leadspipeline","daywrap","followups","recurring","shortcuts","stock","mixedsarees","exchanges","recent"];function getDashConfig(){const userId=STATE.user?.id;const userCfg=userId&&STATE.settings.dashConfigPerUser?STATE.settings.dashConfigPerUser[userId]:null;const globalCfg=STATE.settings.dashConfig||null;const cfg=userCfg||globalCfg||{};return{order:cfg.order||DEFAULT_DASH_ORDER,hidden:cfg.hidden||[]}}function saveDashConfig(cfg,isGlobal){if(isGlobal){STATE.settings.dashConfig=cfg}else{if(!STATE.settings.dashConfigPerUser)STATE.settings.dashConfigPerUser={};STATE.settings.dashConfigPerUser[STATE.user.id]=cfg}persist();renderDash();toast("Dashboard layout saved","ok")}function renderDash(){applyRoleUI();renderShortcuts();const h=(new Date).getHours();el("dg").textContent=(h<12?"Good morning":h<17?"Good afternoon":"Good evening")+", "+(STATE.user?.name||"");const chip=el("d-user-chip");if(chip)chip.textContent=STATE.user?.staffTypeName?"Logged in as "+STATE.user.name+" ("+STATE.user.staffTypeName+")":"";el("ds").textContent=fmtDate(new Date);let totT=0,totSKU=0;const activeItems=STATE.items.filter(i=>!i._deleted);activeItems.forEach(i=>(i.colours||[]).filter(c=>!c.discontinued&&!c._deleted).forEach(c=>{totSKU++;totT+=c.stock_taka||0}));const activeOrders=STATE.orders.filter(o=>!o._deleted&&o.status!=="deleted");const activeBillsDash=liveBills();const dashCfg=getDashConfig();const hiddenSet=new Set(dashCfg.hidden);const _missingWidgetIds=DASH_WIDGETS.map(w=>w.id).filter(id=>!dashCfg.order.includes(id)).sort((a,b)=>{const ia=DEFAULT_DASH_ORDER.indexOf(a),ib=DEFAULT_DASH_ORDER.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib)});const _fullOrder=_missingWidgetIds.concat(dashCfg.order);const orderedWidgets=_fullOrder.filter(id=>!hiddenSet.has(id)&&dashWidgetAllowed(id));const statsEl=el("dstats");const alertsEl=el("dash-alerts");const taskEl=el("dash-task-widget");const followupEl=el("dash-followup-alert");const recurringEl=document.getElementById("dash-recurring-visits");const shortcutsEl=el("dash-shortcuts");const stockHdr=document.querySelector('#s-dash .stl[data-i18n="stock_ov"]');const stockSearch=stockHdr?stockHdr.nextElementSibling:null;const stockEl=el("stkov");const recentHdr=document.querySelector('#s-dash .stl[data-i18n="recent"]');const recentEl=el("ract");const widgetMap={stats:{els:[statsEl],render:()=>{statsEl.innerHTML='<div class="sc cp"><div class="slbl">Items</div><div class="sval">'+activeItems.length+'</div><div class="ssub">'+totSKU+" SKUs</div></div>"+'<div class="sc ct"><div class="slbl">Total Stock</div><div class="sval">'+fmtN(totT)+'<span style="font-size:14px;font-weight:600">T</span></div><div class="ssub">TAKA</div></div>'+'<div class="sc ca"><div class="slbl">Meters</div><div class="sval">'+fmtN(totT*STATE.settings.avgMtrPerTaka)+'</div><div class="ssub">approx</div></div>'+'<div class="sc cg"><div class="slbl">Pending</div><div class="sval">'+activeOrders.filter(o=>o.status==="pending").length+'</div><div class="ssub">'+activeBillsDash.filter(b=>_billPayStatus(b)!=="paid").length+" unpaid bills</div></div>"}},alerts:{els:[alertsEl],render:()=>renderDashAlerts()},tasks:{els:[taskEl],render:()=>renderDashTaskWidget()},leadspipeline:{els:[(()=>{let e=el("dash-leads-pipeline");if(!e){e=document.createElement("div");e.id="dash-leads-pipeline";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>renderDashLeadsPipeline()},daywrap:{els:[(()=>{let e=el("dash-daywrap-widget");if(!e){e=document.createElement("div");e.id="dash-daywrap-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>renderDashDayWrapWidget()},followups:{els:[followupEl],render:()=>{try{renderFollowupAlert()}catch(e){}}},recurring:{els:[recurringEl],render:()=>{try{renderDashRecurringVisits()}catch(e){}}},shortcuts:{els:[shortcutsEl],render:()=>{}},stock:{els:[stockHdr,stockSearch,stockEl],render:()=>renderStock()},mixedsarees:{els:[el("dash-mixed-sarees")],render:()=>renderMixedSareesWidget()},exchanges:{els:[(()=>{let e=el("dash-exchange-widget");if(!e){e=document.createElement("div");e.id="dash-exchange-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>renderDashExchangeWidget()},recent:{els:[recentHdr,recentEl],render:()=>renderRecentAct()},starfollow:{els:[(()=>{let e=el("dash-star-widget");if(!e){e=document.createElement("div");e.id="dash-star-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>{try{renderStarDashWidget()}catch(e){}}},floorstatus:{els:[(()=>{let e=el("dash-floor-widget");if(!e){e=document.createElement("div");e.id="dash-floor-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>{try{renderFloorStatusWidget()}catch(e){}}},smtarget:{els:[(()=>{let e=el("dash-target-widget");if(!e){e=document.createElement("div");e.id="dash-target-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>{try{renderSmTargetWidget()}catch(e){}}},paysum:{els:[(()=>{let e=el("dash-pay-widget");if(!e){e=document.createElement("div");e.id="dash-pay-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>{try{renderPayWidget()}catch(e){}}},ordtrack:{els:[(()=>{let e=el("dash-ordtrack-widget");if(!e){e=document.createElement("div");e.id="dash-ordtrack-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>{try{renderOrdTrackWidget()}catch(e){}}},pricelist:{els:[(()=>{let e=el("dash-pricelist-widget");if(!e){e=document.createElement("div");e.id="dash-pricelist-widget";const scr=document.querySelector("#s-dash .scr-body");if(scr)scr.appendChild(e)}return e})()],render:()=>renderPriceListWidget()}};Object.values(widgetMap).forEach(w=>w.els.forEach(e=>{if(e)e.style.display="none"}));const scrBody=document.querySelector("#s-dash .scr-body");if(scrBody){orderedWidgets.forEach(wid=>{const w=widgetMap[wid];if(!w)return;w.els.forEach(e=>{if(e){e.style.display="";scrBody.appendChild(e)}});w.render()})}let gearBtn=document.getElementById("dash-gear-btn");if(!gearBtn){gearBtn=document.createElement("button");gearBtn.id="dash-gear-btn";gearBtn.className="btn bgh bsm";gearBtn.title="Customize Dashboard";gearBtn.innerHTML="⚙️";gearBtn.onclick=()=>openDashConfig();const refreshBtn=document.getElementById("refresh-btn");if(refreshBtn&&refreshBtn.parentNode){refreshBtn.parentNode.insertBefore(gearBtn,refreshBtn)}}if(!document.getElementById("dash-cost-btn")&&gearBtn&&gearBtn.parentNode){const cb=document.createElement("button");cb.id="dash-cost-btn";cb.className="btn bgh bsm";cb.title="Costing";cb.innerHTML="💰";cb.style.display="none";cb.onclick=()=>openCosting();gearBtn.parentNode.insertBefore(cb,gearBtn)}try{_costBtnShow()}catch(e){}renderDashHolidayPrompt();try{_renderStarBar()}catch(e){}try{starTabLabel()}catch(e){}
   // Din me pehli baar: aaj ke follow-up saamne rakh do.
   if(!window._starSheetTried){window._starSheetTried=true;setTimeout(function(){try{starDailySheet(false)}catch(e){}},1500)}
   renderPriceListDayAlert();renderPriceListSalesmanAlert();autoCleanLeads();generateTodayRecurringTasks();updateTaskDot();const fd=el("flag-dot");if(fd&&STATE.user?.role==="admin"){const pf=(STATE.flaggedEntries||[]).filter(f=>f.status==="pending").length;fd.textContent=pf;fd.style.display=pf>0?"":"none"}}function _plActiveGroups(){const pl=STATE.settings.priceList||{};const plItems=pl.items||[];return(STATE.items||[]).filter(i=>!i._deleted).sort((a,b)=>a.name.localeCompare(b.name)).reduce((acc,item)=>{const pi=plItems.find(p=>p.itemId===item.id);if(!pi||!(pi.baseRate>0))return acc;const hasActive=(item.colours||[]).some(c=>!c._deleted&&!c.discontinued);if(!hasActive)return acc;const overrides=(pi.overrides||[]).filter(ov=>ov.rate>0&&(item.colours||[]).some(c=>!c._deleted&&!c.discontinued&&c.range===ov.range));acc.push({item:item,baseRate:pi.baseRate,overrides:overrides});return acc},[])}function _floorWidgetRows(){
@@ -8215,7 +8215,7 @@ if(_remFld){var _rm="";grp.items.some(function(it){if(it&&it.remark){_rm=it.rema
    ginna shuru ho jaata. */
 var _exFld=el("od-lot-"+lid+"-extra");
 if(_exFld)_exFld.checked=grp.items.some(function(it){return it&&it.isExtra});
-const lotItem=STATE.items.find(x=>x.id===grp.itemId);grp.items.forEach(it=>{let actualIdx=it.colIdx;if(lotItem&&it.sku){const matched=lotItem.colours.findIndex(c=>c.sku===it.sku);if(matched>=0)actualIdx=matched}const chk=el("od-lot-"+lid+"-ck-"+actualIdx);if(chk){chk.checked=true;const pcsFld=el("od-lot-"+lid+"-p-"+actualIdx);const rateFld=el("od-lot-"+lid+"-rt-"+actualIdx);const row=el("od-lot-"+lid+"-row-"+actualIdx);if(pcsFld){pcsFld.disabled=false;pcsFld.style.background="#FFFBEB";pcsFld.style.color="#92400E";pcsFld.style.border="2px solid #F59E0B"}if(rateFld){rateFld.disabled=false;rateFld.style.background="#EFF6FF";rateFld.style.color="#1E40AF";rateFld.style.border="2px solid #3B82F6"}if(row)row.style.background="#FEFCE8"}const pcsFld=el("od-lot-"+lid+"-p-"+actualIdx);if(pcsFld)pcsFld.value=it.pcs||"";const rateFld=el("od-lot-"+lid+"-rt-"+actualIdx);if(rateFld)rateFld.value=it.rate||""});try{_qfSync("od-lot-",lid,"-rt-")}catch(e){}try{_ordLotSlipNote(lid,grp)}catch(e){}calcOrdLot(lid);resolve()},80)},80)}))})}const PERM_DEFS=[{id:"dash",grp:"Dashboard",lbl:"View Dashboard",desc:"See dashboard, stats, alerts, shortcuts"},{id:"pricelist_view",grp:"Dashboard",lbl:"View Price List",desc:"Dashboard par rate list aur uske alert dekhna"},{id:"floor_widget",grp:"Dashboard",lbl:"Shop Floor Widget",desc:"Dashboard par Packing / Cutting / Shop Delivery / Khatawala ki parchi. Kiski parchi dikhe ye \"View ALL Slips\" (Cutting) se tay hota hai"},{id:"star_followup",grp:"Leads",lbl:"View Star Follow-up",desc:"Star grade wali party ke follow-up dekhna"},{id:"sales_view",grp:"Sales",lbl:"View Orders & Bills",desc:"See orders, bills list"},{id:"orders_view_all",grp:"Sales",lbl:"View ALL Orders & Bills",desc:"See every salesman's orders and bills. Off = only the ones raised under his own name"},{id:"order_for_others",grp:"Sales",lbl:"Order in Someone Else's Name",desc:"Choose another salesman on the order form. Off = orders can only be raised under his own name. For office/CRE staff who enter orders for the salesmen"},{id:"sales_order",grp:"Sales",lbl:"Create Orders",desc:"Create & edit sale orders"},{id:"sales_edit",grp:"Sales",lbl:"Edit Orders",desc:"Edit existing sale orders"},{id:"sales_bill",grp:"Sales",lbl:"Create Invoices",desc:"Create dispatch bills / tax invoices"},{id:"edit_bill",grp:"Sales",lbl:"Edit Invoices",desc:"Edit existing sales bills / tax invoices"},{id:"sales_delete",grp:"Sales",lbl:"Delete Orders",desc:"Permanently delete orders"},{id:"order_cancel",grp:"Sales",lbl:"Cancel Orders",desc:"Order form ya uska lot cancel karna (aur lot wapas chalu karna)"},{id:"sales_cancel",grp:"Sales",lbl:"Cancel Bills",desc:"Cancel dispatched bills"},{id:"sales_wa",grp:"Sales",lbl:"WhatsApp Share",desc:"Share orders/bills via WhatsApp"},{id:"inward_view",grp:"Inward",lbl:"View Inward",desc:"View inward stock entries"},{id:"inward",grp:"Inward",lbl:"Add Inward",desc:"Add Mill GP, Job Work inward, Exchange, Transfer"},{id:"inward_delete",grp:"Inward",lbl:"Delete Inward",desc:"Delete inward stock entries"},{id:"manual_stock",grp:"Inward",lbl:"Manual Stock Entry",desc:"Add or deduct stock balance manually (balance corrections)"},{id:"jw",grp:"Job Work",lbl:"Job Work",desc:"Create & receive JW challans"},{id:"jw_delete",grp:"Job Work",lbl:"Delete JW",desc:"Delete job work challans"},{id:"masters_view",grp:"Masters",lbl:"View Masters",desc:"View items, customers, suppliers, brokers"},{id:"masters_edit",grp:"Masters",lbl:"Edit Masters",desc:"Add/edit items, customers, suppliers"},{id:"masters_delete",grp:"Masters",lbl:"Delete Masters",desc:"Delete items, customers, suppliers"},{id:"costing",grp:"Masters",lbl:"Costing Calculator",desc:"Grey se selling price tak ka hisaab \u2014 lagat, shortage, dalali, discount aur profit. Admin ko hamesha dikhta hai."},{id:"reports",grp:"Reports",lbl:"View Reports Tab",desc:"Access the Reports section"},{id:"rep_stock",grp:"Reports",lbl:"Current Stock Report",desc:"See current taka & meters per SKU"},{id:"rep_vsorder",grp:"Reports",lbl:"Stock vs Orders",desc:"See stock shortage vs pending orders"},{id:"rep_daily",grp:"Reports",lbl:"Daily Sales Report",desc:"See daily bill totals by date"},{id:"rep_topsku",grp:"Reports",lbl:"Top SKU Report",desc:"See highest selling colours & SKUs"},{id:"rep_dayend",grp:"Reports",lbl:"Day Wrap Report",desc:"See today's completed tasks & leads by staff — admin-only by default, grant to a supervisor if needed"},{id:"reports_wa",grp:"Reports",lbl:"Share Reports via WA",desc:"WhatsApp share any report"},{id:"orders_wa",grp:"Orders",lbl:"Share Orders via WA",desc:"WhatsApp share individual order details"},{id:"bills_wa",grp:"Orders",lbl:"Share Bills via WA",desc:"WhatsApp share individual invoices/bills"},{id:"cs_view",grp:"Cutting",lbl:"View Cutting Tab",desc:"See the Cutting Slips tab — Pending Lots & All Slips"},{id:"cs_generate",grp:"Cutting",lbl:"Generate Slips",desc:"Create cutting slips from pending lots, batch generate, and add standalone slips"},{id:"cs_edit",grp:"Cutting",lbl:"Edit Slips",desc:"Edit slip number / slip details"},{id:"cs_delete",grp:"Cutting",lbl:"Delete Slips",desc:"Delete cutting slips (single or bulk)"},{id:"cs_print",grp:"Cutting",lbl:"Print / Reprint Slips",desc:"Print slips, thermal print and A4 sheet printing"},{id:"cs_clear_lot",grp:"Cutting",lbl:"Clear Lot / Clear Order",desc:"Write off a lot's remaining pending sarees, and clear a whole order from pending"},{id:"cs_view_all",grp:"Cutting",lbl:"View ALL Slips",desc:"Sabki parchi dikhegi -- Cutting tab, Floor tab aur dashboard ke Shop Floor widget me. Off = sirf uske apne order ki parchi"},{id:"cs_rates",grp:"Cutting",lbl:"See Rates & Amounts",desc:"Show rate, amount and order value on slip screens. Off = floor staff sees only item, colour, pcs & cut"},{id:"cs_undo",grp:"Cutting",lbl:"Undo Slip Status",desc:"Send a slip back one step if a wrong button was pressed (In Cutting / Shop / Khatawala / In Packing)"},{id:"cs_underproc",grp:"Floor",lbl:"View Under Process Tab",desc:"Godown supervisor's tab — generated slips waiting to be cut"},{id:"cs_mark_cutting",grp:"Floor",lbl:"Mark 'In Cutting'",desc:"Press the In Cutting button when a slip is given for cutting"},{id:"floor_view",grp:"Floor",lbl:"View Floor Tab",desc:"See the Shop Floor tab"},{id:"floor_slips",grp:"Floor",lbl:"See Slips on Floor",desc:"See slip cards inside the Floor tab. Off = tab opens but slips stay hidden"},{id:"floor_route",grp:"Floor",lbl:"Shop / Khatawala Buttons",desc:"Send a cut slip to Shop Delivery pending or Khatawala pending"},{id:"floor_packing",grp:"Floor",lbl:"Mark 'In Packing'",desc:"Press In Packing on Shop Delivery / Khatawala pending slips"},{id:"cs_short_close",grp:"Floor",lbl:"Clear Slip on Partial Bill",desc:"Jab bill slip se kam pcs ka bane, tab 'Slip clear karo' ka option milta hai — bacha hua maal wapas pending order form mein jaata hai taaki nayi slip ban sake"},{id:"cs_history",grp:"Cutting",lbl:"See Slip History",desc:"Slip ki poori timeline — kab bani, kab cutting mein gayi, kab Shop/Khatawala hui, kab packing aur dispatch hui, aur kisne kiya"},{id:"inv_show_all",grp:"Cutting",lbl:"Bill Without Packing Slip",desc:"Billing screen ka 'sab dekhne ke liye tick karo' checkbox. Off = staff sirf packing wale slips ka hi bill bana sakta hai"},{id:"tasks_wa",grp:"Tasks",lbl:"Share Tasks via WA",desc:"WhatsApp send task reminders"},{id:"leads_view",grp:"Leads",lbl:"View Leads",desc:"View lead list"},{id:"leads_edit",grp:"Leads",lbl:"Edit Leads",desc:"Add & update leads"},{id:"leads_view_all",grp:"Leads",lbl:"View ALL Leads",desc:"See every salesman's leads (CRE-level access). Enables All Leads tab and full pipeline view."},{id:"leads_assign",grp:"Leads",lbl:"Assign Leads",desc:"Assign leads to other salesmen"},{id:"wi_all",grp:"Leads",lbl:"Sab ka Follow-up (SC)",desc:"Aaj ka kaam me sab salesmen ki inquiry, star, wapsi, sample set, routine dikhe \u2014 call/WhatsApp ke liye"},{id:"ledger_view",grp:"Ledger",lbl:"View Ledger",desc:"View ledger/activity history"},{id:"delete_entry",grp:"Ledger",lbl:"Delete Entries",desc:"Delete ledger entries"},{id:"cancel_bill",grp:"Ledger",lbl:"Cancel Bills",desc:"Cancel dispatched bills (stock reversal)"},{id:"flag_entry",grp:"Ledger",lbl:"Flag Wrong Entries",desc:"Flag entries for admin review"},{id:"activity_view",grp:"Admin",lbl:"Kaun ne kya kiya",desc:"Poore staff ka kaam ka hisaab dekho \u2014 kisne kya banaya, badla, delete kiya"},{id:"bulk_delete",grp:"Admin",lbl:"Bulk Delete / Clear All",desc:"Delete task templates, clear stale tasks, bulk-wipe data, clear ledger (dangerous — admin only by default)"}];const DEFAULT_PERMS={dash:0,sales_view:0,sales_order:0,sales_edit:0,sales_bill:0,sales_delete:0,sales_cancel:0,order_cancel:0,wi_all:0,sales_wa:0,inward_view:0,inward:0,inward_delete:0,manual_stock:0,jw:0,jw_delete:0,masters_view:0,masters_edit:0,masters_delete:0,reports:0,rep_stock:0,rep_vsorder:0,rep_daily:0,rep_topsku:0,rep_dayend:0,reports_wa:0,orders_view_all:0,order_for_others:0,orders_wa:0,bills_wa:0,costing:0,cs_view:0,cs_generate:0,cs_edit:0,cs_delete:0,cs_print:0,cs_clear_lot:0,cs_view_all:0,cs_rates:0,cs_undo:0,cs_underproc:0,cs_mark_cutting:0,floor_view:0,floor_slips:0,floor_route:0,floor_packing:0,cs_short_close:0,cs_history:0,inv_show_all:0,tasks_wa:0,leads_view:0,leads_edit:0,leads_view_all:0,leads_assign:0,ledger_view:0,delete_entry:0,cancel_bill:0,edit_bill:0,flag_entry:0,bulk_delete:0,activity_view:0};function getStaffTypes(){return[...(STATE.settings||{}).staffTypes||[],{id:"admin",name:"Admin",color:"#E11D48"}]}// Staff type badla -- us type ki permissions laga do. Ye function HTML me
+const lotItem=STATE.items.find(x=>x.id===grp.itemId);grp.items.forEach(it=>{let actualIdx=it.colIdx;if(lotItem&&it.sku){const matched=lotItem.colours.findIndex(c=>c.sku===it.sku);if(matched>=0)actualIdx=matched}const chk=el("od-lot-"+lid+"-ck-"+actualIdx);if(chk){chk.checked=true;const pcsFld=el("od-lot-"+lid+"-p-"+actualIdx);const rateFld=el("od-lot-"+lid+"-rt-"+actualIdx);const row=el("od-lot-"+lid+"-row-"+actualIdx);if(pcsFld){pcsFld.disabled=false;pcsFld.style.background="#FFFBEB";pcsFld.style.color="#92400E";pcsFld.style.border="2px solid #F59E0B"}if(rateFld){rateFld.disabled=false;rateFld.style.background="#EFF6FF";rateFld.style.color="#1E40AF";rateFld.style.border="2px solid #3B82F6"}if(row)row.style.background="#FEFCE8"}const pcsFld=el("od-lot-"+lid+"-p-"+actualIdx);if(pcsFld)pcsFld.value=it.pcs||"";const rateFld=el("od-lot-"+lid+"-rt-"+actualIdx);if(rateFld)rateFld.value=it.rate||""});try{_qfSync("od-lot-",lid,"-rt-")}catch(e){}try{_ordLotSlipNote(lid,grp)}catch(e){}calcOrdLot(lid);resolve()},80)},80)}))})}const PERM_DEFS=[{id:"dash",grp:"Dashboard",lbl:"View Dashboard",desc:"See dashboard, stats, alerts, shortcuts"},{id:"pricelist_view",grp:"Dashboard",lbl:"View Price List",desc:"Dashboard par rate list aur uske alert dekhna"},{id:"order_track",grp:"Dashboard",lbl:"Order kahan hai?",desc:"Dashboard par order no. daal kar har lot ka status, bill, stock aur party ko kya bolna hai"},{id:"floor_widget",grp:"Dashboard",lbl:"Shop Floor Widget",desc:"Dashboard par Packing / Cutting / Shop Delivery / Khatawala ki parchi. Kiski parchi dikhe ye \"View ALL Slips\" (Cutting) se tay hota hai"},{id:"star_followup",grp:"Leads",lbl:"View Star Follow-up",desc:"Star grade wali party ke follow-up dekhna"},{id:"sales_view",grp:"Sales",lbl:"View Orders & Bills",desc:"See orders, bills list"},{id:"orders_view_all",grp:"Sales",lbl:"View ALL Orders & Bills",desc:"See every salesman's orders and bills. Off = only the ones raised under his own name"},{id:"order_for_others",grp:"Sales",lbl:"Order in Someone Else's Name",desc:"Choose another salesman on the order form. Off = orders can only be raised under his own name. For office/CRE staff who enter orders for the salesmen"},{id:"sales_order",grp:"Sales",lbl:"Create Orders",desc:"Create & edit sale orders"},{id:"sales_edit",grp:"Sales",lbl:"Edit Orders",desc:"Edit existing sale orders"},{id:"sales_bill",grp:"Sales",lbl:"Create Invoices",desc:"Create dispatch bills / tax invoices"},{id:"edit_bill",grp:"Sales",lbl:"Edit Invoices",desc:"Edit existing sales bills / tax invoices"},{id:"sales_delete",grp:"Sales",lbl:"Delete Orders",desc:"Permanently delete orders"},{id:"order_cancel",grp:"Sales",lbl:"Cancel Orders",desc:"Order form ya uska lot cancel karna (aur lot wapas chalu karna)"},{id:"sales_cancel",grp:"Sales",lbl:"Cancel Bills",desc:"Cancel dispatched bills"},{id:"sales_wa",grp:"Sales",lbl:"WhatsApp Share",desc:"Share orders/bills via WhatsApp"},{id:"inward_view",grp:"Inward",lbl:"View Inward",desc:"View inward stock entries"},{id:"inward",grp:"Inward",lbl:"Add Inward",desc:"Add Mill GP, Job Work inward, Exchange, Transfer"},{id:"inward_delete",grp:"Inward",lbl:"Delete Inward",desc:"Delete inward stock entries"},{id:"manual_stock",grp:"Inward",lbl:"Manual Stock Entry",desc:"Add or deduct stock balance manually (balance corrections)"},{id:"jw",grp:"Job Work",lbl:"Job Work",desc:"Create & receive JW challans"},{id:"jw_delete",grp:"Job Work",lbl:"Delete JW",desc:"Delete job work challans"},{id:"masters_view",grp:"Masters",lbl:"View Masters",desc:"View items, customers, suppliers, brokers"},{id:"masters_edit",grp:"Masters",lbl:"Edit Masters",desc:"Add/edit items, customers, suppliers"},{id:"masters_delete",grp:"Masters",lbl:"Delete Masters",desc:"Delete items, customers, suppliers"},{id:"costing",grp:"Masters",lbl:"Costing Calculator",desc:"Grey se selling price tak ka hisaab \u2014 lagat, shortage, dalali, discount aur profit. Admin ko hamesha dikhta hai."},{id:"reports",grp:"Reports",lbl:"View Reports Tab",desc:"Access the Reports section"},{id:"rep_stock",grp:"Reports",lbl:"Current Stock Report",desc:"See current taka & meters per SKU"},{id:"rep_vsorder",grp:"Reports",lbl:"Stock vs Orders",desc:"See stock shortage vs pending orders"},{id:"rep_daily",grp:"Reports",lbl:"Daily Sales Report",desc:"See daily bill totals by date"},{id:"rep_topsku",grp:"Reports",lbl:"Top SKU Report",desc:"See highest selling colours & SKUs"},{id:"rep_dayend",grp:"Reports",lbl:"Day Wrap Report",desc:"See today's completed tasks & leads by staff — admin-only by default, grant to a supervisor if needed"},{id:"reports_wa",grp:"Reports",lbl:"Share Reports via WA",desc:"WhatsApp share any report"},{id:"orders_wa",grp:"Orders",lbl:"Share Orders via WA",desc:"WhatsApp share individual order details"},{id:"bills_wa",grp:"Orders",lbl:"Share Bills via WA",desc:"WhatsApp share individual invoices/bills"},{id:"cs_view",grp:"Cutting",lbl:"View Cutting Tab",desc:"See the Cutting Slips tab — Pending Lots & All Slips"},{id:"cs_generate",grp:"Cutting",lbl:"Generate Slips",desc:"Create cutting slips from pending lots, batch generate, and add standalone slips"},{id:"cs_edit",grp:"Cutting",lbl:"Edit Slips",desc:"Edit slip number / slip details"},{id:"cs_delete",grp:"Cutting",lbl:"Delete Slips",desc:"Delete cutting slips (single or bulk)"},{id:"cs_print",grp:"Cutting",lbl:"Print / Reprint Slips",desc:"Print slips, thermal print and A4 sheet printing"},{id:"cs_clear_lot",grp:"Cutting",lbl:"Clear Lot / Clear Order",desc:"Write off a lot's remaining pending sarees, and clear a whole order from pending"},{id:"cs_view_all",grp:"Cutting",lbl:"View ALL Slips",desc:"Sabki parchi dikhegi -- Cutting tab, Floor tab aur dashboard ke Shop Floor widget me. Off = sirf uske apne order ki parchi"},{id:"cs_rates",grp:"Cutting",lbl:"See Rates & Amounts",desc:"Show rate, amount and order value on slip screens. Off = floor staff sees only item, colour, pcs & cut"},{id:"cs_undo",grp:"Cutting",lbl:"Undo Slip Status",desc:"Send a slip back one step if a wrong button was pressed (In Cutting / Shop / Khatawala / In Packing)"},{id:"cs_underproc",grp:"Floor",lbl:"View Under Process Tab",desc:"Godown supervisor's tab — generated slips waiting to be cut"},{id:"cs_mark_cutting",grp:"Floor",lbl:"Mark 'In Cutting'",desc:"Press the In Cutting button when a slip is given for cutting"},{id:"floor_view",grp:"Floor",lbl:"View Floor Tab",desc:"See the Shop Floor tab"},{id:"floor_slips",grp:"Floor",lbl:"See Slips on Floor",desc:"See slip cards inside the Floor tab. Off = tab opens but slips stay hidden"},{id:"floor_route",grp:"Floor",lbl:"Shop / Khatawala Buttons",desc:"Send a cut slip to Shop Delivery pending or Khatawala pending"},{id:"floor_packing",grp:"Floor",lbl:"Mark 'In Packing'",desc:"Press In Packing on Shop Delivery / Khatawala pending slips"},{id:"cs_short_close",grp:"Floor",lbl:"Clear Slip on Partial Bill",desc:"Jab bill slip se kam pcs ka bane, tab 'Slip clear karo' ka option milta hai — bacha hua maal wapas pending order form mein jaata hai taaki nayi slip ban sake"},{id:"cs_history",grp:"Cutting",lbl:"See Slip History",desc:"Slip ki poori timeline — kab bani, kab cutting mein gayi, kab Shop/Khatawala hui, kab packing aur dispatch hui, aur kisne kiya"},{id:"inv_show_all",grp:"Cutting",lbl:"Bill Without Packing Slip",desc:"Billing screen ka 'sab dekhne ke liye tick karo' checkbox. Off = staff sirf packing wale slips ka hi bill bana sakta hai"},{id:"tasks_wa",grp:"Tasks",lbl:"Share Tasks via WA",desc:"WhatsApp send task reminders"},{id:"leads_view",grp:"Leads",lbl:"View Leads",desc:"View lead list"},{id:"leads_edit",grp:"Leads",lbl:"Edit Leads",desc:"Add & update leads"},{id:"leads_view_all",grp:"Leads",lbl:"View ALL Leads",desc:"See every salesman's leads (CRE-level access). Enables All Leads tab and full pipeline view."},{id:"leads_assign",grp:"Leads",lbl:"Assign Leads",desc:"Assign leads to other salesmen"},{id:"wi_all",grp:"Leads",lbl:"Sab ka Follow-up (SC)",desc:"Aaj ka kaam me sab salesmen ki inquiry, star, wapsi, sample set, routine dikhe \u2014 call/WhatsApp ke liye"},{id:"ledger_view",grp:"Ledger",lbl:"View Ledger",desc:"View ledger/activity history"},{id:"delete_entry",grp:"Ledger",lbl:"Delete Entries",desc:"Delete ledger entries"},{id:"cancel_bill",grp:"Ledger",lbl:"Cancel Bills",desc:"Cancel dispatched bills (stock reversal)"},{id:"flag_entry",grp:"Ledger",lbl:"Flag Wrong Entries",desc:"Flag entries for admin review"},{id:"activity_view",grp:"Admin",lbl:"Kaun ne kya kiya",desc:"Poore staff ka kaam ka hisaab dekho \u2014 kisne kya banaya, badla, delete kiya"},{id:"bulk_delete",grp:"Admin",lbl:"Bulk Delete / Clear All",desc:"Delete task templates, clear stale tasks, bulk-wipe data, clear ledger (dangerous — admin only by default)"}];const DEFAULT_PERMS={dash:0,sales_view:0,sales_order:0,sales_edit:0,sales_bill:0,sales_delete:0,sales_cancel:0,order_cancel:0,wi_all:0,sales_wa:0,inward_view:0,inward:0,inward_delete:0,manual_stock:0,jw:0,jw_delete:0,masters_view:0,masters_edit:0,masters_delete:0,reports:0,rep_stock:0,rep_vsorder:0,rep_daily:0,rep_topsku:0,rep_dayend:0,reports_wa:0,orders_view_all:0,order_for_others:0,orders_wa:0,bills_wa:0,costing:0,cs_view:0,cs_generate:0,cs_edit:0,cs_delete:0,cs_print:0,cs_clear_lot:0,cs_view_all:0,cs_rates:0,cs_undo:0,cs_underproc:0,cs_mark_cutting:0,floor_view:0,floor_slips:0,floor_route:0,floor_packing:0,cs_short_close:0,cs_history:0,inv_show_all:0,tasks_wa:0,leads_view:0,leads_edit:0,leads_view_all:0,leads_assign:0,ledger_view:0,delete_entry:0,cancel_bill:0,edit_bill:0,flag_entry:0,bulk_delete:0,activity_view:0};function getStaffTypes(){return[...(STATE.settings||{}).staffTypes||[],{id:"admin",name:"Admin",color:"#E11D48"}]}// Staff type badla -- us type ki permissions laga do. Ye function HTML me
 // pehle se bulaya jaata tha par kahin likha hi nahi tha.
 async function onStaffTypeChange(){
   var sel=el("usr-stype");if(!sel)return;
@@ -17555,6 +17555,561 @@ async function opProgOpen(id){
   delete o.progClosed;
   if(o.status==="fulfilled"){var b=(STATE.bills||[]).some(function(x){return x&&!x._deleted&&x.ordId===o.id&&x.status!=="cancelled"});o.status=b?"billed":"open"}
   o._ts=_bumpTs(o);persist();_opRefresh();toast((o.orderNo||"Order")+" — programme phir khula","ok");
+}
+/* ══ 1.45.541: ORDER KAHAN HAI? (Dashboard) -- order no. / party naam daalo:
+   har lot ka status (parchi / cutting / packing / gaya + bill no. aur
+   time), baaki colour ka stock, band colour, item ka note (Masters), aur
+   inward ke purane pattern se "kab tak aayega" -- neeche party ko kya
+   bolna hai wo tayyar. Permission: order_track (admin ko hamesha). ══ */
+(function(){
+  try{
+    if(!DASH_WIDGETS.some(function(w){return w.id==="ordtrack"}))
+      DASH_WIDGETS.unshift({id:"ordtrack",perm:"order_track",label:"Order kahan hai?",icon:"🔎",desc:"Order no. daalo — lot ka status, bill, stock, party ko kya bolna hai"});
+    if(DEFAULT_DASH_ORDER.indexOf("ordtrack")<0)DEFAULT_DASH_ORDER.unshift("ordtrack");
+  }catch(e){}
+})();
+var _ot={q:"",sel:"",tm:0};
+function otCan(){return!!STATE.user&&(STATE.user.role==="admin"||hasPerm("order_track"))}
+function _otNorm(x){return String(x||"").toLowerCase().replace(/\s+/g," ").trim()}
+function _otMatch(q){
+  q=_otNorm(q);if(!q)return[];
+  var dg=q.replace(/\D/g,""),txt=q.replace(/[^a-z ]/g,"").trim();
+  var L=(STATE.orders||[]).filter(function(o){
+    if(!o||o._deleted||o.status==="deleted")return false;
+    try{if(!_orderBelongsToCurrentUser(o))return false}catch(e){}
+    var no=_otNorm(o.orderNo),nd=no.replace(/\D/g,"");
+    if(no===q||no.indexOf(q)>=0)return true;
+    if(dg&&dg.length>=2&&nd===dg)return true;
+    if(dg&&dg.length>=3&&nd.indexOf(dg)===0)return true;
+    if(txt.length>=3&&!dg&&(_otNorm(o.custName).indexOf(txt)>=0||_otNorm(o.brkName).indexOf(txt)>=0))return true;
+    return false;
+  });
+  var rank=function(o){var st=o.status;return st==="cancelled"?3:st==="fulfilled"?2:0};
+  L.sort(function(a,b){
+    var ea=_otNorm(a.orderNo).replace(/\D/g,"")===dg?0:1,eb=_otNorm(b.orderNo).replace(/\D/g,"")===dg?0:1;
+    return ea-eb||rank(a)-rank(b)||String(b.date||"").localeCompare(String(a.date||""));
+  });
+  return L.slice(0,25);
+}
+/* Inward ka pattern: SKU -> kin dino maal aaya (index ek baar, entries badle to dobara) */
+var _otIn={n:-1,m:null,mi:null};
+function _otInIdx(){
+  var E=STATE.entries||[];
+  if(_otIn.m&&_otIn.n===E.length&&_otIn.f===_otInFrom())return _otIn;
+  var m=new Map(),mi=new Map(),bad=/opening|adjust|exch|correction|manual|transfer|xfer|return|delete/i,from=_otInFrom();
+  for(var i=0;i<E.length;i++){var e=E[i];
+    if(!e||e._deleted||e.direction!=="in"||bad.test(String(e.type||"")))continue;
+    var d=String(e.date||"").slice(0,10);if(d.length!==10||(from&&d<from))continue;
+    if(e.sku){var a=m.get(e.sku);if(!a){a={};m.set(e.sku,a)}a[d]=1}
+    if(e.itemId){var b=mi.get(e.itemId);if(!b){b={};mi.set(e.itemId,b)}b[d]=1}
+  }
+  _otIn={n:E.length,m:m,mi:mi,f:from};return _otIn;
+}
+function _otDays(a,b){return Math.round((Date.parse(b+"T00:00:00")-Date.parse(a+"T00:00:00"))/864e5)}
+/* Inward ka purana data bharosemand nahi (beech me entry band thi). Isliye
+   andaza sirf "inward phir chalu" wali tareekh ke BAAD ki entries se, aur
+   tabhi jab us colour ka maal kam se kam 3 alag din aaya ho. Usse pehle
+   andaza nahi -- "maal aate hi bhejenge" (galat tareekh se behtar). */
+function _otInFrom(){return(STATE.settings&&STATE.settings.otInFrom)||""}
+function _otEta(sku,itemId){
+  var I=_otInIdx(),src=I.m.get(sku),lvl="Is colour";
+  if(!src||Object.keys(src).length<3){src=I.mi.get(itemId);lvl="Is item"}
+  var D=src?Object.keys(src).sort():[];var td=today();
+  if(D.length<3)return{txt:"Kab aayega abhi pata nahi (inward ka data jud raha hai) \u2014 Neer bhai se poochho",short:"aate hi bhej denge",none:1};
+  var last=D[D.length-1],ago=_otDays(last,td);
+  var R=D.slice(-7),gap=Math.max(1,Math.round(_otDays(R[0],R[R.length-1])/(R.length-1)));
+  var nx=new Date(Date.parse(last+"T00:00:00")+gap*864e5),nxs=nx.getFullYear()+"-"+String(nx.getMonth()+1).padStart(2,"0")+"-"+String(nx.getDate()).padStart(2,"0");
+  if(nxs>=td)return{txt:lvl+" ka maal aam taur pe har ~"+gap+" din me aata hai (aakhri "+fmtDate(last)+") — agla lagbhag "+fmtDate(nxs)+" tak",short:"lagbhag "+fmtDate(nxs)+" tak aane ki ummeed hai"};
+  return{txt:lvl+" ka maal aam taur pe har ~"+gap+" din me aata hai; aakhri "+fmtDate(last)+" ("+ago+" din pehle) — kabhi bhi aa sakta hai",short:"jald aane ki ummeed hai"};
+}
+function _otCol(itemId,sku,nm,rg){
+  var it=(STATE.items||[]).find(function(x){return x&&x.id===itemId});
+  var c=it&&(it.colours||[]).find(function(x){return x&&!x._deleted&&x.sku===sku});
+  if(it&&!c&&nm)c=(it.colours||[]).find(function(x){return x&&!x._deleted&&String(x.name||"").toUpperCase()===String(nm).toUpperCase()&&(rg==null||String(x.range||"")===String(rg||""))});
+  return{it:it,c:c};
+}
+var OT_ST={generated:"Parchi bani — cutting baaki",cutting:"Cutting me",packing:"Packing me",partial:"Kuch gaya, baaki packing me",dispatched:"Dispatch ho gaya"};
+function _otSlipLbl(sl){
+  var st=String(sl.csStatus||"generated");
+  if(st==="routed"){var r=csEffRoute(sl);return r==="khatawala"?"Khatawala ke paas":"Shop delivery me (ready ho raha)"}
+  return OT_ST[st]||st;
+}
+function _otBillTime(b){var t=Number(b.at)||Number(b.createdAt)||_idTs(b.id)||0;
+  return fmtDate(b.date)+(t?(", "+new Date(t).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})):"")}
+function otOrderInfo(o){
+  var bills=[];try{bills=liveBills().filter(function(b){return b&&b.status!=="cancelled"&&(b.ordId===o.id||(Array.isArray(b.ordIds)&&b.ordIds.indexOf(o.id)>=0))})}catch(e){}
+  var bySlip={},used={};
+  bills.forEach(function(b){(b.csIds||[]).forEach(function(id){(bySlip[id]=bySlip[id]||[]).push(b)})});
+  var avg=(STATE.settings&&STATE.settings.avgMtrPerTaka)||90;
+  var lots=[];try{lots=csOrderLots(o)||[]}catch(e){lots=[]}
+  var seenN={},lb={},pgL={},ixL={};
+  lots.forEach(function(L){(L.items||[]).forEach(function(it){if(it._progId)pgL[it._progId]=L.key;if(it.lotIndex!=null&&ixL[it.lotIndex]==null)ixL[it.lotIndex]=L.key})});
+  var _cm=null;try{_cm=_ordCsLotMap(o)}catch(e){}
+  bills.forEach(function(b){
+    if((b.csIds||[]).some(function(id){return bySlip[id]}))return;
+    var ks={};
+    (b.items||[]).forEach(function(it){if(!it)return;var k=it._progId?pgL[it._progId]:(it.lotIndex!=null?ixL[it.lotIndex]:null);if(k)ks[k]=1});
+    if(!Object.keys(ks).length&&o.type!=="open"){try{var nk=_billNamedLotKey(o,b,_cm);if(nk)ks[nk]=1}catch(e){}}
+    if(!Object.keys(ks).length&&lots.length===1)ks[lots[0].key]=1;
+    Object.keys(ks).forEach(function(k){(lb[k]=lb[k]||[]).push(b);used[b.id]=1});
+  });
+  var out=lots.map(function(L){
+    var P=[];try{P=csLotSkuPending(o,L)||[]}catch(e){P=[]}
+    var ord=0,billed=0,cleared=0,pend=0;P.forEach(function(r){ord+=r.ordered;billed+=Math.min(r.ordered,r.billed);cleared+=r.cleared;pend+=r.pending});
+    var slips=[];try{slips=csGetLotSlips(o,L.key)||[]}catch(e){}
+    var S=[];
+    slips.forEach(function(sl){
+      if(!sl||sl._mirror||sl._deleted||sl.csCancelled)return;
+      var q=0,dn=0;try{q=csSlipEffQty(sl);dn=csSlipDoneQty({order:o,lot:L,slip:sl})}catch(e){}
+      var bl=bySlip[sl.csId]||[];bl.forEach(function(b){used[b.id]=1});
+      S.push({no:sl.csNo||"",q:q,rem:sl.csShortClosed?0:Math.max(0,q-dn),st:String(sl.csStatus||"generated"),lbl:_otSlipLbl(sl),
+        ts:Number(sl.csStatusTs)||0,bills:bl.map(function(b){return{no:b.billNo,when:_otBillTime(b)}}),short:!!sl.csShortClosed});
+    });
+    var notes={},rows=P.filter(function(r){return r.pending>0}).map(function(r){
+      var it=r.item||{},x=_otCol(it.itemId,it.sku||r.sku,r.colourName||it.colourName,it.range!=null?it.range:L.range),c=x.c||{};
+      if(x.it&&x.it.note&&String(x.it.note).trim())notes[x.it.id]=String(x.it.note).trim();
+      var need=Math.ceil(r.pending*(Number(r.cut)||0)/avg),stk=Number(c.stock_taka)||0;
+      var row={sku:r.sku,col:r.colourName||c.name||"",pend:r.pending,need:need,stk:stk,disc:!!c.discontinued,ok:stk>=need&&stk>0};
+      if(!row.ok&&!row.disc)row.eta=_otEta(it.sku||r.sku,it.itemId);
+      return row;
+    });
+    (L.items||[]).forEach(function(it){var x=_otCol(it.itemId,it.sku);if(x.it&&x.it.note&&String(x.it.note).trim())notes[x.it.id]=String(x.it.note).trim()});
+    var _done=L.cancelled||(ord>0&&billed+cleared>=ord);
+    var nl=(_done||!rows.length)?[]:Object.keys(notes).filter(function(k){if(seenN[k])return false;seenN[k]=1;return true}).map(function(k){return notes[k]});
+    var pd="";if(o.type==="open"){(L.items||[]).forEach(function(it){var pg=(o.programmes||[]).find(function(x){return x&&x.id===it._progId});var d=pg&&String(pg.date||"").slice(0,10);if(d&&(!pd||d<pd))pd=d})}
+    var B=[],bseen={};S.forEach(function(x){x.bills.forEach(function(y){if(!bseen[y.no]){bseen[y.no]=1;B.push(y)}})});
+    (lb[L.key]||[]).forEach(function(b){if(!bseen[b.billNo]){bseen[b.billNo]=1;B.push({no:b.billNo,when:_otBillTime(b)})}});
+    return{n:L.lotNum||"",item:L.itemName||"",rng:L.range||"",can:!!L.cancelled,ord:ord,billed:billed,cleared:cleared,pend:pend,S:S,rows:rows,notes:nl,pd:pd,B:B};
+  });
+  var loose=bills.filter(function(b){return!used[b.id]}).map(function(b){return{no:b.billNo,when:_otBillTime(b)}});
+  var prog=null,op=null;if(o.type==="open"){try{var ps=calcProgStats(o);if(ps.remaining>0)prog=ps.remaining;op={total:ps.total+(ps.closed||0),aaya:ps.dispatched,closed:ps.closed||0,baaki:ps.remaining}}catch(e){}}
+  return{lots:out,loose:loose,prog:prog,open:op};
+}
+function _otBuckets(L){
+  var b={gone:Math.min(L.ord,L.billed+L.cleared),pack:0,ready:0,cut:0,made:0,todo:L.pend};
+  L.S.forEach(function(s){if(s.rem<=0)return;var k=s.st==="packing"||s.st==="partial"?"pack":s.st==="routed"?"ready":s.st==="cutting"?"cut":s.st==="dispatched"?"pack":"made";b[k]+=s.rem});
+  var tot=b.gone+b.pack+b.ready+b.cut+b.made+b.todo;
+  if(L.ord>tot)b.todo+=L.ord-tot;
+  return b;
+}
+var OT_SEG=[["gone","Gaya","#16A34A"],["pack","Packing","#DB2777"],["ready","Ready","#0284C7"],["cut","Cutting","#4F46E5"],["made","Parchi bani","#D97706"],["todo","Parchi baaki","#DC2626"],["prog","Programme baaki","#9CA3AF"]];
+function _otHead(L,b){
+  if(L.can)return["Cancel","#6B7280"];
+  if(L.ord>0&&b.gone>=L.ord)return["✓ Poora gaya","#16A34A"];
+  for(var i=1;i<OT_SEG.length;i++){var k=OT_SEG[i][0];if(b[k]>0){var o=OT_SEG[i];return[o[1]+(b.gone>0?(" · "+fmtN(b.gone)+" gaya"):""),o[2]]}}
+  return["—","#6B7280"];
+}
+function _otBar(b,ord){
+  if(!ord)return"";
+  return'<div style="display:flex;height:7px;border-radius:99px;overflow:hidden;background:#E5E7EB;margin-top:8px">'
+    +OT_SEG.map(function(x){var v=b[x[0]];return v>0?'<div style="width:'+(v*100/ord).toFixed(1)+'%;background:'+x[2]+'"></div>':""}).join("")+'</div>'
+    +'<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:4px">'
+    +OT_SEG.map(function(x){var v=b[x[0]];return v>0?'<span style="font-size:10px;font-weight:800;color:'+x[2]+'">● '+x[1]+' '+fmtN(v)+'</span>':""}).join("")+'</div>';
+}
+function _otLine(L){
+  var b=_otBuckets(L),h=_otHead(L,b);
+  var bn=(L.B||[]).map(function(x){return x.no});
+  var t=h[0].replace(/^✓ /,"");
+  if(L.can)t="cancel ho gaya";
+  else if(L.ord>0&&b.gone>=L.ord)t="poora maal ja chuka hai"+(bn.length?(" (Bill "+bn.join(", ")+")"):"");
+  else{
+    var p=[];
+    if(b.gone>0)p.push(fmtN(b.gone)+" saree gaya"+(bn.length?(" (Bill "+bn.join(", ")+")"):""));
+    else if(bn.length)p.push("Bill "+bn.join(", ")+" ban gaya");
+    if(b.pack)p.push(fmtN(b.pack)+" packing me");
+    if(b.ready)p.push(fmtN(b.ready)+" ready ho rahe");
+    if(b.cut)p.push(fmtN(b.cut)+" cutting me");
+    if(b.made)p.push(fmtN(b.made)+" cutting ki line me");
+    var disc=L.rows.filter(function(r){return r.disc}).map(function(r){return r.col});
+    var wait=L.rows.filter(function(r){return!r.disc&&!r.ok});
+    var okc=L.rows.filter(function(r){return!r.disc&&r.ok}).reduce(function(a,r){return a+r.pend},0);
+    if(okc)p.push(fmtN(okc)+" jaldi cutting me");
+    if(wait.length)p.push(wait.map(function(r){return r.col}).join(", ")+" ka maal "+(wait[0].eta?wait[0].eta.short:"jald aayega"));
+    if(disc.length)p.push(disc.join(", ")+" ab nahi banega — doosra colour bata dijiye");
+    t=p.join("; ");
+  }
+  return t;
+}
+function _otSum(I){
+  var b={gone:0,pack:0,ready:0,cut:0,made:0,todo:0,prog:0},ord=0;
+  I.lots.forEach(function(L){if(L.can)return;var x=_otBuckets(L);ord+=L.ord;Object.keys(x).forEach(function(k){b[k]+=x[k]})});
+  if(I.open){b.prog=I.open.baaki;ord=ord+b.prog}
+  return{b:b,ord:ord,rem:Math.max(0,ord-b.gone)};
+}
+function otReply(o,I){
+  var t=["Namaste "+(o.custName?o.custName+" ji":"ji")+",","Order *"+(o.orderNo||"")+"* ka status:"];
+  if(I.open){var Z=_otSum(I);t.push("Kul "+fmtN(I.open.total)+" saree: "+fmtN(I.open.aaya)+" ka programme aaya, "+fmtN(Z.b.gone)+" ja chuka"+(I.open.baaki?(", "+fmtN(I.open.baaki)+" ka programme baaki"):""))}
+  I.lots.forEach(function(L,i){t.push("• Lot "+(L.n||(i+1))+" "+L.item+(L.rng?(" "+L.rng):"")+": "+_otLine(L))});
+  if(I.prog){t.push("\u2022 "+progLastTxt(o).replace(/^Aakhri/,"Aapka aakhri"));t.push("\u2022 Baaki "+fmtN(I.prog)+" saree ka colour programme kripya bhej dijiye")}
+  t.push("— "+((STATE.settings&&STATE.settings.companyName)||"Amrit Laxmi Textile"));
+  return t.join("\n");
+}
+var _OT_PC=[{bg:"#EEF2FF",bd:"#818CF8",hd:"#4338CA"},{bg:"#F0FDF4",bd:"#4ADE80",hd:"#166534"},{bg:"#FFF7ED",bd:"#FB923C",hd:"#9A3412"},{bg:"#FDF4FF",bd:"#C084FC",hd:"#7E22CE"},{bg:"#FEFCE8",bd:"#FACC15",hd:"#854D0E"},{bg:"#F0F9FF",bd:"#38BDF8",hd:"#0369A1"}];
+function _otChip(t,bg,fg,bd){return'<span style="background:'+bg+';color:'+fg+';'+(bd?("border:1.5px solid "+bd+";"):"")+'font-size:10px;font-weight:800;padding:2px 8px;border-radius:99px;white-space:nowrap">'+t+'</span>'}
+function _otLotCard(L,i){
+  var pc=_OT_PC[i%_OT_PC.length],b=_otBuckets(L),h=_otHead(L,b),rem=Math.max(0,L.ord-b.gone);
+  var bn=L.B||[];
+  var cols=L.rows.map(function(r){
+    if(r.disc)return _otChip("⛔ "+escHtml(r.col)+" band","#FEE2E2","#991B1B");
+    if(r.ok)return _otChip("✓ "+escHtml(r.col)+" "+fmtN(r.pend)+" · stock hai","#DCFCE7","#166534");
+    return _otChip("⏳ "+escHtml(r.col)+" "+fmtN(r.pend)+(r.eta&&!r.eta.none&&/lagbhag/.test(r.eta.short)?(" · "+escHtml(r.eta.short.replace(/ aane ki ummeed hai/,""))):" · stock nahi"),"#FEF3C7","#92400E");
+  }).join(" ");
+  return'<div style="background:'+pc.bg+';border:2px solid '+pc.bd+';border-radius:12px;overflow:hidden;margin-top:8px">'
+    +'<div style="padding:5px 10px;display:flex;gap:6px;align-items:center;background:'+pc.bd+'22;border-bottom:1px solid '+pc.bd+'55">'
+    +'<span style="background:'+pc.hd+';color:#fff;font-size:10px;font-weight:900;padding:2px 8px;border-radius:5px;letter-spacing:.5px">'+(L.pd?"PROGRAMME ":"")+'LOT '+escHtml(String(L.n||(i+1)))+'</span>'
+    +(L.pd?'<span style="font-size:10px;font-weight:800;color:'+pc.hd+'">'+escHtml(fmtDate(L.pd))+'</span>':'')
+    +'<span style="margin-left:auto;background:'+h[1]+';color:#fff;font-size:10.5px;font-weight:900;padding:2px 9px;border-radius:99px;white-space:nowrap">'+h[0]+'</span></div>'
+    +'<div style="padding:9px 11px">'
+    +'<div style="display:flex;gap:10px;align-items:flex-start"><div style="flex:1;min-width:0">'
+    +'<div style="font-weight:800;font-size:14px">'+escHtml(L.item)+'</div>'
+    +(L.rng?'<div style="font-size:11px;font-weight:700;color:'+pc.hd+'">'+escHtml(L.rng)+'</div>':'')
+    +'</div><div style="text-align:right;flex-shrink:0">'
+    +(L.can?'':(rem>0?'<div style="font-size:9px;font-weight:800;color:var(--R);letter-spacing:.5px">BAAKI</div><div style="font-size:22px;font-weight:900;color:var(--R);line-height:1">'+fmtN(rem)+'</div>':'<div style="font-size:22px;font-weight:900;color:#16A34A;line-height:1">✓</div>')
+      +'<div style="font-size:10px;color:var(--t3);font-weight:700">'+fmtN(L.ord)+' me se</div>')
+    +'</div></div>'
+    +(L.can?'':_otBar(b,L.ord))
+    +(bn.length?'<div style="margin-top:6px;font-size:11px;font-weight:800;color:#166534">🧾 '+bn.map(function(x){return"Bill "+escHtml(x.no)+" · "+escHtml(x.when)}).join(" | ")+'</div>':'')
+    +(cols?'<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">'+cols+'</div>':'')
+    +L.notes.map(function(n){return'<div style="margin-top:6px;font-size:11px;font-weight:800;color:#9A3412">📝 '+escHtml(n)+'</div>'}).join("")
+    +'</div></div>';
+}
+function _otDetailHtml(o,many){
+  var I=otOrderInfo(o);_ot.msg=otReply(o,I);
+  var h='<div style="margin-top:8px">'
+    +(many?'<div onclick="otPick(\'__list\')" style="cursor:pointer;font-size:11.5px;font-weight:800;color:var(--P);margin-bottom:6px">← Sab order</div>':'')
+    +'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'
+    +_otChip("👤 "+escHtml(o.custName||""),"var(--P)","#fff")
+    +_otChip(escHtml(o.orderNo||""),"#fff","var(--P)","var(--P)")
+    +'<span style="font-size:10.5px;color:var(--t3);font-weight:700">'+escHtml(fmtDate(o.date))+(o.brkName?(' · '+escHtml(o.brkName)):'')+'</span></div>';
+  if(I.open){var Z=_otSum(I);
+    h+='<div style="margin-top:8px;background:#fff;border:2px solid #CBD5E1;border-radius:12px;padding:9px 11px">'
+      +'<div style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1"><div style="font-size:10px;font-weight:900;color:#475569;letter-spacing:.5px">OPEN ORDER</div>'
+      +'<div style="font-weight:800;font-size:14px">'+escHtml((o.openItems||[]).map(function(x){return x.itemName}).join(", "))+'</div></div>'
+      +'<div style="text-align:right"><div style="font-size:9px;font-weight:800;color:#475569">KUL</div><div style="font-size:22px;font-weight:900;line-height:1">'+fmtN(I.open.total)+'</div></div></div>'
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;text-align:center">'
+      +[["Programme aaya",I.open.aaya,"#4F46E5"],["Gaya",Z.b.gone,"#16A34A"],["Programme baaki",I.open.baaki,I.open.baaki?"#DC2626":"#16A34A"]].map(function(x){
+        return'<div style="background:#F8FAFC;border-radius:8px;padding:5px 2px"><div style="font-size:16px;font-weight:900;color:'+x[2]+'">'+fmtN(x[1])+'</div><div style="font-size:9.5px;font-weight:800;color:var(--t3)">'+x[0]+'</div></div>'}).join("")+'</div>'
+      +_otBar(Z.b,Z.ord)
+      +'<div style="font-size:11px;font-weight:800;color:#475569;margin-top:6px">\uD83D\uDDD3 '+escHtml(progLastTxt(o))+'</div>'
+      +(I.open.closed?'<div style="font-size:10.5px;font-weight:800;color:#6B7280;margin-top:5px">\u2713 '+fmtN(I.open.closed)+' saree ka programme band (clear) kiya</div>':'')
+      +'</div>';
+  }
+  if(!I.lots.length)h+='<div class="xs ct3" style="font-weight:700;margin-top:8px">Is order me abhi koi lot nahi</div>';
+  I.lots.forEach(function(L,i){h+=_otLotCard(L,i)});
+  if(I.loose.length)h+='<div style="margin-top:7px;font-size:11px;font-weight:800;color:#166534">\uD83E\uDDFE '+I.loose.map(function(x){return"Bill "+escHtml(x.no)+" \u00b7 "+escHtml(x.when)}).join(" | ")+'</div>';
+
+  h+='<div style="display:flex;gap:6px;margin-top:10px">'
+    +'<button class="btn bxs" style="flex:1;background:#25D366;color:#fff;border:none;font-weight:800;padding:9px" onclick="otWa(\''+o.id+'\')">📲 Party ko status bhejo</button>'
+    +'<button class="btn bs bxs" onclick="otShowMsg()">👁 Message</button>'
+    +'<button class="btn bs bxs" onclick="otCopy()">📋</button></div>'
+    +'<div id="ot-msg" style="display:none;white-space:pre-wrap;font-size:12px;line-height:1.5;background:#F8FAFC;border:1px solid var(--br);border-radius:9px;padding:8px 10px;margin-top:6px">'+escHtml(_ot.msg)+'</div>';
+  return h+'</div>';
+}
+function otShowMsg(){var m=el("ot-msg");if(m)m.style.display=m.style.display==="none"?"":"none"}
+function _otOrdCard(o,i){
+  var pc=_OT_PC[i%_OT_PC.length],I=null;try{I=otOrderInfo(o)}catch(e){}
+  var Z=I?_otSum(I):{b:{gone:0},ord:0,rem:0},b=Z.b,ord=Z.ord,gone=b.gone,rem=Z.rem;
+  var st=o.status==="cancelled"?["Cancel","#6B7280"]:(ord>0&&rem<=0)||o.status==="fulfilled"?["✓ Poora gaya","#16A34A"]:gone>0?["Aadha gaya","#0284C7"]:["Pending","#D97706"];
+  return'<div onclick="otPick(\''+o.id+'\')" style="cursor:pointer;background:'+pc.bg+';border:2px solid '+pc.bd+';border-radius:12px;padding:9px 11px;margin-top:7px">'
+    +'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'+_otChip(escHtml(o.orderNo||""),"#fff",pc.hd,pc.bd)
+    +'<b style="font-size:13px">'+escHtml(o.custName||"")+'</b>'
+    +'<span style="margin-left:auto;background:'+st[1]+';color:#fff;font-size:10px;font-weight:900;padding:2px 8px;border-radius:99px">'+st[0]+'</span></div>'
+    +'<div style="display:flex;gap:8px;align-items:flex-end;margin-top:5px"><div style="flex:1;font-size:11px;color:var(--t3);font-weight:700">'+escHtml(fmtDate(o.date))+' · '+(I?I.lots.length:0)+' lot'
+    +((o.openItems||[]).length?' \u00b7 '+escHtml((o.openItems||[]).map(function(x){return x.itemName}).join(", ")):'')
+    +(I&&I.open&&I.open.baaki?'<div style="color:#DC2626;font-weight:800">\uD83D\uDCDE '+fmtN(I.open.baaki)+' ka programme baaki</div>':'')+'</div>'
+    +(rem>0?'<div style="text-align:right"><span style="font-size:18px;font-weight:900;color:var(--R)">'+fmtN(rem)+'</span><span style="font-size:10px;color:var(--t3);font-weight:700"> / '+fmtN(ord)+' baaki</span></div>':'')
+    +'</div>'+(ord?_otBar(b,ord).split('<div style="display:flex;gap:9px')[0]:'')+'</div>';
+}
+function _otResHtml(){
+  var q=_ot.q;if(!_otNorm(q))return'<div class="xs ct3" style="font-weight:700;margin-top:6px">Order no. (jaise 990) ya party ka naam likho</div>';
+  var L=_otMatch(q);
+  if(!L.length)return'<div class="xs ct3" style="font-weight:700;margin-top:6px">Koi order nahi mila</div>';
+  var dg=_otNorm(q).replace(/\D/g,""),ex=dg?L.filter(function(o){return _otNorm(o.orderNo).replace(/\D/g,"")===dg}):[];
+  var sel=L.filter(function(o){return o.id===_ot.sel})[0]||(_ot.sel==="__list"?null:(L.length===1?L[0]:(ex.length===1?ex[0]:null)));
+  if(sel)return _otDetailHtml(sel,L.length>1);
+  return'<div style="font-size:11px;font-weight:800;color:var(--t2);margin-top:8px">'+L.length+' order mile — jis order ki detail chahiye us par dabao</div>'
+    +L.map(function(o,i){return _otOrdCard(o,i)}).join("");
+}
+/* Team badhe to dobara set na karna pade: "Salesman" type ke saare user
+   (abhi ke aur aage aane wale) ko ye apne aap milta hai -- ek baar, admin
+   ke device par. Kisi se hatana ho to Users me tick hata do; wapas nahi lagega. */
+function _otMig(){
+  try{
+    if(!STATE.user||STATE.user.role!=="admin"||!STATE.settings)return;
+    if(STATE.settings.otMig1&&!STATE.settings.otInFrom){STATE.settings.otInFrom=today();persist();return}
+    if(STATE.settings.otMig1)return;
+    var isSm=function(id,nm){return /sales/i.test(String(id||""))||/sales/i.test(String(nm||""))};
+    var pp=STATE.settings.permPresets||{};
+    (STATE.settings.staffTypes||[]).forEach(function(t){
+      if(!t||!isSm(t.id,t.name))return;
+      if(pp[t.id]&&pp[t.id].order_track==null)pp[t.id].order_track=1;
+      if(t.permissions&&t.permissions.order_track==null)t.permissions.order_track=1;
+    });
+    if(pp.salesman&&pp.salesman.order_track==null)pp.salesman.order_track=1;
+    STATE.settings.permPresets=pp;
+    (STATE.users||[]).forEach(function(u){
+      if(!u||u._deleted||u.role==="admin"||!isSm(u.staffTypeId,u.staffTypeName||u.staffType))return;
+      if(!u.permissions)u.permissions={};
+      if(u.permissions.order_track==null){u.permissions.order_track=1;u._ts=_bumpTs(u)}
+    });
+    STATE.settings.otMig1=Date.now();
+    if(!STATE.settings.otInFrom)STATE.settings.otInFrom=today();
+    persist();
+  }catch(e){}
+}
+function renderOrdTrackWidget(){
+  var c=el("dash-ordtrack-widget");if(!c)return;
+  _otMig();
+  if(!otCan()){c.innerHTML="";return}
+  if(!el("ot-q")){
+    c.innerHTML='<div style="margin:10px 16px 0;background:var(--sf);border:1.5px solid #C7D2FE;border-radius:14px;padding:10px 12px">'
+      +'<div style="font-size:12px;font-weight:900;color:#3730A3;margin-bottom:6px">🔎 Order kahan hai?</div>'
+      +'<input id="ot-q" class="inp" autocomplete="off" placeholder="Order no. ya party naam" style="width:100%" oninput="otInput(this.value)">'
+      +'<div id="ot-res"></div></div>';
+    el("ot-q").value=_ot.q||"";
+  }
+  var r=el("ot-res");if(r)r.innerHTML=_otResHtml();
+}
+function otInput(v){_ot.q=v;_ot.sel="";clearTimeout(_ot.tm);_ot.tm=setTimeout(function(){var r=el("ot-res");if(r)r.innerHTML=_otResHtml()},180)}
+function otPick(id){_ot.sel=id;var r=el("ot-res");if(r)r.innerHTML=_otResHtml()}
+function otCopy(){var m=_ot.msg||"";try{navigator.clipboard.writeText(m).then(function(){toast("Copy ho gaya","ok")},function(){toast("Copy nahi hua","warn")})}catch(e){toast("Copy nahi hua","warn")}}
+function otWa(id){
+  var o=(STATE.orders||[]).find(function(x){return x&&x.id===id});if(!o)return;
+  var c=(STATE.customers||[]).find(function(x){return x&&x.id===o.custId})||{};
+  openWA(c.whatsapp||c.phone||o.receiverPhone||"",_ot.msg||"");
+}
+/* Masters: item ka note */
+(function(){
+  var ei=editItem;editItem=function(id){var r=ei.apply(this,arguments);try{var it=(STATE.items||[]).find(function(x){return x.id===id});var n=el("itm-note");if(n)n.value=(it&&it.note)||""}catch(e){}return r};
+  var oi=openItem;openItem=function(){var r=oi.apply(this,arguments);try{var n=el("itm-note");if(n)n.value=""}catch(e){}return r};
+  var si=saveItem;saveItem=function(){
+    var n=el("itm-note"),note=n?String(n.value||"").trim():null,id=(el("itm-id")||{}).value||"",nm=String((el("itm-name")||{}).value||"").trim().toUpperCase();
+    var r=si.apply(this,arguments);
+    if(note!==null){try{
+      var it=(STATE.items||[]).find(function(x){return x&&!x._deleted&&(id?x.id===id:x.name===nm)});
+      if(it&&(it.note||"")!==note){it.note=note;it._ts=_bumpTs(it);lsSave("vs_items",STATE.items);try{autoSyncCloud()}catch(e){}}
+    }catch(e){}}
+    return r;
+  };
+})();
+/* Dashboard dobara bane to likhte waqt search box ka focus na jaye */
+(function(){
+  var rd=renderDash;
+  renderDash=function(){
+    var a=document.activeElement,f=!!(a&&a.id==="ot-q"),ss=f?a.selectionStart:0;
+    var r=rd.apply(this,arguments);
+    if(f){var q=el("ot-q");if(q&&document.activeElement!==q){try{q.focus({preventScroll:true});q.setSelectionRange(ss,ss)}catch(e){}}}
+    return r;
+  };
+})();
+/* ══ 1.45.544: AAJ KA KAAM -- "Programme baaki" (open order) ══
+   Open order jisme colour programme baaki hai -- us order ke salesman ke
+   "Aaj ka kaam" me apna khaana. Card par aakhri programme kab aaya (lot,
+   colour, kitni saree, kitne din pehle). "Kya hua?" ke jawab Settings se
+   badal sakte ho (Kya hua? ke jawab wale page par). Aakhri programme ke
+   X din baad (Settings) phir list me; jawab ke hisaab se agli tareekh. */
+var PR_DEF=[
+  {id:"pr_given",type:"plain",lbl:"Programme de diya (order me daal diya)",gap:7,talked:1,sys:1},
+  {id:"pr_soon",type:"plain",lbl:"Programme jaldi denge",gap:3,talked:1,sys:1},
+  {id:"pr_later",type:"date",lbl:"Baad me call karo",gap:7,talked:1,sys:1},
+  {id:"pr_no",type:"plain",lbl:"Phone nahi utha",gap:1,talked:0,sys:1},
+  {id:"pr_close",type:"close",lbl:"Ab programme nahi aayega — baaki band karo",talked:1,noteReq:1,sys:1}];
+function prOpts(){return _optMerge(PR_DEF,(STATE.settings||{}).progOpts)}
+function prFu(){var s=(STATE.settings||{}).progFu||{},g=Number(s.gap);return{on:!(s.on===0||s.on===false),gap:isFinite(g)&&g>0?Math.round(g):7}}
+try{OPT_TYPE_LBL.close="Order band (clear)"}catch(e){}
+try{WI_M.prog={i:"📞",c:"#B91C1C",bg:"#FEF2F2",l:"Programme baaki"}}catch(e){}
+try{if(WI_ORDER.indexOf("prog")<0)WI_ORDER.splice(1,0,"prog")}catch(e){}
+/* Aakhri programme: kab, kaun sa lot, kaun se colour, kitni saree */
+function progLastInfo(o){
+  var P=(o&&o.programmes||[]).filter(function(p){return p&&!p._deleted&&!p.isExtra&&p.date});
+  if(!P.length)return null;
+  var d="";P.forEach(function(p){var x=String(p.date).slice(0,10);if(x>d)d=x});
+  var L=P.filter(function(p){return String(p.date).slice(0,10)===d});
+  var lots={},cols=[],pcs=0;
+  L.forEach(function(p){if(p.lotNum)lots[p.lotNum]=1;var c=p.colourName||"";if(c&&cols.indexOf(c)<0)cols.push(c);pcs+=Number(p.pcs)||0});
+  var days=0;try{days=Math.max(0,_otDays(d,today()))}catch(e){}
+  return{date:d,days:days,lots:Object.keys(lots),cols:cols,pcs:pcs,item:(L[0]&&L[0].itemName)||""};
+}
+function progLastTxt(o){
+  var I=progLastInfo(o);
+  if(!I){var dd=0;try{dd=Math.max(0,_otDays(String(o.date||"").slice(0,10),today()))}catch(e){}
+    return"Order ko "+dd+" din ho gaye, abhi tak ek bhi programme nahi aaya"}
+  return"Aakhri programme "+fmtDate(I.date)+" ("+I.days+" din pehle)"+(I.lots.length?(" — Lot "+I.lots.join(", ")):"")
+    +(I.cols.length?(" · "+I.cols.slice(0,4).join(", ")+(I.cols.length>4?" +"+(I.cols.length-4):"")):"")+" · "+fmtN(I.pcs)+" saree";
+}
+function progItems(){
+  var F=prFu();if(!F.on)return[];
+  var u=STATE.user;if(!u)return[];
+  var adm=wiSeeAll(),uid=wiSeeTeam()?"":(u.id||""),td=today(),out=[];
+  var L=[];try{L=openProgPendList("",null)}catch(e){L=[]}
+  L.forEach(function(r){
+    var o=r.o,ow=_wiOwn(o.salesmanId,o.salesmanName);
+    if(ow.live){if(!_wiMine(uid,ow.id,ow.name))return}else if(!adm)return;
+    var I=progLastInfo(o);
+    var base=I?I.date:String(o.date||"").slice(0,10)||td;
+    var due=_dAdd(base,F.gap);
+    if(o.progNext&&o.progNext>due)due=o.progNext;
+    var late=Math.max(0,_bdDaysTo(due));
+    var ask=o.progCloseAsk&&!o.progClosed?o.progCloseAsk:null;
+    out.push({t:"prog",id:o.id,name:o.custName||"",
+      sub:(o.orderNo||"")+" · "+fmtN(r.ps.remaining)+" / "+fmtN(r.ps.total)+" saree ka programme baaki",
+      who:ow.name,due:ask&&adm?td:due,
+      why:ask?("🙋 "+(ask.by||"Salesman")+": baaki band karna hai — “"+(ask.say||"")+"”"):(ow.live?progLastTxt(o):"Kisi ke naam nahi — salesman do"),
+      phone:r.ph||"",bph:r.bph||"",late:late,
+      score:160+Math.min(30,late)+(ask?20:0),ref:o,det:o.orderNo||""});
+  });
+  return out;
+}
+function _progCard(x){
+  var m=WI_M.prog,o=x.ref||{},late=x.late>0,ph=x.phone;
+  var ls=null;try{ls=_wiLastSay("prog",x.id)}catch(e){}
+  return'<div style="background:var(--sf);border:1.5px solid '+(late?"#FCA5A5":"var(--br)")+';border-left:4px solid '+m.c+';border-radius:12px;padding:11px 12px;margin-bottom:8px">'
+    +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+    +'<span style="background:'+m.bg+';color:'+m.c+';font-size:9.5px;font-weight:900;padding:2px 7px;border-radius:5px;white-space:nowrap">'+m.i+' '+m.l+'</span>'
+    +'<span style="background:#fff;color:var(--P);border:1.5px solid var(--P);font-size:9.5px;font-weight:900;padding:1px 7px;border-radius:99px;font-family:monospace">'+esc(o.orderNo||"")+'</span>'
+    +(late?'<span style="background:#FEF2F2;color:#B91C1C;font-size:9.5px;font-weight:900;padding:2px 7px;border-radius:5px">'+x.late+' din late</span>':'')+'</div>'
+    +'<div style="font-weight:900;font-size:14px;color:var(--t1);margin-top:4px">'+esc(x.name)+'</div>'
+    +'<div class="xs ct3" style="font-weight:700;margin-top:1px">'+esc((o.openItems||[]).map(function(i){return i.itemName}).join(", "))+(o.brkName?(' · 🤝 '+esc(o.brkName)):'')+'</div>'
+    +'<div style="display:flex;gap:6px;align-items:baseline;margin-top:5px"><span style="font-size:18px;font-weight:900;color:#B91C1C">'+fmtN(calcProgStats(o).remaining)+'</span><span class="xs ct3" style="font-weight:800">saree ka programme baaki</span></div>'
+    +'<div class="xs" style="font-weight:800;color:'+m.c+';margin-top:3px">🗓 '+esc(x.why)+'</div>'
+    +(ls?('<div class="xs" style="font-weight:700;margin-top:4px;color:#3730A3">💬 '+esc(ls.say)+' <span style="color:var(--t3);font-weight:600">— '+esc(ls.by||"")+(ls.d?(", "+esc(fmtDate(ls.d))):"")+'</span></div>'):'')
+    +(wiSeeAll()&&x.who?'<div class="xs" style="font-weight:700;margin-top:3px;color:#9D174D">👤 '+esc(x.who)+'</div>':'')
+    +'<div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;align-items:center">'
+    +(ph?'<button onclick="opWa(\''+x.id+'\',\'party\')" style="background:#25D366;color:#fff;border:none;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">📲 Party</button>'
+      +'<a href="tel:'+esc(ph)+'" style="background:var(--bg);color:var(--t2);text-decoration:none;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800">📞</a>':'')
+    +(x.bph?'<button onclick="opWa(\''+x.id+'\',\'brk\')" style="background:#7C3AED;color:#fff;border:none;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">📲 Broker</button>':'')
+    +'<button onclick="wiActions(\'prog\',\''+x.id+'\',\'\')" style="flex:1;min-width:104px;background:var(--P);color:#fff;border:none;padding:7px 11px;border-radius:8px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">Kya hua? ›</button>'
+    +'</div></div>';
+}
+function progPicker(id){
+  var o=(STATE.orders||[]).find(function(x){return x&&x.id===id});if(!o)return;
+  var ls=null;try{ls=_wiLastSay("prog",id)}catch(e){}
+  var canClose=false;try{canClose=csCan("cs_clear_lot")}catch(e){}
+  var btns=prOpts().filter(function(x){return!x.hide}).map(function(x){
+    var sub=x.sub||"";
+    if(x.type==="plain")sub="phir "+(Number(x.gap)||1)+" din baad";
+    if(x.type==="date")sub=sub||"Tareekh chuno";
+    if(x.type==="close")sub=canClose?"Jo aaya wo poora, baaki programme band":"Admin ke paas jayega — wo band karenge";
+    var col=x.type==="close"?["#FEF2F2","#FCA5A5","#991B1B"]:x.id==="pr_given"?["#ECFDF5","#6EE7B7","#065F46"]:["var(--sf)","var(--br)","var(--t1)"];
+    return'<button onclick="progPick(\''+id+'\',\''+x.id+'\')" style="width:100%;text-align:left;background:'+col[0]+';border:1.5px solid '+col[1]+';color:'+col[2]+';padding:12px 14px;border-radius:11px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px">'
+      +esc(x.lbl)+(x.noteReq?' ✍️':'')+(sub?'<div style="font-size:11px;font-weight:600;margin-top:2px;color:var(--t3)">'+esc(sub)+'</div>':'')+'</button>';
+  }).join("");
+  var ps=calcProgStats(o);
+  rmEl("m-prog-out");
+  var d=document.createElement("div");d.className="ov";d.id="m-prog-out";
+  d.innerHTML='<div class="sh" style="max-height:82vh;display:flex;flex-direction:column">'
+    +'<div style="padding:13px 15px 9px;border-bottom:1px solid var(--br)">'
+    +'<div style="font-weight:900;font-size:15px">📞 '+esc(o.custName||"")+' <span style="font-size:12px;color:var(--P);font-family:monospace">'+esc(o.orderNo||"")+'</span></div>'
+    +'<div class="xs" style="font-weight:800;color:#B91C1C;margin-top:2px">'+fmtN(ps.remaining)+' / '+fmtN(ps.total)+' saree ka programme baaki</div>'
+    +'<div class="xs ct3" style="font-weight:700;margin-top:2px">🗓 '+esc(progLastTxt(o))+'</div></div>'
+    +'<div style="flex:1;overflow-y:auto;padding:11px 13px">'
+    +(ls?('<div style="background:#EEF2FF;border-radius:9px;padding:7px 9px;margin-bottom:8px;font-size:11.5px;font-weight:700;color:#3730A3">💬 Pichhli baat: '+esc(ls.say)+' <span style="color:var(--t3);font-weight:600">— '+esc(ls.by||"")+(ls.d?(", "+esc(fmtDate(ls.d))):"")+'</span></div>'):'')
+    +'<textarea id="pr-say" class="inp" rows="2" maxlength="200" placeholder="Kya baat hui? (agli baar kaam aayega)" style="margin-bottom:9px"></textarea>'
+    +'<div id="pr-later" style="display:none;background:#F9FAFB;border:1.5px solid var(--br);border-radius:11px;padding:10px;margin-bottom:9px">'
+    +'<div id="pr-later-h" style="font-size:12px;font-weight:900;margin-bottom:7px">Kab?</div>'
+    +'<button id="pr-std" onclick="progLaterGo(\''+id+'\',\'std\')" style="width:100%;background:var(--P);color:#fff;border:none;padding:10px;border-radius:9px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:7px"></button>'
+    +'<div style="display:flex;gap:7px"><input type="date" id="pr-date" class="inp" min="'+_dAdd(today(),1)+'" style="flex:1">'
+    +'<button onclick="progLaterGo(\''+id+'\',\'pick\')" style="background:#059669;color:#fff;border:none;padding:0 14px;border-radius:9px;font-weight:800;cursor:pointer;font-family:inherit">Is din</button></div></div>'
+    +btns+'</div>'
+    +'<div style="padding:10px 15px;border-top:1px solid var(--br)"><button class="btn bs bfl" onclick="rmEl(\'m-prog-out\')">Rehne do</button></div></div>';
+  _ovOpen(d);
+}
+function _prSay(x){
+  var ta=el("pr-say"),say=ta?String(ta.value||"").trim():"";
+  if(x&&x.noteReq&&!say){if(ta){ta.style.borderColor="#DC2626";ta.placeholder="Kya baat hui — likhna zaroori";try{ta.focus()}catch(e){}}
+    toast("Kya baat hui — likho","warn");return null}
+  return say;
+}
+function progPick(id,oid){
+  var x=prOpts().filter(function(y){return y.id===oid})[0];if(!x)return;
+  var say=_prSay(x);if(say===null)return;
+  if(x.type==="date"){
+    var p=el("pr-later");if(p){p.dataset.code=oid;var g=Number(x.gap)||7,sb=el("pr-std");
+      if(sb)sb.textContent=g+" din baad — "+fmtDate(_dAdd(today(),g));
+      var hd=el("pr-later-h");if(hd)hd.textContent=x.lbl+" — kab?";
+      p.style.display="";try{p.scrollIntoView({block:"nearest"})}catch(e){}}
+    return;
+  }
+  if(x.type==="close")return progOutcome(id,oid,{say:say,close:1});
+  progOutcome(id,oid,{say:say,date:_dAdd(today(),Number(x.gap)||1)});
+}
+function progLaterGo(id,which){
+  var pn=el("pr-later"),oid=(pn&&pn.dataset.code)||"pr_later";
+  var x=prOpts().filter(function(y){return y.id===oid})[0]||{};
+  var say=_prSay(x);if(say===null)return;
+  var dt=which==="std"?_dAdd(today(),Number(x.gap)||7):String((el("pr-date")||{}).value||"");
+  if(!dt||dt<=today()){toast("Aage ki tareekh chuno","warn");return}
+  progOutcome(id,oid,{say:say,date:dt});
+}
+function progOutcome(id,code,opts){
+  opts=opts||{};
+  var o=(STATE.orders||[]).find(function(x){return x&&x.id===id});if(!o)return;
+  var u=STATE.user||{},td=today();
+  if(!Array.isArray(o.progLog))o.progLog=[];
+  var e={out:code,at:Date.now(),date:td,byId:u.id||"",by:u.name||""};
+  var say=String(opts.say||"").trim().slice(0,200);if(say)e.say=say;
+  o.progLog.push(e);o.progLog=o.progLog.slice(-30);
+  if(opts.date)o.progNext=opts.date;
+  var canClose=false;try{canClose=csCan("cs_clear_lot")}catch(x){}
+  if(opts.close&&!canClose){o.progCloseAsk={at:Date.now(),by:u.name||"",say:say};o.progNext=_dAdd(td,7)}
+  o._ts=_bumpTs(o);
+  try{persist()}catch(x){}
+  rmEl("m-prog-out");
+  var lb=(prOpts().filter(function(y){return y.id===code})[0]||{}).lbl||"Likh liya";
+  if(opts.close&&canClose){try{opProgClose(id)}catch(x){}}
+  else toast(lb+(opts.close?" — admin ko bhej diya":(opts.date?(" — phir "+fmtDate(opts.date)):"")),"ok");
+  try{renderNewParty()}catch(x){}
+}
+(function(){
+  var wi=workItems;
+  workItems=function(kind){
+    var out=(kind==="prog")?[]:wi.apply(this,arguments);
+    if(!kind||kind==="prog"){var p=[];try{p=progItems()}catch(e){p=[]}
+      if(p.length){out=out.concat(p);out.sort(function(a,c){return c.score-a.score})}}
+    return out;
+  };
+  var card=_wiCard;_wiCard=function(x){return(x&&x.t==="prog")?_progCard(x):card.apply(this,arguments)};
+  var act=wiActions;wiActions=function(t,id){if(t==="prog")return progPicker(id);return act.apply(this,arguments)};
+  var rec=_wiRec;_wiRec=function(t,id){if(t==="prog")return(STATE.orders||[]).find(function(x){return x&&x.id===id})||null;return rec.apply(this,arguments)};
+  var lsay=_wiLastSay;_wiLastSay=function(t,id){
+    if(t!=="prog")return lsay.apply(this,arguments);
+    var o=_wiRec("prog",id),b=null;
+    ((o&&o.progLog)||[]).forEach(function(l){if(l&&l.say&&(!b||(l.at||0)>=b.k))b={say:l.say,k:l.at||0,d:l.date,by:l.by}});
+    return b;
+  };
+  var ol=_optL;_optL=function(w){return w==="pr"?prOpts():ol.apply(this,arguments)};
+  var os=_optSave;_optSave=function(w,L){
+    if(w!=="pr")return os.apply(this,arguments);
+    if(!_khAdmin())return;
+    var S=STATE.settings||(STATE.settings={});
+    S.progOpts=L.map(function(o){var x={id:o.id,lbl:o.lbl,type:o.type};if(o.gap!=null)x.gap=Number(o.gap)||0;if(o.sub)x.sub=o.sub;
+      if(o.noteReq)x.noteReq=1;if(o.talked)x.talked=1;if(o.hide)x.hide=1;return x});
+    S._ts=_bumpTs(S);try{lsSave("vs_settings",STATE.settings)}catch(e){}try{persist()}catch(e){}try{autoSyncCloud()}catch(e){}
+    var box=el("pr-rows");if(box)box.innerHTML=_optRowsHtml("pr");
+  };
+  var olb=_optLbl;_optLbl=function(code){var x=prOpts().filter(function(y){return y.id===code})[0];return x?x.lbl:olb.apply(this,arguments)};
+  var kc=_khCardHtml;_khCardHtml=function(){
+    var h=kc.apply(this,arguments);if(!_khAdmin())return h;var F=prFu();
+    return h+'<div class="card mt12" style="padding:12px 14px">'
+      +'<div class="xs ct3" style="font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">📞 Programme baaki (open order)</div>'
+      +'<div class="xs ct3" style="margin-bottom:9px;line-height:1.5">Open order me aakhri programme ke itne din baad us order ke salesman ke "Aaj ka kaam" me aata hai. Neeche "Kya hua?" ke jawab.</div>'
+      +'<label style="display:flex;gap:8px;align-items:center;font-size:12.5px;font-weight:800;margin-bottom:8px"><input type="checkbox"'+(F.on?" checked":"")+' onchange="prSet(\'on\',this.checked)"> Chalu</label>'
+      +'<div style="display:flex;gap:8px;align-items:center;font-size:12px;font-weight:800;margin-bottom:9px">Aakhri programme ke <input type="number" min="1" class="inp mono" style="width:64px;padding:5px 7px" value="'+F.gap+'" onchange="prSet(\'gap\',this.value)"> din baad call</div>'
+      +'<div id="pr-rows">'+_optRowsHtml("pr")+'</div>'
+      +'<button class="btn bs bfl" style="margin-top:8px" onclick="optAdd(\'pr\')">+ Naya jawab</button></div>';
+  };
+  var om=_opMsg;_opMsg=function(o,ps){
+    var m=om.apply(this,arguments),t=progLastTxt(o);
+    return m.replace("\n\nKripya","\n"+t.replace(/^Aakhri/,"Aapka aakhri")+".\n\nKripya");
+  };
+})();
+function prSet(k,v){
+  if(!_khAdmin())return;
+  var S=STATE.settings||(STATE.settings={}),o=Object.assign({},S.progFu||{});
+  if(k==="on")o.on=v?1:0;else{var n=Number(v);if(!isFinite(n)||n<1){toast("1 ya zyada likho","warn");return}o.gap=Math.round(n)}
+  S.progFu=o;S._ts=_bumpTs(S);
+  try{lsSave("vs_settings",STATE.settings)}catch(e){}try{persist()}catch(e){}try{autoSyncCloud()}catch(e){}
+  toast("Sambhal liya","ok");
 }
 function renderNewParty(){
   var c=el("np-body");if(!c)return;
