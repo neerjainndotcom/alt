@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--ALTV:1.45.557-->
+<!DOCTYPE html><!--ALTV:1.45.559-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -137,7 +137,7 @@
 <div class="ov" id="m-mixed-inv" onclick="ovc(event,this)"><div class="sh" style="max-height:96vh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📦 Mixed Sarees Inventory</h3><p class="sub">All conversion batches</p></div><button class="btn bgh bsm" onclick="hideMod('m-mixed-inv')">✕</button></div></div><div class="shb" id="mixed-inv-body"></div><div class="shf"><button class="btn bp bfl" onclick="hideMod('m-mixed-inv')">Close</button></div></div></div><div class="ov" id="m-adj" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>Stock Adjustment</h3><p class="sub">Correct variances</p></div><button class="btn bgh bsm" onclick="hideMod('m-adj')">✕</button></div></div><div class="shb" id="adjbod"><div class="fg"><label>Select Item</label><select class="sel" id="adj-itm" onchange="renderAdjRows()"><option value="">Select item...</option></select></div><div id="adj-rows"></div><div class="fg mt12"><label>Reason</label><input class="inp" id="adj-rsn" placeholder="e.g. Taka size variance — actual 85m vs 90m avg"/></div></div><div class="shf"><button class="btn bgh bfl" onclick="hideMod('m-adj')">Cancel</button><button class="btn bp bfl" onclick="saveAdj()">Save Adjustments</button></div>
 </div></div>
 <div class="ov" id="m-scan" onclick="ovc(event,this)"><div class="sh"><div class="hdl"></div><div class="shh"><div class="hr"><div><h3>📷 Scan Order Form</h3><p class="sub">AI reads handwritten orders</p></div><button class="btn bgh bsm" onclick="hideMod('m-scan')">✕</button></div></div><div class="shb" id="scanbod"><div style="text-align:center;padding:16px 0"><div style="font-size:48px;margin-bottom:10px">📸</div><p class="ct2 sm" style="margin-bottom:18px;line-height:1.5">Take photo of handwritten order.<br>Claude AI will extract all details.</p><input type="file" id="scanfile" accept="image/*" style="display:none" onchange="processScan(this)"/><button class="btn bp bfl" onclick="el('scanfile').click()">📷 Take Photo / Upload</button></div><div id="scanres"></div></div>
-</div></div><script>const APP_VERSION="1.45.557";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
+</div></div><script>const APP_VERSION="1.45.559";const APP_BUILD_DATE="2026-10-30";const DATA_VERSION=4;(function checkVersion(){try{const params=new URLSearchParams(window.location.search);
 /* ?nopull=1 ka nishan sabse pehle -- neeche wala reload query gira deta
    hai, isliye yahin yaad rakh lo aur naye url me bhi le chalo. */
 var _np=params.get("nopull")==="1";
@@ -18833,8 +18833,8 @@ function _stkCntHtml(){
   rows.forEach(function(x,n){
     var c=x.c,app=Number(c.stock_taka)||0,fl=_stkFloT(c.sku),k=it.id+"|"+x.i,v=F.vals[k];
     h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;'+(n%2?"background:var(--bg)":"")+'">'
-      +'<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:13px">'+esc(c.name||"")+(rngs.length>1&&!F.rng&&c.range?' <span style="font-size:10px;color:var(--P);font-weight:700">'+esc(c.range)+'</span>':"")+'</div>'
-      +'<div style="font-size:10.5px;color:var(--t3);font-weight:700">App: <b style="color:'+(app<0?"var(--R)":"var(--tx)")+'">'+fmtN(app)+'T</b>'
+      +'<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:13px">'+esc(c.name||"")+_skuCodeHtml(c)+(rngs.length>1&&!F.rng&&c.range?' <span style="font-size:10px;color:var(--P);font-weight:700">'+esc(c.range)+'</span>':"")+'</div>'
+      +_skuFullHtml(c)+'<div style="font-size:10.5px;color:var(--t3);font-weight:700">App: <b style="color:'+(app<0?"var(--R)":"var(--tx)")+'">'+fmtN(app)+'T</b>'
       +(fl>0?' · <span style="color:#7C3AED">'+fl+'T kat kar floor par (mat gino)</span>':"")
       +(c.cntAt?' · ginti '+esc(fmtDate(c.cntAt)):"")+'</div>'
       +'<div id="stkm-nw'+n+'" style="font-size:10.5px;font-weight:800;color:#B45309">'+(v!=null&&v!==""?_stkNewTxt(app,fl,v):"")+'</div></div>'
@@ -19060,6 +19060,240 @@ function _csDoneSweep(force){
     if(sl&&sl.csShortClosed)return"Bhej diya (parchi band)";
     return ol.apply(this,arguments);
   };
+})();
+/* ══ 1.45.558: (1) Stock milao me har rang ke saath SKU number (PETROL-3 +
+   poora SKU) -- maal par likhe number se milana aasaan. (2) Manual Entry ab
+   ek-ek rang nahi: item -> range -> us range ke saare rang khul jaate hain,
+   jitne taka daalne hain daalo, ek baar me save. ══ */
+function _skuCodeHtml(c){var k=csColourCodeFromSku((c&&c.sku)||"");return k?'<span style="color:var(--P);font-weight:900">-'+esc(k)+'</span>':""}
+function _skuFullHtml(c){return(c&&c.sku)?'<div style="font-size:9.5px;color:var(--t3);font-family:monospace;word-break:break-all;line-height:1.3">'+esc(c.sku)+'</div>':""}
+var _msb=null;
+openManualStock=function(){
+  var isAdmin=STATE.user&&STATE.user.role==="admin";
+  if(!isAdmin&&!hasPerm("manual_stock")){toast("You do not have permission for manual stock entry","er");return}
+  _msb={dir:"in",iid:(_msb&&_msb.iid)||"",rng:"",vals:{},note:"",ref:""};
+  _msbRender();
+};
+function _msbItem(){var F=_msb;return F&&(STATE.items||[]).filter(function(i){return i.id===F.iid&&!i._deleted})[0]}
+function _msbRows(){
+  var it=_msbItem();if(!it)return[];
+  return(it.colours||[]).map(function(c,i){return{c:c,i:i}}).filter(function(x){
+    if(!x.c||x.c._deleted)return false;
+    if(x.c.discontinued&&!(Number(x.c.stock_taka)||0))return false;
+    return!_msb.rng||String(x.c.range||"")===_msb.rng;
+  });
+}
+function _msbRender(){
+  var F=_msb;if(!F)return;
+  var its=_stkItems(),it=_msbItem(),inD=F.dir==="in";
+  var h='<div style="padding:12px 14px">'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+    +'<button onclick="_msb.dir=\'in\';_msbRender()" style="padding:11px;border-radius:10px;border:2px solid '+(inD?"var(--G)":"var(--br)")+';background:'+(inD?"var(--Gl)":"var(--sf)")+';color:'+(inD?"var(--Gd)":"var(--t2)")+';font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer">📈 Stock IN (+)</button>'
+    +'<button onclick="_msb.dir=\'out\';_msbRender()" style="padding:11px;border-radius:10px;border:2px solid '+(!inD?"var(--R)":"var(--br)")+';background:'+(!inD?"var(--Rl)":"var(--sf)")+';color:'+(!inD?"var(--Rd)":"var(--t2)")+';font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer">📉 Stock OUT (−)</button></div>'
+    +'<select class="inp" onchange="_msb.iid=this.value;_msb.rng=\'\';_msb.vals={};_msbRender()" style="width:100%;font-family:inherit;font-weight:700">'
+    +'<option value="">— Item chuno —</option>'+its.map(function(i){return'<option value="'+esc(i.id)+'"'+(i.id===F.iid?" selected":"")+'>'+esc(i.name)+'</option>'}).join("")+'</select>';
+  if(it){
+    var rngs=[];(it.colours||[]).forEach(function(c){if(c&&!c._deleted&&c.range&&rngs.indexOf(c.range)<0)rngs.push(c.range)});
+    if(rngs.length>1)h+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">'+[""].concat(rngs).map(function(r){var on=F.rng===r;
+      return'<button data-r="'+esc(r)+'" onclick="_msb.rng=this.dataset.r;_msbRender()" style="padding:4px 9px;border-radius:99px;border:1.5px solid '+(on?"var(--P)":"var(--br)")+';background:'+(on?"var(--P)":"var(--sf)")+';color:'+(on?"#fff":"var(--t2)")+';font-size:11px;font-weight:800;font-family:inherit;cursor:pointer">'+(r?esc(r):"Sab")+'</button>'}).join("")+'</div>';
+    var rows=_msbRows();
+    h+='<div style="margin-top:8px;border:1px solid var(--br);border-radius:10px;overflow:hidden">';
+    if(!rows.length)h+='<div style="padding:16px;text-align:center;color:var(--t3);font-size:12px">Koi rang nahi</div>';
+    rows.forEach(function(x,n){
+      var c=x.c,k=it.id+"|"+x.i,v=F.vals[k];
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;'+(n%2?"background:var(--bg)":"")+'">'
+        +'<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:13px">'+esc(c.name||"")+_skuCodeHtml(c)+(rngs.length>1&&!F.rng&&c.range?' <span style="font-size:10px;color:var(--P);font-weight:700">'+esc(c.range)+'</span>':"")+'</div>'
+        +_skuFullHtml(c)
+        +'<div style="font-size:10.5px;color:var(--t3);font-weight:700">Abhi: <b style="color:var(--tx)">'+fmtN(Number(c.stock_taka)||0)+'T</b></div></div>'
+        +'<input type="number" inputmode="numeric" min="0" step="1" class="inp" placeholder="0" value="'+(v!=null?esc(String(v)):"")+'" data-k="'+k+'" oninput="_msb.vals[this.dataset.k]=this.value;_msbSum()" style="width:70px;text-align:center;font-weight:800;padding:7px;font-family:inherit">'
+        +'</div>';
+    });
+    h+='</div>';
+  }
+  h+='<input class="inp" placeholder="Wajah / note * (jaise: mill GP 1234, damage)" value="'+esc(F.note||"")+'" oninput="_msb.note=this.value" style="width:100%;margin-top:10px;font-family:inherit;box-sizing:border-box">'
+    +'<input class="inp mono" placeholder="Reference (optional)" value="'+esc(F.ref||"")+'" oninput="_msb.ref=this.value" style="width:100%;margin-top:6px;font-family:inherit;box-sizing:border-box">'
+    +'<div id="msb-sum" style="margin-top:8px;font-size:12px;font-weight:800;color:var(--t2)">'+_msbSumTxt()+'</div>'
+    +'<button onclick="msbSave()" style="margin-top:10px;width:100%;background:'+(inD?"var(--G)":"var(--R)")+';color:#fff;border:none;padding:13px;border-radius:12px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer">✔ Save</button></div>';
+  csShowSheet("m-msb","✏️ Manual Stock Entry",h);
+}
+function _msbPicks(){
+  var out=[];Object.keys((_msb&&_msb.vals)||{}).forEach(function(k){
+    var t=Math.round(parseFloat(_msb.vals[k])||0);if(!(t>0))return;
+    var p=k.split("|"),it=(STATE.items||[]).filter(function(i){return i.id===p[0]})[0],c=it&&it.colours[+p[1]];
+    if(c)out.push({it:it,i:+p[1],c:c,t:t});
+  });
+  return out;
+}
+function _msbSumTxt(){var P=_msbPicks(),t=P.reduce(function(s,x){return s+x.t},0);return P.length?P.length+" rang · "+(_msb.dir==="in"?"+":"−")+fmtN(t)+"T":"Taka daalo"}
+function _msbSum(){var e=el("msb-sum");if(e)e.textContent=_msbSumTxt()}
+async function msbSave(){
+  var isAdmin=STATE.user&&STATE.user.role==="admin";
+  if(!isAdmin&&!hasPerm("manual_stock")){toast("Permission denied","er");return}
+  var F=_msb,P=_msbPicks(),note=String(F.note||"").trim(),ref=String(F.ref||"").trim();
+  if(!P.length){toast("Kam se kam ek rang me taka daalo","er");return}
+  if(!note){toast("Wajah / note likho","er");return}
+  var inD=F.dir==="in";
+  var ok=await appConfirm((inD?"Stock IN":"Stock OUT")+" — "+P.length+" rang",
+    P.slice(0,15).map(function(x){var k=csColourCodeFromSku(x.c.sku||"");return(x.c.name||"")+(k?"-"+k:"")+": "+(inD?"+":"−")+x.t+"T"}).join("\n")+(P.length>15?"\n+"+(P.length-15)+" aur":"")+"\n\n"+note,
+    inD?"📈":"📉","Haan, save","ok","Rehne do");
+  if(!ok)return;
+  var done=0;
+  for(var j=0;j<P.length;j++){
+    var x=P[j];
+    if(inD){addStock(x.it.id,x.i,x.t,"manual","Manual Entry",ref,note);done++}
+    else{
+      var okA=await checkAdj(x.it.id,x.i,x.t,x.c.sku);if(!okA)continue;
+      deductStock(x.it.id,x.i,x.t,"manual","Manual Entry",ref);
+      var last=STATE.entries[STATE.entries.length-1];if(last&&last.type==="manual")last.note=note;done++;
+    }
+  }
+  persist();
+  hideMod("m-msb");
+  try{renderDash()}catch(e){}try{renderInRec()}catch(e){}
+  toast(done+" rang ki entry save ("+(inD?"IN":"OUT")+")","ok");
+  F.vals={};F.note="";F.ref="";
+}
+/* ══ 1.45.559: Manual entry ka REGISTER -- har manual entry dikhe; galat
+   ho to kholo, taka / note badlo ya delete karo. Stock apne aap theek.
+   Tick: "Manual entry badalna" aur "Manual entry delete". ══ */
+(function(){
+  var fp=function(id){return PERM_DEFS.map(function(p){return p.id}).indexOf(id)};
+  var a=fp("manual_stock");if(a<0)a=PERM_DEFS.length-1;
+  if(fp("manual_edit")<0)PERM_DEFS.splice(++a,0,{id:"manual_edit",grp:"Inward",lbl:"Manual entry badalna",desc:"Register me manual entry ke taka / note badalna"});
+  else a=fp("manual_edit");
+  if(fp("manual_delete")<0)PERM_DEFS.splice(a+1,0,{id:"manual_delete",grp:"Inward",lbl:"Manual entry delete",desc:"Register se manual entry hatana (stock wapas)"});
+})();
+function msbCanNew(){return!!(STATE.user&&(STATE.user.role==="admin"||hasPerm("manual_stock")))}
+function msbCanEdit(){return!!(STATE.user&&(STATE.user.role==="admin"||hasPerm("manual_edit")))}
+function msbCanDel(){return!!(STATE.user&&(STATE.user.role==="admin"||hasPerm("manual_delete")))}
+function msbCanSee(){return msbCanNew()||msbCanEdit()||msbCanDel()}
+function _entCol(e){
+  var it=(STATE.items||[]).filter(function(i){return i.id===e.itemId})[0];if(!it)return null;
+  var c=it.colours[e.colIdx];if(!c||(e.sku&&c.sku!==e.sku)){var j=-1;(it.colours||[]).forEach(function(x,i){if(j<0&&x&&x.sku===e.sku)j=i});c=j>=0?it.colours[j]:null}
+  return c?{it:it,c:c}:null;
+}
+function _msbEntStock(e,sign){/* sign +1 = entry lagao, -1 = entry hatao */
+  var r=_entCol(e);if(!r)return;
+  var d=(e.direction==="in"?1:-1)*(Number(e.taka)||0)*sign;
+  r.c.stock_taka=Math.round((Number(r.c.stock_taka)||0)+d);r.c.stock_mtrs=Math.round(r.c.stock_taka*_stkAvg());r.it._ts=_bumpTs(r.it);
+}
+function _msbGroups(){
+  var q=String((_msb&&_msb.q)||"").toUpperCase(),M={},L=[];
+  (STATE.entries||[]).forEach(function(e){
+    if(!e||e._deleted||e.type!=="manual"||e.party==="Stock ginti"||e.cnt)return;
+    if(q&&[e.itemName,e.colourName,e.sku,e.note,e.ref,e.by].join(" ").toUpperCase().indexOf(q)<0)return;
+    var k=e.msb||[e.date,e.direction,e.ref||"",e.note||"",e.by||""].join("|");
+    var g=M[k];if(!g){g=M[k]={k:k,date:e.date,dir:e.direction,note:e.note||"",ref:e.ref||"",by:e.by||"",ents:[],t:0,ts:0};L.push(g)}
+    g.ents.push(e);g.t+=Number(e.taka)||0;g.ts=Math.max(g.ts,Number(e._ts)||0);
+  });
+  return L.sort(function(a,b){return String(b.date).localeCompare(String(a.date))||b.ts-a.ts}).slice(0,80);
+}
+function _msbRegHtml(){
+  var G=_msbGroups(),ce=msbCanEdit(),cd=msbCanDel();window._msbGL=G;
+  var h='<input class="inp" placeholder="\uD83D\uDD0D Item / rang / note se dhoondo" value="'+esc((_msb&&_msb.q)||"")+'" onchange="_msb.q=this.value;_msbRender()" style="width:100%;font-family:inherit;box-sizing:border-box;margin-bottom:8px">';
+  if(!G.length)return h+'<div style="padding:24px;text-align:center;color:var(--t3);font-size:12.5px">Koi manual entry nahi</div>';
+  return h+G.map(function(g,gi){
+    var inD=g.dir==="in",col=inD?"var(--Gd)":"var(--Rd)";
+    return'<div style="border:1.5px solid var(--br);border-radius:10px;margin-bottom:7px;overflow:hidden">'
+      +'<div style="padding:8px 10px;background:'+(inD?"var(--Gl)":"var(--Rl)")+';display:flex;align-items:center;gap:6px">'
+      +'<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:12.5px;color:'+col+'">'+(inD?"\uD83D\uDCC8 IN +":"\uD83D\uDCC9 OUT \u2212")+fmtN(g.t)+'T \u00b7 '+g.ents.length+' rang</div>'
+      +'<div style="font-size:10.5px;color:var(--t2);font-weight:700">'+esc(fmtDate(g.date))+' \u00b7 '+esc(g.by)+(g.ref?' \u00b7 Ref '+esc(g.ref):"")+'</div>'
+      +(g.note?'<div style="font-size:11px;color:var(--t2);margin-top:1px">\u201C'+esc(g.note)+'\u201D</div>':"")+'</div>'
+      +(cd?'<button onclick="msbDelGroup('+gi+')" style="background:#fff;color:var(--R);border:1.5px solid var(--R);padding:4px 8px;border-radius:7px;font-size:10.5px;font-weight:800;font-family:inherit;cursor:pointer">\uD83D\uDDD1 Sab</button>':"")
+      +'</div>'
+      +g.ents.map(function(e){var r=_entCol(e),k=csColourCodeFromSku(e.sku||"");
+        return'<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-top:1px solid var(--br)">'
+          +'<div style="flex:1;min-width:0;font-size:12px"><b>'+esc(e.colourName||"")+(k?'<span style="color:var(--P)">-'+esc(k)+'</span>':"")+'</b> <span style="color:var(--t3);font-size:10.5px">'+esc(e.itemName||"")+'</span>'
+          +(e.editBy?'<div style="font-size:9.5px;color:#B45309;font-weight:700">\u270F\uFE0F badla: '+esc(e.editBy)+(e.editFrom!=null?' ('+e.editFrom+'T se)':"")+'</div>':"")+'</div>'
+          +'<b style="font-size:13px;color:'+col+'">'+(inD?"+":"\u2212")+fmtN(Number(e.taka)||0)+'T</b>'
+          +(ce&&r?'<button onclick="msbEdit(\''+esc(e.id)+'\')" style="background:#7C3AED;color:#fff;border:none;padding:4px 8px;border-radius:7px;font-size:11px;cursor:pointer">\u270F\uFE0F</button>':"")
+          +(cd?'<button onclick="msbDel(\''+esc(e.id)+'\')" style="background:#fff;color:var(--R);border:1.5px solid var(--R);padding:3px 7px;border-radius:7px;font-size:11px;cursor:pointer">\uD83D\uDDD1</button>':"")
+          +'</div>'}).join("")
+      +'</div>';
+  }).join("");
+}
+function _msbEnt(id){return(STATE.entries||[]).filter(function(e){return e&&e.id===id&&!e._deleted})[0]}
+function msbEdit(id){
+  if(!msbCanEdit()){toast("Manual entry badalne ki permission nahi","er");return}
+  var e=_msbEnt(id);if(!e)return;var k=csColourCodeFromSku(e.sku||"");
+  rmEl("m-msbe");
+  csShowSheet("m-msbe","\u270F\uFE0F Entry badlo",'<div style="padding:14px">'
+    +'<div style="font-weight:800;font-size:14px">'+esc(e.colourName||"")+(k?"-"+esc(k):"")+' <span style="font-size:11px;color:var(--t3)">'+esc(e.itemName||"")+'</span></div>'
+    +'<div style="font-size:11px;color:var(--t3);margin:2px 0 10px">'+esc(fmtDate(e.date))+' \u00b7 '+(e.direction==="in"?"IN":"OUT")+' \u00b7 '+esc(e.by||"")+'</div>'
+    +'<label style="font-size:11px;font-weight:800;color:var(--t2)">Taka</label><input id="msbe-t" type="number" inputmode="numeric" min="0" class="inp" value="'+(Number(e.taka)||0)+'" style="width:100%;font-size:20px;font-weight:900;text-align:center;box-sizing:border-box;font-family:inherit">'
+    +'<label style="font-size:11px;font-weight:800;color:var(--t2);display:block;margin-top:8px">Note</label><input id="msbe-n" class="inp" value="'+esc(e.note||"")+'" style="width:100%;box-sizing:border-box;font-family:inherit">'
+    +'<div style="display:flex;gap:8px;margin-top:12px"><button class="btn bgh" style="flex:1;font-family:inherit" onclick="hideMod(\'m-msbe\')">Rehne do</button>'
+    +'<button style="flex:2;background:var(--P);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:800;font-family:inherit;cursor:pointer" onclick="msbEditSave(\''+esc(e.id)+'\')">\u2714 Save</button></div></div>');
+  var m=el("m-msbe");if(m)m.style.zIndex="3200";
+}
+async function msbEditSave(id){
+  if(!msbCanEdit()){toast("Permission nahi","er");return}
+  var e=_msbEnt(id);if(!e)return;
+  var t=Math.round(parseFloat((el("msbe-t")||{}).value)||0),note=String((el("msbe-n")||{}).value||"").trim();
+  if(t<0){toast("Sahi taka daalo","er");return}
+  if(!note){toast("Note khaali nahi","er");return}
+  var old=Number(e.taka)||0;
+  if(t===0){hideMod("m-msbe");return msbDel(id)}
+  if(t!==old){
+    var ok=await appConfirm("Entry badlein?",(e.colourName||"")+": "+old+"T \u2192 "+t+"T ("+(e.direction==="in"?"IN":"OUT")+")\nStock bhi utna badlega.","\u270F\uFE0F","Haan, badlo","ok","Rehne do");
+    if(!ok)return;
+  }
+  _msbEntStock(e,-1);
+  if(t!==old){e.editFrom=e.editFrom!=null?e.editFrom:old}
+  e.taka=t;e.mtrs=Math.round(t*_stkAvg());e.note=note;
+  e.editBy=(STATE.user&&STATE.user.name)||"";e.editAt=Date.now();e._ts=_bumpTs(e);
+  _msbEntStock(e,1);
+  persist();hideMod("m-msbe");toast("Entry badli","ok");_msbRender();
+  try{renderDash()}catch(x){}
+}
+async function msbDel(id){
+  if(!msbCanDel()){toast("Manual entry delete ki permission nahi","er");return}
+  var e=_msbEnt(id);if(!e)return;
+  var ok=await appConfirm("Entry delete karein?",(e.colourName||"")+" "+(e.direction==="in"?"+":"\u2212")+(Number(e.taka)||0)+"T ("+fmtDate(e.date)+")\nStock wapas utna hi ho jayega.","\uD83D\uDDD1","Haan, delete","dr","Rehne do");
+  if(!ok)return;
+  _msbEntStock(e,-1);
+  e._deleted=true;e.delBy=(STATE.user&&STATE.user.name)||"";e.delAt=Date.now();e._ts=_bumpTs(e);
+  persist();toast("Entry delete","ok");_msbRender();
+  try{renderDash()}catch(x){}
+}
+async function msbDelGroup(i){
+  if(!msbCanDel()){toast("Permission nahi","er");return}
+  var g=(window._msbGL||[])[i];if(!g)return;
+  var ok=await appConfirm("Poori entry delete karein?",g.ents.length+" rang \u00b7 "+(g.dir==="in"?"+":"\u2212")+fmtN(g.t)+"T ("+fmtDate(g.date)+")\nStock wapas ho jayega.","\uD83D\uDDD1","Haan, delete","dr","Rehne do");
+  if(!ok)return;
+  var who=(STATE.user&&STATE.user.name)||"";
+  g.ents.forEach(function(e){_msbEntStock(e,-1);e._deleted=true;e.delBy=who;e.delAt=Date.now();e._ts=_bumpTs(e)});
+  persist();toast(g.ents.length+" entry delete","ok");_msbRender();
+  try{renderDash()}catch(x){}
+}
+(function(){
+  /* Kholne ka niyam: nayi entry = manual_stock; register = in teeno me se koi */
+  openManualStock=function(){
+    if(!msbCanSee()){toast("You do not have permission for manual stock entry","er");return}
+    _msb={dir:"in",iid:(_msb&&_msb.iid)||"",rng:"",vals:{},note:"",ref:"",tab:msbCanNew()?"new":"reg",q:""};
+    _msbRender();
+  };
+  var rr=_msbRender;
+  _msbRender=function(){
+    var F=_msb;if(!F)return;
+    if(F.tab!=="reg"&&!msbCanNew())F.tab="reg";
+    var tabs='<div style="display:flex;gap:6px;padding:12px 14px 0">'+(msbCanNew()?[["new","\u2795 Nayi entry"],["reg","\uD83D\uDCDC Register"]]:[["reg","\uD83D\uDCDC Register"]]).map(function(t){var on=F.tab===t[0];
+      return'<button onclick="_msb.tab=\''+t[0]+'\';_msbRender()" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid '+(on?"var(--P)":"var(--br)")+';background:'+(on?"var(--Pl)":"var(--sf)")+';color:'+(on?"var(--P)":"var(--t2)")+';font-size:12px;font-weight:800;font-family:inherit;cursor:pointer">'+t[1]+'</button>'}).join("")+'</div>';
+    if(F.tab==="reg"){csShowSheet("m-msb","\u270F\uFE0F Manual Stock Entry",tabs+'<div style="padding:10px 14px">'+_msbRegHtml()+'</div>');return}
+    rr.apply(this,arguments);
+    try{var b=el("m-msb").querySelector(".shb");if(b)b.insertAdjacentHTML("afterbegin",tabs)}catch(e){}
+  };
+  /* Har save ki entries ek saath dikhein */
+  var ms=msbSave;
+  msbSave=async function(){
+    var n0=(STATE.entries||[]).length,bid="MSB-"+Date.now().toString(36).toUpperCase();
+    var r=await ms.apply(this,arguments);
+    (STATE.entries||[]).slice(n0).forEach(function(e){if(e&&e.type==="manual"){e.msb=bid}});
+    return r;
+  };
+  /* Inward ka button register wale ko bhi dikhe */
+  var ar=applyRoleUI;
+  applyRoleUI=function(){var r=ar.apply(this,arguments);try{var b=el("inward-manual-btn");if(b)b.style.display=STATE.user&&msbCanSee()?"flex":"none"}catch(e){}return r};
 })();
 function renderNewParty(){
   var c=el("np-body");if(!c)return;
